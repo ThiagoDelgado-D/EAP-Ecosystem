@@ -5,7 +5,7 @@ export interface LearningResource extends TimestampedEntity {
   id: UUID;
   title: string;
   url?: string;
-  type: ResourceType;
+  typeId: UUID;
   topicIds: UUID[];
   difficulty: DifficultyType;
   estimatedDuration: Duration;
@@ -14,16 +14,6 @@ export interface LearningResource extends TimestampedEntity {
   lastViewed?: Date;
   notes?: string;
 }
-
-export const ResourceType = {
-  ARTICLE: "article",
-  VIDEO: "video",
-  COURSE: "course",
-  BOOK: "book",
-  PERSONAL_NOTE: "personal_note",
-} as const;
-
-export type ResourceType = keyof typeof ResourceType;
 
 export interface Duration {
   value: number;
