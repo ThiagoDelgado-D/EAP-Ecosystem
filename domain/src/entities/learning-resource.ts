@@ -1,8 +1,8 @@
+import { Entity } from "../types/entity";
 import { UUID } from "../types/uuid";
 import { TimestampedEntity } from "./timestamped-entity";
 
-export interface LearningResource extends TimestampedEntity {
-  id: UUID;
+export interface LearningResource extends Entity, TimestampedEntity {
   title: string;
   url?: string;
   typeId: UUID;
