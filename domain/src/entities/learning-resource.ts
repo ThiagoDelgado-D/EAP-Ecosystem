@@ -1,4 +1,4 @@
-import { Entity } from "../types/entity";
+import { Entity } from "./entity";
 import { UUID } from "../types/uuid";
 import { TimestampedEntity } from "./timestamped-entity";
 
