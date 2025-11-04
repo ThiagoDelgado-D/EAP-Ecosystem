@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "packageManager": "yarn@4.9.2",
+  "workspaces": [
+    "shared/*",
+    "learning-resource/*"
+  ],
   "devDependencies": {
     "@types/node": "^24.9.2",
     "typescript": "^5.9.3"

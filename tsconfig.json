@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "paths": {
+      "domain-lib": ["shared/domain-lib/src"],
+      "domain-lib/*": ["shared/domain-lib/src/*"]
+    },
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowJs": true,
     "declaration": true,
@@ -13,6 +18,6 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["domain//*", "src//", ".ts", "*.js"],
-  "exclude": ["node_modules", "dist", "build"]
+  "include": ["shared/**/*", "learning-resource/**/*", "User/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
