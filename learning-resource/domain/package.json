@@ -1,0 +1,8 @@
+{
+  "name": "domain",
+  "type": "module",
+  "packageManager": "yarn@4.9.2",
+  "dependencies": {
+    "domain-lib": "workspace:^"
+  }
+}
