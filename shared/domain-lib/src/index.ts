@@ -5,4 +5,4 @@ export * from "./entities";
 export * from "./types";
 
 // ============= ERRORS =============
-export * from "./errors/base-error";
+export * from "./errors";
