@@ -4,8 +4,13 @@
   "private": true,
   "packageManager": "yarn@4.9.2",
   "workspaces": [
-    "shared/*",
-    "learning-resource/*"
+    "shared/domain-lib",
+    "learning-resource/domain",
+    "learning-resource/application",
+    "learning-resource/infrastructure",
+    "user/domain",
+    "user/application",
+    "user/infrastructure"
   ],
   "devDependencies": {
     "@types/node": "^24.9.2",
