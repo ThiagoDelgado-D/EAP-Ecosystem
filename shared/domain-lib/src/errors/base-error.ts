@@ -1,14 +1,16 @@
 export abstract class BaseError<TName extends string> extends Error {
-  name: TName;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  context?: any;
+  public name: TName;
+  public statusCode: number;
+  public context?: Record<string, unknown>;
 
-  constructor(name: TName) {
+  constructor(
+    name: TName,
+    statusCode: number,
+    context?: Record<string, unknown>
+  ) {
     super();
     this.name = name;
-  }
-
-  toString(): TName {
-    return this.name;
+    this.statusCode = statusCode;
+    this.context = context;
   }
 }
