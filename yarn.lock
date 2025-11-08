@@ -23,17 +23,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"domain-lib@workspace:^, domain-lib@workspace:shared/domain-lib":
+"application-3703d2@workspace:learning-resource/application":
   version: 0.0.0-use.local
-  resolution: "domain-lib@workspace:shared/domain-lib"
+  resolution: "application-3703d2@workspace:learning-resource/application"
   languageName: unknown
   linkType: soft
 
-"domain@workspace:learning-resource/domain":
+"domain-a350b6@workspace:learning-resource/domain":
   version: 0.0.0-use.local
-  resolution: "domain@workspace:learning-resource/domain"
+  resolution: "domain-a350b6@workspace:learning-resource/domain"
   dependencies:
     domain-lib: "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"domain-lib@workspace:^, domain-lib@workspace:shared/domain-lib":
+  version: 0.0.0-use.local
+  resolution: "domain-lib@workspace:shared/domain-lib"
   languageName: unknown
   linkType: soft
 

@@ -1,8 +1,4 @@
 {
-  "name": "application",
   "type": "module",
-  "dependencies": {
-    "domain": "workspace:^"
-  },
   "packageManager": "yarn@4.9.2"
 }
