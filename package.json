@@ -2,9 +2,12 @@
   "name": "EAP-Ecosystem",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "packageManager": "yarn@4.9.2",
   "workspaces": [
     "shared/domain-lib",
+    "shared/infrastructure-lib",
+    "shared/application",
     "learning-resource/domain",
     "learning-resource/application",
     "learning-resource/infrastructure",
@@ -15,5 +18,8 @@
   "devDependencies": {
     "@types/node": "^24.9.2",
     "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "yarn workspaces foreach -A -tv run build"
   }
 }
