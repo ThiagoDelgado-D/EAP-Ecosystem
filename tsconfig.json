@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "domain-lib": ["shared/domain-lib/src"],
-      "domain-lib/*": ["shared/domain-lib/src/*"],
+      "infrastructure-lib": ["shared/infrastructure-lib/src"],
       "learning-resource/domain": ["learning-resource/domain/src"],
       "learning-resource/application": ["learning-resource/application/src"],
       "user/domain": ["user/domain/src"],
@@ -11,9 +11,9 @@
       "recomendation/domain": ["recomendation/domain/src"],
       "recomendation/application": ["recomendation/application/src"]
     },
-    "target": "ES2022",
+    "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "allowJs": true,
     "declaration": true,
