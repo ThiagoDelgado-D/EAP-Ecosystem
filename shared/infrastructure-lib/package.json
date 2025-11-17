@@ -1,0 +1,20 @@
+{
+  "name": "infrastructure-lib",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "private": true,
+  "packageManager": "yarn@4.9.2",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "domain-lib": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  }
+}
