@@ -219,6 +219,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@learning-resource/domain@workspace:^, @learning-resource/domain@workspace:learning-resource/domain":
+  version: 0.0.0-use.local
+  resolution: "@learning-resource/domain@workspace:learning-resource/domain"
+  dependencies:
+    domain-lib: "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@npmcli/agent@npm:^4.0.0":
   version: 4.0.0
   resolution: "@npmcli/agent@npm:4.0.0"
@@ -560,7 +568,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "application-3703d2@workspace:learning-resource/application"
   dependencies:
-    vitest: "npm:^4.0.8"
+    "@learning-resource/domain": "workspace:^"
+    domain-lib: "workspace:^"
+    vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
 
@@ -624,14 +634,6 @@ __metadata:
   checksum: 10c0/d79136ec6c83ecbefd0f6a5593da6a9c91ec4d7ddc4b54c883d6e71ec9accb5f67a1a5e96d00a328196b5b5c86d365e98d8a3a70856aaf16b4e7b1985e67f5a6
   languageName: node
   linkType: hard
-
-"domain-a350b6@workspace:learning-resource/domain":
-  version: 0.0.0-use.local
-  resolution: "domain-a350b6@workspace:learning-resource/domain"
-  dependencies:
-    domain-lib: "workspace:^"
-  languageName: unknown
-  linkType: soft
 
 "domain-lib@workspace:^, domain-lib@workspace:shared/domain-lib":
   version: 0.0.0-use.local
@@ -1461,7 +1463,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^4.0.8":
+"vitest@npm:^4.0.13":
   version: 4.0.13
   resolution: "vitest@npm:4.0.13"
   dependencies:

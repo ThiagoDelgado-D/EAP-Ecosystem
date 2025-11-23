@@ -1,10 +1,15 @@
 {
   "type": "module",
+  "private": true,
   "packageManager": "yarn@4.9.2",
+  "dependencies": {
+    "@learning-resource/domain": "workspace:^",
+    "domain-lib": "workspace:^"
+  },
   "scripts": {
     "test": "vitest"
   },
   "devDependencies": {
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.13"
   }
 }
