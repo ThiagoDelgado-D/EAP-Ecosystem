@@ -1,4 +1,16 @@
 {
   "type": "module",
-  "packageManager": "yarn@4.9.2"
+  "private": true,
+  "packageManager": "yarn@4.9.2",
+  "dependencies": {
+    "@learning-resource/domain": "workspace:^",
+    "domain-lib": "workspace:^"
+  },
+  "scripts": {
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.0.13",
+    "vitest": "^4.0.13"
+  }
 }

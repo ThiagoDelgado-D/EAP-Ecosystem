@@ -24,7 +24,8 @@ export const DifficultyType = {
   HIGH: "high",
 } as const;
 
-export type DifficultyType = keyof typeof DifficultyType;
+export type DifficultyType =
+  (typeof DifficultyType)[keyof typeof DifficultyType];
 
 export const ResourceStatusType = {
   PENDING: "pending",
@@ -32,7 +33,8 @@ export const ResourceStatusType = {
   COMPLETED: "completed",
 } as const;
 
-export type ResourceStatusType = keyof typeof ResourceStatusType;
+export type ResourceStatusType =
+  (typeof ResourceStatusType)[keyof typeof ResourceStatusType];
 
 export const EnergyLevelType = {
   LOW: "low",
@@ -40,4 +42,5 @@ export const EnergyLevelType = {
   HIGH: "high",
 } as const;
 
-export type EnergyLevelType = keyof typeof EnergyLevelType;
+export type EnergyLevelType =
+  (typeof EnergyLevelType)[keyof typeof EnergyLevelType];

@@ -1,4 +1,5 @@
 {
+  "name": "@learning-resource/domain",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
