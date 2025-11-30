@@ -14,6 +14,7 @@ import {
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { LearningResourceValidator } from "../../validators/learning-resource-validator";
+import { calculateEnergyLevel } from "../../utils/calculate-energy-level";
 
 export interface AddResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;
@@ -29,9 +30,10 @@ export interface AddResourceRequestModel {
   resourceTypeId: UUID;
   topicIds: UUID[];
   difficulty: DifficultyType;
-  energyLevel: EnergyLevelType;
-  status: ResourceStatusType;
-  notes: string | null;
+  estimatedDurationMinutes: number;
+  energyLevel?: EnergyLevelType;
+  status?: ResourceStatusType;
+  notes?: string;
 }
 
 export const addResource = async (
@@ -44,8 +46,9 @@ export const addResource = async (
   }: AddResourceDependencies,
   request: AddResourceRequestModel
 ) => {
-  if (!(await validator.isValidAddPayload(request))) {
-    return new InvalidDataError();
+  const validation = await validator.isValidAddPayload(request);
+  if (!validation.isValid) {
+    return new InvalidDataError(validation.errors);
   }
 
   const existingResourceType = await resourceTypeRepository.findById(
@@ -66,6 +69,10 @@ export const addResource = async (
     }
   }
 
+  const energyLevel =
+    request.energyLevel ||
+    calculateEnergyLevel(request.difficulty, request.estimatedDurationMinutes);
+
   const id = await cryptoService.generateUUID();
   const title = request.title.trim();
   const url = request.url?.trim() || undefined;
@@ -79,9 +86,13 @@ export const addResource = async (
     typeId: request.resourceTypeId,
     topicIds: request.topicIds,
     difficulty: request.difficulty,
-    estimatedDuration: { value: 0, isEstimated: false },
-    energyLevel: request.energyLevel,
-    status: ResourceStatusType.PENDING,
+    estimatedDuration: {
+      value: request.estimatedDurationMinutes,
+      isEstimated: true,
+    },
+    energyLevel,
+    status: request.status ? request.status : ResourceStatusType.PENDING,
+    lastViewed: undefined,
     notes,
     createdAt: now,
     updatedAt: now,
