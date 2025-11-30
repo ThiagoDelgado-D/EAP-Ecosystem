@@ -1,17 +1,22 @@
-import { LearningResourceValidator } from "../../validators/learning-resource-validator";
-
-export const mockValidator = (
-  validAddPayload: boolean = true,
-  isValidUrl: boolean = true
-) => {
-  const validator: LearningResourceValidator = {
-    async isValidAddPayload(): Promise<boolean> {
-      return validAddPayload;
+export const mockValidator = ({
+  isPayloadValid = true,
+  payloadErrors = {},
+  isUrlValid = true,
+  urlErrors = {},
+} = {}) => {
+  return {
+    async isValidAddPayload() {
+      return {
+        isValid: isPayloadValid,
+        errors: isPayloadValid ? {} : payloadErrors,
+      };
     },
-    async isValidUrl(): Promise<boolean> {
-      return isValidUrl;
+
+    async isValidUrl() {
+      return {
+        isValid: isUrlValid,
+        errors: isUrlValid ? {} : urlErrors,
+      };
     },
   };
-
-  return validator;
 };
