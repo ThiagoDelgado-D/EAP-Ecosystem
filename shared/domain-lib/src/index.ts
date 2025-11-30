@@ -13,3 +13,7 @@ export * from "./services";
 // ============= MOCKS =============
 
 export * from "./services/mocks";
+
+// ============= VALIDATIONS =============
+
+export * from "./validations";
