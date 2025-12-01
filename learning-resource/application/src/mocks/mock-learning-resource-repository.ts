@@ -54,5 +54,8 @@ export function mockLearningResourceRepository(
         this.learningResources.splice(index, 1);
       }
     },
+    async getAll(): Promise<LearningResource[]> {
+      return this.learningResources;
+    },
   };
 }
