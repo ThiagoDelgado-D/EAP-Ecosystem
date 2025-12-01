@@ -26,7 +26,7 @@ describe("listFormattedResourcesLearning", () => {
       learningResourceRepository,
     });
 
-    expect(result.courses).toEqual([]);
+    expect(result.resources).toEqual([]);
   });
 
   test("Should successfully return the formatted resource list", async () => {
@@ -89,9 +89,9 @@ describe("listFormattedResourcesLearning", () => {
       learningResourceRepository,
     });
 
-    expect(result.courses.length).toBe(3);
+    expect(result.resources.length).toBe(3);
 
-    expect(result.courses).toMatchObject([
+    expect(result.resources).toMatchObject([
       {
         id: resourceId1,
         title: "Clean Architecture Course",
