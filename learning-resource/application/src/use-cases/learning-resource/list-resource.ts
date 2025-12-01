@@ -24,7 +24,7 @@ export interface listFormattedResourcesResponseModel {
 export const listFormattedResourcesLearning = async ({
   learningResourceRepository,
 }: ListFormattedResourcesDependencies): Promise<listFormattedResourcesResponseModel> => {
-  const resources = await learningResourceRepository.getAll();
+  const resources = await learningResourceRepository.findAll();
 
   const formattedCourses: ResourceFormatted[] = resources.map((resources) => ({
     id: resources.id,
