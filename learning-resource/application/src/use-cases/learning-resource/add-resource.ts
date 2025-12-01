@@ -45,7 +45,7 @@ export const addResource = async (
     validator,
   }: AddResourceDependencies,
   request: AddResourceRequestModel
-) => {
+): Promise<void | InvalidDataError | NotFoundError> => {
   const validation = await validator.isValidAddPayload(request);
   if (!validation.isValid) {
     return new InvalidDataError(validation.errors);
