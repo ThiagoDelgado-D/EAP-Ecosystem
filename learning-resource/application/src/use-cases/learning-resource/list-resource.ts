@@ -23,7 +23,7 @@ export interface listFormattedResourcesResponseModel {
 
 export const listFormattedResourcesLearning = async ({
   learningResourceRepository,
-}: ListFormattedResourcesDependencies) => {
+}: ListFormattedResourcesDependencies): Promise<listFormattedResourcesResponseModel> => {
   const resources = await learningResourceRepository.getAll();
 
   const formattedCourses: ResourceFormatted[] = resources.map((resources) => ({
@@ -37,6 +37,6 @@ export const listFormattedResourcesLearning = async ({
   }));
 
   return {
-    courses: formattedCourses,
+    resources: formattedCourses,
   };
 };
