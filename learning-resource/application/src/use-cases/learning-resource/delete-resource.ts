@@ -12,7 +12,7 @@ export interface DeleteResourceRequestModel {
 export const deleteResource = async (
   { learningResourceRepository }: DeleteResourceDependencies,
   { id }: DeleteResourceRequestModel
-) => {
+): Promise<void | LearningResourceNotFoundError> => {
   const foundResource = await learningResourceRepository.findById(id);
 
   if (!foundResource) {
