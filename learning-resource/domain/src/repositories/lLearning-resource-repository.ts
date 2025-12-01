@@ -7,5 +7,4 @@ export interface ILearningResourceRepository {
   delete(id: UUID): Promise<void>;
   findAll(): Promise<LearningResource[]>;
   findById(id: UUID): Promise<LearningResource | null>;
-  getAll(): Promise<LearningResource[]>;
 }
