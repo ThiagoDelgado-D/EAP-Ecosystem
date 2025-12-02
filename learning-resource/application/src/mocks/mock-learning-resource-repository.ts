@@ -10,6 +10,9 @@ import {
 export interface MockedLearningResourceRepository
   extends ILearningResourceRepository {
   learningResources: LearningResource[];
+  reset(): void;
+  clear(): void;
+  count(): number;
 }
 
 export function mockLearningResourceRepository(
@@ -86,6 +89,18 @@ export function mockLearningResourceRepository(
 
     async findByResourceTypeId(typeId: UUID): Promise<LearningResource[]> {
       return this.learningResources.filter((r) => r.typeId === typeId);
+    },
+
+    reset(): void {
+      this.learningResources = [];
+    },
+
+    clear(): void {
+      this.learningResources = [];
+    },
+
+    count(): number {
+      return this.learningResources.length;
     },
   };
 }
