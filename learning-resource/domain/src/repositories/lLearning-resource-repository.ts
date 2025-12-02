@@ -1,5 +1,10 @@
 import { UUID } from "domain-lib";
-import { LearningResource } from "../entities/learning-resource";
+import {
+  DifficultyType,
+  EnergyLevelType,
+  LearningResource,
+  ResourceStatusType,
+} from "../entities/learning-resource";
 
 export interface ILearningResourceRepository {
   save(resource: LearningResource): Promise<void>;
@@ -7,4 +12,9 @@ export interface ILearningResourceRepository {
   delete(id: UUID): Promise<void>;
   findAll(): Promise<LearningResource[]>;
   findById(id: UUID): Promise<LearningResource | null>;
+  findByTopicIds(topicIds: UUID[]): Promise<LearningResource[]>;
+  findByDifficulty(difficulty: DifficultyType): Promise<LearningResource[]>;
+  findByEnergyLevel(energy: EnergyLevelType): Promise<LearningResource[]>;
+  findByStatus(status: ResourceStatusType): Promise<LearningResource[]>;
+  findByResourceTypeId(typeId: UUID): Promise<LearningResource[]>;
 }
