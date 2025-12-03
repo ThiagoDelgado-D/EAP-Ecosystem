@@ -1,7 +1,6 @@
-import { UUID } from "domain-lib";
-import { LearningResourceValidator } from "../../validators/learning-resource-validator";
-import { DifficultyType } from "@learning-resource/domain";
-import { ValidationResult } from "domain-lib";
+import { LearningResourceValidator } from "../../validators";
+import { DifficultyType, EnergyLevelType } from "@learning-resource/domain";
+import { UUID, ValidationResult } from "domain-lib";
 
 export interface MockValidatorConfig {
   isPayloadValid?: boolean;
@@ -10,6 +9,8 @@ export interface MockValidatorConfig {
   urlErrors?: Record<string, string>;
   isDifficultyToggleValid?: boolean;
   difficultyToggleErrors?: Record<string, string>;
+  isEnergyLevelToggleValid?: boolean;
+  energyLevelToggleErrors?: Record<string, string>;
 }
 
 export const mockValidator = (
@@ -22,16 +23,18 @@ export const mockValidator = (
     urlErrors = {},
     isDifficultyToggleValid = true,
     difficultyToggleErrors = {},
+    isEnergyLevelToggleValid = true,
+    energyLevelToggleErrors = {},
   } = config;
   return {
-    async isValidAddPayload() {
+    async isValidAddPayload(): Promise<ValidationResult> {
       return {
         isValid: isPayloadValid,
         errors: isPayloadValid ? {} : payloadErrors,
       };
     },
 
-    async isValidUrl() {
+    async isValidUrl(): Promise<ValidationResult> {
       return {
         isValid: isUrlValid,
         errors: isUrlValid ? {} : urlErrors,
@@ -59,6 +62,30 @@ export const mockValidator = (
       return {
         isValid: isDifficultyToggleValid,
         errors: isDifficultyToggleValid ? {} : difficultyToggleErrors,
+      };
+    },
+
+    async isValidEnergyLevelToggle(params: {
+      id: UUID;
+      energyLevel: EnergyLevelType;
+    }): Promise<ValidationResult> {
+      if (!params.id) {
+        return {
+          isValid: false,
+          errors: { id: "Resource ID is required" },
+        };
+      }
+
+      if (!params.energyLevel) {
+        return {
+          isValid: false,
+          errors: { energyLevel: "Energy level is required" },
+        };
+      }
+
+      return {
+        isValid: isEnergyLevelToggleValid,
+        errors: isEnergyLevelToggleValid ? {} : energyLevelToggleErrors,
       };
     },
   };
