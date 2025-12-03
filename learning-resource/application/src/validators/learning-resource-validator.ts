@@ -1,5 +1,8 @@
 import { UUID, ValidationResult } from "domain-lib";
-import { AddResourceRequestModel } from "../use-cases/learning-resource/add-resource";
+import {
+  AddResourceRequestModel,
+  UpdateResourceRequestModel,
+} from "../use-cases/learning-resource";
 import {
   DifficultyType,
   EnergyLevelType,
@@ -9,6 +12,9 @@ import {
 export interface LearningResourceValidator {
   isValidAddPayload(
     payload: AddResourceRequestModel
+  ): Promise<ValidationResult>;
+  isValidUpdatePayload(
+    payload: UpdateResourceRequestModel
   ): Promise<ValidationResult>;
   isValidUrl(url?: string): Promise<ValidationResult>;
   isValidDifficultyToggle(params: {

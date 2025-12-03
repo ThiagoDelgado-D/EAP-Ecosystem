@@ -42,5 +42,5 @@ export const toggleResourceDifficulty = async (
     updatedAt: new Date(),
   };
 
-  await learningResourceRepository.save(updated);
+  await learningResourceRepository.update(request.id, updated);
 };
