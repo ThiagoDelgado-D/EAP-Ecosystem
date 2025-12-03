@@ -1,6 +1,10 @@
 import { UUID, ValidationResult } from "domain-lib";
 import { AddResourceRequestModel } from "../use-cases/learning-resource/add-resource";
-import { DifficultyType, EnergyLevelType } from "@learning-resource/domain";
+import {
+  DifficultyType,
+  EnergyLevelType,
+  ResourceStatusType,
+} from "@learning-resource/domain";
 
 export interface LearningResourceValidator {
   isValidAddPayload(
@@ -14,5 +18,9 @@ export interface LearningResourceValidator {
   isValidEnergyLevelToggle(params: {
     id: UUID;
     energyLevel: EnergyLevelType;
+  }): Promise<ValidationResult>;
+  isValidStatusToggle(params: {
+    id: UUID;
+    status: ResourceStatusType;
   }): Promise<ValidationResult>;
 }
