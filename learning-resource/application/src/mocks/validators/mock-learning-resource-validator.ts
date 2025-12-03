@@ -1,5 +1,9 @@
 import { LearningResourceValidator } from "../../validators";
-import { DifficultyType, EnergyLevelType } from "@learning-resource/domain";
+import {
+  DifficultyType,
+  EnergyLevelType,
+  ResourceStatusType,
+} from "@learning-resource/domain";
 import { UUID, ValidationResult } from "domain-lib";
 
 export interface MockValidatorConfig {
@@ -11,6 +15,8 @@ export interface MockValidatorConfig {
   difficultyToggleErrors?: Record<string, string>;
   isEnergyLevelToggleValid?: boolean;
   energyLevelToggleErrors?: Record<string, string>;
+  isStatusToggleValid?: boolean;
+  statusToggleErrors?: Record<string, string>;
 }
 
 export const mockValidator = (
@@ -25,6 +31,8 @@ export const mockValidator = (
     difficultyToggleErrors = {},
     isEnergyLevelToggleValid = true,
     energyLevelToggleErrors = {},
+    isStatusToggleValid = true,
+    statusToggleErrors = {},
   } = config;
   return {
     async isValidAddPayload(): Promise<ValidationResult> {
@@ -86,6 +94,30 @@ export const mockValidator = (
       return {
         isValid: isEnergyLevelToggleValid,
         errors: isEnergyLevelToggleValid ? {} : energyLevelToggleErrors,
+      };
+    },
+
+    async isValidStatusToggle(params: {
+      id: UUID;
+      status: ResourceStatusType;
+    }): Promise<ValidationResult> {
+      if (!params.id) {
+        return {
+          isValid: false,
+          errors: { id: "Resource ID is required" },
+        };
+      }
+
+      if (!params.status) {
+        return {
+          isValid: false,
+          errors: { status: "Status is required" },
+        };
+      }
+
+      return {
+        isValid: isStatusToggleValid,
+        errors: isStatusToggleValid ? {} : statusToggleErrors,
       };
     },
   };
