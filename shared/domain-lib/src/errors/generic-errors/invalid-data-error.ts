@@ -1,4 +1,4 @@
-import { BaseError } from "./base-error";
+import { BaseError } from "../base-error";
 
 export class InvalidDataError extends BaseError<"INVALID_DATA_ERROR"> {
   constructor(errors?: Record<string, string>) {
