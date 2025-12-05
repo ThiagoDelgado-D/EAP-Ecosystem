@@ -1,4 +1,4 @@
-export abstract class BaseError<TName extends string> extends Error {
+export abstract class BaseError<TName extends string = string> extends Error {
   public name: TName;
   public statusCode: number;
   public context?: Record<string, unknown>;
