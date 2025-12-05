@@ -1,3 +1,3 @@
 export * from "./base-error";
-export * from "./invalid-data-error";
-export * from "./not-found-error";
+export * from "./generic-errors";
+export * from "./is-error";
