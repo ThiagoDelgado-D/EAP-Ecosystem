@@ -3,10 +3,23 @@
 > **E**cosistema de **A**prendizaje **P**ersonal  
 > A comprehensive personal learning ecosystem built with modern architectural principles to optimize your learning journey based on energy levels, focus, and content management.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E=18-43853D.svg)](https://nodejs.org/)
 [![Yarn](https://img.shields.io/badge/Yarn-4.9-2C8EBB.svg)](https://yarnpkg.com/)
 [![Vitest](https://img.shields.io/badge/Tested_with-Vitest-6E9F18.svg)](https://vitest.dev/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![ESM](https://img.shields.io/badge/Modules-ESM-F7DF1E.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+
+[![Clean Architecture](https://img.shields.io/badge/Architecture-Clean_Architecture-blueviolet.svg)](https://8thlight.com/blog/uncle-bob/2012/08/13/the-clean-architecture.html)
+[![Hexagonal Architecture](https://img.shields.io/badge/Architecture-Hexagonal-ff69b4.svg)](https://alistair.cockburn.us/hexagonal-architecture/)
+[![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
+
+[![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
+[![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+[![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
+[![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/commits/main)
 
 ---
 
