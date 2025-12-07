@@ -3,7 +3,7 @@ import {
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
-  LearningResource,
+  type LearningResource,
 } from "@learning-resource/domain";
 import { mockCryptoService } from "domain-lib";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";

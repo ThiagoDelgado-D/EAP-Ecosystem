@@ -1,19 +1,19 @@
 import {
-  CryptoService,
+  type CryptoService,
   InvalidDataError,
   NotFoundError,
-  UUID,
+  type UUID,
 } from "domain-lib";
 import {
   DifficultyType,
   EnergyLevelType,
-  ILearningResourceRepository,
-  IResourceTypeRepository,
-  ITopicRepository,
-  LearningResource,
+  type ILearningResourceRepository,
+  type IResourceTypeRepository,
+  type ITopicRepository,
+  type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { LearningResourceValidator } from "../../validators/learning-resource-validator";
+import type { LearningResourceValidator } from "../../validators/learning-resource-validator";
 import { calculateEnergyLevel } from "../../utils/calculate-energy-level";
 
 export interface AddResourceDependencies {

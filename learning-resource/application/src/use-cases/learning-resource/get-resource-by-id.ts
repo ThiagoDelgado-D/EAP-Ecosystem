@@ -1,10 +1,10 @@
 import {
   DifficultyType,
   EnergyLevelType,
-  ILearningResourceRepository,
+  type ILearningResourceRepository,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { UUID } from "domain-lib";
+import type { UUID } from "domain-lib";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found";
 
 export interface GetResourceByIdDependencies {

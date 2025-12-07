@@ -1,11 +1,11 @@
 import {
-  ILearningResourceRepository,
-  LearningResource,
+  type ILearningResourceRepository,
+  type LearningResource,
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { UUID } from "domain-lib";
+import type { UUID } from "domain-lib";
 
 export interface GetResourcesDependencies {
   learningResourceRepository: ILearningResourceRepository;

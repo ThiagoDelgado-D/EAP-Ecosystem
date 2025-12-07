@@ -1,11 +1,11 @@
 import {
   DifficultyType,
-  ILearningResourceRepository,
-  LearningResource,
+  type ILearningResourceRepository,
+  type LearningResource,
 } from "@learning-resource/domain";
-import { InvalidDataError, UUID } from "domain-lib";
+import { InvalidDataError, type UUID } from "domain-lib";
 import { LearningResourceNotFoundError } from "../../../errors";
-import { LearningResourceValidator } from "../../../validators";
+import { type LearningResourceValidator } from "../../../validators";
 
 export interface ToggleResourceDifficultyDependencies {
   learningResourceRepository: ILearningResourceRepository;

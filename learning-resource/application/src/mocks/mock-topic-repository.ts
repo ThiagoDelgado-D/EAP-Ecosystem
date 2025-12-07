@@ -1,5 +1,5 @@
-import { UUID } from "domain-lib";
-import { ITopicRepository, Topic } from "learning-resource/domain";
+import type { UUID } from "domain-lib";
+import type { ITopicRepository, Topic } from "learning-resource/domain";
 
 export interface MockedTopicRepository extends ITopicRepository {
   topics: Topic[];

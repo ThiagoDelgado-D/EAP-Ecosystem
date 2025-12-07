@@ -1,8 +1,8 @@
-import { UUID } from "domain-lib";
+import type { UUID } from "domain-lib";
 import {
   DifficultyType,
   EnergyLevelType,
-  LearningResource,
+  type LearningResource,
   ResourceStatusType,
 } from "../entities/learning-resource";
 

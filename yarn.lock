@@ -278,6 +278,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@learning-resource/application@workspace:learning-resource/application":
+  version: 0.0.0-use.local
+  resolution: "@learning-resource/application@workspace:learning-resource/application"
+  dependencies:
+    "@learning-resource/domain": "workspace:^"
+    "@vitest/coverage-v8": "npm:4.0.13"
+    domain-lib: "workspace:^"
+    vitest: "npm:^4.0.13"
+  languageName: unknown
+  linkType: soft
+
 "@learning-resource/domain@workspace:^, @learning-resource/domain@workspace:learning-resource/domain":
   version: 0.0.0-use.local
   resolution: "@learning-resource/domain@workspace:learning-resource/domain"
@@ -727,17 +738,6 @@ __metadata:
   checksum: 10c0/c2c9ab7599692d594b6a161559ada307b7a624fa4c7b03e3afdb5a5e31cd0e53269115b620fcab024c5ac6a6f37fa5eb2e004f076ad30f5f7e6b8b671f7b35fe
   languageName: node
   linkType: hard
-
-"application-3703d2@workspace:learning-resource/application":
-  version: 0.0.0-use.local
-  resolution: "application-3703d2@workspace:learning-resource/application"
-  dependencies:
-    "@learning-resource/domain": "workspace:^"
-    "@vitest/coverage-v8": "npm:4.0.13"
-    domain-lib: "workspace:^"
-    vitest: "npm:^4.0.13"
-  languageName: unknown
-  linkType: soft
 
 "assertion-error@npm:^2.0.1":
   version: 2.0.1

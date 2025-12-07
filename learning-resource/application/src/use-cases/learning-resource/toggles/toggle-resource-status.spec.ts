@@ -1,10 +1,10 @@
 import {
   DifficultyType,
   EnergyLevelType,
-  LearningResource,
+  type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { InvalidDataError, mockCryptoService, UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
 import { mockLearningResourceRepository, mockValidator } from "../../../mocks";
 import { beforeEach, describe, expect, test } from "vitest";
 import { toggleStatus } from "./toggle-resource-status";

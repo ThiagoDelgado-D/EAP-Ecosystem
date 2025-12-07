@@ -1,4 +1,5 @@
 {
+  "name": "@learning-resource/application",
   "type": "module",
   "private": true,
   "packageManager": "yarn@4.9.2",
@@ -7,7 +8,8 @@
     "domain-lib": "workspace:^"
   },
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "build": "tsc -p tsconfig.build.json"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.0.13",
