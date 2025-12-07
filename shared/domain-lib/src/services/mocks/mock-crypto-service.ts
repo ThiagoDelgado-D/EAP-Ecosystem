@@ -1,6 +1,6 @@
+import type { UUID } from "../../types";
 import { ms } from "../../utils/ms";
 import type { CryptoService } from "../crypto-service";
-import type { UUID } from "domain-lib/types";
 
 export function mockCryptoService(): CryptoService {
   return {
