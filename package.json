@@ -20,6 +20,13 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "build": "yarn workspaces foreach -A -tv run build"
+    "build": "yarn workspaces foreach -A -tv run build",
+    "test:ci": "yarn workspaces foreach -A -tv run test --run",
+    "type-check": "tsc --noEmit",
+    "pre-pr": "yarn type-check && yarn test:ci && yarn build"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "yarn": ">=4.0.0"
   }
 }
