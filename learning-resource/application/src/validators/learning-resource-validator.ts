@@ -1,7 +1,7 @@
-import { UUID, ValidationResult } from "domain-lib";
+import type { UUID, ValidationResult } from "domain-lib";
 import {
-  AddResourceRequestModel,
-  UpdateResourceRequestModel,
+  type AddResourceRequestModel,
+  type UpdateResourceRequestModel,
 } from "../use-cases/learning-resource";
 import {
   DifficultyType,

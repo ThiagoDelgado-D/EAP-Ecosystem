@@ -1,4 +1,4 @@
-import {
+import type {
   ILearningResourceRepository,
   LearningResource,
 } from "@learning-resource/domain";

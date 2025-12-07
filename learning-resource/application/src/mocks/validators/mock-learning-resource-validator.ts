@@ -1,11 +1,11 @@
-import { LearningResourceValidator } from "../../validators";
+import type { LearningResourceValidator } from "../../validators";
 import {
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { UUID, ValidationResult } from "domain-lib";
-import { UpdateResourceRequestModel } from "../../use-cases/learning-resource";
+import type { UUID, ValidationResult } from "domain-lib";
+import type { UpdateResourceRequestModel } from "../../use-cases/learning-resource";
 
 export interface MockValidatorConfig {
   isPayloadValid?: boolean;

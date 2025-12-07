@@ -1,12 +1,12 @@
-import { mockCryptoService, UUID } from "domain-lib";
+import { mockCryptoService, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
 import {
   DifficultyType,
   EnergyLevelType,
-  LearningResource,
+  type LearningResource,
   ResourceStatusType,
-  Topic,
+  type Topic,
 } from "@learning-resource/domain";
 import { mockTopicRepository } from "../../mocks/mock-topic-repository";
 import { getResourcesByFilter } from "./get-resources-by-filter";

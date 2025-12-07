@@ -1,4 +1,4 @@
-import { Entity, TimestampedEntity, UUID } from "domain-lib";
+import type { Entity, TimestampedEntity, UUID } from "domain-lib";
 
 export interface LearningResource extends Entity, TimestampedEntity {
   title: string;

@@ -2,19 +2,19 @@ import {
   InvalidDataError,
   mockCryptoService,
   NotFoundError,
-  UUID,
+  type UUID,
 } from "domain-lib";
 import { describe, test, expect, beforeEach } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
 import { mockResourceTypeRepository } from "../../mocks/mock-resource-type-repository";
 import { mockTopicRepository } from "../../mocks/mock-topic-repository";
-import { addResource, AddResourceRequestModel } from "./add-resource";
+import { addResource, type AddResourceRequestModel } from "./add-resource";
 import {
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
-  ResourceType,
-  Topic,
+  type ResourceType,
+  type Topic,
 } from "@learning-resource/domain";
 import { mockValidator } from "../../mocks/validators/mock-learning-resource-validator";
 

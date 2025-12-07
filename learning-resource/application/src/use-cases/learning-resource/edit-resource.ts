@@ -1,11 +1,11 @@
-import {
+import type {
   ILearningResourceRepository,
   IResourceTypeRepository,
   ITopicRepository,
   LearningResource,
 } from "@learning-resource/domain";
-import { InvalidDataError, NotFoundError, UUID } from "domain-lib";
-import { LearningResourceValidator } from "../../validators";
+import { InvalidDataError, NotFoundError, type UUID } from "domain-lib";
+import type { LearningResourceValidator } from "../../validators";
 import { LearningResourceNotFoundError } from "../../errors";
 
 export interface UpdateResourceDependencies {

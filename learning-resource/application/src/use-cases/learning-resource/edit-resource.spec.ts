@@ -9,15 +9,15 @@ import {
   InvalidDataError,
   mockCryptoService,
   NotFoundError,
-  UUID,
+  type UUID,
 } from "domain-lib";
 import {
   DifficultyType,
   EnergyLevelType,
-  LearningResource,
+  type LearningResource,
   ResourceStatusType,
-  ResourceType,
-  Topic,
+  type ResourceType,
+  type Topic,
 } from "@learning-resource/domain";
 import { updateResource } from "./edit-resource";
 import { LearningResourceNotFoundError } from "../../errors";

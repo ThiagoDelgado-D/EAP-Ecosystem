@@ -1,5 +1,5 @@
-import { UUID } from "domain-lib";
-import {
+import type { UUID } from "domain-lib";
+import type {
   ILearningResourceRepository,
   LearningResource,
   DifficultyType,
