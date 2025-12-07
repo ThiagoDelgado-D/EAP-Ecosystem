@@ -1,4 +1,5 @@
 export * from "./array-validator";
+export * from "./boolean-validator";
 export * from "./enum-validator";
 export * from "./number-validator";
 export * from "./string-validator";
