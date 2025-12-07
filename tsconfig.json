@@ -24,6 +24,6 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["shared/**/*", "learning-resource/**/*", "User/**/*"],
+  "include": ["shared/**/*", "learning-resource/**/*", "user/**/*"],
   "exclude": ["node_modules", "dist"]
 }
