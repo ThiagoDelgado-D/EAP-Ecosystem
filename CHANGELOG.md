@@ -7,12 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Writing comprehensive architecture documentation
+
 ### In Progress
 
 - Consolidating validation system into `shared/domain-lib`
 - Designing REST API architecture with NestJS
 - Setting up CI/CD pipeline with GitHub Actions
-- Writing comprehensive architecture documentation
+
+### Planned
+
+- Designing REST API architecture with NestJS
+- Setting up CI/CD pipeline with GitHub Actions
 
 ---
 
