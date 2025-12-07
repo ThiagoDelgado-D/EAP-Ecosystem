@@ -1,9 +1,9 @@
 import {
-  ILearningResourceRepository,
-  ResourceStatusType,
+  type ILearningResourceRepository,
+  type ResourceStatusType,
 } from "@learning-resource/domain";
-import { LearningResourceValidator } from "../../../validators";
-import { InvalidDataError, UUID } from "domain-lib";
+import type { LearningResourceValidator } from "../../../validators";
+import { InvalidDataError, type UUID } from "domain-lib";
 import { LearningResourceNotFoundError } from "../../../errors";
 
 export interface ToggleResourceStatusDependencies {

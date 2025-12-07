@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
-import { mockCryptoService, UUID } from "domain-lib";
+import { mockCryptoService, type UUID } from "domain-lib";
 import {
   DifficultyType,
   EnergyLevelType,

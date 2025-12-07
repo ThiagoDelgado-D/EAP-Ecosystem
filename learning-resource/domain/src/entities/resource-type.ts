@@ -1,4 +1,4 @@
-import { TimestampedEntity, UUID } from "domain-lib";
+import type { TimestampedEntity, UUID } from "domain-lib";
 
 export interface ResourceType extends TimestampedEntity {
   id: UUID;
