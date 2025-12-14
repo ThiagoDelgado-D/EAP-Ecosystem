@@ -6,3 +6,4 @@ export * from "./number-validator";
 export * from "./object-validator";
 export * from "./string-validator";
 export * from "./uuid-validator";
+export * from "./validator-options";
