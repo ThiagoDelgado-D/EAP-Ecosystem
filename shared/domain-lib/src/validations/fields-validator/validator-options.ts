@@ -7,4 +7,14 @@ export interface ValidatorOptions {
    * @default true
    */
   required?: boolean;
+
+  /**
+   * Custom error message when field is required but missing
+   */
+  requiredMessage?: string;
+
+  /**
+   * Custom error message when type is invalid
+   */
+  typeMessage?: string;
 }
