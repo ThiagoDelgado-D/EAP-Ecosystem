@@ -4,6 +4,6 @@ export * from "./date-validator";
 export * from "./enum-validator";
 export * from "./number-validator";
 export * from "./object-validator";
-export * from "./string-validator";
+export * from "./string-field";
 export * from "./uuid-validator";
 export * from "./validator-options";
