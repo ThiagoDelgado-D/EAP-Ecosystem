@@ -2,19 +2,9 @@ import type {
   FieldValidationResult,
   StrictFieldValidator,
 } from "../validation-schema";
+import type { ValidatorOptions } from "./validator-options";
 
-export interface StringFieldOptions {
-  /**
-   * Whether the field is required
-   * @default true
-   */
-  required?: boolean;
-
-  /**
-   * Custom error message when field is required but missing
-   */
-  requiredMessage?: string;
-
+export interface StringFieldOptions extends ValidatorOptions {
   /**
    * Minimum length of the string
    */
@@ -32,11 +22,6 @@ export interface StringFieldOptions {
     regex: RegExp;
     message?: string;
   };
-
-  /**
-   * Custom error message when type is invalid
-   */
-  typeMessage?: string;
 
   /**
    * Whether to trim the string
