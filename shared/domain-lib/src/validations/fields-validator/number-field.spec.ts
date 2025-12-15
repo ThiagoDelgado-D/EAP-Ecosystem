@@ -34,6 +34,50 @@ describe("numberField - basic validations (required by default)", () => {
       error: "Total must be a number",
     });
   });
+
+  test("Should return error when value is not a number (multiple cases)", () => {
+    const cases = [null, undefined, {}, [], false, true, "abc"];
+    for (const c of cases) {
+      const result = validate(c);
+      expect(result.isValid).toBe(false);
+    }
+  });
+
+  test("Should return error when required value is undefined", () => {
+    const result = validate(undefined);
+    expect(result).toEqual({
+      isValid: false,
+      error: "Total is required",
+    });
+  });
+
+  test("Should use default field name when not provided", () => {
+    const defaultValidate = numberField();
+    const result = defaultValidate("x");
+    expect(result).toEqual({
+      isValid: false,
+      error: "Number must be a number",
+    });
+  });
+});
+
+describe("numberField - optional numbers", () => {
+  const validate = numberField("Total", { required: false });
+
+  test("Should return undefined when value is null", () => {
+    const result = validate(null);
+    expect(result).toEqual({ isValid: true, value: undefined });
+  });
+
+  test("Should return undefined when value is undefined", () => {
+    const result = validate(undefined);
+    expect(result).toEqual({ isValid: true, value: undefined });
+  });
+
+  test("Should accept valid number when provided", () => {
+    const result = validate(42);
+    expect(result).toEqual({ isValid: true, value: 42 });
+  });
 });
 
 describe("edge cases", () => {
