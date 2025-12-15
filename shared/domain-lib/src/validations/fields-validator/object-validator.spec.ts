@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
 import { objectField } from "./object-validator";
-import { positiveNumber } from "./number-validator";
+import { positiveNumber } from "./number-field";
 import { requiredBoolean } from "./boolean-validator";
 import type { StrictFieldValidator } from "../validation-schema";
 

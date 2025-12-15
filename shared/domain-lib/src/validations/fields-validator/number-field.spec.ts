@@ -1,5 +1,5 @@
 import { expect, test, describe } from "vitest";
-import { numberInRange, positiveNumber } from "./number-validator";
+import { numberInRange, positiveNumber } from "./number-field";
 
 describe("positiveNumber", () => {
   const validate = positiveNumber("Total");
