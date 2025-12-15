@@ -2,28 +2,11 @@ import type {
   FieldValidationResult,
   StrictFieldValidator,
 } from "../validation-schema";
-import type { ValidatorOptions } from "./validator-options";
 
 export function positiveNumber(
-  fieldName: string = "Number",
-  options: ValidatorOptions = { required: true }
-): StrictFieldValidator<number | undefined> {
-  const isRequired = options.required ?? true;
-
-  return (value: unknown): FieldValidationResult<number | undefined> => {
-    if (value === undefined || value === null) {
-      if (isRequired) {
-        return {
-          isValid: false,
-          error: `${fieldName} is required`,
-        };
-      }
-      return {
-        isValid: true,
-        value: undefined,
-      };
-    }
-
+  fieldName: string = "Number"
+): StrictFieldValidator<number> {
+  return (value: unknown): FieldValidationResult<number> => {
     if (typeof value !== "number") {
       return {
         isValid: false,
@@ -48,25 +31,9 @@ export function positiveNumber(
 export function numberInRange(
   min: number,
   max: number,
-  fieldName: string = "Number",
-  options: ValidatorOptions = { required: true }
-): StrictFieldValidator<number | undefined> {
-  const isRequired = options.required ?? true;
-
-  return (value: unknown): FieldValidationResult<number | undefined> => {
-    if (value === undefined || value === null) {
-      if (isRequired) {
-        return {
-          isValid: false,
-          error: `${fieldName} is required`,
-        };
-      }
-      return {
-        isValid: true,
-        value: undefined,
-      };
-    }
-
+  fieldName: string = "Number"
+): StrictFieldValidator<number> {
+  return (value: unknown): FieldValidationResult<number> => {
     if (typeof value !== "number") {
       return {
         isValid: false,
