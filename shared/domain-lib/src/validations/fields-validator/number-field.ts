@@ -2,9 +2,46 @@ import type {
   FieldValidationResult,
   StrictFieldValidator,
 } from "../validation-schema";
+import type { ValidatorOptions } from "./validator-options";
 
-export function positiveNumber(
-  fieldName: string = "Number"
+export interface NumberFieldOptions extends ValidatorOptions {
+  /**
+   * Minimum value (inclusive)
+   */
+  min?: number;
+
+  /**
+   * Maximum value (inclusive)
+   */
+  max?: number;
+
+  /**
+   * Whether the number must be an integer
+   * @default false
+   */
+  integer?: boolean;
+
+  /**
+   * Whether the number must be positive (> 0)
+   * @default false
+   */
+  positive?: boolean;
+
+  /**
+   * Whether the number must be non-negative (>= 0)
+   * @default false
+   */
+  nonNegative?: boolean;
+
+  /**
+   * Transform function to apply to the number after validation
+   */
+  transform?: (value: number) => number;
+}
+
+export function numberField(
+  fieldName: string = "Number",
+  options: NumberFieldOptions = {}
 ): StrictFieldValidator<number> {
   return (value: unknown): FieldValidationResult<number> => {
     if (typeof value !== "number") {
