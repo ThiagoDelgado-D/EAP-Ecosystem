@@ -1,6 +1,6 @@
 import type {
   FieldValidationResult,
-  StrictFieldValidator,
+  FieldValidator,
 } from "../validation-schema";
 import type { ValidatorOptions } from "./validator-options";
 
@@ -41,13 +41,21 @@ export interface StringFieldOptions extends ValidatorOptions {
   transform?: (value: string) => string;
 }
 
-/**
- * Creates a string field validator with configurable options
- */
+export function stringField(): FieldValidator<string>;
+export function stringField(
+  fieldName: string,
+  options: { required: true } & StringFieldOptions
+): FieldValidator<string>;
+
+export function stringField(
+  fieldName: string,
+  options?: { required?: boolean } & StringFieldOptions
+): FieldValidator<string | undefined>;
+
 export function stringField(
   fieldName: string = "Field",
   options: StringFieldOptions = {}
-): StrictFieldValidator<string | undefined> {
+): FieldValidator<string | undefined> {
   const {
     required = true,
     requiredMessage = `${fieldName} is required`,
@@ -128,14 +136,24 @@ export function stringField(
 export function optionalString(
   fieldName: string = "Field",
   options: Omit<StringFieldOptions, "required"> = {}
-): StrictFieldValidator<string | undefined> {
+): FieldValidator<string | undefined> {
   return stringField(fieldName, { ...options, required: false });
 }
 
 export function urlField(
+  fieldName: string,
+  options: { required: true } & StringFieldOptions
+): FieldValidator<string>;
+
+export function urlField(
+  fieldName: string,
+  options?: { required?: false } & StringFieldOptions
+): FieldValidator<string | undefined>;
+
+export function urlField(
   fieldName: string = "URL",
   options: StringFieldOptions = {}
-): StrictFieldValidator<string | undefined> {
+): FieldValidator<string | undefined> {
   const urlPattern = {
     regex: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
     message: `${fieldName} must be a valid URL`,
@@ -144,14 +162,23 @@ export function urlField(
   return stringField(fieldName, {
     ...options,
     pattern: urlPattern,
-    required: options.required ?? true,
   });
 }
 
 export function emailField(
+  fieldName: string,
+  options: { required: true } & StringFieldOptions
+): FieldValidator<string>;
+
+export function emailField(
+  fieldName: string,
+  options?: { required?: boolean } & StringFieldOptions
+): FieldValidator<string | undefined>;
+
+export function emailField(
   fieldName: string = "Email",
   options: StringFieldOptions = {}
-): StrictFieldValidator<string | undefined> {
+): FieldValidator<string | undefined> {
   const emailPattern = {
     regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     message: `${fieldName} must be a valid email address`,
@@ -161,5 +188,6 @@ export function emailField(
     ...options,
     pattern: emailPattern,
     transform: (value: string) => value.toLowerCase(),
+    required: options.required,
   });
 }
