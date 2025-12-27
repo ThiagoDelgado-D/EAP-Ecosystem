@@ -1,6 +1,6 @@
 import type {
   FieldValidationResult,
-  StrictFieldValidator,
+  FieldValidator,
 } from "../validation-schema";
 import type { ValidatorOptions } from "./validator-options";
 
@@ -39,10 +39,19 @@ export interface NumberFieldOptions extends ValidatorOptions {
   transform?: (value: number) => number;
 }
 
+export function numberField(): FieldValidator<number>;
+export function numberField(
+  fieldName: string,
+  options: { required: true } & NumberFieldOptions
+): FieldValidator<number>;
+export function numberField(
+  fieldName: string,
+  options?: { required?: false } & NumberFieldOptions
+): FieldValidator<number | undefined>;
 export function numberField(
   fieldName: string = "Number",
   options: NumberFieldOptions = {}
-): StrictFieldValidator<number | undefined> {
+): FieldValidator<number | undefined> {
   const {
     required = true,
     requiredMessage = `${fieldName} is required`,
@@ -139,25 +148,55 @@ export function numberField(
   };
 }
 
+export function optionalNumber(): FieldValidator<number | undefined>;
+export function optionalNumber(
+  fieldName: string,
+  options?: Omit<NumberFieldOptions, "required">
+): FieldValidator<number | undefined>;
+
 export function optionalNumber(
   fieldName: string = "Number",
   options: Omit<NumberFieldOptions, "required"> = {}
-): StrictFieldValidator<number | undefined> {
+): FieldValidator<number | undefined> {
   return numberField(fieldName, { ...options, required: false });
 }
 
+export function positiveNumber(): FieldValidator<number>;
+export function positiveNumber(
+  fieldName: string,
+  options: Omit<NumberFieldOptions, "positive">
+): FieldValidator<number>;
+export function positiveNumber(
+  fieldName: string,
+  options?: { required?: false } & Omit<NumberFieldOptions, "positive">
+): FieldValidator<number | undefined>;
+
 export function positiveNumber(
   fieldName: string = "Number",
-  options: Omit<NumberFieldOptions, "positive"> = {}
-): StrictFieldValidator<number | undefined> {
+  options: Omit<NumberFieldOptions, "positive" | "required"> = {}
+): FieldValidator<number | undefined> {
   return numberField(fieldName, { ...options, positive: true });
 }
+
+export function numberInRange(min: number, max: number): FieldValidator<number>;
+export function numberInRange(
+  min: number,
+  max: number,
+  fieldName: string,
+  options: { required: true } & Omit<NumberFieldOptions, "min" | "max">
+): FieldValidator<number>;
+export function numberInRange(
+  min: number,
+  max: number,
+  fieldName: string,
+  options?: { required?: false } & Omit<NumberFieldOptions, "min" | "max">
+): FieldValidator<number | undefined>;
 
 export function numberInRange(
   min: number,
   max: number,
   fieldName: string = "Number",
-  options: Omit<NumberFieldOptions, "min" | "max"> = {}
-): StrictFieldValidator<number | undefined> {
+  options: Omit<NumberFieldOptions, "min" | "max" | "required"> = {}
+): FieldValidator<number | undefined> {
   return numberField(fieldName, { ...options, min, max });
 }
