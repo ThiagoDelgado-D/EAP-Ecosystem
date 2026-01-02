@@ -1,7 +1,6 @@
 import type {
   FieldValidationResult,
   FieldValidator,
-  StrictFieldValidator,
 } from "../validation-schema";
 import type { UUID } from "../../types/uuid";
 import type { ValidatorOptions } from "./validator-options";
