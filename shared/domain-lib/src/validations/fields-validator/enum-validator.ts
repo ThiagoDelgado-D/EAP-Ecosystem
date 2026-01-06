@@ -43,6 +43,28 @@ export function enumField<T extends string>(
   options?: { required?: false } & EnumFieldOptions<T>
 ): FieldValidator<T | undefined>;
 
+/**
+ * Creates a field validator that ensures a string value is one of the provided allowed enum values.
+ *
+ * The returned validator normalizes the input using `sanitizeString` (respecting `toLowerCase` and
+ * `collapseSpaces`), enforces required/optional behavior, validates membership in `allowedValues`,
+ * and applies an optional `transform` to the validated value.
+ *
+ * @param allowedValues - Array of permitted string values for the field.
+ * @param fieldName - Human-readable field name used to build default error messages.
+ * @param options - Configuration for validation and normalization:
+ *  - `required` (default `true`) — whether the field must be present and non-empty.
+ *  - `requiredMessage` — custom message when a required value is missing or empty.
+ *  - `typeMessage` — custom message when the input is not a string.
+ *  - `invalidValueMessage` — custom message when the value is not one of `allowedValues`.
+ *  - `toLowerCase` (default `false`) — convert the value to lowercase before validation.
+ *  - `collapseSpaces` (default `false`) — collapse consecutive spaces into one before validation.
+ *  - `transform` — optional post-validation function to map the validated value to a final value.
+ * @returns A `FieldValidationResult<T | undefined>` containing:
+ *  - `isValid`: `true` when validation succeeds, `false` otherwise.
+ *  - `value`: the validated (and optionally transformed) value, or `undefined` when the field is optional/empty.
+ *  - `error`: an error message when `isValid` is `false`.
+ */
 export function enumField<T extends string>(
   allowedValues: readonly T[],
   fieldName: string = "Enum",
@@ -118,6 +140,14 @@ export function optionalEnum<T extends string>(
   options?: Omit<EnumFieldOptions<T>, "required">
 ): FieldValidator<T | undefined>;
 
+/**
+ * Creates a field validator that validates an optional string against a set of allowed enum values.
+ *
+ * @param allowedValues - Array of permitted string values for the enum
+ * @param fieldName - Human-readable field name used in default error messages
+ * @param options - Validation options (normalization, custom messages, transform); `required` is forced to `false`
+ * @returns A validation result containing the validated enum value of type `T` when present and valid, or `undefined` when absent; on validation failure the result contains an error message
+ */
 export function optionalEnum<T extends string>(
   allowedValues: readonly T[],
   fieldName: string = "Enum",

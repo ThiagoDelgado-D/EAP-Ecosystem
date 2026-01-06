@@ -52,6 +52,21 @@ export function stringField(
   options?: { required?: boolean } & StringFieldOptions
 ): FieldValidator<string | undefined>;
 
+/**
+ * Creates a configurable validator for string fields that enforces presence, length, pattern, trimming, and optional transformation.
+ *
+ * @param fieldName - Field label used in default error messages
+ * @param options - Validation options:
+ *  - `required` (default `true`): whether the field must be provided
+ *  - `requiredMessage`: custom message when a required field is missing or empty
+ *  - `typeMessage`: custom message when the value is not a string
+ *  - `trim` (default `true`): whether to trim surrounding whitespace before validation
+ *  - `allowEmpty` (default `false`): whether an empty string is considered valid when present
+ *  - `minLength` / `maxLength`: minimum and maximum allowed string lengths
+ *  - `pattern`: `{ regex, message? }` to validate format with optional custom message
+ *  - `transform`: function to apply to the processed value before returning
+ * @returns A field validator that yields a validation result: when valid, `value` contains the processed (and possibly transformed) string or `undefined` for absent/optional empty values; when invalid, `error` contains a descriptive message and `isValid` is `false`.
+ */
 export function stringField(
   fieldName: string = "Field",
   options: StringFieldOptions = {}
@@ -133,6 +148,13 @@ export function stringField(
   };
 }
 
+/**
+ * Creates a validator for an optional string field using the same validation rules as stringField but with `required` forced to `false`.
+ *
+ * @param fieldName - Human-readable field name used in error messages (defaults to `"Field"`).
+ * @param options - Validation options (all from StringFieldOptions except `required`): `minLength`, `maxLength`, `pattern` (with `regex` and optional `message`), `trim`, `allowEmpty`, and `transform`.
+ * @returns A FieldValidator that validates and optionally transforms a string; it yields the processed string when present and valid, or `undefined` when the value is absent or empty per the options.
+ */
 export function optionalString(
   fieldName: string = "Field",
   options: Omit<StringFieldOptions, "required"> = {}
@@ -150,6 +172,13 @@ export function urlField(
   options?: { required?: false } & StringFieldOptions
 ): FieldValidator<string | undefined>;
 
+/**
+ * Creates a field validator that validates URL strings using the provided options.
+ *
+ * @param fieldName - Label used in error messages; defaults to `"URL"`.
+ * @param options - StringFieldOptions to customize validation behavior (e.g., `required`, `minLength`, `maxLength`, `trim`, `allowEmpty`, `transform`).
+ * @returns A `FieldValidator<string | undefined>` that validates the value as a URL, applies the provided string options, and returns the processed string when valid or `undefined` for absent/optional values.
+ */
 export function urlField(
   fieldName: string = "URL",
   options: StringFieldOptions = {}
@@ -175,6 +204,13 @@ export function emailField(
   options?: { required?: boolean } & StringFieldOptions
 ): FieldValidator<string | undefined>;
 
+/**
+ * Creates a string field validator that enforces email format and lowercases the value.
+ *
+ * @param fieldName - Name used in validation messages (defaults to "Email")
+ * @param options - Validation options forwarded to the underlying string validator (e.g., `required`, `minLength`, `maxLength`, `pattern`, `trim`, `allowEmpty`, `transform`)
+ * @returns A FieldValidator that validates the value as an email and returns the validated email lowercased, or `undefined` when the field is optional and absent
+ */
 export function emailField(
   fieldName: string = "Email",
   options: StringFieldOptions = {}

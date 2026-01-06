@@ -37,6 +37,20 @@ export function dateField(
   options?: { required?: false } & DateFieldOptions
 ): FieldValidator<Date | undefined>;
 
+/**
+ * Creates a field validator for Date values with configurable requirement, range checks, optional string parsing, and an optional transformation.
+ *
+ * @param fieldName - Human-readable name used in error messages (defaults to "Date")
+ * @param options - Validation options:
+ *   - `required`: whether the field is required (default `true`)
+ *   - `requiredMessage`: message when a required value is missing
+ *   - `typeMessage`: message when the value is not a valid date
+ *   - `min`: inclusive earliest allowed Date
+ *   - `max`: inclusive latest allowed Date
+ *   - `parseString`: if `true`, string inputs will be parsed as ISO/recognized date strings (default `false`)
+ *   - `transform`: optional function applied to the validated Date before returning
+ * @returns A FieldValidationResult whose `value` is the validated (and possibly transformed) Date when valid, `undefined` when the field is optional and absent; otherwise contains an `error` message describing the failure.
+ */
 export function dateField(
   fieldName: string = "Date",
   options: DateFieldOptions = {}
@@ -120,6 +134,13 @@ export function optionalDate(
   options?: Omit<DateFieldOptions, "required">
 ): FieldValidator<Date | undefined>;
 
+/**
+ * Creates a date field validator that treats the value as optional.
+ *
+ * @param fieldName - Label used in error messages
+ * @param options - Validation options (e.g., `min`, `max`, `parseString`, `transform`)
+ * @returns A field validator that yields a validated (and possibly transformed) `Date` when present, or `undefined` when the input is absent
+ */
 export function optionalDate(
   fieldName: string = "Date",
   options: Omit<DateFieldOptions, "required"> = {}

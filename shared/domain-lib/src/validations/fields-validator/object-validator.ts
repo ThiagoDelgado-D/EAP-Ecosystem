@@ -20,6 +20,17 @@ export function objectField<T extends Record<string, any>>(
   options?: { required?: false } & ObjectFieldOptions<T>
 ): FieldValidator<T | undefined>;
 
+/**
+ * Creates a validator for object fields that enforces requiredness, type, and an optional per-key schema.
+ *
+ * @param fieldName - Human-readable name used in generated error messages (defaults to "Object").
+ * @param options - Validation options:
+ *   - `required`: whether the field must be present (default `true`).
+ *   - `requiredMessage`: custom message when a required value is missing.
+ *   - `typeMessage`: custom message when the value is not an object or is an array.
+ *   - `schema`: a map of property validators applied to the object's keys; validation failures are reported as `fieldName.key: <error>`.
+ * @returns A FieldValidator that yields a FieldValidationResult whose `value` is the validated object (with validated property values applied) or `undefined` when the field is optional; on failure `isValid` is `false` and `error` contains a descriptive message.
+ */
 export function objectField<T extends Record<string, any>>(
   fieldName: string = "Object",
   options: ObjectFieldOptions<T> = {}
@@ -68,6 +79,13 @@ export function objectField<T extends Record<string, any>>(
   };
 }
 
+/**
+ * Creates a validator for an object field that permits the field to be omitted.
+ *
+ * @param fieldName - Human-readable name used in error messages (defaults to "Object")
+ * @param options - Validation options (excluding `required`); may include `schema`, `requiredMessage`, and `typeMessage`
+ * @returns A FieldValidator that yields a validated object of type `T` or `undefined` when the value is absent
+ */
 export function optionalObject<T extends Record<string, any>>(
   fieldName: string = "Object",
   options: Omit<ObjectFieldOptions<T>, "required"> = {}
