@@ -3,13 +3,18 @@ import {
   type ILearningResourceRepository,
   type LearningResource,
 } from "@learning-resource/domain";
-import { InvalidDataError, type UUID } from "domain-lib";
+import {
+  createValidationSchema,
+  enumField,
+  InvalidDataError,
+  uuidField,
+  ValidationError,
+  type UUID,
+} from "domain-lib";
 import { LearningResourceNotFoundError } from "../../../errors";
-import { type LearningResourceValidator } from "../../../validators";
 
 export interface ToggleResourceDifficultyDependencies {
   learningResourceRepository: ILearningResourceRepository;
-  validator: LearningResourceValidator;
 }
 
 export interface ToggleResourceDifficultyRequestModel {
@@ -17,20 +22,31 @@ export interface ToggleResourceDifficultyRequestModel {
   difficulty: DifficultyType;
 }
 
+export const toggleResourceDifficultySchema =
+  createValidationSchema<ToggleResourceDifficultyRequestModel>({
+    id: uuidField("ResourceId", { required: true }),
+    difficulty: enumField(
+      Object.values(DifficultyType) as DifficultyType[],
+      "Difficulty",
+      { required: true }
+    ),
+  });
+
 export const toggleResourceDifficulty = async (
-  {
-    learningResourceRepository,
-    validator,
-  }: ToggleResourceDifficultyDependencies,
+  { learningResourceRepository }: ToggleResourceDifficultyDependencies,
   request: ToggleResourceDifficultyRequestModel
-): Promise<void | InvalidDataError | LearningResourceNotFoundError> => {
-  const validation = await validator.isValidDifficultyToggle(request);
-  if (!validation.isValid) {
-    return new InvalidDataError(validation.errors);
+): Promise<
+  void | InvalidDataError | LearningResourceNotFoundError | ValidationError
+> => {
+  const validationResult = toggleResourceDifficultySchema(request);
+  if (validationResult instanceof ValidationError) {
+    return validationResult;
   }
 
+  const validatedData = validationResult;
+
   const existingResource = await learningResourceRepository.findById(
-    request.id
+    validatedData.id
   );
   if (!existingResource) {
     return new LearningResourceNotFoundError();
@@ -38,9 +54,9 @@ export const toggleResourceDifficulty = async (
 
   const updated: LearningResource = {
     ...existingResource,
-    difficulty: request.difficulty,
+    difficulty: validatedData.difficulty,
     updatedAt: new Date(),
   };
 
-  await learningResourceRepository.update(request.id, updated);
+  await learningResourceRepository.update(validatedData.id, updated);
 };
