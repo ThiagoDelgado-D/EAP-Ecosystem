@@ -17,6 +17,18 @@ export function uuidField(
   options?: { required?: false } & UUIDFieldOptions
 ): FieldValidator<UUID | undefined>;
 
+/**
+ * Creates a field validator that validates and normalizes UUID strings.
+ *
+ * The validator accepts undefined/null or empty strings as valid only when `options.required` is `false`; otherwise it returns a required-field error. When valid, the validator returns the trimmed UUID in lowercase.
+ *
+ * @param fieldName - Name used in default error messages (default: `"UUID"`).
+ * @param options - Validation options. Recognized properties:
+ *   - `required` (default: `true`) — whether the field must be present and non-empty.
+ *   - `requiredMessage` — message returned when a required value is missing or empty (defaults to `${fieldName} is required`).
+ *   - `typeMessage` — message returned when the value is not a valid UUID string (defaults to `${fieldName} must be a valid UUID`).
+ * @returns The validation result: `isValid: true` with `value` set to the trimmed, lowercased UUID (or `undefined` when not required and missing), or `isValid: false` with `error` describing the failure.
+ */
 export function uuidField(
   fieldName: string = "UUID",
   options: UUIDFieldOptions = {}
@@ -79,6 +91,13 @@ export function optionalUUID(
   options?: Omit<UUIDFieldOptions, "required">
 ): FieldValidator<UUID | undefined>;
 
+/**
+ * Creates a validator for an optional UUID field.
+ *
+ * @param fieldName - Field label used in error messages (defaults to `"UUID"`).
+ * @param options - Validation options (UUIDFieldOptions) excluding `required`; used to customize messages and other validation behavior.
+ * @returns A FieldValidator that accepts a UUID string or `undefined`. When valid, the validator returns the trimmed, lowercased UUID; when absent and not required, it returns `undefined`.
+ */
 export function optionalUUID(
   fieldName: string = "UUID",
   options: Omit<UUIDFieldOptions, "required"> = {}

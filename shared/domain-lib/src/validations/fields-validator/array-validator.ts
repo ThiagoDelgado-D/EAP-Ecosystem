@@ -24,6 +24,17 @@ export function arrayField<T>(
   options?: { required?: false } & ArrayFieldOptions<T>
 ): FieldValidator<T[] | undefined>;
 
+/**
+ * Validates an array field according to the provided options and returns a field validation result.
+ *
+ * @param fieldName - Label used in generated error messages (defaults to "Array")
+ * @param options - Validation options controlling requirement, custom messages, length bounds, per-item validation, and a post-validation transform:
+ *                  - `required` / `requiredMessage` / `typeMessage` control presence and type errors
+ *                  - `minLength` / `maxLength` enforce array length bounds
+ *                  - `itemValidator` validates individual items and stops on the first failure
+ *                  - `transform` maps the validated array before it is returned
+ * @returns A validation result object. When valid, `value` is the validated (and possibly transformed) array or `undefined` if the field is optional and empty; when invalid, `isValid` is `false` and `error` contains a message describing the failure.
+ */
 export function arrayField<T>(
   fieldName: string = "Array",
   options: ArrayFieldOptions<T> = {}
@@ -109,6 +120,13 @@ export function optionalArray<T>(
   options?: Omit<ArrayFieldOptions<T>, "required">
 ): FieldValidator<T[] | undefined>;
 
+/**
+ * Creates an optional array field validator configured with the provided name and options.
+ *
+ * @param fieldName - Display name used in validation error messages (defaults to `"Array"`).
+ * @param options - Array validation options (minLength, maxLength, itemValidator, transform). The `required` option is not applicable and is always treated as `false`.
+ * @returns A field validator that validates an array according to `options` and returns the validated (and possibly transformed) array, or `undefined` when the value is absent. 
+ */
 export function optionalArray<T>(
   fieldName: string = "Array",
   options: Omit<ArrayFieldOptions<T>, "required"> = {}
