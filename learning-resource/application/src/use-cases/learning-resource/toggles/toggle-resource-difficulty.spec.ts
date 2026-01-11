@@ -5,11 +5,10 @@ import {
   ResourceStatusType,
 } from "@learning-resource/domain";
 import type { UUID } from "crypto";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { ValidationError, mockCryptoService } from "domain-lib";
 import { mockLearningResourceRepository } from "../../../mocks";
 import { beforeEach, describe, expect, test } from "vitest";
 import { toggleResourceDifficulty } from "./toggle-resource-difficulty";
-import { mockValidator } from "../../../mocks";
 import { LearningResourceNotFoundError } from "../../../errors";
 
 describe("toggleDifficulty", () => {
@@ -45,7 +44,6 @@ describe("toggleDifficulty", () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -65,7 +63,6 @@ describe("toggleDifficulty", () => {
     await toggleResourceDifficulty(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -85,7 +82,6 @@ describe("toggleDifficulty", () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: nonExistentId,
@@ -96,24 +92,60 @@ describe("toggleDifficulty", () => {
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
   });
 
-  test("Should return InvalidDataError when validation fails", async () => {
+  test("Should return ValidationError when difficulty is invalid", async () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
-        validator: mockValidator({
-          isDifficultyToggleValid: false,
-          difficultyToggleErrors: { difficulty: "Invalid difficulty" },
-        }),
       },
       {
         id: resourceId,
+        difficulty: "INVALID_DIFFICULTY" as DifficultyType,
+      }
+    );
+
+    expect(result).toBeInstanceOf(ValidationError);
+  });
+
+  test("Should return ValidationError when id is invalid", async () => {
+    const result = await toggleResourceDifficulty(
+      {
+        learningResourceRepository,
+      },
+      {
+        id: "invalid-uuid" as UUID,
         difficulty: DifficultyType.HIGH,
       }
     );
 
-    expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toEqual({
-      difficulty: "Invalid difficulty",
+    expect(result).toBeInstanceOf(ValidationError);
+  });
+
+  test("Should return ValidationError when id is missing", async () => {
+    const result = await toggleResourceDifficulty(
+      {
+        learningResourceRepository,
+      },
+      {
+        difficulty: DifficultyType.HIGH,
+      } as any
+    );
+
+    expect(result).toBeInstanceOf(ValidationError);
+  });
+
+  test("Should return ValidationError when difficulty is missing", async () => {
+    const result = await toggleResourceDifficulty(
+      {
+        learningResourceRepository,
+      },
+      {
+        id: resourceId,
+      } as any
+    );
+
+    expect(result).toBeInstanceOf(ValidationError);
+    expect((result as ValidationError).errors).toEqual({
+      difficulty: expect.any(String),
     });
   });
 
@@ -125,7 +157,6 @@ describe("toggleDifficulty", () => {
     await toggleResourceDifficulty(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
