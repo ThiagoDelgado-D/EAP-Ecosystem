@@ -2,7 +2,7 @@ export * from "./array-validator";
 export * from "./boolean-validator";
 export * from "./date-validator";
 export * from "./enum-validator";
-export * from "./number-validator";
+export * from "./number-field";
 export * from "./object-validator";
 export * from "./string-field";
 export * from "./uuid-validator";
