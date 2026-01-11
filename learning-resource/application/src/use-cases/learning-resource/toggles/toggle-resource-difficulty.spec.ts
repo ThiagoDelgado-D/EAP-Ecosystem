@@ -140,11 +140,13 @@ describe("toggleDifficulty", () => {
       },
       {
         id: resourceId,
-        difficulty: {} as DifficultyType,
-      }
+      } as any
     );
 
     expect(result).toBeInstanceOf(ValidationError);
+    expect((result as ValidationError).errors).toEqual({
+      difficulty: expect.any(String),
+    });
   });
 
   test("Should not modify other fields when toggling difficulty", async () => {
