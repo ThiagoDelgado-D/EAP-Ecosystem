@@ -32,9 +32,7 @@ export const toggleResourceEnergySchema =
 export const toggleResourceEnergy = async (
   { learningResourceRepository }: ToggleResourceEnergyDependencies,
   request: ToggleResourceEnergyRequestModel
-): Promise<
-  void | InvalidDataError | LearningResourceNotFoundError | ValidationError
-> => {
+): Promise<void | InvalidDataError | LearningResourceNotFoundError> => {
   const validationResult = await toggleResourceEnergySchema(request);
 
   if (validationResult instanceof ValidationError) {
