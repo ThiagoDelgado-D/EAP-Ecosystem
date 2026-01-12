@@ -2,13 +2,18 @@ import {
   EnergyLevelType,
   type ILearningResourceRepository,
 } from "@learning-resource/domain";
-import type { LearningResourceValidator } from "../../../validators";
-import { InvalidDataError, type UUID } from "domain-lib";
+import {
+  createValidationSchema,
+  enumField,
+  InvalidDataError,
+  uuidField,
+  ValidationError,
+  type UUID,
+} from "domain-lib";
 import { LearningResourceNotFoundError } from "../../../errors";
 
 export interface ToggleResourceEnergyDependencies {
   learningResourceRepository: ILearningResourceRepository;
-  validator: LearningResourceValidator;
 }
 
 export interface ToggleResourceEnergyRequestModel {
@@ -16,26 +21,37 @@ export interface ToggleResourceEnergyRequestModel {
   energyLevel: EnergyLevelType;
 }
 
+export const toggleResourceEnergySchema =
+  createValidationSchema<ToggleResourceEnergyRequestModel>({
+    id: uuidField("ResourceId", { required: true }),
+    energyLevel: enumField(Object.values(EnergyLevelType), "EnergyLevel", {
+      required: true,
+    }),
+  });
+
 export const toggleResourceEnergy = async (
-  { learningResourceRepository, validator }: ToggleResourceEnergyDependencies,
+  { learningResourceRepository }: ToggleResourceEnergyDependencies,
   request: ToggleResourceEnergyRequestModel
 ): Promise<void | InvalidDataError | LearningResourceNotFoundError> => {
-  const validation = await validator.isValidEnergyLevelToggle(request);
+  const validationResult = await toggleResourceEnergySchema(request);
 
-  if (!validation.isValid) {
-    return new InvalidDataError(validation.errors);
+  if (validationResult instanceof ValidationError) {
+    const validationErrors = validationResult.errors;
+    return new InvalidDataError(validationErrors);
   }
 
+  const validatedData = validationResult;
+
   const existingResource = await learningResourceRepository.findById(
-    request.id
+    validatedData.id
   );
 
   if (!existingResource) {
     return new LearningResourceNotFoundError();
   }
 
-  await learningResourceRepository.update(request.id, {
-    energyLevel: request.energyLevel,
+  await learningResourceRepository.update(validatedData.id, {
+    energyLevel: validatedData.energyLevel,
     updatedAt: new Date(),
   });
 };
