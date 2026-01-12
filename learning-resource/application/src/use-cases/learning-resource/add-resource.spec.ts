@@ -75,7 +75,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -100,17 +99,12 @@ describe("addResource", () => {
       status: ResourceStatusType.PENDING,
     } as unknown as AddResourceRequestModel;
 
-    const validator = mockValidator({
-      isPayloadValid: false,
-    });
-
     const result = await addResource(
       {
         cryptoService,
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator,
       },
       request
     );
@@ -133,7 +127,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -159,7 +152,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -188,7 +180,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -218,7 +209,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -245,7 +235,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -268,7 +257,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -292,7 +280,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -317,7 +304,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -342,7 +328,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -366,7 +351,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
