@@ -1,8 +1,18 @@
 import {
+  arrayField,
+  createValidationSchema,
   type CryptoService,
+  enumField,
   InvalidDataError,
   NotFoundError,
+  numberField,
+  optionalEnum,
+  optionalString,
+  stringField,
+  urlField,
   type UUID,
+  uuidField,
+  ValidationError,
 } from "domain-lib";
 import {
   DifficultyType,
@@ -13,14 +23,12 @@ import {
   type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import type { LearningResourceValidator } from "../../validators/learning-resource-validator";
 import { calculateEnergyLevel } from "../../utils/calculate-energy-level";
 
 export interface AddResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;
   resourceTypeRepository: IResourceTypeRepository;
   topicRepository: ITopicRepository;
-  validator: LearningResourceValidator;
   cryptoService: CryptoService;
 }
 
@@ -36,33 +44,68 @@ export interface AddResourceRequestModel {
   notes?: string;
 }
 
+export const addResourceSchema =
+  createValidationSchema<AddResourceRequestModel>({
+    title: stringField("Title", {
+      required: true,
+      maxLength: 500,
+    }),
+    url: urlField("Url", { required: false }),
+    resourceTypeId: uuidField("ResourceTypeId", { required: true }),
+    topicIds: arrayField<UUID>("TopicIds", {
+      required: true,
+      minLength: 1,
+    }),
+    difficulty: enumField(
+      Object.values(DifficultyType) as DifficultyType[],
+      "Difficulty",
+      { required: true }
+    ),
+    estimatedDurationMinutes: numberField("EstimatedDuration", {
+      required: true,
+      positive: true,
+      integer: true,
+    }),
+    energyLevel: optionalEnum(
+      Object.values(EnergyLevelType) as EnergyLevelType[],
+      "Energy Level"
+    ),
+    status: optionalEnum(
+      Object.values(ResourceStatusType) as ResourceStatusType[],
+      "Status"
+    ),
+    notes: optionalString("Notes", { maxLength: 5000 }),
+  });
+
 export const addResource = async (
   {
     learningResourceRepository,
     resourceTypeRepository,
     topicRepository,
     cryptoService,
-    validator,
   }: AddResourceDependencies,
   request: AddResourceRequestModel
 ): Promise<void | InvalidDataError | NotFoundError> => {
-  const validation = await validator.isValidAddPayload(request);
-  if (!validation.isValid) {
-    return new InvalidDataError(validation.errors);
+  const validationResult = await addResourceSchema(request);
+  if (validationResult instanceof ValidationError) {
+    const validationErrors = validationResult.errors;
+    return new InvalidDataError(validationErrors);
   }
 
+  const validatedData = validationResult;
+
   const existingResourceType = await resourceTypeRepository.findById(
-    request.resourceTypeId
+    validatedData.resourceTypeId
   );
 
   if (!existingResourceType) {
     return new NotFoundError({
       resource: "ResourceType",
-      id: request.resourceTypeId,
+      id: validatedData.resourceTypeId,
     });
   }
 
-  for (const topicId of request.topicIds) {
+  for (const topicId of validatedData.topicIds) {
     const topic = await topicRepository.findById(topicId);
     if (!topic) {
       return new NotFoundError({ resource: "Topic", id: topicId });
@@ -70,30 +113,32 @@ export const addResource = async (
   }
 
   const energyLevel =
-    request.energyLevel ||
-    calculateEnergyLevel(request.difficulty, request.estimatedDurationMinutes);
+    validatedData.energyLevel ||
+    calculateEnergyLevel(
+      validatedData.difficulty,
+      validatedData.estimatedDurationMinutes
+    );
 
   const id = await cryptoService.generateUUID();
-  const title = request.title.trim();
-  const url = request.url?.trim() || undefined;
-  const notes = request.notes?.trim() || undefined;
   const now = new Date();
 
   const newResource: LearningResource = {
     id,
-    title,
-    url,
-    typeId: request.resourceTypeId,
-    topicIds: request.topicIds,
-    difficulty: request.difficulty,
+    title: validatedData.title,
+    url: validatedData.url,
+    typeId: validatedData.resourceTypeId,
+    topicIds: validatedData.topicIds,
+    difficulty: validatedData.difficulty,
     estimatedDuration: {
-      value: request.estimatedDurationMinutes,
+      value: validatedData.estimatedDurationMinutes,
       isEstimated: true,
     },
     energyLevel,
-    status: request.status ? request.status : ResourceStatusType.PENDING,
+    status: validatedData.status
+      ? validatedData.status
+      : ResourceStatusType.PENDING,
     lastViewed: undefined,
-    notes,
+    notes: validatedData.notes,
     createdAt: now,
     updatedAt: now,
   };
