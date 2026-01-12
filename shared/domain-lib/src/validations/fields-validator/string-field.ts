@@ -184,7 +184,7 @@ export function urlField(
   options: StringFieldOptions = {}
 ): FieldValidator<string | undefined> {
   const urlPattern = {
-    regex: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
+    regex: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-?=&]*)*\/?$/i,
     message: `${fieldName} must be a valid URL`,
   };
 

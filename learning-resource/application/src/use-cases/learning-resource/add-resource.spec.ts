@@ -16,7 +16,6 @@ import {
   type ResourceType,
   type Topic,
 } from "@learning-resource/domain";
-import { mockValidator } from "../../mocks/validators/mock-learning-resource-validator";
 
 describe("addResource", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -75,7 +74,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -100,17 +98,12 @@ describe("addResource", () => {
       status: ResourceStatusType.PENDING,
     } as unknown as AddResourceRequestModel;
 
-    const validator = mockValidator({
-      isPayloadValid: false,
-    });
-
     const result = await addResource(
       {
         cryptoService,
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator,
       },
       request
     );
@@ -133,7 +126,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -159,7 +151,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -188,7 +179,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -218,7 +208,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -245,7 +234,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -268,7 +256,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -292,7 +279,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -317,7 +303,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -342,7 +327,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -366,7 +350,6 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       request
     );
@@ -374,5 +357,92 @@ describe("addResource", () => {
     const stored = learningResourceRepository.learningResources[0];
     expect(stored.estimatedDuration.isEstimated).toBe(true);
     expect(stored.estimatedDuration.value).toBe(45);
+  });
+
+  test("Should fail when title is too long", async () => {
+    const request: AddResourceRequestModel = {
+      title: "A".repeat(501),
+      resourceTypeId,
+      topicIds: [topicId],
+      difficulty: DifficultyType.MEDIUM,
+      estimatedDurationMinutes: 60,
+    };
+
+    const result = await addResource(
+      {
+        cryptoService,
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      request
+    );
+    expect(result).toBeInstanceOf(InvalidDataError);
+    expect((result as InvalidDataError).context).toHaveProperty("title");
+  });
+
+  test("Should fail with invalid difficulty value", async () => {
+    const request = {
+      title: "Test",
+      resourceTypeId,
+      topicIds: [topicId],
+      difficulty: "INVALID_DIFFICULTY",
+      estimatedDurationMinutes: 60,
+    } as any;
+
+    const result = await addResource(
+      {
+        cryptoService,
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      request
+    );
+    expect(result).toBeInstanceOf(InvalidDataError);
+  });
+
+  test("Should fail with invalid status value", async () => {
+    const request = {
+      title: "Test",
+      resourceTypeId,
+      topicIds: [topicId],
+      difficulty: DifficultyType.MEDIUM,
+      estimatedDurationMinutes: 60,
+      status: "INVALID_STATUS",
+    } as any;
+
+    const result = await addResource(
+      {
+        cryptoService,
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      request
+    );
+    expect(result).toBeInstanceOf(InvalidDataError);
+  });
+  test("Should fail when topicIds is empty array", async () => {
+    const request: AddResourceRequestModel = {
+      title: "Test",
+      resourceTypeId,
+      topicIds: [],
+      difficulty: DifficultyType.MEDIUM,
+      estimatedDurationMinutes: 60,
+    };
+
+    const result = await addResource(
+      {
+        cryptoService,
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      request
+    );
+
+    expect(result).toBeInstanceOf(InvalidDataError);
+    expect((result as InvalidDataError).context).toHaveProperty("topicIds");
   });
 });
