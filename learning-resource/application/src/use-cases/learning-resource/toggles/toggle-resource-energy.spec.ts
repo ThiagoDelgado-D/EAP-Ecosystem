@@ -4,7 +4,12 @@ import {
   type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import {
+  InvalidDataError,
+  mockCryptoService,
+  ValidationError,
+  type UUID,
+} from "domain-lib";
 import { mockLearningResourceRepository, mockValidator } from "../../../mocks";
 import { beforeEach, describe, expect, test } from "vitest";
 import { toggleResourceEnergy } from "./toggle-resource-energy";
@@ -43,7 +48,6 @@ describe("toggleResourceEnergy", () => {
     const result = await toggleResourceEnergy(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -61,7 +65,6 @@ describe("toggleResourceEnergy", () => {
     const result = await toggleResourceEnergy(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -81,7 +84,6 @@ describe("toggleResourceEnergy", () => {
     const result = await toggleResourceEnergy(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: nonExistentId,
@@ -96,20 +98,16 @@ describe("toggleResourceEnergy", () => {
     const result = await toggleResourceEnergy(
       {
         learningResourceRepository,
-        validator: mockValidator({
-          isEnergyLevelToggleValid: false,
-          energyLevelToggleErrors: { energyLevel: "Invalid energy level" },
-        }),
       },
       {
         id: resourceId,
-        energyLevel: EnergyLevelType.HIGH,
+        energyLevel: "INVALID_ENERGY_LEVEL" as any,
       }
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
     expect((result as InvalidDataError).context).toEqual({
-      energyLevel: "Invalid energy level",
+      energyLevel: "EnergyLevel must be one of: low, medium, high",
     });
   });
 
@@ -121,7 +119,6 @@ describe("toggleResourceEnergy", () => {
     await toggleResourceEnergy(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
