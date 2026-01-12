@@ -1,14 +1,19 @@
 import {
+  ResourceStatusType,
   type ILearningResourceRepository,
-  type ResourceStatusType,
 } from "@learning-resource/domain";
-import type { LearningResourceValidator } from "../../../validators";
-import { InvalidDataError, type UUID } from "domain-lib";
+import {
+  InvalidDataError,
+  type UUID,
+  createValidationSchema,
+  uuidField,
+  enumField,
+  ValidationError,
+} from "domain-lib";
 import { LearningResourceNotFoundError } from "../../../errors";
 
 export interface ToggleResourceStatusDependencies {
   learningResourceRepository: ILearningResourceRepository;
-  validator: LearningResourceValidator;
 }
 
 export interface ToggleResourceStatusRequestModel {
@@ -16,26 +21,37 @@ export interface ToggleResourceStatusRequestModel {
   status: ResourceStatusType;
 }
 
+export const toggleResourceStatusSchema =
+  createValidationSchema<ToggleResourceStatusRequestModel>({
+    id: uuidField("ResourceId", { required: true }),
+    status: enumField(Object.values(ResourceStatusType), "Status", {
+      required: true,
+    }),
+  });
+
 export const toggleStatus = async (
-  { learningResourceRepository, validator }: ToggleResourceStatusDependencies,
+  { learningResourceRepository }: ToggleResourceStatusDependencies,
   request: ToggleResourceStatusRequestModel
 ): Promise<void | InvalidDataError | LearningResourceNotFoundError> => {
-  const validation = await validator.isValidStatusToggle(request);
+  const validationResult = await toggleResourceStatusSchema(request);
 
-  if (!validation.isValid) {
-    return new InvalidDataError(validation.errors);
+  if (validationResult instanceof ValidationError) {
+    const validationErrors = validationResult.errors;
+    return new InvalidDataError(validationErrors);
   }
 
+  const validatedData = validationResult;
+
   const existingResource = await learningResourceRepository.findById(
-    request.id
+    validatedData.id
   );
 
   if (!existingResource) {
     return new LearningResourceNotFoundError();
   }
 
-  await learningResourceRepository.update(request.id, {
-    status: request.status,
+  await learningResourceRepository.update(validatedData.id, {
+    status: validatedData.status,
     updatedAt: new Date(),
   });
 };
