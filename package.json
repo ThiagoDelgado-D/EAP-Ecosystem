@@ -7,13 +7,8 @@
   "workspaces": [
     "shared/domain-lib",
     "shared/infrastructure-lib",
-    "shared/application",
     "learning-resource/domain",
-    "learning-resource/application",
-    "learning-resource/infrastructure",
-    "user/domain",
-    "user/application",
-    "user/infrastructure"
+    "learning-resource/application"
   ],
   "devDependencies": {
     "@types/node": "^24.9.2",
@@ -22,6 +17,8 @@
   "scripts": {
     "build": "yarn workspaces foreach -A -tv run build",
     "test:ci": "yarn workspaces foreach -A -tv run test --run",
+    "test:all": "yarn test && yarn test:templates",
+    "test": "yarn workspaces foreach -A run test --run --clearScreen false",
     "type-check": "tsc --noEmit",
     "pre-pr": "yarn type-check && yarn test:ci && yarn build"
   },
