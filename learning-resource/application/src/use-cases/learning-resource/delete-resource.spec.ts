@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { mockCryptoService, type UUID } from "domain-lib";
 import {
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { deleteResource } from "./delete-resource";
-import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found";
+import { deleteResource } from "./delete-resource.js";
+import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
 
 describe("deleteResource", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;

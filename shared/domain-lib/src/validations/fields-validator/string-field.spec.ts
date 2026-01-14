@@ -4,7 +4,7 @@ import {
   optionalString,
   urlField,
   emailField,
-} from "./string-field";
+} from "./string-field.js";
 
 describe("stringField - basic validations (required by default)", () => {
   const validate = stringField("Title");

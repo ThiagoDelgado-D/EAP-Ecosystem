@@ -4,7 +4,7 @@ import {
   numberInRange,
   optionalNumber,
   positiveNumber,
-} from "./number-field";
+} from "./number-field.js";
 
 describe("numberField - basic validations (required by default)", () => {
   const validate = numberField("Total");

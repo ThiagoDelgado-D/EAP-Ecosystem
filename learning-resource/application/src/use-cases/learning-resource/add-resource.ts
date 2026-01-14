@@ -23,7 +23,7 @@ import {
   type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { calculateEnergyLevel } from "../../utils/calculate-energy-level";
+import { calculateEnergyLevel } from "../../utils/calculate-energy-level.js";
 
 export interface AddResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;

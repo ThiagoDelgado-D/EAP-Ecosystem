@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { optionalUUID, uuidField } from "./uuid-validator";
+import { optionalUUID, uuidField } from "./uuid-validator.js";
 
 describe("uuidField - basic validations (required by default)", () => {
   const validate = uuidField("ResourceID");
