@@ -24,16 +24,5 @@
     "strict": true,
     "skipLibCheck": true,
     "verbatimModuleSyntax": true
-  },
-  "files": [],
-  "references": [
-    { "path": "./shared/domain-lib" },
-    { "path": "./shared/infrastructure-lib" },
-    { "path": "./learning-resource/domain" },
-    { "path": "./learning-resource/application" },
-    { "path": "./user/domain" },
-    { "path": "./user/application" },
-    { "path": "./recomendation/domain" },
-    { "path": "./recomendation/application" }
-  ]
+  }
 }
