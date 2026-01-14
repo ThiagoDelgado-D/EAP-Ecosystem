@@ -815,6 +815,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "domain-lib@workspace:shared/domain-lib"
   dependencies:
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.15"
   languageName: unknown
   linkType: soft

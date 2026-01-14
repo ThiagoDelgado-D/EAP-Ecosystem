@@ -11,5 +11,10 @@
     ".": "./src/index.ts",
     "./entities": "./src/entities/index.ts",
     "./repositories": "./src/repositories/index.ts"
+  },
+  "scripts": {
+    "test": "vitest",
+    "build": "tsc --build tsconfig.build.json",
+    "type-check": "tsc --noEmit"
   }
 }

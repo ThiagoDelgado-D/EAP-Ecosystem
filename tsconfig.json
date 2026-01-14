@@ -12,8 +12,8 @@
       "@recomendation/application": ["recomendation/application/src"]
     },
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
     "allowJs": true,
     "declaration": true,
@@ -25,6 +25,15 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["shared/**/*", "learning-resource/**/*", "user/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "files": [],
+  "references": [
+    { "path": "./shared/domain-lib" },
+    { "path": "./shared/infrastructure-lib" },
+    { "path": "./learning-resource/domain" },
+    { "path": "./learning-resource/application" },
+    { "path": "./user/domain" },
+    { "path": "./user/application" },
+    { "path": "./recomendation/domain" },
+    { "path": "./recomendation/application" }
+  ]
 }
