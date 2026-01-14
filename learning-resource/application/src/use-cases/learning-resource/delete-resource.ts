@@ -1,5 +1,11 @@
 import type { ILearningResourceRepository } from "@learning-resource/domain";
-import type { UUID } from "domain-lib";
+import {
+  createValidationSchema,
+  InvalidDataError,
+  uuidField,
+  ValidationError,
+  type UUID,
+} from "domain-lib";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found";
 
 export interface DeleteResourceDependencies {
@@ -9,10 +15,22 @@ export interface DeleteResourceRequestModel {
   id: UUID;
 }
 
+export const deleteResourceSchema =
+  createValidationSchema<DeleteResourceRequestModel>({
+    id: uuidField("ResourceId", { required: true }),
+  });
+
 export const deleteResource = async (
   { learningResourceRepository }: DeleteResourceDependencies,
   { id }: DeleteResourceRequestModel
-): Promise<void | LearningResourceNotFoundError> => {
+): Promise<void | LearningResourceNotFoundError | InvalidDataError> => {
+  const validationResult = deleteResourceSchema({ id });
+
+  if (validationResult instanceof ValidationError) {
+    const validationErrors = validationResult.errors;
+    return new InvalidDataError(validationErrors);
+  }
+
   const foundResource = await learningResourceRepository.findById(id);
 
   if (!foundResource) {
