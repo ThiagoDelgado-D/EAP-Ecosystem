@@ -409,4 +409,31 @@ describe("getResourcesByFilter", () => {
     expect(result.total).toBe(6);
     expect(result.resources).toHaveLength(6);
   });
+
+  test("Should return all resources when filters validation fails (invalid UUID in topicIds)", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      {
+        filters: {
+          topicIds: ["not-a-valid-uuid" as UUID],
+        },
+      }
+    );
+
+    expect(result.total).toBe(6);
+    expect(result.resources).toHaveLength(6);
+  });
+  test("Should return all resources when filters validation fails (non-array topicIds)", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      {
+        filters: {
+          topicIds: "not-an-array" as any,
+        },
+      }
+    );
+
+    expect(result.total).toBe(6);
+    expect(result.resources).toHaveLength(6);
+  });
 });
