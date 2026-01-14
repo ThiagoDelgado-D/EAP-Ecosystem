@@ -4,13 +4,8 @@ import {
   type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import {
-  InvalidDataError,
-  mockCryptoService,
-  ValidationError,
-  type UUID,
-} from "domain-lib";
-import { mockLearningResourceRepository, mockValidator } from "../../../mocks";
+import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { mockLearningResourceRepository } from "../../../mocks";
 import { beforeEach, describe, expect, test } from "vitest";
 import { toggleResourceEnergy } from "./toggle-resource-energy";
 import { LearningResourceNotFoundError } from "../../../errors";
