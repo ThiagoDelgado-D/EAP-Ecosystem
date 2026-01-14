@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
-import { mockCryptoService, type UUID } from "domain-lib";
+import { mockCryptoService, type UUID, InvalidDataError } from "domain-lib";
 import {
   DifficultyType,
   EnergyLevelType,
@@ -57,5 +57,14 @@ describe("deleteResource", () => {
     );
 
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
+  });
+  test("With invalid UUID format, should return InvalidDataError", async () => {
+    const result = await deleteResource(
+      { learningResourceRepository },
+      { id: "not-a-valid-uuid" as UUID }
+    );
+
+    expect(result).toBeInstanceOf(InvalidDataError);
+    expect((result as InvalidDataError).context).toHaveProperty("id");
   });
 });
