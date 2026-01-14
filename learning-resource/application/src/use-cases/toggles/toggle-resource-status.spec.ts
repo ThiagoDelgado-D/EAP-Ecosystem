@@ -5,10 +5,10 @@ import {
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
-import { mockLearningResourceRepository } from "../../../mocks";
 import { beforeEach, describe, expect, test } from "vitest";
-import { toggleStatus } from "./toggle-resource-status";
-import { LearningResourceNotFoundError } from "../../../errors";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
+import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import { toggleStatus } from "./toggle-resource-status.js";
 
 describe("toggleStatus", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
