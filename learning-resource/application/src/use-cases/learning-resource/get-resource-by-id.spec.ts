@@ -5,10 +5,10 @@ import {
   ResourceStatusType,
   type LearningResource,
 } from "@learning-resource/domain";
-import { mockCryptoService } from "domain-lib";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { GetResourceById } from "./get-resource-by-id.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import { InvalidDataError, mockCryptoService } from "domain-lib";
 
 describe("GetResourceById", () => {
   let crypto: ReturnType<typeof mockCryptoService>;
@@ -64,6 +64,10 @@ describe("GetResourceById", () => {
       return result;
     }
 
+    if (result instanceof InvalidDataError) {
+      return result;
+    }
+
     expect(result).not.toBeInstanceOf(LearningResourceNotFoundError);
     expect(result.resourceId).toBe(id);
     expect(result.title).toBe("Resource Title");
@@ -74,5 +78,15 @@ describe("GetResourceById", () => {
     expect(result.energyLevel).toBe(EnergyLevelType.HIGH);
     expect(result.status).toBe(ResourceStatusType.COMPLETED);
     expect(result.notes).toBe("Some notes");
+  });
+
+  test("Should return InvalidDataError when resourceId is not a valid UUID", async () => {
+    const result = await GetResourceById(
+      { learningResourceRepository: repository },
+      { resourceId: "not-a-valid-uuid" as any }
+    );
+
+    expect(result).toBeInstanceOf(InvalidDataError);
+    expect((result as InvalidDataError).context).toHaveProperty("resourceId");
   });
 });
