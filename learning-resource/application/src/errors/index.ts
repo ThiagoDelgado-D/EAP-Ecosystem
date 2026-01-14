@@ -1,1 +1,1 @@
-export * from "./learning-resource-not-found";
+export * from "./learning-resource-not-found.js";
