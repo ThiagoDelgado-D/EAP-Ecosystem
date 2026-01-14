@@ -1,6 +1,6 @@
 import type { ILearningResourceRepository } from "@learning-resource/domain";
 import type { UUID } from "domain-lib";
-import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found";
+import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
 
 export interface DeleteResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;
