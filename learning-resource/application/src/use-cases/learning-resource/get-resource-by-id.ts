@@ -4,7 +4,13 @@ import {
   type ILearningResourceRepository,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import type { UUID } from "domain-lib";
+import {
+  createValidationSchema,
+  InvalidDataError,
+  uuidField,
+  ValidationError,
+  type UUID,
+} from "domain-lib";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found";
 
 export interface GetResourceByIdDependencies {
@@ -27,10 +33,26 @@ export interface GetResourceByIdResponseModel {
   notes?: string;
 }
 
+export const getResourceByIdSchema =
+  createValidationSchema<GetResourceByIdRequestModel>({
+    resourceId: uuidField("ResourceId", { required: true }),
+  });
+
 export const GetResourceById = async (
   { learningResourceRepository }: GetResourceByIdDependencies,
   { resourceId }: GetResourceByIdRequestModel
-): Promise<GetResourceByIdResponseModel | LearningResourceNotFoundError> => {
+): Promise<
+  | GetResourceByIdResponseModel
+  | LearningResourceNotFoundError
+  | InvalidDataError
+> => {
+  const validationResult = getResourceByIdSchema({ resourceId });
+
+  if (validationResult instanceof ValidationError) {
+    const validationErrors = validationResult.errors;
+    return new InvalidDataError(validationErrors);
+  }
+
   const resource = await learningResourceRepository.findById(resourceId);
 
   if (!resource) {
