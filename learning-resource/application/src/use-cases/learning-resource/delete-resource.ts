@@ -31,11 +31,12 @@ export const deleteResource = async (
     return new InvalidDataError(validationErrors);
   }
 
-  const foundResource = await learningResourceRepository.findById(id);
+  const validatedId = validationResult.id;
+  const foundResource = await learningResourceRepository.findById(validatedId);
 
   if (!foundResource) {
     return new LearningResourceNotFoundError();
   }
 
-  await learningResourceRepository.delete(id);
+  await learningResourceRepository.delete(validatedId);
 };
