@@ -1,7 +1,7 @@
 import type {
   IResourceTypeRepository,
   ResourceType,
-} from "learning-resource/domain";
+} from "@learning-resource/domain";
 import type { UUID } from "domain-lib";
 
 export interface MockedResourceTypeRepository extends IResourceTypeRepository {

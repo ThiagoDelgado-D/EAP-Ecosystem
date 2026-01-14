@@ -2,8 +2,8 @@ import type {
   FieldValidationResult,
   FieldValidator,
   ValidationSchemaMap,
-} from "../validation-schema";
-import type { ValidatorOptions } from "./validator-options";
+} from "../validation-schema.js";
+import type { ValidatorOptions } from "./validator-options.js";
 
 export interface ObjectFieldOptions<T> extends ValidatorOptions {
   schema?: ValidationSchemaMap<T>;

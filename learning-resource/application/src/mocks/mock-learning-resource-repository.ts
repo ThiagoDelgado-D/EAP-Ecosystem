@@ -5,7 +5,7 @@ import type {
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
-} from "learning-resource/domain";
+} from "@learning-resource/domain";
 
 export interface MockedLearningResourceRepository
   extends ILearningResourceRepository {

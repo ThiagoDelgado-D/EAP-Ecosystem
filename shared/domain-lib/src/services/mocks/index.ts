@@ -1,1 +1,1 @@
-export * from "./mock-crypto-service";
+export * from "./mock-crypto-service.js";

@@ -1,9 +1,9 @@
-import { sanitizeString } from "../../utils";
+import { sanitizeString } from "../../utils/index.js";
 import type {
   FieldValidationResult,
   FieldValidator,
-} from "../validation-schema";
-import type { ValidatorOptions } from "./validator-options";
+} from "../validation-schema.js";
+import type { ValidatorOptions } from "./validator-options.js";
 
 export interface EnumFieldOptions<T extends string> extends ValidatorOptions {
   /**

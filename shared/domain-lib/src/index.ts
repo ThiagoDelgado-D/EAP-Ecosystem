@@ -1,19 +1,19 @@
 // ============= ENTITIES =============
-export * from "./entities";
+export * from "./entities/index.js";
 
 // ============= TYPES =============
-export * from "./types";
+export * from "./types/index.js";
 
 // ============= ERRORS =============
-export * from "./errors";
+export * from "./errors/index.js";
 
 // ============= SERVICES =============
-export * from "./services";
+export * from "./services/index.js";
 
 // ============= MOCKS =============
 
-export * from "./services/mocks";
+export * from "./services/mocks/index.js";
 
 // ============= VALIDATIONS =============
 
-export * from "./validations";
+export * from "./validations/index.js";
