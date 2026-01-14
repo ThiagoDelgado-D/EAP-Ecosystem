@@ -11,4 +11,6 @@ export * from "./mocks/index.js";
 export * from "./use-cases/learning-resource/index.js";
 export * from "./use-cases/toggles/index.js";
 
-// ============= ERRORS =============
+// ============= UTILS =============
+
+export * from "./utils/index.js";
