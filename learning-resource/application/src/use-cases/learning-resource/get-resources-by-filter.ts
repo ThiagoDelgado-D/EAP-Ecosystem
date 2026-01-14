@@ -40,7 +40,7 @@ const filtersSchemaMap = {
   topicIds: arrayField<UUID>("Topic IDs", {
     required: false,
     itemValidator: (item, index) =>
-      uuidField(`Topic ID at position ${index}`)(item),
+      uuidField(`Topic ID at position ${index}`, { required: true })(item),
   }),
   difficulty: enumField(
     Object.values(DifficultyType) as DifficultyType[],
