@@ -9,3 +9,7 @@ export * from "./entities/topic.js";
 export * from "./repositories/ITopic-repository.js";
 export * from "./repositories/lLearning-resource-repository.js";
 export * from "./repositories/IResource-type-repository.js";
+
+// ============= HEALTH =============
+
+export * from "./health.js";
