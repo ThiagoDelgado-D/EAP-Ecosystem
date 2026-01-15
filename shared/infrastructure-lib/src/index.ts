@@ -1,3 +1,3 @@
 // ============= SERVICES =============
 
-export * from "./services/crypto-service-impl";
+export * from "./services/crypto-service-impl.js";

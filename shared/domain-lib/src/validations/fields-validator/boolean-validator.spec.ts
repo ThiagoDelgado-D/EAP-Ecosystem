@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { booleanField, optionalBoolean } from "./boolean-validator";
+import { booleanField, optionalBoolean } from "./boolean-validator.js";
 
 describe("booleanField", () => {
   const validate = booleanField("IsActive");

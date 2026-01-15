@@ -1,6 +1,6 @@
 import { mockCryptoService, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import {
   DifficultyType,
   EnergyLevelType,
@@ -8,8 +8,8 @@ import {
   ResourceStatusType,
   type Topic,
 } from "@learning-resource/domain";
-import { mockTopicRepository } from "../../mocks/mock-topic-repository";
-import { getResourcesByFilter } from "./get-resources-by-filter";
+import { mockTopicRepository } from "../../mocks/mock-topic-repository.js";
+import { getResourcesByFilter } from "./get-resources-by-filter.js";
 
 describe("getResourcesByFilter", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -402,6 +402,33 @@ describe("getResourcesByFilter", () => {
           energyLevel: undefined,
           status: undefined,
           resourceTypeId: undefined,
+        },
+      }
+    );
+
+    expect(result.total).toBe(6);
+    expect(result.resources).toHaveLength(6);
+  });
+
+  test("Should return all resources when filters validation fails (invalid UUID in topicIds)", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      {
+        filters: {
+          topicIds: ["not-a-valid-uuid" as UUID],
+        },
+      }
+    );
+
+    expect(result.total).toBe(6);
+    expect(result.resources).toHaveLength(6);
+  });
+  test("Should return all resources when filters validation fails (non-array topicIds)", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      {
+        filters: {
+          topicIds: "not-an-array" as any,
         },
       }
     );

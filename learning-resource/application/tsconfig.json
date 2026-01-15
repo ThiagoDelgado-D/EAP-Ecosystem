@@ -1,4 +1,16 @@
 {
   "extends": "../../tsconfig.json",
-  "exclude": ["dist", "node_modules"]
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "dist",
+    "node_modules",
+    "coverage",
+    "vitest.config.ts"
+  ]
 }

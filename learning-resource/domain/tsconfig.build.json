@@ -1,12 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "composite": true,
     "noEmit": false,
     "allowImportingTsExtensions": false,
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts"],
   "exclude": [
     "src/**/*.spec.ts",
     "dist",

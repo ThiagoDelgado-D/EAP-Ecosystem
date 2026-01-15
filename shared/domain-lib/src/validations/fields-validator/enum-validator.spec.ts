@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { enumField, optionalEnum } from "./enum-validator";
+import { enumField, optionalEnum } from "./enum-validator.js";
 
 const STATUS_VALUES = ["active", "inactive", "pending"] as const;
 type Status = (typeof STATUS_VALUES)[number];

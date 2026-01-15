@@ -4,7 +4,7 @@ import {
   EnergyLevelType,
   type LearningResource,
   ResourceStatusType,
-} from "../entities/learning-resource";
+} from "../entities/learning-resource.js";
 
 export interface ILearningResourceRepository {
   save(resource: LearningResource): Promise<void>;

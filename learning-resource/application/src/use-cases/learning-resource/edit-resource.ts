@@ -4,15 +4,24 @@ import type {
   ITopicRepository,
   LearningResource,
 } from "@learning-resource/domain";
-import { InvalidDataError, NotFoundError, type UUID } from "domain-lib";
-import type { LearningResourceValidator } from "../../validators";
-import { LearningResourceNotFoundError } from "../../errors";
+import {
+  arrayField,
+  createValidationSchema,
+  InvalidDataError,
+  NotFoundError,
+  optionalNumber,
+  optionalString,
+  urlField,
+  uuidField,
+  ValidationError,
+  type UUID,
+} from "domain-lib";
+import { LearningResourceNotFoundError } from "../../errors/index.js";
 
 export interface UpdateResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;
   resourceTypeRepository: IResourceTypeRepository;
   topicRepository: ITopicRepository;
-  validator: LearningResourceValidator;
 }
 
 export interface UpdateResourceRequestModel {
@@ -25,12 +34,27 @@ export interface UpdateResourceRequestModel {
   notes?: string;
 }
 
+export const updateResourceSchema =
+  createValidationSchema<UpdateResourceRequestModel>({
+    id: uuidField("ResourceId", { required: true }),
+    title: optionalString("Title", { allowEmpty: true, maxLength: 250 }),
+    url: urlField("Url", { required: false, allowEmpty: true }),
+    typeId: uuidField("ResourceType", { required: false }),
+    topicIds: arrayField<UUID>("TopicIds", {
+      required: false,
+    }),
+    estimatedDurationMinutes: optionalNumber("EstimatedDuration", {
+      positive: true,
+      integer: true,
+    }),
+    notes: optionalString("Notes", { maxLength: 5000, allowEmpty: true }),
+  });
+
 export const updateResource = async (
   {
     learningResourceRepository,
     resourceTypeRepository,
     topicRepository,
-    validator,
   }: UpdateResourceDependencies,
   request: UpdateResourceRequestModel
 ): Promise<
@@ -50,30 +74,38 @@ export const updateResource = async (
     });
   }
 
-  const validation = await validator.isValidUpdatePayload(request);
-  if (!validation.isValid) {
-    return new InvalidDataError(validation.errors);
+  const validationResult = updateResourceSchema(request);
+  if (validationResult instanceof ValidationError) {
+    const validationErrors = validationResult.errors;
+    return new InvalidDataError(validationErrors);
   }
 
+  const validatedData = validationResult;
+
   const existingResource = await learningResourceRepository.findById(
-    request.id
+    validatedData.id
   );
   if (!existingResource) {
     return new LearningResourceNotFoundError();
   }
 
-  if (request.typeId !== undefined) {
-    const resourceType = await resourceTypeRepository.findById(request.typeId);
+  if (validatedData.typeId !== undefined) {
+    const resourceType = await resourceTypeRepository.findById(
+      validatedData.typeId
+    );
     if (!resourceType) {
       return new NotFoundError({
         resource: "ResourceType",
-        id: request.typeId,
+        id: validatedData.typeId,
       });
     }
   }
 
-  if (request.topicIds !== undefined && request.topicIds.length > 0) {
-    for (const topicId of request.topicIds) {
+  if (
+    validatedData.topicIds !== undefined &&
+    validatedData.topicIds.length > 0
+  ) {
+    for (const topicId of validatedData.topicIds) {
       const topic = await topicRepository.findById(topicId);
       if (!topic) {
         return new NotFoundError({
@@ -88,32 +120,32 @@ export const updateResource = async (
     updatedAt: new Date(),
   };
 
-  if (request.title !== undefined) {
-    updates.title = request.title.trim();
+  if (validatedData.title !== undefined) {
+    updates.title = validatedData.title;
   }
 
-  if (request.url !== undefined) {
-    updates.url = request.url.trim() || undefined;
+  if (validatedData.url !== undefined) {
+    updates.url = validatedData.url || undefined;
   }
 
-  if (request.typeId !== undefined) {
-    updates.typeId = request.typeId;
+  if (validatedData.typeId !== undefined) {
+    updates.typeId = validatedData.typeId;
   }
 
-  if (request.topicIds !== undefined) {
-    updates.topicIds = request.topicIds;
+  if (validatedData.topicIds !== undefined) {
+    updates.topicIds = validatedData.topicIds;
   }
 
-  if (request.estimatedDurationMinutes !== undefined) {
+  if (validatedData.estimatedDurationMinutes !== undefined) {
     updates.estimatedDuration = {
-      value: request.estimatedDurationMinutes,
+      value: validatedData.estimatedDurationMinutes,
       isEstimated: true,
     };
   }
 
-  if (request.notes !== undefined) {
-    updates.notes = request.notes.trim() || undefined;
+  if (validatedData.notes !== undefined) {
+    updates.notes = validatedData.notes || undefined;
   }
 
-  await learningResourceRepository.update(request.id, updates);
+  await learningResourceRepository.update(validatedData.id, updates);
 };

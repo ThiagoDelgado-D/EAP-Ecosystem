@@ -6,10 +6,10 @@ import {
 } from "@learning-resource/domain";
 import type { UUID } from "crypto";
 import { ValidationError, mockCryptoService } from "domain-lib";
-import { mockLearningResourceRepository } from "../../../mocks";
+import { mockLearningResourceRepository } from "../../mocks/index.js";
 import { beforeEach, describe, expect, test } from "vitest";
-import { toggleResourceDifficulty } from "./toggle-resource-difficulty";
-import { LearningResourceNotFoundError } from "../../../errors";
+import { toggleResourceDifficulty } from "./toggle-resource-difficulty.js";
+import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
 
 describe("toggleDifficulty", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;

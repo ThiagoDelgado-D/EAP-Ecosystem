@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import {
-  mockValidator,
   mockTopicRepository,
   mockResourceTypeRepository,
   mockLearningResourceRepository,
-} from "../../mocks";
+} from "../../mocks/index.js";
 import {
   InvalidDataError,
   mockCryptoService,
@@ -19,8 +18,8 @@ import {
   type ResourceType,
   type Topic,
 } from "@learning-resource/domain";
-import { updateResource } from "./edit-resource";
-import { LearningResourceNotFoundError } from "../../errors";
+import { updateResource } from "./edit-resource.js";
+import { LearningResourceNotFoundError } from "../../errors/index.js";
 
 describe("updateResource", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -110,7 +109,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -132,7 +130,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -153,7 +150,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -173,7 +169,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -193,7 +188,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -214,7 +208,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -234,7 +227,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -256,7 +248,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -286,7 +277,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -300,19 +290,11 @@ describe("updateResource", () => {
   });
 
   test("Should return InvalidDataError when validation fails", async () => {
-    const invalidValidator = mockValidator({
-      isUpdatePayloadValid: false,
-      updatePayloadErrors: {
-        title: "Title must be less than 500 characters",
-      },
-    });
-
     const result = await updateResource(
       {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: invalidValidator,
       },
       {
         id: resourceId,
@@ -322,7 +304,7 @@ describe("updateResource", () => {
 
     expect(result).toBeInstanceOf(InvalidDataError);
     expect((result as InvalidDataError).context).toEqual({
-      title: "Title must be less than 500 characters",
+      title: "Title must be at most 250 characters",
     });
   });
 
@@ -334,7 +316,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: nonExistentId,
@@ -353,7 +334,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -376,7 +356,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -397,7 +376,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -415,7 +393,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -428,7 +405,6 @@ describe("updateResource", () => {
     expect(updated?.url).toBe("https://example.com");
     expect(updated?.notes).toBe("Some notes");
   });
-
   test("Should update updatedAt timestamp", async () => {
     const before = new Date();
 
@@ -437,7 +413,6 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -449,5 +424,38 @@ describe("updateResource", () => {
     expect(updated?.updatedAt.getTime()).toBeGreaterThanOrEqual(
       before.getTime()
     );
+  });
+  test("Should set URL to undefined when empty string is provided", async () => {
+    await updateResource(
+      {
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      {
+        id: resourceId,
+        url: "",
+      }
+    );
+
+    const updated = await learningResourceRepository.findById(resourceId);
+    expect(updated?.url).toBeUndefined();
+  });
+
+  test("Should set notes to undefined when empty string is provided", async () => {
+    await updateResource(
+      {
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      {
+        id: resourceId,
+        notes: "",
+      }
+    );
+
+    const updated = await learningResourceRepository.findById(resourceId);
+    expect(updated?.notes).toBeUndefined();
   });
 });

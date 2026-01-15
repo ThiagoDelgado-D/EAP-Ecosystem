@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { dateField, optionalDate } from "./date-validator";
+import { dateField, optionalDate } from "./date-validator.js";
 
 describe("dateField - basic validations (required by default)", () => {
   const validate = dateField("createdAt");

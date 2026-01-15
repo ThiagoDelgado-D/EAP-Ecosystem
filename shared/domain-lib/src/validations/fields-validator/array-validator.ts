@@ -1,8 +1,8 @@
 import type {
   FieldValidationResult,
   FieldValidator,
-} from "../validation-schema";
-import type { ValidatorOptions } from "./validator-options";
+} from "../validation-schema.js";
+import type { ValidatorOptions } from "./validator-options.js";
 
 export interface ArrayFieldOptions<T = any> extends ValidatorOptions {
   minLength?: number;
@@ -125,7 +125,7 @@ export function optionalArray<T>(
  *
  * @param fieldName - Display name used in validation error messages (defaults to `"Array"`).
  * @param options - Array validation options (minLength, maxLength, itemValidator, transform). The `required` option is not applicable and is always treated as `false`.
- * @returns A field validator that validates an array according to `options` and returns the validated (and possibly transformed) array, or `undefined` when the value is absent. 
+ * @returns A field validator that validates an array according to `options` and returns the validated (and possibly transformed) array, or `undefined` when the value is absent.
  */
 export function optionalArray<T>(
   fieldName: string = "Array",

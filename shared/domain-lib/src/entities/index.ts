@@ -1,3 +1,3 @@
-export * from "./entity";
-export * from "./person";
-export * from "./timestamped-entity";
+export * from "./entity.js";
+export * from "./person.js";
+export * from "./timestamped-entity.js";

@@ -5,10 +5,10 @@ import {
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
-import { mockLearningResourceRepository, mockValidator } from "../../../mocks";
 import { beforeEach, describe, expect, test } from "vitest";
-import { toggleStatus } from "./toggle-resource-status";
-import { LearningResourceNotFoundError } from "../../../errors";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
+import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import { toggleStatus } from "./toggle-resource-status.js";
 
 describe("toggleStatus", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -43,7 +43,6 @@ describe("toggleStatus", () => {
     const result = await toggleStatus(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
@@ -63,11 +62,10 @@ describe("toggleStatus", () => {
     await toggleStatus(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
-        status: ResourceStatusType.IN_PROGRESS,
+        status: ResourceStatusType.PENDING,
       }
     );
 
@@ -83,7 +81,6 @@ describe("toggleStatus", () => {
     const result = await toggleStatus(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: nonExistentId,
@@ -98,20 +95,17 @@ describe("toggleStatus", () => {
     const result = await toggleStatus(
       {
         learningResourceRepository,
-        validator: mockValidator({
-          isStatusToggleValid: false,
-          statusToggleErrors: { status: "Invalid status" },
-        }),
       },
       {
         id: resourceId,
-        status: ResourceStatusType.PENDING,
+        status: "INVALID_STATUS" as any,
       }
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
+    const statusValues = Object.values(ResourceStatusType);
     expect((result as InvalidDataError).context).toEqual({
-      status: "Invalid status",
+      status: `Status must be one of: ${statusValues.join(", ")}`,
     });
   });
 
@@ -123,11 +117,10 @@ describe("toggleStatus", () => {
     await toggleStatus(
       {
         learningResourceRepository,
-        validator: mockValidator(),
       },
       {
         id: resourceId,
-        status: ResourceStatusType.IN_PROGRESS,
+        status: ResourceStatusType.COMPLETED,
       }
     );
 

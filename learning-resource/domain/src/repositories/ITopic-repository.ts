@@ -1,5 +1,5 @@
 import type { UUID } from "domain-lib";
-import type { Topic } from "../entities/topic";
+import type { Topic } from "../entities/topic.js";
 
 export interface ITopicRepository {
   save(topic: Topic): Promise<void>;

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { arrayField, optionalArray } from "./array-validator";
+import { arrayField, optionalArray } from "./array-validator.js";
 
 describe("arrayField - basic validations (required by default)", () => {
   const validate = arrayField("Items");

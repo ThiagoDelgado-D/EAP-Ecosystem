@@ -1,2 +1,2 @@
-export * from "./ms";
-export * from "./sanitize-string";
+export * from "./ms.js";
+export * from "./sanitize-string.js";
