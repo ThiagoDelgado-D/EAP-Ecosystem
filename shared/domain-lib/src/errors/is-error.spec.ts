@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { isError } from "./is-error";
-import { UnexpectedError } from "./generic-errors";
+import { isError } from "./is-error.js";
+import { UnexpectedError } from "./generic-errors/index.js";
 
 describe("is-error", () => {
   test("Given an error, should return true", () => {

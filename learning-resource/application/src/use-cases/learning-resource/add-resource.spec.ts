@@ -5,10 +5,10 @@ import {
   type UUID,
 } from "domain-lib";
 import { describe, test, expect, beforeEach } from "vitest";
-import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
-import { mockResourceTypeRepository } from "../../mocks/mock-resource-type-repository";
-import { mockTopicRepository } from "../../mocks/mock-topic-repository";
-import { addResource, type AddResourceRequestModel } from "./add-resource";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
+import { mockResourceTypeRepository } from "../../mocks/mock-resource-type-repository.js";
+import { mockTopicRepository } from "../../mocks/mock-topic-repository.js";
+import { addResource, type AddResourceRequestModel } from "./add-resource.js";
 import {
   DifficultyType,
   EnergyLevelType,

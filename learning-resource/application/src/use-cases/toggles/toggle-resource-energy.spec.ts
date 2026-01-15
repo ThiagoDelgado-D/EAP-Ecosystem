@@ -4,16 +4,11 @@ import {
   type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import {
-  InvalidDataError,
-  mockCryptoService,
-  ValidationError,
-  type UUID,
-} from "domain-lib";
-import { mockLearningResourceRepository, mockValidator } from "../../../mocks";
+import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
-import { toggleResourceEnergy } from "./toggle-resource-energy";
-import { LearningResourceNotFoundError } from "../../../errors";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
+import { toggleResourceEnergy } from "./toggle-resource-energy.js";
+import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
 
 describe("toggleResourceEnergy", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;

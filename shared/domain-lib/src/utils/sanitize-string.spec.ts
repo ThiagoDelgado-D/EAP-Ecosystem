@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { sanitizeString } from "./sanitize-string";
+import { sanitizeString } from "./sanitize-string.js";
 
 describe("sanitizeString", () => {
   test("Should trim leading and trailing spaces", () => {

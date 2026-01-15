@@ -3,7 +3,7 @@ import {
   mockTopicRepository,
   mockResourceTypeRepository,
   mockLearningResourceRepository,
-} from "../../mocks";
+} from "../../mocks/index.js";
 import {
   InvalidDataError,
   mockCryptoService,
@@ -18,8 +18,8 @@ import {
   type ResourceType,
   type Topic,
 } from "@learning-resource/domain";
-import { updateResource } from "./edit-resource";
-import { LearningResourceNotFoundError } from "../../errors";
+import { updateResource } from "./edit-resource.js";
+import { LearningResourceNotFoundError } from "../../errors/index.js";
 
 describe("updateResource", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;

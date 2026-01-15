@@ -1,4 +1,5 @@
 import type { ILearningResourceRepository } from "@learning-resource/domain";
+import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
 import {
   createValidationSchema,
   InvalidDataError,
@@ -6,7 +7,6 @@ import {
   ValidationError,
   type UUID,
 } from "domain-lib";
-import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found";
 
 export interface DeleteResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;

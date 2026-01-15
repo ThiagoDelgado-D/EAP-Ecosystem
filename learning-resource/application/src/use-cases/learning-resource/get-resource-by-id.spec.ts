@@ -5,10 +5,10 @@ import {
   ResourceStatusType,
   type LearningResource,
 } from "@learning-resource/domain";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
+import { GetResourceById } from "./get-resource-by-id.js";
+import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
 import { InvalidDataError, mockCryptoService } from "domain-lib";
-import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
-import { GetResourceById } from "./get-resource-by-id";
-import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found";
 
 describe("GetResourceById", () => {
   let crypto: ReturnType<typeof mockCryptoService>;

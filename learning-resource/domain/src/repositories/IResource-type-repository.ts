@@ -1,5 +1,5 @@
 import type { UUID } from "domain-lib";
-import type { ResourceType } from "../entities/resource-type";
+import type { ResourceType } from "../entities/resource-type.js";
 
 export interface IResourceTypeRepository {
   save(resourceType: ResourceType): Promise<void>;

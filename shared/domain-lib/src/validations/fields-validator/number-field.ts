@@ -1,8 +1,8 @@
 import type {
   FieldValidationResult,
   FieldValidator,
-} from "../validation-schema";
-import type { ValidatorOptions } from "./validator-options";
+} from "../validation-schema.js";
+import type { ValidatorOptions } from "./validator-options.js";
 
 export interface NumberFieldOptions extends ValidatorOptions {
   /**

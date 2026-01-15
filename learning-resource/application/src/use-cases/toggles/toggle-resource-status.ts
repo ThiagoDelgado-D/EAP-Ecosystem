@@ -1,39 +1,39 @@
 import {
-  EnergyLevelType,
+  ResourceStatusType,
   type ILearningResourceRepository,
 } from "@learning-resource/domain";
 import {
-  createValidationSchema,
-  enumField,
   InvalidDataError,
-  uuidField,
-  ValidationError,
   type UUID,
+  createValidationSchema,
+  uuidField,
+  enumField,
+  ValidationError,
 } from "domain-lib";
-import { LearningResourceNotFoundError } from "../../../errors";
+import { LearningResourceNotFoundError } from "../../errors/index.js";
 
-export interface ToggleResourceEnergyDependencies {
+export interface ToggleResourceStatusDependencies {
   learningResourceRepository: ILearningResourceRepository;
 }
 
-export interface ToggleResourceEnergyRequestModel {
+export interface ToggleResourceStatusRequestModel {
   id: UUID;
-  energyLevel: EnergyLevelType;
+  status: ResourceStatusType;
 }
 
-export const toggleResourceEnergySchema =
-  createValidationSchema<ToggleResourceEnergyRequestModel>({
+export const toggleResourceStatusSchema =
+  createValidationSchema<ToggleResourceStatusRequestModel>({
     id: uuidField("ResourceId", { required: true }),
-    energyLevel: enumField(Object.values(EnergyLevelType), "EnergyLevel", {
+    status: enumField(Object.values(ResourceStatusType), "Status", {
       required: true,
     }),
   });
 
-export const toggleResourceEnergy = async (
-  { learningResourceRepository }: ToggleResourceEnergyDependencies,
-  request: ToggleResourceEnergyRequestModel
+export const toggleStatus = async (
+  { learningResourceRepository }: ToggleResourceStatusDependencies,
+  request: ToggleResourceStatusRequestModel
 ): Promise<void | InvalidDataError | LearningResourceNotFoundError> => {
-  const validationResult = await toggleResourceEnergySchema(request);
+  const validationResult = await toggleResourceStatusSchema(request);
 
   if (validationResult instanceof ValidationError) {
     const validationErrors = validationResult.errors;
@@ -51,7 +51,7 @@ export const toggleResourceEnergy = async (
   }
 
   await learningResourceRepository.update(validatedData.id, {
-    energyLevel: validatedData.energyLevel,
+    status: validatedData.status,
     updatedAt: new Date(),
   });
 };

@@ -16,7 +16,7 @@ import {
   ValidationError,
   type UUID,
 } from "domain-lib";
-import { LearningResourceNotFoundError } from "../../errors";
+import { LearningResourceNotFoundError } from "../../errors/index.js";
 
 export interface UpdateResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;

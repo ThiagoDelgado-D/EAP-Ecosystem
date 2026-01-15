@@ -16,9 +16,9 @@
   },
   "scripts": {
     "build": "yarn workspaces foreach -A -tv run build",
-    "test:ci": "yarn workspaces foreach -A -tv run test --run",
+    "test:ci": "yarn workspaces foreach -A -tv run test run",
     "test:all": "yarn test && yarn test:templates",
-    "test": "yarn workspaces foreach -A run test --run --clearScreen false",
+    "test": "yarn workspaces foreach -A run test --clearScreen false",
     "type-check": "tsc --noEmit",
     "pre-pr": "yarn type-check && yarn test:ci && yarn build"
   },

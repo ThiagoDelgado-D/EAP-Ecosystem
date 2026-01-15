@@ -1,9 +1,9 @@
 import type {
   FieldValidationResult,
   FieldValidator,
-} from "../validation-schema";
-import type { UUID } from "../../types/uuid";
-import type { ValidatorOptions } from "./validator-options";
+} from "../validation-schema.js";
+import type { UUID } from "../../types/uuid.js";
+import type { ValidatorOptions } from "./validator-options.js";
 
 export interface UUIDFieldOptions extends ValidatorOptions {}
 

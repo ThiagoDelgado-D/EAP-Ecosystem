@@ -1,39 +1,39 @@
 import {
-  ResourceStatusType,
+  EnergyLevelType,
   type ILearningResourceRepository,
 } from "@learning-resource/domain";
 import {
-  InvalidDataError,
-  type UUID,
   createValidationSchema,
-  uuidField,
   enumField,
+  InvalidDataError,
+  uuidField,
   ValidationError,
+  type UUID,
 } from "domain-lib";
-import { LearningResourceNotFoundError } from "../../../errors";
+import { LearningResourceNotFoundError } from "../../errors/index.js";
 
-export interface ToggleResourceStatusDependencies {
+export interface ToggleResourceEnergyDependencies {
   learningResourceRepository: ILearningResourceRepository;
 }
 
-export interface ToggleResourceStatusRequestModel {
+export interface ToggleResourceEnergyRequestModel {
   id: UUID;
-  status: ResourceStatusType;
+  energyLevel: EnergyLevelType;
 }
 
-export const toggleResourceStatusSchema =
-  createValidationSchema<ToggleResourceStatusRequestModel>({
+export const toggleResourceEnergySchema =
+  createValidationSchema<ToggleResourceEnergyRequestModel>({
     id: uuidField("ResourceId", { required: true }),
-    status: enumField(Object.values(ResourceStatusType), "Status", {
+    energyLevel: enumField(Object.values(EnergyLevelType), "EnergyLevel", {
       required: true,
     }),
   });
 
-export const toggleStatus = async (
-  { learningResourceRepository }: ToggleResourceStatusDependencies,
-  request: ToggleResourceStatusRequestModel
+export const toggleResourceEnergy = async (
+  { learningResourceRepository }: ToggleResourceEnergyDependencies,
+  request: ToggleResourceEnergyRequestModel
 ): Promise<void | InvalidDataError | LearningResourceNotFoundError> => {
-  const validationResult = await toggleResourceStatusSchema(request);
+  const validationResult = await toggleResourceEnergySchema(request);
 
   if (validationResult instanceof ValidationError) {
     const validationErrors = validationResult.errors;
@@ -51,7 +51,7 @@ export const toggleStatus = async (
   }
 
   await learningResourceRepository.update(validatedData.id, {
-    status: validatedData.status,
+    energyLevel: validatedData.energyLevel,
     updatedAt: new Date(),
   });
 };

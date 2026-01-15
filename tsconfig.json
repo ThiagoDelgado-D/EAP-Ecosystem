@@ -12,8 +12,8 @@
       "@recomendation/application": ["recomendation/application/src"]
     },
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
     "allowJs": true,
     "declaration": true,
@@ -24,7 +24,5 @@
     "strict": true,
     "skipLibCheck": true,
     "verbatimModuleSyntax": true
-  },
-  "include": ["shared/**/*", "learning-resource/**/*", "user/**/*"],
-  "exclude": ["node_modules", "dist"]
+  }
 }

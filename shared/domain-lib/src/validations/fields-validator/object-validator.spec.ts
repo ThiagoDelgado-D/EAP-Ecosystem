@@ -1,8 +1,8 @@
 import { describe, test, expect, vi } from "vitest";
-import { objectField, optionalObject } from "./object-validator";
-import { positiveNumber } from "./number-field";
-import { booleanField } from "./boolean-validator";
-import type { StrictFieldValidator } from "../validation-schema";
+import { objectField, optionalObject } from "./object-validator.js";
+import { positiveNumber } from "./number-field.js";
+import { booleanField } from "./boolean-validator.js";
+import type { StrictFieldValidator } from "../validation-schema.js";
 
 describe("objectField", () => {
   const validateDuration = objectField<{

@@ -1,5 +1,5 @@
-import type { Result } from "../types";
-import { ValidationError } from "./validation-error";
+import type { Result } from "../types/index.js";
+import { ValidationError } from "./validation-error.js";
 /**
  * A validation schema is a function that validates an object of a given type.
  */

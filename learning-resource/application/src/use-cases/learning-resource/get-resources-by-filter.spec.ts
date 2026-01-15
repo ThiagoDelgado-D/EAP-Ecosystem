@@ -1,6 +1,6 @@
 import { mockCryptoService, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import {
   DifficultyType,
   EnergyLevelType,
@@ -8,8 +8,8 @@ import {
   ResourceStatusType,
   type Topic,
 } from "@learning-resource/domain";
-import { mockTopicRepository } from "../../mocks/mock-topic-repository";
-import { getResourcesByFilter } from "./get-resources-by-filter";
+import { mockTopicRepository } from "../../mocks/mock-topic-repository.js";
+import { getResourcesByFilter } from "./get-resources-by-filter.js";
 
 describe("getResourcesByFilter", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;

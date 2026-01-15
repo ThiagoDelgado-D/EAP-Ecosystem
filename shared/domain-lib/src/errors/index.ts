@@ -1,3 +1,3 @@
-export * from "./base-error";
-export * from "./generic-errors";
-export * from "./is-error";
+export * from "./base-error.js";
+export * from "./generic-errors/index.js";
+export * from "./is-error.js";

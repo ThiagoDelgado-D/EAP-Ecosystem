@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository";
+import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { mockCryptoService, type UUID } from "domain-lib";
 import {
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { listFormattedResourcesLearning } from "./list-resource";
+import { listFormattedResourcesLearning } from "./list-resource.js";
 
 describe("listFormattedResourcesLearning", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
