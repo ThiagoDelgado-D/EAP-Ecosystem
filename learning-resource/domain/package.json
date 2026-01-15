@@ -12,6 +12,10 @@
     "./entities": "./src/entities/index.ts",
     "./repositories": "./src/repositories/index.ts"
   },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.0.13",
+    "vitest": "^4.0.13"
+  },
   "scripts": {
     "test": "vitest",
     "build": "tsc --build tsconfig.build.json",

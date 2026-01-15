@@ -293,7 +293,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@learning-resource/domain@workspace:learning-resource/domain"
   dependencies:
+    "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
+    vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
 
