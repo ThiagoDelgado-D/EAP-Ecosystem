@@ -12,7 +12,9 @@
   ],
   "devDependencies": {
     "@types/node": "^24.9.2",
-    "typescript": "^5.9.3"
+    "@vitest/coverage-v8": "^4.0.15",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   },
   "scripts": {
     "build": "yarn workspaces foreach -A -tv run build",

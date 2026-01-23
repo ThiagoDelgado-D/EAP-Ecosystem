@@ -1,8 +1,9 @@
 import { defineConfig } from "vitest/config";
+import { resolve } from "path";
 
 export default defineConfig({
   test: {
-    name: "domain-lib",
+    name: "infrastructure-lib",
     root: "./",
     globals: true,
     environment: "node",
@@ -11,7 +12,6 @@ export default defineConfig({
       provider: "v8",
       exclude: [
         "**/index.ts",
-        "src/errors/generic-errors/**/*",
         "dist/**",
         "node_modules/**",
         "**/*.spec.ts",
@@ -20,5 +20,10 @@ export default defineConfig({
       reporter: ["text", "json", "html"],
     },
     passWithNoTests: true,
+  },
+  resolve: {
+    alias: {
+      "domain-lib": resolve(__dirname, "../domain-lib/src"),
+    },
   },
 });

@@ -1,6 +1,6 @@
 {
   "cSpell.enabled": true,
-  "cSpell.language": "en,es",
+  "cSpell.language": "en",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "files.autoSave": "off",
@@ -8,6 +8,11 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.preferences.includePackageJsonAutoImports": "on",
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.yarn": true
+  },
   "search.exclude": {
     "**/node_modules": true,
     "**/dist": true,
@@ -15,5 +20,10 @@
     "**/yarn.lock": true
   },
   "typescript.preferences.importModuleSpecifierEnding": "js",
-  "vitest.maximumConfigs": 5
+  "vitest.rootConfig": "./vitest.config.ts",
+  "vitest.disableWorkspaceWarning": true,
+  "vitest.maximumConfigs": 10,
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }
