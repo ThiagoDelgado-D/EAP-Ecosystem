@@ -40,5 +40,10 @@
     "strict": true,
     "skipLibCheck": true,
     "verbatimModuleSyntax": true
-  }
+  },
+  "exclude": [
+    "dist",
+    "node_modules",
+    "coverage"
+  ]
 }
