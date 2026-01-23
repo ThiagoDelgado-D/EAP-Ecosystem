@@ -20,11 +20,11 @@
       "@user/application": [
         "user/application/src"
       ],
-      "@recomendation/domain": [
-        "recomendation/domain/src"
+      "@recommendation/domain": [
+        "recommendation/domain/src"
       ],
-      "@recomendation/application": [
-        "recomendation/application/src"
+      "@recommendation/application": [
+        "recommendation/application/src"
       ]
     },
     "target": "ESNext",
