@@ -17,7 +17,8 @@
     "vitest": "^4.0.13"
   },
   "scripts": {
-    "test": "vitest",
+    "test": "vitest --run",
+    "test:watch": "vitest --run",
     "build": "tsc --build tsconfig.build.json",
     "type-check": "tsc --noEmit"
   }
