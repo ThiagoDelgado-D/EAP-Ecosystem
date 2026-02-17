@@ -1,4 +1,16 @@
 {
   "extends": "../../tsconfig.json",
-  "exclude": ["dist", "node_modules", "coverage"]
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {},
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "outDir": "dist",
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "node_modules"]
 }

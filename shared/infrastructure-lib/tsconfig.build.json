@@ -1,13 +1,15 @@
 {
-  "extends": "./tsconfig.json",
-  "references": [{ "path": "../domain-lib/tsconfig.build.json" }],
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "composite": true,
-    "noEmit": false,
-    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {},
     "rootDir": "src",
-    "declaration": true
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "outDir": "dist"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "node_modules"]
 }
