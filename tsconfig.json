@@ -2,10 +2,18 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "domain-lib": ["shared/domain-lib/src"],
-      "infrastructure-lib": ["shared/infrastructure-lib/src"],
-      "@learning-resource/domain": ["learning-resource/domain/src"],
-      "@learning-resource/application": ["learning-resource/application/src"]
+      "domain-lib": [
+        "shared/domain-lib/src"
+      ],
+      "infrastructure-lib": [
+        "shared/infrastructure-lib/src"
+      ],
+      "@learning-resource/domain": [
+        "learning-resource/domain/src"
+      ],
+      "@learning-resource/application": [
+        "learning-resource/application/src"
+      ]
     },
     "target": "ES2023",
     "module": "NodeNext",
@@ -19,5 +27,10 @@
     "declarationMap": true,
     "noEmit": true,
     "verbatimModuleSyntax": true
-  }
+  },
+  "exclude": [
+    "dist",
+    "node_modules",
+    "coverage"
+  ]
 }

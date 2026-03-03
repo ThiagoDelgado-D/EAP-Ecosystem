@@ -396,59 +396,206 @@ const { resources } = await getResourcesByFilter(deps, {
 
 ---
 
+---
+
 ## 📋 Roadmap
 
-### ✅ Phase 1: Core Domain (Completed)
+### ✅ Phase 1: Foundation (v0.1.0) - **COMPLETED**
 
-- [x] Monorepo structure with Yarn Workspaces
-- [x] Learning Resource domain model
-- [x] Repository pattern with interfaces
-- [x] Core use cases (CRUD operations)
-- [x] Comprehensive testing suite
-- [x] Type-safe error handling
+**Goal**: Establish solid architecture and business logic
 
-### 🚧 Phase 2: Foundation (In Progress)
+- [x] Clean + Hexagonal + Module-Based Architecture
+- [x] Domain Layer: Entities and contracts
+- [x] Application Layer: Use cases with validation
+- [x] Consolidated validation system
+- [x] Testing infrastructure (Vitest)
+- [x] Monorepo with Yarn Workspaces
+- [x] Comprehensive architecture documentation
 
-- [x] Advanced filtering and search
-- [x] Energy level calculations
-- [x] **Consolidated validation system**
-- [x] **CI/CD pipeline**
-- [x] **Architecture documentation**
-- [ ] **API architecture design**
+**Deliverables**:
 
-### 📅 Phase 3: Persistence & API
+- ✅ Complete `learning-resource` module (domain + application)
+- ✅ Shared libraries (`domain-lib`, `infrastructure-lib`)
+- ✅ Test coverage >90%
 
-- [ ] PostgreSQL setup and migrations
-- [ ] Repository implementations
-- [ ] NestJS API with REST endpoints
-- [ ] Authentication & Authorization
-- [ ] CQRS implementation
+---
+
+### 🚧 Phase 2: API Foundation (v0.2.0) - **NEXT**
+
+**Goal**: Implement presentation layer and basic persistence
+
+#### 2.1 - API Architecture Design
+
+- [ ] Define NestJS folder structure
+- [ ] API endpoint flow diagrams
+- [ ] REST resource-based controller pattern
+- [ ] Document architectural decisions
+
+#### 2.2 - Temporary Storage (JSON-based)
+
+- [ ] Implement `JsonLearningResourceRepository`
+- [ ] Implement `JsonTopicRepository`
+- [ ] Implement `JsonResourceTypeRepository`
+- [ ] File system utilities for persistence
+- [ ] Seed data for development
+
+**Rationale**: JSON storage allows rapid development without diving deep into database configuration. Migration to PostgreSQL in Phase 3.
+
+#### 2.3 - Error Handling Enhancement
+
+- [ ] HTTP status code mapping for domain errors
+- [ ] NestJS exception filters
+- [ ] Standardized error response DTOs
+- [ ] Error logging strategy
+
+#### 2.4 - NestJS API Implementation
+
+- [ ] Initial NestJS setup
+- [ ] Request/Response DTOs
+- [ ] Controllers for `learning-resource` module
+- [ ] Dependency injection configuration
+- [ ] API versioning (`/api/v1/...`)
+
+#### 2.5 - Testing
+
+- [ ] Integration tests for API endpoints
+- [ ] Basic E2E tests
+- [ ] JSON repository tests
+
+**Deliverables v0.2.0**:
+
+- ✅ Functional REST API with NestJS
+- ✅ JSON-based temporary persistence
+- ✅ Complete error handling
+- ✅ Integration tests
+
+---
+
+### 📅 Phase 3: Database & Advanced Features (v0.3.0)
+
+**Goal**: Migrate to production database and add advanced features
+
+#### 3.1 - Database Migration
+
+- [ ] PostgreSQL schema design
+- [ ] Migrations with TypeORM/Prisma
+- [ ] Implement PostgreSQL repositories
+- [ ] Data migration from JSON
+
+#### 3.2 - CQRS Implementation (Selective)
+
+**Strategic Decision**: Apply CQRS selectively where it provides value
+
+**Use CQRS for**:
+
+- ✅ Complex queries with filters (`getResourcesByFilter`)
+- ✅ Reports and analytics (future)
+- ✅ Read-heavy operations
+
+**Don't use CQRS for**:
+
+- ❌ Simple CRUD (`addResource`, `updateResource`, `deleteResource`)
+
+**Rationale**: CQRS adds value when:
+
+- Reads are more frequent than writes
+- Different data models benefit read vs write operations
+- Complex queries benefit from denormalized views
+
+#### 3.3 - Authentication & Authorization
+
+- [ ] JWT strategy implementation
+- [ ] User module (domain + application)
+- [ ] Auth guards and decorators
+- [ ] Role-Based Access Control (RBAC)
+
+#### 3.4 - Advanced Features
+
 - [ ] Redis caching layer
+- [ ] File upload (avatars, resources)
+- [ ] Pagination & sorting
+- [ ] API rate limiting
 
-### 📅 Phase 4: Intelligence
+**Deliverables v0.3.0**:
 
-- [ ] User module (profile, preferences, history)
-- [ ] Recommendation module
-- [ ] Energy pattern detection
-- [ ] Smart suggestion algorithm
+- ✅ PostgreSQL in production
+- ✅ CQRS for complex queries
+- ✅ Complete authentication
+- ✅ Advanced features
+
+---
+
+### 📅 Phase 4: DevOps & Production Ready (v0.4.0)
+
+**Goal**: Production-ready deployment
+
+- [ ] Docker setup (Dockerfile, docker-compose)
+- [ ] CI/CD pipeline (GitHub Actions)
+- [ ] Environment configuration
+- [ ] Logging & monitoring (Winston, Prometheus)
+- [ ] API documentation (Swagger/OpenAPI)
+- [ ] Deployment strategy (AWS/Vercel/Railway)
+
+**Docker Strategy**:
+
+- ✅ API container
+- ✅ PostgreSQL container
+- ✅ Redis container
+- ✅ docker-compose for local development
+
+**Rationale**: Docker simplifies deployment and ensures consistency across environments.
+
+---
+
+### 📅 Phase 5: Intelligence & Frontend (v0.5.0)
+
+**Goal**: Smart recommendations and user interface
+
+- [ ] Recommendation engine implementation
+- [ ] User module completion
+- [ ] Angular frontend application
+- [ ] User analytics dashboard
 - [ ] Session tracking and feedback
 
-### 📅 Phase 5: Integration & Frontend
+---
 
-- [ ] Angular application
+### 📅 Phase 6: Integration Ecosystem (v0.6.0)
+
+**Goal**: External integrations
+
 - [ ] Notion API integration
 - [ ] Browser bookmark sync
 - [ ] YouTube integration
 - [ ] Pocket integration
-- [ ] Dashboard and analytics
+- [ ] Export/Import utilities
 
-### 📅 Phase 6: Advanced Features
+---
 
-- [ ] Machine learning recommendations
+### 📅 Phase 7: Advanced Intelligence (v1.0.0)
+
+**Goal**: Machine learning and advanced features
+
+- [ ] ML-based recommendation refinement
 - [ ] Habit analytics and insights
 - [ ] Spaced repetition system
-- [ ] Collaborative learning (optional)
+- [ ] Performance optimization
 - [ ] Mobile app (optional)
+
+---
+
+## 🎯 Current Status (v0.1.0)
+
+| Component                 | Status           | Coverage |
+| ------------------------- | ---------------- | -------- |
+| **Domain Layer**          | ✅ Complete      | >90%     |
+| **Application Layer**     | ✅ Complete      | >90%     |
+| **Use Cases**             | ✅ Complete      | >95%     |
+| **Validation System**     | ✅ Complete      | >85%     |
+| **Shared Libraries**      | ✅ Complete      | >80%     |
+| **API Layer**             | 📅 Next (v0.2.0) | -        |
+| **Persistence**           | 📅 Planned       | -        |
+| **Frontend**              | 📅 Planned       | -        |
+| **Recommendation Engine** | 📅 Planned       | -        |
 
 ---
 
