@@ -20,7 +20,7 @@
   },
   "scripts": {
     "build": "yarn workspaces foreach -A -tv run build",
-    "test:ci": "yarn workspaces foreach -A -tv run test run",
+    "test:ci": "yarn workspaces foreach -A -tv run test",
     "test:all": "yarn test && yarn test:templates",
     "test": "yarn workspaces foreach -A run test ",
     "type-check": "tsc --noEmit",
