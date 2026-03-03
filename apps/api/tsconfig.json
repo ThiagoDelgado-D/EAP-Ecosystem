@@ -23,5 +23,7 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "verbatimModuleSyntax": true
-  }
+  },
+  "include": ["src/**/*", "main.ts", "app.module.ts"],
+  "exclude": ["node_modules", "dist"]
 }
