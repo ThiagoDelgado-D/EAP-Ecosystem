@@ -16,6 +16,6 @@
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "test": "vitest"
+    "test": "vitest --run"
   }
 }
