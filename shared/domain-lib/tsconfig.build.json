@@ -1,15 +1,19 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {},
-    "rootDir": "src",
-    "declaration": true,
-    "declarationMap": true,
+    "composite": true,
     "noEmit": false,
     "allowImportingTsExtensions": false,
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["**/*.spec.ts", "**/*.test.ts", "dist", "node_modules"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts",
+    "dist",
+    "node_modules",
+    "coverage",
+    "vitest.config.ts"
+  ]
 }

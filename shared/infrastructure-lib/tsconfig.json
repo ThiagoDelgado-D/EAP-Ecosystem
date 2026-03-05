@@ -1,29 +1,22 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {},
-    "target": "ES2023",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
     "lib": [
-      "ES2023",
+      "ES2022",
       "DOM",
       "DOM.Iterable"
     ],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "resolvePackageJsonExports": true,
-    "useDefineForClassFields": true,
+    "module": "ESNext",
     "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": false,
-    "outDir": "dist",
-    "declaration": true,
-    "declarationMap": true
+    "outDir": "dist"
   },
-  "include": [
-    "src/**/*"
-  ],
   "exclude": [
     "dist",
     "node_modules",
