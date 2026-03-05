@@ -14,9 +14,12 @@
     "test:watch": "vitest"
   },
   "exports": {
-    ".": "./dist/index.js",
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
     "./entities": "./dist/entities/index.js",
-    "./types": "./dist/index.d.ts"
+    "./types": "./dist/types/index.js"
   },
   "packageManager": "yarn@4.9.2",
   "devDependencies": {
