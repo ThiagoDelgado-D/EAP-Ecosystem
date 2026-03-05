@@ -15,7 +15,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./entities": "./dist/entities/index.js",
-    "./types": "./dist/types/index.js"
+    "./types": "./dist/index.d.ts"
   },
   "packageManager": "yarn@4.9.2",
   "devDependencies": {
