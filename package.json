@@ -9,8 +9,7 @@
     "shared/domain-lib",
     "shared/infrastructure-lib",
     "learning-resource/domain",
-    "learning-resource/application",
-    "learning-resource/infrastructure"
+    "learning-resource/application"
   ],
   "devDependencies": {
     "@types/node": "^24.9.2",
