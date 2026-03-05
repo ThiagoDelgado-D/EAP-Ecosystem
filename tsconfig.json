@@ -3,16 +3,16 @@
     "baseUrl": ".",
     "paths": {
       "domain-lib": [
-        "shared/domain-lib/src"
+        "shared/domain-lib/src/index.ts"
       ],
       "infrastructure-lib": [
-        "shared/infrastructure-lib/src"
+        "shared/infrastructure-lib/src/index.ts"
       ],
       "@learning-resource/domain": [
-        "learning-resource/domain/src"
+        "learning-resource/domain/src/index.ts"
       ],
       "@learning-resource/application": [
-        "learning-resource/application/src"
+        "learning-resource/application/src/index.ts"
       ]
     },
     "target": "ES2023",
