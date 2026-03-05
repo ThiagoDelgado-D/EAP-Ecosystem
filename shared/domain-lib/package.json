@@ -13,9 +13,9 @@
     "test:watch": "vitest --run"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./entities": "./src/entities/index.ts",
-    "./types": "./src/types/index.ts"
+    ".": "./dist/index.js",
+    "./entities": "./dist/entities/index.js",
+    "./types": "./dist/types/index.js"
   },
   "packageManager": "yarn@4.9.2",
   "devDependencies": {
