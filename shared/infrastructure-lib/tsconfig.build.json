@@ -1,12 +1,21 @@
 {
   "extends": "./tsconfig.json",
-  "references": [{ "path": "../domain-lib/tsconfig.build.json" }],
+  "references": [
+    {
+      "path": "../domain-lib/tsconfig.build.json"
+    }
+  ],
   "compilerOptions": {
     "composite": true,
     "noEmit": false,
+    "rootDir": "src",
     "outDir": "dist",
     "declaration": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["**/*.spec.ts"]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.spec.ts"
+  ]
 }

@@ -64,13 +64,13 @@ jobs:
       - name: Run tests for ${{ matrix.workspace }}
         run: |
           cd ${{ matrix.workspace }}
-          yarn test --run
+          yarn test
 
       - name: Generate coverage report
         if: success()
         run: |
           cd ${{ matrix.workspace }}
-          yarn test --coverage --run
+          yarn test --coverage
 
   build:
     name: Build

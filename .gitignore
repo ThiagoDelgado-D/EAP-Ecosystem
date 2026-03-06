@@ -18,3 +18,8 @@ coverage
 
 #!.yarn/cache
 .pnp.*
+
+# TypeScript build cache files and declaration files (should only be in dist)
+*.tsbuildinfo
+src/**/*.d.ts
+src/**/*.d.ts.map

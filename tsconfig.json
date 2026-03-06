@@ -3,43 +3,31 @@
     "baseUrl": ".",
     "paths": {
       "domain-lib": [
-        "shared/domain-lib/src"
+        "shared/domain-lib/src/index.ts"
       ],
       "infrastructure-lib": [
-        "shared/infrastructure-lib/src"
+        "shared/infrastructure-lib/src/index.ts"
       ],
       "@learning-resource/domain": [
-        "learning-resource/domain/src"
+        "learning-resource/domain/src/index.ts"
       ],
       "@learning-resource/application": [
-        "learning-resource/application/src"
-      ],
-      "@user/domain": [
-        "user/domain/src"
-      ],
-      "@user/application": [
-        "user/application/src"
-      ],
-      "@recommendation/domain": [
-        "recommendation/domain/src"
-      ],
-      "@recommendation/application": [
-        "recommendation/application/src"
+        "learning-resource/application/src/index.ts"
       ]
     },
-    "target": "ESNext",
+    "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "declaration": true,
-    "declarationMap": true,
-    "noEmit": true,
+    "resolvePackageJsonExports": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "verbatimModuleSyntax": true
+    "declaration": true,
+    "declarationMap": true,
+    "verbatimModuleSyntax": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "exclude": [
     "dist",

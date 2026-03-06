@@ -2,8 +2,16 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "allowImportingTsExtensions": false,
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "src",
+    "paths": {
+      "domain-lib": [
+        "shared/domain-lib/dist/index.d.ts"
+      ],
+      "@learning-resource/domain": [
+        "learning-resource/domain/dist/index.d.ts"
+      ]
+    }
   },
   "exclude": [
     "src/**/*.spec.ts",
