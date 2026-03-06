@@ -1,8 +1,20 @@
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import { dirname } from "path";
+import type { UUID } from "domain-lib";
+export interface Identifiable {
+  id: UUID;
+}
 
-export class JsonStorage<T extends { id: string }> {
+export interface StorageAdapter<T extends Identifiable> {
+  readAll(): Promise<T[]>;
+  writeAll(data: T[]): Promise<void>;
+  findById(id: UUID): Promise<T | undefined>;
+  save(item: T): Promise<T>;
+  delete(id: UUID): Promise<void>;
+}
+
+export class JsonStorage<T extends Identifiable> implements StorageAdapter<T> {
   constructor(private readonly filePath: string) {}
 
   async readAll(): Promise<T[]> {
@@ -16,7 +28,7 @@ export class JsonStorage<T extends { id: string }> {
     await writeFile(this.filePath, JSON.stringify(data, null, 2), "utf-8");
   }
 
-  async findById(id: string): Promise<T | undefined> {
+  async findById(id: UUID): Promise<T | undefined> {
     const all = await this.readAll();
     return all.find((item) => item.id === id);
   }
@@ -33,7 +45,7 @@ export class JsonStorage<T extends { id: string }> {
     return item;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: UUID): Promise<void> {
     const all = await this.readAll();
     await this.writeAll(all.filter((item) => item.id !== id));
   }
