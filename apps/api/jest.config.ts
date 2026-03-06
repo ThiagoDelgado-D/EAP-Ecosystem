@@ -30,7 +30,11 @@ const config: Config = {
     "node_modules/(?!(module-that-needs-transforming)/)",
   ],
 
-  collectCoverageFrom: ["src/**/*.ts"],
+  collectCoverageFrom: [
+    "src/**/*.ts",
+    "!src/**/*.spec.ts",
+    "!src/**/*.test.ts",
+  ],
   coverageDirectory: "./coverage",
 
   testTimeout: 30000,
