@@ -23,7 +23,7 @@ const config: Config = {
       "<rootDir>/../../learning-resource/application/src",
     "^domain-lib$": "<rootDir>/../../shared/domain-lib/src",
     "^infrastructure-lib$": "<rootDir>/../../shared/infrastructure-lib/src",
-    "^(.*)\\.js$": "$1",
+    "^(\\.{1,2}/.+)\\.js$": "$1",
   },
 
   transformIgnorePatterns: [
