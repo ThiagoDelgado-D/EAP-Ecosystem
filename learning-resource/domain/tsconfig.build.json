@@ -4,6 +4,7 @@
     "noEmit": false,
     "allowImportingTsExtensions": false,
     "outDir": "dist",
+    "rootDir": "src",
     "paths": {
       "domain-lib": [
         "shared/domain-lib/dist/index.d.ts"
