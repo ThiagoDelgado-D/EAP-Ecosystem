@@ -16,55 +16,34 @@ import {
   resourceTypeStorage,
 } from "@learning-resource/infrastructure";
 
+const makeResourceType = (code: string, displayName: string): ResourceType => {
+  const createdAt = faker.date.past({ years: 1 });
+  return {
+    id: faker.string.uuid() as UUID,
+    code,
+    displayName,
+    isActive: true,
+    createdAt,
+    updatedAt: faker.date.between({ from: createdAt, to: new Date() }),
+  };
+};
 const resourceTypes: ResourceType[] = [
-  {
-    id: faker.string.uuid() as UUID,
-    code: "article",
-    displayName: "Article",
-    isActive: true,
-    createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
-  },
-  {
-    id: faker.string.uuid() as UUID,
-    code: "video",
-    displayName: "Video",
-    isActive: true,
-    createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
-  },
-  {
-    id: faker.string.uuid() as UUID,
-    code: "course",
-    displayName: "Course",
-    isActive: true,
-    createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
-  },
-  {
-    id: faker.string.uuid() as UUID,
-    code: "book",
-    displayName: "Book",
-    isActive: true,
-    createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
-  },
-  {
-    id: faker.string.uuid() as UUID,
-    code: "podcast",
-    displayName: "Podcast",
-    isActive: true,
-    createdAt: faker.date.recent(),
-    updatedAt: faker.date.recent(),
-  },
+  makeResourceType("article", "Article"),
+  makeResourceType("video", "Video"),
+  makeResourceType("course", "Course"),
+  makeResourceType("book", "Book"),
+  makeResourceType("podcast", "Podcast"),
 ];
 
-const topics: Topic[] = Array.from({ length: 10 }, () => ({
-  id: faker.string.uuid() as UUID,
-  name: faker.hacker.noun(),
-  createdAt: faker.date.recent(),
-  updatedAt: faker.date.recent(),
-}));
+const topics: Topic[] = Array.from({ length: 10 }, () => {
+  const createdAt = faker.date.past({ years: 1 });
+  return {
+    id: faker.string.uuid() as UUID,
+    name: faker.hacker.noun(),
+    createdAt,
+    updatedAt: faker.date.between({ from: createdAt, to: new Date() }),
+  };
+});
 
 const difficulties = Object.values(DifficultyType);
 const energyLevels = Object.values(EnergyLevelType);
@@ -89,7 +68,7 @@ const learningResources: LearningResource[] = Array.from({ length: 30 }, () => {
     status: faker.helpers.arrayElement(statuses),
     notes: faker.datatype.boolean() ? faker.lorem.sentence() : undefined,
     createdAt,
-    updatedAt: faker.date.recent(),
+    updatedAt: faker.date.between({ from: createdAt, to: new Date() }),
   };
 });
 
