@@ -39,54 +39,16 @@ As a continuous learner, you face several daily challenges:
 
 **EAP-Ecosystem** is your personal learning companion that:
 
-```
-┌─────────────────────────────────────────────┐
-│          What Problem Does This             │
-│             System Solve?                   │
-└─────────────────────────────────────────────┘
-                    │
-        ┌───────────┼───────────┐
-        ▼           ▼           ▼
-┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-│  Scattered   │ │Build Reading │ │Many Micro-   │
-│   Content    │ │    Habits    │ │  Decisions   │
-└──────────────┘ └──────────────┘ └──────────────┘
+```mermaid
+flowchart TD
+  A["📚 Your Content<br/>(Notion, Bookmarks, Videos, Articles)"]
+  B["📥 Add Resources to EAP-Ecosystem"]
+  C["⚡ Choose Your Context<br/>Energy Level · Focus Type · Content Type"]
+  D["🎯 System Recommends Matched Content"]
+  E["🚀 Start Session"]
+  F["📊 Session Feedback<br/>Improves Future Recommendations"]
 
-                    ↓
-
-            Your Database
-         (Notion, Bookmarks,
-          Saved Content)
-                    │
-                    ↓
-            ┌──────────────┐
-            │ Entry Data:  │
-            │ • Resources  │
-            │ • Books      │
-            │ • Articles   │
-            │ • Courses    │
-            │ • Videos     │
-            └──────┬───────┘
-                   │
-                   ↓
-        ┌──────────────────────┐
-        │   Choose Context     │
-        │  1. Energy Level     │
-        │  2. Focus Type       │
-        │  3. Content Type     │
-        └──────┬───────────────┘
-               │
-               ↓
-   System Recommends Options
-   Based on Your Parameters
-               │
-               ↓
-        A Session Starts
-               │
-               ↓
-   Session Feedback Trains
-   The System for Better
-   Future Recommendations
+  A --> B --> C --> D --> E --> F --> C
 ```
 
 ---
@@ -292,6 +254,13 @@ yarn test:coverage
 yarn pre-pr
 ```
 
+### Seed Development Data
+
+```bash
+# Generate local JSON data files
+yarn seed
+```
+
 ---
 
 ## 📦 Current Modules
@@ -363,19 +332,17 @@ const { resources } = await getResourcesByFilter(deps, {
 
 ### Evening Session (Low Energy)
 
-```
-1. User opens app at 8:00 PM
-   ↓
-2. System detects: "Low Energy Period"
-   ↓
-3. User selects: "Read Something Light"
-   ↓
-4. System recommends:
-   📖 "5 JavaScript Tips" (10 min, Easy)
-   📖 "Design Pattern Overview" (15 min, Easy)
-   📖 "Review: Git Commands" (5 min, Review)
-   ↓
-5. User reads and marks complete
+```mermaid
+sequenceDiagram
+  actor User
+  participant EAP as EAP-Ecosystem
+
+  User->>EAP: Opens app at 8:00 PM
+  EAP-->>User: Detects "Low Energy Period"
+  User->>EAP: "Read Something Light"
+  EAP-->>User: 📖 "5 JavaScript Tips" (10 min, Easy)<br/>📖 "Design Pattern Overview" (15 min, Easy)<br/>📖 "Review: Git Commands" (5 min, Review)
+  User->>EAP: Reads and marks complete
+  EAP-->>User: ✅ Progress updated
 ```
 
 ---
@@ -387,14 +354,12 @@ const { resources } = await getResourcesByFilter(deps, {
 | **Language**        | TypeScript 5.9       | Type safety and developer experience |
 | **Package Manager** | Yarn 4.9 (Berry)     | Workspaces and performance           |
 | **Testing**         | Vitest 4.0           | Fast unit testing                    |
-| **API Framework**   | NestJS (Planned)     | Enterprise REST API                  |
+| **API Framework**   | NestJS               | Enterprise REST API                  |
 | **Frontend**        | Angular (Planned)    | Robust SPA framework                 |
 | **Database**        | PostgreSQL (Planned) | Relational data storage              |
 | **Cache**           | Redis (Planned)      | Performance optimization             |
 | **Architecture**    | Clean + Hexagonal    | Maintainability and testability      |
 | **Patterns**        | CQRS (Planned)       | Command-Query separation             |
-
----
 
 ---
 
@@ -420,24 +385,24 @@ const { resources } = await getResourcesByFilter(deps, {
 
 ---
 
-### 🚧 Phase 2: API Foundation (v0.2.0) - **NEXT**
+### 🚧 Phase 2: API Foundation (v0.2.0) - **IN PROGRESS**
 
 **Goal**: Implement presentation layer and basic persistence
 
 #### 2.1 - API Architecture Design
 
-- [ ] Define NestJS folder structure
+- [x] Define NestJS folder structure
 - [ ] API endpoint flow diagrams
 - [ ] REST resource-based controller pattern
-- [ ] Document architectural decisions
+- [x] Document architectural decisions
 
 #### 2.2 - Temporary Storage (JSON-based)
 
 - [ ] Implement `JsonLearningResourceRepository`
 - [ ] Implement `JsonTopicRepository`
 - [ ] Implement `JsonResourceTypeRepository`
-- [ ] File system utilities for persistence
-- [ ] Seed data for development
+- [x] File system utilities for persistence (`JsonStorage<T>`)
+- [x] Seed data for development
 
 **Rationale**: JSON storage allows rapid development without diving deep into database configuration. Migration to PostgreSQL in Phase 3.
 
@@ -450,7 +415,7 @@ const { resources } = await getResourcesByFilter(deps, {
 
 #### 2.4 - NestJS API Implementation
 
-- [ ] Initial NestJS setup
+- [x] Initial NestJS setup
 - [ ] Request/Response DTOs
 - [ ] Controllers for `learning-resource` module
 - [ ] Dependency injection configuration
@@ -464,10 +429,10 @@ const { resources } = await getResourcesByFilter(deps, {
 
 **Deliverables v0.2.0**:
 
-- ✅ Functional REST API with NestJS
-- ✅ JSON-based temporary persistence
-- ✅ Complete error handling
-- ✅ Integration tests
+- 🚧 Functional REST API with NestJS
+- 🚧 JSON-based temporary persistence
+- 📅 Complete error handling
+- 📅 Integration tests
 
 ---
 
@@ -518,10 +483,10 @@ const { resources } = await getResourcesByFilter(deps, {
 
 **Deliverables v0.3.0**:
 
-- ✅ PostgreSQL in production
-- ✅ CQRS for complex queries
-- ✅ Complete authentication
-- ✅ Advanced features
+- 📅 PostgreSQL in production
+- 📅 CQRS for complex queries
+- 📅 Complete authentication
+- 📅 Advanced features
 
 ---
 
@@ -538,10 +503,10 @@ const { resources } = await getResourcesByFilter(deps, {
 
 **Docker Strategy**:
 
-- ✅ API container
-- ✅ PostgreSQL container
-- ✅ Redis container
-- ✅ docker-compose for local development
+- 📅 API container
+- 📅 PostgreSQL container
+- 📅 Redis container
+- 📅 docker-compose for local development
 
 **Rationale**: Docker simplifies deployment and ensures consistency across environments.
 
@@ -583,19 +548,24 @@ const { resources } = await getResourcesByFilter(deps, {
 
 ---
 
-## 🎯 Current Status (v0.1.0)
+## 🎯 Current Status (v0.2.0 - In Progress)
 
-| Component                 | Status           | Coverage |
-| ------------------------- | ---------------- | -------- |
-| **Domain Layer**          | ✅ Complete      | >90%     |
-| **Application Layer**     | ✅ Complete      | >90%     |
-| **Use Cases**             | ✅ Complete      | >95%     |
-| **Validation System**     | ✅ Complete      | >85%     |
-| **Shared Libraries**      | ✅ Complete      | >80%     |
-| **API Layer**             | 📅 Next (v0.2.0) | -        |
-| **Persistence**           | 📅 Planned       | -        |
-| **Frontend**              | 📅 Planned       | -        |
-| **Recommendation Engine** | 📅 Planned       | -        |
+| Component                  | Status               | Coverage |
+| -------------------------- | -------------------- | -------- |
+| **Domain Layer**           | ✅ Complete          | >90%     |
+| **Application Layer**      | ✅ Complete          | >90%     |
+| **Use Cases**              | ✅ Complete          | >95%     |
+| **Validation System**      | ✅ Complete          | >85%     |
+| **Shared Libraries**       | ✅ Complete          | >80%     |
+| **NestJS Bootstrap**       | ✅ Complete          | -        |
+| **JsonStorage**            | ✅ Complete          | >90%     |
+| **Seed Script**            | ✅ Complete          | -        |
+| **Architecture Decisions** | ✅ Complete (9 ADRs) | -        |
+| **JSON Repositories**      | 🚧 In Progress       | -        |
+| **API Controllers**        | 📅 Planned           | -        |
+| **Error Handling**         | 📅 Planned           | -        |
+| **Frontend**               | 📅 Planned           | -        |
+| **Recommendation Engine**  | 📅 Planned           | -        |
 
 ---
 
@@ -611,83 +581,7 @@ This project is guided by:
 - **Domain-Driven Design**: Ubiquitous language, bounded contexts
 - **System Design**: Scalability, performance, reliability patterns
 
-For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md)
+For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md).  
+For architecture decision records, see [.docs/adr/](.docs/adr/).
 
 ---
-
-## 🎯 Why This Project Exists
-
-This is not just another TODO app or bookmark manager. This is a **learning companion** designed to:
-
-1. **Reduce Cognitive Load**: Stop thinking about "what should I learn?" and start learning
-2. **Optimize Your Energy**: Match your content with your mental state
-3. **Build Better Habits**: Make learning frictionless and consistent
-4. **Track Your Growth**: See your learning journey evolve
-5. **Learn by Building**: The project itself is a learning laboratory
-
-### Personal Benefits
-
-- **While Planning**: Think through the architecture, patterns, and trade-offs
-- **While Building**: Practice Clean Architecture, TDD, and professional development
-- **While Using**: Actually benefit from a tool designed specifically for your needs
-
----
-
-## 🤝 Contributing
-
-This project is primarily a personal learning laboratory, but suggestions and feedback are welcome.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🏆 Project Status
-
-| Component                 | Status           | Coverage |
-| ------------------------- | ---------------- | -------- |
-| **Domain Layer**          | ✅ Stable        | >90%     |
-| **Application Layer**     | ✅ Stable        | >90%     |
-| **Use Cases**             | ✅ Complete      | >95%     |
-| **Validation System**     | 🚧 Consolidating | -        |
-| **API Layer**             | 📅 Design Phase  | -        |
-| **Persistence**           | 📅 Planned       | -        |
-| **Frontend**              | 📅 Planned       | -        |
-| **Recommendation Engine** | 📅 Planned       | -        |
-
----
-
-## 💭 Future Vision
-
-Imagine a system that:
-
-- ✨ Knows your energy patterns better than you do
-- 🎯 Suggests the perfect content at the perfect time
-- 📈 Helps you build unbreakable learning habits
-- 🧠 Adapts to your learning style automatically
-- 🌱 Grows with you as your interests evolve
-
-This is not just software—it's your **personal learning operating system**.
-
----
-
-## 🙏 Inspiration
-
-This project draws inspiration from:
-
-- **Notion**: Content organization and databases
-- **Pocket**: Read-it-later functionality
-- **Forest**: Focus and habit building
-- **Anki**: Spaced repetition learning
-- **RescueTime**: Time tracking and analytics
-
-But combines them into a **unified, intentional learning ecosystem**.
-
----
-
-**Built with ❤️ to solve a real problem: making continuous learning sustainable and effective**
