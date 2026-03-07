@@ -1,16 +1,15 @@
 {
   "extends": "./tsconfig.json",
-  "references": [
-    {
-      "path": "../domain-lib/tsconfig.build.json"
-    }
-  ],
   "compilerOptions": {
-    "composite": true,
     "noEmit": false,
     "rootDir": "src",
     "outDir": "dist",
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "domain-lib": [
+        "shared/domain-lib/dist/index.d.ts"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts"
