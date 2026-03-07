@@ -19,8 +19,18 @@ export class JsonStorage<T extends Identifiable> implements StorageAdapter<T> {
 
   async readAll(): Promise<T[]> {
     if (!existsSync(this.filePath)) return [];
-    const content = await readFile(this.filePath, "utf-8");
-    return JSON.parse(content) as T[];
+    try {
+      const content = await readFile(this.filePath, "utf-8");
+      return JSON.parse(content, (key, value) =>
+        typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value)
+          ? new Date(value)
+          : value,
+      ) as T[];
+    } catch (error) {
+      throw new Error(
+        `Failed to parse JSON storage at ${this.filePath}: ${error}`,
+      );
+    }
   }
 
   async writeAll(data: T[]): Promise<void> {

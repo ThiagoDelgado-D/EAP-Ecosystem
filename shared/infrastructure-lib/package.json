@@ -10,13 +10,16 @@
     "domain-lib": "workspace:^"
   },
   "devDependencies": {
-    "@faker-js/faker": "^10.3.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^24.10.1",
-    "typescript": "^5.9.3"
+    "@vitest/coverage-v8": "^4.0.18",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --run --coverage"
   }
 }

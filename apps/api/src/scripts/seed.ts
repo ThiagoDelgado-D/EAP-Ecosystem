@@ -62,7 +62,6 @@ const resourceTypes: ResourceType[] = [
 const topics: Topic[] = Array.from({ length: 10 }, () => ({
   id: faker.string.uuid() as UUID,
   name: faker.hacker.noun(),
-  description: faker.hacker.phrase(),
   createdAt: faker.date.recent(),
   updatedAt: faker.date.recent(),
 }));

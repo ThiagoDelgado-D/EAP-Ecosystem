@@ -2237,6 +2237,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vitest/coverage-v8@npm:^4.0.18":
+  version: 4.0.18
+  resolution: "@vitest/coverage-v8@npm:4.0.18"
+  dependencies:
+    "@bcoe/v8-coverage": "npm:^1.0.2"
+    "@vitest/utils": "npm:4.0.18"
+    ast-v8-to-istanbul: "npm:^0.3.10"
+    istanbul-lib-coverage: "npm:^3.2.2"
+    istanbul-lib-report: "npm:^3.0.1"
+    istanbul-reports: "npm:^3.2.0"
+    magicast: "npm:^0.5.1"
+    obug: "npm:^2.1.1"
+    std-env: "npm:^3.10.0"
+    tinyrainbow: "npm:^3.0.3"
+  peerDependencies:
+    "@vitest/browser": 4.0.18
+    vitest: 4.0.18
+  peerDependenciesMeta:
+    "@vitest/browser":
+      optional: true
+  checksum: 10c0/e23e0da86f0b2a020c51562bc40ebdc7fc7553c24f8071dfb39a6df0161badbd5eaf2eebbf8ceaef18933a18c1934ff52d1c0c4bde77bb87e0c1feb0c8cbee4d
+  languageName: node
+  linkType: hard
+
 "@vitest/expect@npm:4.0.15":
   version: 4.0.15
   resolution: "@vitest/expect@npm:4.0.15"
@@ -2829,6 +2853,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "api@workspace:apps/api"
   dependencies:
+    "@faker-js/faker": "npm:^10.3.0"
     "@learning-resource/application": "workspace:^"
     "@learning-resource/domain": "workspace:^"
     "@learning-resource/infrastructure": "workspace:^"
@@ -4522,12 +4547,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "infrastructure-lib@workspace:shared/infrastructure-lib"
   dependencies:
-    "@faker-js/faker": "npm:^10.3.0"
     "@types/bcryptjs": "npm:^3.0.0"
     "@types/node": "npm:^24.10.1"
+    "@vitest/coverage-v8": "npm:^4.0.18"
     bcryptjs: "npm:^3.0.3"
     domain-lib: "workspace:^"
     typescript: "npm:^5.9.3"
+    vitest: "npm:^4.0.18"
   languageName: unknown
   linkType: soft
 
@@ -7374,7 +7400,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vitest@npm:^4.0.13":
+"vitest@npm:^4.0.13, vitest@npm:^4.0.18":
   version: 4.0.18
   resolution: "vitest@npm:4.0.18"
   dependencies:
