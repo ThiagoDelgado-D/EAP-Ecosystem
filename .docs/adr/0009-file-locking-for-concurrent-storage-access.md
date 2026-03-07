@@ -18,8 +18,7 @@ A mechanism is needed to serialize write operations on the filesystem level to p
 
 ## Decision
 
-To be defined. The implementation will introduce a file locking mechanism that ensures only one write operation can access a given JSON file at a time.
-
+The implementation will introduce a file locking mechanism that ensures only one writer accesses a given JSON file at a time.
 Candidates under consideration:
 
 **Option A — `proper-lockfile` (advisory locking):**

@@ -35,7 +35,8 @@ The entire monorepo adopts **ESM as the module system**, configured as follows:
 {
   "compilerOptions": {
     "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "resolvePackageJsonExports": false
   }
 }
 ```
