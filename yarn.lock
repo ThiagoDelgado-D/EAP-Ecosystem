@@ -1379,7 +1379,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@learning-resource/infrastructure@workspace:learning-resource/infrastructure":
+"@learning-resource/infrastructure@workspace:^, @learning-resource/infrastructure@workspace:learning-resource/infrastructure":
   version: 0.0.0-use.local
   resolution: "@learning-resource/infrastructure@workspace:learning-resource/infrastructure"
   dependencies:
@@ -2831,6 +2831,7 @@ __metadata:
   dependencies:
     "@learning-resource/application": "workspace:^"
     "@learning-resource/domain": "workspace:^"
+    "@learning-resource/infrastructure": "workspace:^"
     "@nestjs/cli": "npm:^11.0.0"
     "@nestjs/common": "npm:^11.0.1"
     "@nestjs/core": "npm:^11.0.1"
