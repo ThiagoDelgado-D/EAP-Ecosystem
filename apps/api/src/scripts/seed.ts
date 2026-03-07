@@ -1,24 +1,20 @@
 import { faker } from "@faker-js/faker";
+import {
+  DifficultyType,
+  EnergyLevelType,
+  ResourceStatusType,
+} from "@learning-resource/domain";
 import type {
   LearningResource,
   ResourceType,
   Topic,
 } from "@learning-resource/domain";
 import type { UUID } from "domain-lib";
-import { JsonStorage } from "infrastructure-lib";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const dataDir = resolve(__dirname, "../data");
-
-const resourceTypeStorage = new JsonStorage<ResourceType>(
-  resolve(dataDir, "resource-types.json"),
-);
-const topicStorage = new JsonStorage<Topic>(resolve(dataDir, "topics.json"));
-const learningResourceStorage = new JsonStorage<LearningResource>(
-  resolve(dataDir, "learning-resources.json"),
-);
+import {
+  learningResourceStorage,
+  topicStorage,
+  resourceTypeStorage,
+} from "@learning-resource/infrastructure";
 
 const resourceTypes: ResourceType[] = [
   {
@@ -71,9 +67,9 @@ const topics: Topic[] = Array.from({ length: 10 }, () => ({
   updatedAt: faker.date.recent(),
 }));
 
-const difficulties = ["low", "medium", "high"] as const;
-const energyLevels = ["low", "medium", "high"] as const;
-const statuses = ["pending", "in_progress", "completed"] as const;
+const difficulties = Object.values(DifficultyType);
+const energyLevels = Object.values(EnergyLevelType);
+const statuses = Object.values(ResourceStatusType);
 
 const learningResources: LearningResource[] = Array.from({ length: 30 }, () => {
   const createdAt = faker.date.past({ years: 1 });

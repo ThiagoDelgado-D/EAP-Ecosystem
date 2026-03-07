@@ -19,6 +19,7 @@
   "dependencies": {
     "@learning-resource/application": "workspace:^",
     "@learning-resource/domain": "workspace:^",
+    "@learning-resource/infrastructure": "workspace:^",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
