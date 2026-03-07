@@ -313,21 +313,19 @@ const { resources } = await getResourcesByFilter(deps, {
 
 ### Morning Session (High Energy)
 
-```
-1. User opens app at 9:00 AM
-   ↓
-2. System detects: "High Energy Period"
-   ↓
-3. User selects: "Learn Something New"
-   ↓
-4. System recommends:
-   📚 "Advanced System Design" (3 hours, High difficulty)
-   📚 "PostgreSQL Performance Tuning" (2 hours, High difficulty)
-   📚 "CQRS Deep Dive" (1.5 hours, Medium difficulty)
-   ↓
-5. User starts session
-   ↓
-6. System tracks progress and provides feedback
+```mermaid
+sequenceDiagram
+  actor User
+  participant EAP as EAP-Ecosystem
+
+  User->>EAP: Opens app at 9:00 AM
+  EAP-->>User: Detects "High Energy Period"
+  User->>EAP: "Learn Something New"
+  EAP-->>User: 📚 "Advanced System Design" (3 hours, High)<br/>📚 "PostgreSQL Performance Tuning" (2 hours, High)<br/>📚 "CQRS Deep Dive" (1.5 hours, Medium)
+  User->>EAP: Starts session
+  EAP-->>User: ⏱️ Session started, tracking progress
+  User->>EAP: Completes session
+  EAP-->>User: 📊 Progress updated, feedback recorded
 ```
 
 ### Evening Session (Low Energy)
