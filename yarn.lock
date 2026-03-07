@@ -1379,6 +1379,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@learning-resource/infrastructure@workspace:learning-resource/infrastructure":
+  version: 0.0.0-use.local
+  resolution: "@learning-resource/infrastructure@workspace:learning-resource/infrastructure"
+  dependencies:
+    "@learning-resource/domain": "workspace:^"
+    infrastructure-lib: "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@lukeed/csprng@npm:^1.0.0":
   version: 1.1.0
   resolution: "@lukeed/csprng@npm:1.1.0"
