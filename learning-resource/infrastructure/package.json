@@ -7,6 +7,11 @@
     "@learning-resource/domain": "workspace:^",
     "infrastructure-lib": "workspace:^"
   },
+  "exports": {
+    ".": "./dist/index.js",
+    "./storage": "./dist/storage/index.js",
+    "./repositories": "./dist/repositories/index.js"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "type-check": "tsc --noEmit"
