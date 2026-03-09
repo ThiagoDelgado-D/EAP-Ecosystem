@@ -7,6 +7,10 @@
     "@learning-resource/domain": "workspace:^",
     "infrastructure-lib": "workspace:^"
   },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.0.13",
+    "vitest": "^4.0.13"
+  },
   "exports": {
     ".": "./dist/index.js",
     "./storage": "./dist/storage/index.js",
@@ -14,7 +18,10 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --run --coverage"
   },
   "packageManager": "yarn@4.9.2"
 }

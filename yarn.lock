@@ -1384,7 +1384,9 @@ __metadata:
   resolution: "@learning-resource/infrastructure@workspace:learning-resource/infrastructure"
   dependencies:
     "@learning-resource/domain": "workspace:^"
+    "@vitest/coverage-v8": "npm:4.0.13"
     infrastructure-lib: "workspace:^"
+    vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
 
