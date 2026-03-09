@@ -49,7 +49,7 @@ describe("JsonLearningResourceRepository", () => {
 
     test("does nothing when id does not exist", async () => {
       await expect(
-        repository.update(crypto.randomUUID(), { title: "Ghost" }),
+        repository.update(crypto.randomUUID() as UUID, { title: "Ghost" }),
       ).resolves.toBeUndefined();
     });
   });
@@ -82,7 +82,7 @@ describe("JsonLearningResourceRepository", () => {
     });
 
     test("returns null when not found", async () => {
-      const result = await repository.findById(crypto.randomUUID());
+      const result = await repository.findById(crypto.randomUUID() as UUID);
       expect(result).toBeNull();
     });
   });
@@ -92,7 +92,7 @@ describe("JsonLearningResourceRepository", () => {
       const topicId = crypto.randomUUID() as UUID;
       const match = generateLearningResource({ topicIds: [topicId] });
       const noMatch = generateLearningResource({
-        topicIds: [crypto.randomUUID()],
+        topicIds: [crypto.randomUUID() as UUID],
       });
       await repository.save(match);
       await repository.save(noMatch);
@@ -146,7 +146,7 @@ describe("JsonLearningResourceRepository", () => {
 
   describe("findByResourceTypeId", () => {
     test("returns only resources with matching typeId", async () => {
-      const typeId = crypto.randomUUID();
+      const typeId = crypto.randomUUID() as UUID;
       const match = generateLearningResource({ typeId });
       const noMatch = generateLearningResource({
         typeId: crypto.randomUUID() as UUID,

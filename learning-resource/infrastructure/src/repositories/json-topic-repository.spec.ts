@@ -75,7 +75,7 @@ describe("JsonTopicRepository", () => {
     });
 
     test("returns null when not found", async () => {
-      const result = await repository.findById(crypto.randomUUID() as UUID);
+      const result = await repository.findById(crypto.randomUUID());
       expect(result).toBeNull();
     });
   });
