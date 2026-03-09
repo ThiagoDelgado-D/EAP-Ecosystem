@@ -1,27 +1,29 @@
 import type { UUID } from "domain-lib";
 import type { ITopicRepository, Topic } from "@learning-resource/domain";
-import { topicStorage } from "../storage/index.js";
+import type { StorageAdapter } from "infrastructure-lib";
 
 export class JsonTopicRepository implements ITopicRepository {
+  constructor(private readonly storage: StorageAdapter<Topic>) {}
+
   async save(topic: Topic): Promise<void> {
-    await topicStorage.save(topic);
+    await this.storage.save(topic);
   }
 
   async update(id: UUID, topic: Partial<Topic>): Promise<void> {
-    const existing = await topicStorage.findById(id);
+    const existing = await this.storage.findById(id);
     if (!existing) return;
-    await topicStorage.save({ ...existing, ...topic, id });
+    await this.storage.save({ ...existing, ...topic, id });
   }
 
   async delete(id: UUID): Promise<void> {
-    await topicStorage.delete(id);
+    await this.storage.delete(id);
   }
 
   async findAll(): Promise<Topic[]> {
-    return topicStorage.readAll();
+    return this.storage.readAll();
   }
 
   async findById(id: UUID): Promise<Topic | null> {
-    return (await topicStorage.findById(id)) ?? null;
+    return (await this.storage.findById(id)) ?? null;
   }
 }
