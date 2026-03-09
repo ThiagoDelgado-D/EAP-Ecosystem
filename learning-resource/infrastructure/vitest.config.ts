@@ -20,7 +20,6 @@ export default defineConfig({
       ],
       reporter: ["text", "json", "html"],
     },
-    passWithNoTests: true,
   },
   resolve: {
     alias: {

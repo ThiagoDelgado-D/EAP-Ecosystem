@@ -18,7 +18,10 @@ export class JsonLearningResourceRepository implements ILearningResourceReposito
   async update(id: UUID, resource: Partial<LearningResource>): Promise<void> {
     const existing = await this.storage.findById(id);
     if (!existing) return;
-    await this.storage.save({ ...existing, ...resource, id });
+    const cleanResource = Object.fromEntries(
+      Object.entries(resource).filter(([, v]) => v !== undefined),
+    ) as Partial<LearningResource>;
+    await this.storage.save({ ...existing, ...cleanResource, id });
   }
 
   async delete(id: UUID): Promise<void> {

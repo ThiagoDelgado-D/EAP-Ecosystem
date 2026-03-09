@@ -4,11 +4,12 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "@faker-js/faker": "^10.3.0",
     "@learning-resource/domain": "workspace:^",
     "infrastructure-lib": "workspace:^"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "4.0.13",
+    "@vitest/coverage-v8": "^4.0.13",
     "vitest": "^4.0.13"
   },
   "exports": {

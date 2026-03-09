@@ -1383,6 +1383,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@learning-resource/infrastructure@workspace:learning-resource/infrastructure"
   dependencies:
+    "@faker-js/faker": "npm:^10.3.0"
     "@learning-resource/domain": "workspace:^"
     "@vitest/coverage-v8": "npm:4.0.13"
     infrastructure-lib: "workspace:^"

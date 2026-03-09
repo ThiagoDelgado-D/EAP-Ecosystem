@@ -12,7 +12,10 @@ export class JsonTopicRepository implements ITopicRepository {
   async update(id: UUID, topic: Partial<Topic>): Promise<void> {
     const existing = await this.storage.findById(id);
     if (!existing) return;
-    await this.storage.save({ ...existing, ...topic, id });
+    const cleanPatch = Object.fromEntries(
+      Object.entries(topic).filter(([, v]) => v !== undefined),
+    ) as Partial<Topic>;
+    await this.storage.save({ ...existing, ...cleanPatch, id });
   }
 
   async delete(id: UUID): Promise<void> {
