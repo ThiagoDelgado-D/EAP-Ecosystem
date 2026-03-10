@@ -396,9 +396,9 @@ sequenceDiagram
 
 #### 2.2 - Temporary Storage (JSON-based)
 
-- [ ] Implement `JsonLearningResourceRepository`
-- [ ] Implement `JsonTopicRepository`
-- [ ] Implement `JsonResourceTypeRepository`
+- [x] Implement `JsonLearningResourceRepository`
+- [x] Implement `JsonTopicRepository`
+- [x] Implement `JsonResourceTypeRepository`
 - [x] File system utilities for persistence (`JsonStorage<T>`)
 - [x] Seed data for development
 
@@ -406,7 +406,7 @@ sequenceDiagram
 
 #### 2.3 - Error Handling Enhancement
 
-- [ ] HTTP status code mapping for domain errors
+- [x] HTTP status code mapping for domain errors
 - [ ] NestJS exception filters
 - [ ] Standardized error response DTOs
 - [ ] Error logging strategy
@@ -423,7 +423,7 @@ sequenceDiagram
 
 - [ ] Integration tests for API endpoints
 - [ ] Basic E2E tests
-- [ ] JSON repository tests
+- [x] JSON repository tests
 
 **Deliverables v0.2.0**:
 
