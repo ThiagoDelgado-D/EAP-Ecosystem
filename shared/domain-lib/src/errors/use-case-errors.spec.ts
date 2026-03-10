@@ -23,4 +23,13 @@ describe("UseCaseErrors", () => {
     expectTypeOf<UseCaseErrors<FakeUseCases>>().not.toExtend<undefined>();
     expectTypeOf<UseCaseErrors<FakeUseCases>>().not.toExtend<void>();
   });
+  test("Excludes response models from union", () => {
+    type FakeUseCases = {
+      getById: () => Promise<{ id: string } | InvalidDataError>;
+    };
+
+    expectTypeOf<
+      UseCaseErrors<FakeUseCases>
+    >().toEqualTypeOf<InvalidDataError>();
+  });
 });
