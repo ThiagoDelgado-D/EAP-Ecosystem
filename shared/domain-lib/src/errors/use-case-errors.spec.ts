@@ -32,4 +32,14 @@ describe("UseCaseErrors", () => {
       UseCaseErrors<FakeUseCases>
     >().toEqualTypeOf<InvalidDataError>();
   });
+  test("handles synchronous use cases", () => {
+    type FakeUseCases = {
+      syncUseCase: () => InvalidDataError | void;
+      asyncUseCase: () => Promise<NotFoundError | void>;
+    };
+
+    expectTypeOf<UseCaseErrors<FakeUseCases>>().toEqualTypeOf<
+      InvalidDataError | NotFoundError
+    >();
+  });
 });
