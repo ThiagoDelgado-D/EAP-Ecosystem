@@ -10,7 +10,9 @@ export class GetResourcesFilterDto {
   @IsOptional()
   @IsArray()
   @IsUUID("all", { each: true })
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(({ value }) =>
+    value === undefined ? undefined : Array.isArray(value) ? value : [value],
+  )
   topicIds?: string[];
 
   @IsOptional()
