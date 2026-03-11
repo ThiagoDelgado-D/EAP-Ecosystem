@@ -22,7 +22,8 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "strictPropertyInitialization": false
   },
   "include": [
     "src/**/*",
