@@ -6,6 +6,7 @@ import type {
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -23,6 +24,7 @@ import {
 } from "./dto/request/index.js";
 import {
   addResource,
+  deleteResource,
   GetResourceById,
   getResourcesByFilter,
   listFormattedResourcesLearning,
@@ -94,6 +96,15 @@ export class LearningResourceController {
         topicRepository: this.topicRepository,
       },
       { id, ...dto },
+    );
+    if (result instanceof BaseError) toHttpException(result);
+  }
+
+  @Delete(":id")
+  async remove(@Param("id") id: UUID) {
+    const result = await deleteResource(
+      { learningResourceRepository: this.learningResourceRepository },
+      { id },
     );
     if (result instanceof BaseError) toHttpException(result);
   }

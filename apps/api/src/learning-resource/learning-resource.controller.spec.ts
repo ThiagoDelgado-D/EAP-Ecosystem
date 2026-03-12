@@ -353,4 +353,43 @@ describe("LearningResourceController (integration)", () => {
         .expect(400);
     });
   });
+  describe("DELETE /api/v1/learning-resources/:id", () => {
+    let resourceId: UUID;
+
+    beforeEach(async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "TypeScript Advanced",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 120,
+        });
+
+      resourceId = resourceRepo.learningResources[0].id;
+    });
+
+    test("Should delete the resource and return 200", async () => {
+      await request(app.getHttpServer())
+        .delete(`/api/v1/learning-resources/${resourceId}`)
+        .expect(200);
+
+      expect(resourceRepo.count()).toBe(0);
+    });
+
+    test("Should return 404 when resource does not exist", async () => {
+      const nonExistentId = await cryptoService.generateUUID();
+
+      await request(app.getHttpServer())
+        .delete(`/api/v1/learning-resources/${nonExistentId}`)
+        .expect(404);
+    });
+
+    test("Should return 400 when id is not a valid UUID", async () => {
+      await request(app.getHttpServer())
+        .delete("/api/v1/learning-resources/not-a-uuid")
+        .expect(400);
+    });
+  });
 });
