@@ -35,7 +35,7 @@ describe("GlobalExceptionFilter", () => {
     await app.init();
   });
 
-  afterAll(() => app.close());
+  afterAll(async () => await app.close());
 
   it("should return the HttpException status and body", () => {
     return request(app.getHttpServer())
