@@ -3,7 +3,7 @@ import type {
   IResourceTypeRepository,
   ITopicRepository,
 } from "@learning-resource/domain";
-import { Body, Controller, Inject, Post } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Post } from "@nestjs/common";
 import {
   AddResourceDto,
   GetResourcesFilterDto,
@@ -12,7 +12,10 @@ import {
   ToggleStatusDto,
   UpdateResourceDto,
 } from "./dto/request/index.js";
-import { addResource } from "@learning-resource/application";
+import {
+  addResource,
+  listFormattedResourcesLearning,
+} from "@learning-resource/application";
 import { BaseError, type CryptoService } from "domain-lib";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 
@@ -42,5 +45,12 @@ export class LearningResourceController {
     );
 
     if (result instanceof BaseError) toHttpException(result);
+  }
+  @Get()
+  async list() {
+    const result = await listFormattedResourcesLearning({
+      learningResourceRepository: this.learningResourceRepository,
+    });
+    return result;
   }
 }

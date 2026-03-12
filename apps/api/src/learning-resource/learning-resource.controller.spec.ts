@@ -125,4 +125,31 @@ describe("LearningResourceController (integration)", () => {
         .expect(404);
     });
   });
+  describe("GET /api/v1/learning-resource", () => {
+    test("Should return empty list when no resources exist", async () => {
+      await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .expect(200)
+        .expect({ resources: [] });
+    });
+
+    test("Should return list with existing resources", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "TypeScript Advanced",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 120,
+        });
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .expect(200);
+
+      expect(response.body.resources).toHaveLength(1);
+      expect(response.body.resources[0].title).toBe("TypeScript Advanced");
+    });
+  });
 });
