@@ -74,7 +74,7 @@ describe("LearningResourceController (integration)", () => {
 
   afterEach(() => resourceRepo.reset());
 
-  describe("POST /api/v1/learning-resource", () => {
+  describe("POST /api/v1/learning-resources", () => {
     test("Should create a resource and return 201", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
@@ -125,7 +125,7 @@ describe("LearningResourceController (integration)", () => {
         .expect(404);
     });
   });
-  describe("GET /api/v1/learning-resource", () => {
+  describe("GET /api/v1/learning-resources", () => {
     test("Should return empty list when no resources exist", async () => {
       await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
@@ -150,6 +150,107 @@ describe("LearningResourceController (integration)", () => {
 
       expect(response.body.resources).toHaveLength(1);
       expect(response.body.resources[0].title).toBe("TypeScript Advanced");
+    });
+  });
+  describe("GET /api/v1/learning-resources/filter", () => {
+    beforeEach(async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "TypeScript Advanced",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 180,
+          status: "pending",
+        });
+
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "CSS Basics",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "low",
+          estimatedDurationMinutes: 20,
+          status: "completed",
+        });
+
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "Clean Architecture",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 240,
+          status: "in_progress",
+        });
+
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "NestJS Fundamentals",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "medium",
+          estimatedDurationMinutes: 90,
+          status: "pending",
+        });
+
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "React Hooks Deep Dive",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "medium",
+          estimatedDurationMinutes: 60,
+          status: "completed",
+        });
+    });
+
+    test("Should return all resources when no filters provided", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources/filter")
+        .expect(200);
+
+      expect(response.body.total).toBe(5);
+    });
+
+    test("Should filter by difficulty", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources/filter")
+        .query({ difficulty: "high" })
+        .expect(200);
+
+      expect(response.body.total).toBe(2);
+      expect(response.body.resources[0].title).toBe("TypeScript Advanced");
+    });
+
+    test("Should filter by topicIds as array", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources/filter")
+        .query({ topicIds: [topicId] })
+        .expect(200);
+
+      expect(response.body.total).toBe(5);
+    });
+
+    test("Should filter by topicIds as single string (coercion)", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources/filter")
+        .query({ topicIds: topicId })
+        .expect(200);
+
+      expect(response.body.total).toBe(5);
+    });
+
+    test("Should return 400 when difficulty is invalid", async () => {
+      await request(app.getHttpServer())
+        .get("/api/v1/learning-resources/filter")
+        .query({ difficulty: "INVALID" })
+        .expect(400);
     });
   });
 });

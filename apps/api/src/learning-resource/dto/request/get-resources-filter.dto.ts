@@ -5,6 +5,7 @@ import {
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { Transform } from "class-transformer";
+import type { UUID } from "domain-lib";
 
 export class GetResourcesFilterDto {
   @IsOptional()
@@ -13,7 +14,7 @@ export class GetResourcesFilterDto {
   @Transform(({ value }) =>
     value === undefined ? undefined : Array.isArray(value) ? value : [value],
   )
-  topicIds?: string[];
+  topicIds?: UUID[];
 
   @IsOptional()
   @IsEnum(DifficultyType)
@@ -29,5 +30,5 @@ export class GetResourcesFilterDto {
 
   @IsOptional()
   @IsUUID()
-  resourceTypeId?: string;
+  resourceTypeId?: UUID;
 }

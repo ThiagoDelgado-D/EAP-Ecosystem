@@ -3,7 +3,7 @@ import type {
   IResourceTypeRepository,
   ITopicRepository,
 } from "@learning-resource/domain";
-import { Body, Controller, Get, Inject, Post } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Post, Query } from "@nestjs/common";
 import {
   AddResourceDto,
   GetResourcesFilterDto,
@@ -14,6 +14,7 @@ import {
 } from "./dto/request/index.js";
 import {
   addResource,
+  getResourcesByFilter,
   listFormattedResourcesLearning,
 } from "@learning-resource/application";
 import { BaseError, type CryptoService } from "domain-lib";
@@ -51,6 +52,15 @@ export class LearningResourceController {
     const result = await listFormattedResourcesLearning({
       learningResourceRepository: this.learningResourceRepository,
     });
+    return result;
+  }
+
+  @Get("filter")
+  async filter(@Query() query: GetResourcesFilterDto) {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository: this.learningResourceRepository },
+      { filters: query },
+    );
     return result;
   }
 }
