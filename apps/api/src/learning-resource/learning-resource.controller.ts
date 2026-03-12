@@ -3,7 +3,15 @@ import type {
   IResourceTypeRepository,
   ITopicRepository,
 } from "@learning-resource/domain";
-import { Body, Controller, Get, Inject, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Query,
+} from "@nestjs/common";
 import {
   AddResourceDto,
   GetResourcesFilterDto,
@@ -14,10 +22,11 @@ import {
 } from "./dto/request/index.js";
 import {
   addResource,
+  GetResourceById,
   getResourcesByFilter,
   listFormattedResourcesLearning,
 } from "@learning-resource/application";
-import { BaseError, type CryptoService } from "domain-lib";
+import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 
 @Controller("api/v1/learning-resources")
@@ -61,6 +70,16 @@ export class LearningResourceController {
       { learningResourceRepository: this.learningResourceRepository },
       { filters: query },
     );
+    return result;
+  }
+
+  @Get(":id")
+  async findOne(@Param("id") id: UUID) {
+    const result = await GetResourceById(
+      { learningResourceRepository: this.learningResourceRepository },
+      { resourceId: id },
+    );
+    if (result instanceof BaseError) toHttpException(result);
     return result;
   }
 }
