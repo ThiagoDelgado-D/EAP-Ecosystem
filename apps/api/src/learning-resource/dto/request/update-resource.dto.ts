@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsPositive,
   MaxLength,
+  ValidateIf,
 } from "class-validator";
 
 export class UpdateResourceDto {
@@ -16,6 +17,7 @@ export class UpdateResourceDto {
   title?: string;
 
   @IsOptional()
+  @ValidateIf((o) => o.url !== "")
   @IsUrl()
   url?: string;
 
