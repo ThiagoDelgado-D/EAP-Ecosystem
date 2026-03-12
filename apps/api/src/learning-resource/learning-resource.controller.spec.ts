@@ -293,4 +293,64 @@ describe("LearningResourceController (integration)", () => {
         .expect(400);
     });
   });
+  describe("PATCH /api/v1/learning-resources/:id", () => {
+    let resourceId: UUID;
+
+    beforeEach(async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "TypeScript Advanced",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 120,
+        });
+
+      resourceId = resourceRepo.learningResources[0].id;
+    });
+
+    test("Should update title successfully", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}`)
+        .send({ title: "TypeScript Masterclass" })
+        .expect(200);
+
+      const updated = await resourceRepo.findById(resourceId);
+      expect(updated?.title).toBe("TypeScript Masterclass");
+    });
+
+    test("Should clear url when empty string is provided", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}`)
+        .send({ url: "" })
+        .expect(200);
+
+      const updated = await resourceRepo.findById(resourceId);
+      expect(updated?.url).toBeUndefined();
+    });
+
+    test("Should return 404 when resource does not exist", async () => {
+      const nonExistentId = await cryptoService.generateUUID();
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${nonExistentId}`)
+        .send({ title: "New Title" })
+        .expect(404);
+    });
+
+    test("Should return 400 when no fields are provided", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}`)
+        .send({})
+        .expect(400);
+    });
+
+    test("Should return 400 when title exceeds max length", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}`)
+        .send({ title: "x".repeat(251) })
+        .expect(400);
+    });
+  });
 });

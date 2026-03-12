@@ -9,6 +9,7 @@ import {
   Get,
   Inject,
   Param,
+  Patch,
   Post,
   Query,
 } from "@nestjs/common";
@@ -25,6 +26,7 @@ import {
   GetResourceById,
   getResourcesByFilter,
   listFormattedResourcesLearning,
+  updateResource,
 } from "@learning-resource/application";
 import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import { toHttpException } from "../errors/domain-error-mapper.js";
@@ -81,5 +83,18 @@ export class LearningResourceController {
     );
     if (result instanceof BaseError) toHttpException(result);
     return result;
+  }
+
+  @Patch(":id")
+  async update(@Param("id") id: UUID, @Body() dto: UpdateResourceDto) {
+    const result = await updateResource(
+      {
+        learningResourceRepository: this.learningResourceRepository,
+        resourceTypeRepository: this.resourceTypeRepository,
+        topicRepository: this.topicRepository,
+      },
+      { id, ...dto },
+    );
+    if (result instanceof BaseError) toHttpException(result);
   }
 }

@@ -9,6 +9,7 @@ import {
   MaxLength,
   ValidateIf,
 } from "class-validator";
+import type { UUID } from "domain-lib";
 
 export class UpdateResourceDto {
   @IsOptional()
@@ -23,12 +24,12 @@ export class UpdateResourceDto {
 
   @IsOptional()
   @IsUUID()
-  typeId?: string;
+  typeId?: UUID;
 
   @IsOptional()
   @IsArray()
   @IsUUID("all", { each: true })
-  topicIds?: string[];
+  topicIds?: UUID[];
 
   @IsOptional()
   @IsInt()
