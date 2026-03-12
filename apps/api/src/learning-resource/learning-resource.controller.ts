@@ -28,6 +28,9 @@ import {
   GetResourceById,
   getResourcesByFilter,
   listFormattedResourcesLearning,
+  toggleResourceDifficulty,
+  toggleResourceEnergy,
+  toggleStatus,
   updateResource,
 } from "@learning-resource/application";
 import { BaseError, type CryptoService, type UUID } from "domain-lib";
@@ -105,6 +108,36 @@ export class LearningResourceController {
     const result = await deleteResource(
       { learningResourceRepository: this.learningResourceRepository },
       { id },
+    );
+    if (result instanceof BaseError) toHttpException(result);
+  }
+
+  @Patch(":id/difficulty")
+  async toggleDifficulty(
+    @Param("id") id: UUID,
+    @Body() dto: ToggleDifficultyDto,
+  ) {
+    const result = await toggleResourceDifficulty(
+      { learningResourceRepository: this.learningResourceRepository },
+      { id, difficulty: dto.difficulty },
+    );
+    if (result instanceof BaseError) toHttpException(result);
+  }
+
+  @Patch(":id/energy")
+  async toggleEnergy(@Param("id") id: UUID, @Body() dto: ToggleEnergyDto) {
+    const result = await toggleResourceEnergy(
+      { learningResourceRepository: this.learningResourceRepository },
+      { id, energyLevel: dto.energyLevel },
+    );
+    if (result instanceof BaseError) toHttpException(result);
+  }
+
+  @Patch(":id/status")
+  async toggleStatus(@Param("id") id: UUID, @Body() dto: ToggleStatusDto) {
+    const result = await toggleStatus(
+      { learningResourceRepository: this.learningResourceRepository },
+      { id, status: dto.status },
     );
     if (result instanceof BaseError) toHttpException(result);
   }

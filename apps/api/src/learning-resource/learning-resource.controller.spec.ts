@@ -392,4 +392,133 @@ describe("LearningResourceController (integration)", () => {
         .expect(400);
     });
   });
+  describe("PATCH /api/v1/learning-resources/:id/difficulty", () => {
+    let resourceId: UUID;
+
+    beforeEach(async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "TypeScript Advanced",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 120,
+        });
+
+      resourceId = resourceRepo.learningResources[0].id;
+    });
+
+    test("Should toggle difficulty successfully", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/difficulty`)
+        .send({ difficulty: "low" })
+        .expect(200);
+
+      const updated = await resourceRepo.findById(resourceId);
+      expect(updated?.difficulty).toBe("low");
+    });
+
+    test("Should return 404 when resource does not exist", async () => {
+      const nonExistentId = await cryptoService.generateUUID();
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${nonExistentId}/difficulty`)
+        .send({ difficulty: "low" })
+        .expect(404);
+    });
+
+    test("Should return 400 when difficulty is invalid", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/difficulty`)
+        .send({ difficulty: "INVALID" })
+        .expect(400);
+    });
+  });
+  describe("PATCH /api/v1/learning-resources/:id/energy", () => {
+    let resourceId: UUID;
+
+    beforeEach(async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "TypeScript Advanced",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 120,
+        });
+
+      resourceId = resourceRepo.learningResources[0].id;
+    });
+
+    test("Should toggle energy level successfully", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/energy`)
+        .send({ energyLevel: "low" })
+        .expect(200);
+
+      const updated = await resourceRepo.findById(resourceId);
+      expect(updated?.energyLevel).toBe("low");
+    });
+
+    test("Should return 404 when resource does not exist", async () => {
+      const nonExistentId = await cryptoService.generateUUID();
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${nonExistentId}/energy`)
+        .send({ energyLevel: "low" })
+        .expect(404);
+    });
+
+    test("Should return 400 when energyLevel is invalid", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/energy`)
+        .send({ energyLevel: "INVALID" })
+        .expect(400);
+    });
+  });
+  describe("PATCH /api/v1/learning-resources/:id/status", () => {
+    let resourceId: UUID;
+
+    beforeEach(async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "TypeScript Advanced",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 120,
+        });
+
+      resourceId = resourceRepo.learningResources[0].id;
+    });
+
+    test("Should toggle status successfully", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/status`)
+        .send({ status: "completed" })
+        .expect(200);
+
+      const updated = await resourceRepo.findById(resourceId);
+      expect(updated?.status).toBe("completed");
+    });
+
+    test("Should return 404 when resource does not exist", async () => {
+      const nonExistentId = await cryptoService.generateUUID();
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${nonExistentId}/status`)
+        .send({ status: "completed" })
+        .expect(404);
+    });
+
+    test("Should return 400 when status is invalid", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/status`)
+        .send({ status: "INVALID" })
+        .expect(400);
+    });
+  });
 });
