@@ -22,7 +22,7 @@ import { LearningResourceController } from "./learning-resource.controller.js";
       provide: "IResourceTypeRepository",
       useValue: resourceTypeRepository,
     },
-    { provide: "ICryptoService", useValue: CryptoServiceImpl },
+    { provide: "ICryptoService", useClass: CryptoServiceImpl },
   ],
 })
 export class LearningResourceModule {}
