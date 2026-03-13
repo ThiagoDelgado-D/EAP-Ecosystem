@@ -6,10 +6,10 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
     "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:prod": "node dist/main",
+    "start:dev": "node --import tsx/esm --watch src/main.ts",
+    "start:prod": "node dist/apps/api/src/main.js",
+    "build": "nest build && tsc-alias -p tsconfig.build.json",
     "type-check": "tsc --noEmit -p tsconfig.json",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
@@ -41,9 +41,12 @@
     "@types/node": "^22.10.7",
     "@types/supertest": "^7.2.0",
     "jest": "^30.2.0",
+    "run-script-webpack-plugin": "^0.2.3",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
+    "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "typescript": "^5.7.3"
   }
