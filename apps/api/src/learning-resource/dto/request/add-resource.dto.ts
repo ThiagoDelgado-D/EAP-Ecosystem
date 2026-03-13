@@ -16,6 +16,7 @@ import {
   EnergyLevelType,
   ResourceStatusType,
 } from "@learning-resource/domain";
+import type { UUID } from "domain-lib";
 
 export class AddResourceDto {
   @IsString()
@@ -28,12 +29,12 @@ export class AddResourceDto {
   url?: string;
 
   @IsUUID()
-  resourceTypeId: string;
+  resourceTypeId: UUID;
 
   @IsArray()
   @ArrayMinSize(1)
   @IsUUID("all", { each: true })
-  topicIds: string[];
+  topicIds: UUID[];
 
   @IsEnum(DifficultyType)
   difficulty: DifficultyType;

@@ -4,9 +4,11 @@ import {
   topicRepository,
   resourceTypeRepository,
 } from "@learning-resource/infrastructure";
+import { CryptoServiceImpl } from "infrastructure-lib";
+import { LearningResourceController } from "./learning-resource.controller.js";
 
 @Module({
-  controllers: [],
+  controllers: [LearningResourceController],
   providers: [
     {
       provide: "ILearningResourceRepository",
@@ -20,6 +22,7 @@ import {
       provide: "IResourceTypeRepository",
       useValue: resourceTypeRepository,
     },
+    { provide: "ICryptoService", useClass: CryptoServiceImpl },
   ],
 })
 export class LearningResourceModule {}
