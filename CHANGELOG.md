@@ -1,11 +1,68 @@
 ## [Unreleased]
 
-### Planned for v0.2.0
+### Planned for v0.3.0
 
-- Designing REST API architecture with NestJS
-- Implementing JSON-based temporary storage
-- Error handling enhancements with HTTP status codes
-- Integration tests for API endpoints
+- PostgreSQL migration replacing JSON storage
+- Angular frontend (Phase 3)
+- User module foundation
+
+---
+
+## [0.2.0] - 2026-03-13
+
+### 🚀 API Foundation Release
+
+This release introduces the NestJS REST API layer with JSON-based storage,
+full error handling infrastructure, and integration-tested endpoints for
+the Learning Resource module.
+
+### Added
+
+#### 🌐 REST API (NestJS)
+
+- `LearningResourceController` with 9 endpoints:
+  - `POST /api/v1/learning-resources`
+  - `GET /api/v1/learning-resources`
+  - `GET /api/v1/learning-resources/filter`
+  - `GET /api/v1/learning-resources/:id`
+  - `PATCH /api/v1/learning-resources/:id`
+  - `DELETE /api/v1/learning-resources/:id`
+  - `PATCH /api/v1/learning-resources/:id/difficulty`
+  - `PATCH /api/v1/learning-resources/:id/energy`
+  - `PATCH /api/v1/learning-resources/:id/status`
+- `ValidationPipe` with whitelist and transform
+- `GlobalExceptionFilter` for unhandled errors
+- API versioning via `/api/v1/` prefix
+
+#### 🗄️ Infrastructure Layer
+
+- `JsonStorage<T>` generic file-based storage adapter
+- `JsonLearningResourceRepository`
+- `JsonResourceTypeRepository`
+- `JsonTopicRepository`
+- Seed script (`yarn seed`) with sample data
+
+#### 🛡️ Error Handling
+
+- `toHttpException()` maps domain errors to HTTP status codes
+- `GlobalExceptionFilter` catches all unhandled exceptions
+- Domain error → HTTP response flow fully integrated
+
+#### 🧪 Tests
+
+- 31 integration tests for `LearningResourceController`
+- 2 tests for `GlobalExceptionFilter`
+- Full test setup with `overrideProvider`, `ValidationPipe`, and filter
+
+#### 📖 ADRs
+
+- ADR-0001 through ADR-0009 documenting architectural decisions
+  made across v0.1.0 and v0.2.0 development
+
+### Fixed
+
+- `tsconfig` dual-path strategy for monorepo type-checking
+- `tsx` runtime for ESM path alias resolution
 
 ---
 
