@@ -15,41 +15,41 @@ import { ResourceTypeEntity } from "./resource-type.entity.js";
 @Entity("learning_resources")
 export class LearningResourceEntity {
   @PrimaryColumn("uuid")
-  id: string;
+  id!: string;
 
   @Column({ length: 500 })
-  title: string;
+  title!: string;
 
   @Column({ type: "varchar", nullable: true, length: 2048 })
-  url: string | null;
+  url!: string | null;
 
   @Column({ type: "text", nullable: true })
-  notes: string | null;
+  notes!: string | null;
 
   @Column({ length: 20 })
-  difficulty: string;
+  difficulty!: string;
 
   @Column({ length: 20 })
-  energyLevel: string;
+  energyLevel!: string;
 
   @Column({ length: 20 })
-  status: string;
+  status!: string;
 
   @Column({ type: "int", nullable: true })
-  estimatedDurationMinutes: number | null;
+  estimatedDurationMinutes!: number | null;
 
   @Column({ default: true })
-  isDurationEstimated: boolean;
+  isDurationEstimated!: boolean;
 
   @Column({ type: "timestamp", nullable: true })
-  lastViewedAt: Date | null;
+  lastViewedAt!: Date | null;
 
   @ManyToOne(() => ResourceTypeEntity)
   @JoinColumn({ name: "resourceTypeId" })
-  resourceType: ResourceTypeEntity;
+  resourceType!: ResourceTypeEntity;
 
   @Column()
-  resourceTypeId: string;
+  resourceTypeId!: string;
 
   @ManyToMany(() => TopicEntity)
   @JoinTable({
@@ -57,11 +57,11 @@ export class LearningResourceEntity {
     joinColumn: { name: "learningResourceId" },
     inverseJoinColumn: { name: "topicId" },
   })
-  topics: TopicEntity[];
+  topics!: TopicEntity[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

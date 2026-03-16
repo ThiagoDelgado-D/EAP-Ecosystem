@@ -6,7 +6,8 @@
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
     "@learning-resource/domain": "workspace:^",
-    "infrastructure-lib": "workspace:^"
+    "infrastructure-lib": "workspace:^",
+    "typeorm": "^0.3.28"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.13",
@@ -15,7 +16,8 @@
   "exports": {
     ".": "./dist/index.js",
     "./storage": "./dist/storage/index.js",
-    "./repositories": "./dist/repositories/index.js"
+    "./repositories": "./dist/repositories/index.js",
+    "./entities": "./dist/entities/index.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

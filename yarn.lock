@@ -1387,6 +1387,7 @@ __metadata:
     "@learning-resource/domain": "workspace:^"
     "@vitest/coverage-v8": "npm:^4.0.13"
     infrastructure-lib: "workspace:^"
+    typeorm: "npm:^0.3.28"
     vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft

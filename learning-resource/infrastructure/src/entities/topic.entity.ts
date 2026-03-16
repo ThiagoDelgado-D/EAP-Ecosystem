@@ -9,17 +9,17 @@ import {
 @Entity("topics")
 export class TopicEntity {
   @PrimaryColumn("uuid")
-  id: string;
+  id!: string;
 
   @Column({ length: 100 })
-  name: string;
+  name!: string;
 
   @Column({ length: 7 })
-  color: string;
+  color!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
