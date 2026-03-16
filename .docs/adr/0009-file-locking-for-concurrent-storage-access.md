@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Superseded by PostgreSQL migration (v0.3.0)
 
 ## Context
 
@@ -74,3 +74,14 @@ async save(item: T): Promise<T> {
 - Lock file management (`proper-lockfile`) requires handling stale locks on process crashes
 - An in-process queue does not protect against multi-process scenarios (e.g. running the seed script while the API is live)
 - Any locking mechanism adds latency to write operations
+
+## Resolution
+
+The concurrency problem documented in this ADR is resolved by migrating
+to PostgreSQL in v0.3.0, which handles concurrent access natively at the
+database level. The `JsonStorage<T>` implementation remains as-is since
+it will be removed once the migration is complete.
+
+File locking was never implemented — the risk was accepted as tolerable
+during the development phase given the single-process, low-concurrency
+environment.
