@@ -15,7 +15,7 @@ export class ResourceTypeEntity {
   code!: string;
 
   @Column({ length: 100 })
-  name!: string;
+  displayName!: string;
 
   @Column({ default: true })
   isActive!: boolean;
