@@ -15,7 +15,6 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./storage": "./dist/storage/index.js",
     "./repositories": "./dist/repositories/index.js",
     "./entities": "./dist/entities/index.js"
   },
