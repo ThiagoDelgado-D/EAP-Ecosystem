@@ -1,14 +1,14 @@
 import type { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration1773441266350 implements MigrationInterface {
-  name = "Migration1773441266350";
+export class Migration1773704888428 implements MigrationInterface {
+  name = "Migration1773704888428";
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
       `CREATE TABLE "topics" ("id" uuid NOT NULL, "name" character varying(100) NOT NULL, "color" character varying(7) NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_e4aa99a3fa60ec3a37d1fc4e853" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "resource_types" ("id" uuid NOT NULL, "code" character varying(50) NOT NULL, "name" character varying(100) NOT NULL, "isActive" boolean NOT NULL DEFAULT true, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_d3bca389a6c56e445c7487b245e" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "resource_types" ("id" uuid NOT NULL, "code" character varying(50) NOT NULL, "displayName" character varying(100) NOT NULL, "isActive" boolean NOT NULL DEFAULT true, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_d3bca389a6c56e445c7487b245e" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "learning_resources" ("id" uuid NOT NULL, "title" character varying(500) NOT NULL, "url" character varying(2048), "notes" text, "difficulty" character varying(20) NOT NULL, "energyLevel" character varying(20) NOT NULL, "status" character varying(20) NOT NULL, "estimatedDurationMinutes" integer, "isDurationEstimated" boolean NOT NULL DEFAULT true, "lastViewedAt" TIMESTAMP, "resourceTypeId" uuid NOT NULL, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "PK_1012bb5224f1a3f663f08de41fb" PRIMARY KEY ("id"))`,
