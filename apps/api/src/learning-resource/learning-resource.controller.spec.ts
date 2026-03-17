@@ -10,6 +10,12 @@ import type { UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { LearningResourceModule } from "./learning-resource.module.js";
 import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
+import { getRepositoryToken } from "@nestjs/typeorm";
+import {
+  LearningResourceEntity,
+  ResourceTypeEntity,
+  TopicEntity,
+} from "@learning-resource/infrastructure";
 
 describe("LearningResourceController (integration)", () => {
   let app: INestApplication;
@@ -49,6 +55,12 @@ describe("LearningResourceController (integration)", () => {
     const module = await Test.createTestingModule({
       imports: [LearningResourceModule],
     })
+      .overrideProvider(getRepositoryToken(LearningResourceEntity))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(TopicEntity))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(ResourceTypeEntity))
+      .useValue({})
       .overrideProvider("ILearningResourceRepository")
       .useValue(resourceRepo)
       .overrideProvider("ITopicRepository")
