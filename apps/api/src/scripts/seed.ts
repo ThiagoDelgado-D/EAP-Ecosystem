@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { faker } from "@faker-js/faker";
 import { config } from "dotenv";
 import { In } from "typeorm";

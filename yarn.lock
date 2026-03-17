@@ -3101,6 +3101,7 @@ __metadata:
     ts-loader: "npm:^9.5.4"
     ts-node: "npm:^10.9.2"
     tsc-alias: "npm:^1.8.16"
+    tsconfig-paths: "npm:^4.2.0"
     tsx: "npm:^4.21.0"
     typeorm: "npm:^0.3.28"
     typescript: "npm:^5.7.3"
@@ -7994,7 +7995,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsconfig-paths@npm:4.2.0, tsconfig-paths@npm:^4.1.2":
+"tsconfig-paths@npm:4.2.0, tsconfig-paths@npm:^4.1.2, tsconfig-paths@npm:^4.2.0":
   version: 4.2.0
   resolution: "tsconfig-paths@npm:4.2.0"
   dependencies:

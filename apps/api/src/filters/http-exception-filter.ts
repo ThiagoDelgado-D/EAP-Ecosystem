@@ -17,7 +17,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       response.status(exception.getStatus()).json(exception.getResponse());
       return;
     }
-
+    console.error("Unexpected error:", exception);
     const error = new UnexpectedError({ message: "Internal server error" });
     response.status(500).json(error.context);
   }
