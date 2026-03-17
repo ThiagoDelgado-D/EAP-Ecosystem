@@ -1,10 +1,13 @@
 import "reflect-metadata";
+import { config } from "dotenv";
 import { DataSource } from "typeorm";
 import {
   LearningResourceEntity,
   ResourceTypeEntity,
   TopicEntity,
 } from "@learning-resource/infrastructure";
+
+config();
 
 export const AppDataSource = new DataSource({
   type: "postgres",
