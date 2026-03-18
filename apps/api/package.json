@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "nest start",
-    "start:dev": "node --import tsx/esm --watch src/main.ts",
+    "start:dev": "node -r reflect-metadata/lite -r tsconfig-paths/register --loader ts-node/esm --watch src/main.ts",
     "start:prod": "node dist/apps/api/src/main.js",
     "build": "nest build && tsc-alias -p tsconfig.build.json",
     "type-check": "tsc --noEmit -p tsconfig.json",
@@ -15,21 +15,28 @@
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:debug": "NODE_OPTIONS=--experimental-vm-modules node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "seed": "node --import tsx/esm src/scripts/seed.ts"
+    "seed": "node --import tsx/esm src/scripts/seed.ts",
+    "migration:generate": "typeorm-ts-node-esm -d src/database/data-source.ts migration:generate src/database/migrations/migration",
+    "migration:run": "typeorm-ts-node-esm -d src/database/data-source.ts migration:run",
+    "migration:revert": "typeorm-ts-node-esm -d src/database/data-source.ts migration:revert"
   },
   "dependencies": {
     "@learning-resource/application": "workspace:^",
     "@learning-resource/domain": "workspace:^",
     "@learning-resource/infrastructure": "workspace:^",
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/typeorm": "^11.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "domain-lib": "workspace:^",
     "infrastructure-lib": "workspace:^",
+    "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "typeorm": "^0.3.28"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
@@ -39,6 +46,7 @@
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
+    "@types/pg": "^8.18.0",
     "@types/supertest": "^7.2.0",
     "jest": "^30.2.0",
     "run-script-webpack-plugin": "^0.2.3",
@@ -47,6 +55,7 @@
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.7.3"
   }
