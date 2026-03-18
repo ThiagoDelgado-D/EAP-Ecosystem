@@ -14,12 +14,12 @@ import {
       useFactory: (configService: ConfigService) => {
         return {
           type: "postgres",
-          host: configService.get<string>("DB_HOST"),
-          port: configService.get<number>("DB_PORT"),
-          username: configService.get<string>("DB_USER"),
-          password: configService.get<string>("DB_PASSWORD"),
+          host: configService.getOrThrow<string>("DB_HOST"),
+          port: parseInt(configService.getOrThrow<string>("DB_PORT"), 10),
+          username: configService.getOrThrow<string>("DB_USER"),
+          password: configService.getOrThrow<string>("DB_PASSWORD"),
+          database: configService.getOrThrow<string>("DB_NAME"),
           entities: [LearningResourceEntity, TopicEntity, ResourceTypeEntity],
-          database: configService.get<string>("DB_NAME"),
           synchronize: false,
         };
       },
