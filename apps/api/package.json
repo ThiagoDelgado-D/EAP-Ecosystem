@@ -15,7 +15,7 @@
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:debug": "NODE_OPTIONS=--experimental-vm-modules node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "seed": "node dist/apps/api/src/scripts/seed.js",
+    "seed": "node --import tsx/esm src/scripts/seed.ts",
     "migration:generate": "typeorm-ts-node-esm -d src/database/data-source.ts migration:generate src/database/migrations/migration",
     "migration:run": "typeorm-ts-node-esm -d src/database/data-source.ts migration:run",
     "migration:revert": "typeorm-ts-node-esm -d src/database/data-source.ts migration:revert"
@@ -25,6 +25,7 @@
     "@learning-resource/domain": "workspace:^",
     "@learning-resource/infrastructure": "workspace:^",
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
@@ -40,7 +41,6 @@
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
     "@nestjs/cli": "^11.0.0",
-    "@nestjs/config": "^4.0.3",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.1.14",
     "@types/express": "^5.0.6",
