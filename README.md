@@ -14,7 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
@@ -33,17 +33,16 @@ The long-term goal is a recommendation engine that suggests what to study based 
 
 ---
 
-## Current Status — v0.2.0
+## Current Status — v0.3.0
 
-| Layer                         | Status         |
-| ----------------------------- | -------------- |
-| Domain & Application          | ✅ Complete    |
-| JSON Storage (Infrastructure) | ✅ Complete    |
-| REST API (NestJS)             | ✅ Complete    |
-| Frontend (Angular)            | 🚧 In progress |
-| PostgreSQL                    | 📅 Planned     |
-| User & Auth                   | 📅 Planned     |
-| Recommendations               | 📅 Planned     |
+| Layer                       | Status      |
+| --------------------------- | ----------- |
+| Domain & Application        | ✅ Complete |
+| REST API (NestJS)           | ✅ Complete |
+| PostgreSQL (Infrastructure) | ✅ Complete |
+| Frontend (Angular)          | 📅 Planned  |
+| User & Auth                 | 📅 Planned  |
+| Recommendations             | 📅 Planned  |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
@@ -67,13 +66,20 @@ yarn install
 ### Run the API
 
 ```bash
-cd apps/api
+# Copy and fill environment variables
+cp apps/api/.env.example apps/api/.env
 
-# Seed sample data (first time)
-yarn seed
+# Start PostgreSQL
+docker-compose -f .docker/docker-compose.yml --env-file apps/api/.env up -d
+
+# Run migrations
+yarn workspace api migration:run
+
+# (Optional) Seed sample data
+yarn workspace api seed
 
 # Start in development mode
-yarn start:dev
+yarn workspace api start:dev
 ```
 
 The API will be available at `http://localhost:3000`.
@@ -117,15 +123,14 @@ Base URL: `http://localhost:3000/api/v1`
 
 ## Tech Stack
 
-| Area              | Technology        |
-| ----------------- | ----------------- |
-| Runtime           | Node.js 20 + ESM  |
-| Language          | TypeScript 5.7    |
-| API Framework     | NestJS 11         |
-| Monorepo          | Yarn 4 Workspaces |
-| Testing           | Jest + Supertest  |
-| Storage (current) | JSON files        |
-| Storage (planned) | PostgreSQL        |
+| Area          | Technology           |
+| ------------- | -------------------- |
+| Runtime       | Node.js 20 + ESM     |
+| Language      | TypeScript 5.7       |
+| API Framework | NestJS 11            |
+| Monorepo      | Yarn 4 Workspaces    |
+| Testing       | Jest + Supertest     |
+| Storage       | PostgreSQL + TypeORM |
 
 ---
 
@@ -138,7 +143,7 @@ EAP-Ecosystem/
 ├── learning-resource/
 │   ├── domain/                     # Entities, repository interfaces
 │   ├── application/                # Use cases, validation, errors
-│   └── infrastructure/             # JSON repositories, storage
+│   └── infrastructure/             # TypeORM entities and repositories
 ├── shared/
 │   ├── domain-lib/                 # Base entities, errors, types, validators
 │   └── infrastructure-lib/         # CryptoService, JsonStorage
