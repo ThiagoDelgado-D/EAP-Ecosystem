@@ -1,10 +1,74 @@
 ## [Unreleased]
 
-### Planned for v0.3.0
+### Planned for v0.4.0 - Angular Frontend
 
-- PostgreSQL migration replacing JSON storage
-- Angular frontend (Phase 3)
-- User module foundation
+- Angular project setup with Clean Architecture
+- Learning resource CRUD views
+- Filter and search interface
+- Basic responsive layout
+
+---
+
+## [0.3.0] - 2026-03-18
+
+### Database & Infrastructure Release
+
+This release migrates the persistence layer from the temporary JSON-based storage
+to a production-grade PostgreSQL database using TypeORM, and introduces the Docker
+infrastructure for local development.
+
+### Added
+
+#### Database Infrastructure
+
+- `docker-compose.yml` with PostgreSQL service configuration
+- `apps/api/.env.example` with all required environment variables
+- `AppDataSource` configuration (`data-source.ts`) for TypeORM CLI migrations,
+  independent from the NestJS module
+- `DatabaseModule` — global NestJS module encapsulating the TypeORM connection
+- Initial schema migration covering all entities
+  (`1773704888428-migration.ts`)
+
+#### TypeORM Entities (`learning-resource/infrastructure`)
+
+- `LearningResourceEntity` — ORM mapping for `LearningResource`
+- `ResourceTypeEntity` — ORM mapping for `ResourceType`
+- `TopicEntity` — ORM mapping for `Topic`
+
+#### TypeORM Repositories (`learning-resource/infrastructure`)
+
+- `TypeOrmLearningResourceRepository` — production implementation of
+  `ILearningResourceRepository`
+- `TypeOrmResourceTypeRepository` — production implementation of
+  `IResourceTypeRepository`
+- `TypeOrmTopicRepository` — production implementation of `ITopicRepository`
+
+### Changed
+
+- `LearningResourceModule` now injects TypeORM repositories via DI
+- `AppModule` imports `DatabaseModule`
+- `seed` script updated to execute from TypeScript source
+- `@nestjs/config` moved from `devDependencies` to `dependencies`
+
+### Removed
+
+- `JsonLearningResourceRepository` and all JSON-based storage adapters
+- `JsonStorage<T>` file-based storage utility
+- All JSON data files used for temporary persistence
+
+### Fixed
+
+- `resourceTypeId` column type aligned with migration (`uuid` instead of default `varchar`)
+- `logger-middleware` now logs `req.path` instead of `req.originalUrl` to avoid
+  leaking query parameters (tokens, emails) into logs
+- `TypeOrmLearningResourceRepository.update()` guards against empty `updateData`
+  to prevent invalid SQL when patch only carries `topicIds`
+- `TypeOrmLearningResourceRepository.update()` explicitly maps `url`/`notes`
+  `undefined` values to `NULL` so optional fields can be cleared in the database
+- `TypeOrmTopicRepository` — removed unused `findByIds` method that was missing
+  from the `ITopicRepository` contract
+- `DatabaseModule` uses `getOrThrow()` and explicit `parseInt` for `DB_PORT`
+  to fail fast on missing or non-numeric environment variables
 
 ---
 
