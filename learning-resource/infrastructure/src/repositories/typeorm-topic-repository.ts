@@ -1,5 +1,5 @@
 import type { ITopicRepository, Topic } from "@learning-resource/domain";
-import type { Repository } from "typeorm";
+import { type Repository } from "typeorm";
 import { TopicEntity } from "../entities/topic.entity.js";
 import type { UUID } from "domain-lib";
 
@@ -28,11 +28,6 @@ export class TypeOrmTopicRepository implements ITopicRepository {
 
   async findAll(): Promise<Topic[]> {
     const entities = await this.repository.find();
-    return entities.map(this.toDomain);
-  }
-
-  async findByIds(ids: string[]): Promise<Topic[]> {
-    const entities = await this.repository.findByIds(ids);
     return entities.map(this.toDomain);
   }
 
