@@ -27,6 +27,9 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
 
     const updateData: Partial<LearningResourceEntity> = { ...rest };
 
+    if ("url" in resource) updateData.url = resource.url ?? null;
+    if ("notes" in resource) updateData.notes = resource.notes ?? null;
+
     if (estimatedDuration !== undefined) {
       updateData.estimatedDurationMinutes = estimatedDuration.value;
       updateData.isDurationEstimated = estimatedDuration.isEstimated;
@@ -53,7 +56,9 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
       }
     }
 
-    await this.repository.update(id, updateData);
+    if (Object.keys(updateData).length > 0) {
+      await this.repository.update(id, updateData);
+    }
   }
 
   async delete(id: UUID): Promise<void> {
