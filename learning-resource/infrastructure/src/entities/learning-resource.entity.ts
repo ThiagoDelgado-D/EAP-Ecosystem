@@ -48,7 +48,7 @@ export class LearningResourceEntity {
   @JoinColumn({ name: "resourceTypeId" })
   resourceType!: ResourceTypeEntity;
 
-  @Column()
+  @Column({ type: "uuid" })
   resourceTypeId!: string;
 
   @ManyToMany(() => TopicEntity)
