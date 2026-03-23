@@ -6,7 +6,7 @@ export interface LearningResourceDto {
   difficulty: string;
   energyLevel: string;
   status: string;
-  estimatedDuration: {
+  estimatedDuration?: {
     value: number;
     isEstimated: boolean;
   };
@@ -15,4 +15,8 @@ export interface LearningResourceDto {
   lastViewed: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface LearningResourceListDto {
+  resources: LearningResourceDto[];
 }
