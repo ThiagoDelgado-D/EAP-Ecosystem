@@ -6,6 +6,7 @@
   "packageManager": "yarn@4.9.2",
   "workspaces": [
     "apps/api",
+    "apps/web",
     "shared/domain-lib",
     "shared/infrastructure-lib",
     "learning-resource/domain",
