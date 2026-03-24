@@ -1,18 +1,122 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+
 @theme {
+    /* Light theme (default) */
+    --color-bg: #FFFFFF;
+    --color-bg-subtle: #F8FAFE;
+    --color-surface: #FFFFFF;
+    --color-surface-hover: #F1F5F9;
+    --color-border: #E2E8F0;
+    --color-border-focus: #4F86C6;
+
+    --color-text: #1A1A2E;
+    --color-text-muted: #64748B;
+    --color-text-accent: #4F86C6;
+
     --color-accent: #4F86C6;
     --color-accent-soft: #EEF4FB;
-    --color-ink: #1A1A2E;
-    --color-ink-muted: #64748B;
-    --font-family-sans: "Inter", system-ui, sans-serif;
+    --color-accent-hover: #3A6A9F;
+
+    --color-status-pending-bg: #F1F5F9;
+    --color-status-pending-text: #475569;
+    --color-status-progress-bg: #EFF6FF;
+    --color-status-progress-text: #1E40AF;
+    --color-status-completed-bg: #F0FDF4;
+    --color-status-completed-text: #166534;
+
+    --color-difficulty-low-bg: #F0FDF4;
+    --color-difficulty-low-text: #166534;
+    --color-difficulty-medium-bg: #FEFCE8;
+    --color-difficulty-medium-text: #854D0E;
+    --color-difficulty-high-bg: #FEF2F2;
+    --color-difficulty-high-text: #991B1B;
+
+    --color-energy-low-bg: #F0FDF4;
+    --color-energy-low-text: #166534;
+    --color-energy-medium-bg: #FEFCE8;
+    --color-energy-medium-text: #854D0E;
+    --color-energy-high-bg: #FEF2F2;
+    --color-energy-high-text: #991B1B;
+
+    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+    --transition-theme: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+    /* Dark theme (overrides will be applied when .dark is present) */
+    --color-bg-dark: #0F172A;
+    --color-bg-subtle-dark: #1E293B;
+    --color-surface-dark: #1E293B;
+    --color-surface-hover-dark: #334155;
+    --color-border-dark: #334155;
+    --color-border-focus-dark: #6C9FD8;
+
+    --color-text-dark: #E2E8F0;
+    --color-text-muted-dark: #94A3B8;
+    --color-text-accent-dark: #6C9FD8;
+
+    --color-accent-dark: #6C9FD8;
+    --color-accent-soft-dark: #1E2A3A;
+    --color-accent-hover-dark: #8BB0E0;
+
+    --color-status-pending-bg-dark: #334155;
+    --color-status-pending-text-dark: #CBD5E1;
+    --color-status-progress-bg-dark: #172554;
+    --color-status-progress-text-dark: #93C5FD;
+    --color-status-completed-bg-dark: #14532D;
+    --color-status-completed-text-dark: #86EFAC;
 }
+
+/* ============================================
+   Dark Mode Variant
+   ============================================ */
+@custom-variant dark {
+    &:where(.dark, .dark *) {
+        @slot;
+    }
+}
+
+.dark {
+    --color-bg: var(--color-bg-dark);
+    --color-bg-subtle: var(--color-bg-subtle-dark);
+    --color-surface: var(--color-surface-dark);
+    --color-surface-hover: var(--color-surface-hover-dark);
+    --color-border: var(--color-border-dark);
+    --color-border-focus: var(--color-border-focus-dark);
+
+    --color-text: var(--color-text-dark);
+    --color-text-muted: var(--color-text-muted-dark);
+    --color-text-accent: var(--color-text-accent-dark);
+
+    --color-accent: var(--color-accent-dark);
+    --color-accent-soft: var(--color-accent-soft-dark);
+    --color-accent-hover: var(--color-accent-hover-dark);
+
+    --color-status-pending-bg: var(--color-status-pending-bg-dark);
+    --color-status-pending-text: var(--color-status-pending-text-dark);
+    --color-status-progress-bg: var(--color-status-progress-bg-dark);
+    --color-status-progress-text: var(--color-status-progress-text-dark);
+    --color-status-completed-bg: var(--color-status-completed-bg-dark);
+    --color-status-completed-text: var(--color-status-completed-text-dark);
+}
+
 
 @layer base {
     body {
-        color: var(--color-ink);
-        font-family: var(--font-family-sans);
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-sans);
+        transition: var(--transition-theme);
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
     }
 }
