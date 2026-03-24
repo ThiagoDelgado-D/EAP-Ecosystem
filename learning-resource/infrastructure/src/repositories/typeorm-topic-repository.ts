@@ -35,7 +35,7 @@ export class TypeOrmTopicRepository implements ITopicRepository {
     return {
       id: entity.id as Topic["id"],
       name: entity.name,
-      color: entity.color,
+      color: entity.color || undefined,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };

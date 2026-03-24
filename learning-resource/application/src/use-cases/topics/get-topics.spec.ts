@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockTopicRepository } from "../../mocks/mock-topic-repository.js";
-import { mockCryptoService, type UUID } from "domain-lib";
+import { mockCryptoService } from "domain-lib";
 import type { Topic } from "@learning-resource/domain";
 import { getTopics } from "./get-topics.js";
 
