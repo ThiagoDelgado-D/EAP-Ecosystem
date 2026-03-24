@@ -43,6 +43,8 @@ export class HomeComponent implements OnInit {
   readonly energyLevels: EnergyLevel[] = ['Low', 'Medium', 'High'];
   readonly statuses: ResourceStatus[] = ['Pending', 'InProgress', 'Completed'];
 
+  viewMode: 'grid' | 'list' = 'grid';
+
   async ngOnInit(): Promise<void> {
     await this.service.loadAll();
   }

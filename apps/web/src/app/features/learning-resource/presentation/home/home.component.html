@@ -1,75 +1,168 @@
-<div class="min-h-screen bg-gray-950 text-white">
-  <header class="border-b border-gray-800 px-6 py-4">
-    <span class="text-lg font-semibold tracking-tight">EAP</span>
+<div class="min-h-screen bg-white">
+  <header
+    class="border-b border-slate-200 px-6 py-4 sticky top-0 bg-white/80 backdrop-blur-sm z-10"
+  >
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <span class="text-lg font-bold tracking-tight text-ink">EAP</span>
+      <button
+        class="flex items-center gap-2 bg-accent text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors"
+      >
+        + Add resource
+      </button>
+    </div>
   </header>
 
   <main class="max-w-6xl mx-auto px-6 py-8">
-    <h1 class="text-2xl font-bold mb-6">Learning Resources</h1>
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-ink mb-1">Learning Resources</h1>
+      <p class="text-sm text-ink-muted">Track and organize your learning materials</p>
+    </div>
 
-    <div class="flex flex-wrap gap-4 mb-8">
-      <select
-        class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm"
-        [(ngModel)]="difficultyFilterValue"
-        (ngModelChange)="applyFilter()"
-      >
-        <option [ngValue]="null">All difficulties</option>
-        @for (d of difficulties; track d) {
-          <option [ngValue]="d">{{ d }}</option>
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <div class="flex items-center gap-3 flex-wrap">
+        <select
+          class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-ink hover:border-accent transition-colors cursor-pointer"
+          [(ngModel)]="difficultyFilterValue"
+          (ngModelChange)="applyFilter()"
+        >
+          <option [ngValue]="null">All difficulties</option>
+          @for (d of difficulties; track d) {
+            <option [ngValue]="d">{{ d }}</option>
+          }
+        </select>
+
+        <select
+          class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-ink hover:border-accent transition-colors cursor-pointer"
+          [(ngModel)]="energyFilterValue"
+          (ngModelChange)="applyFilter()"
+        >
+          <option [ngValue]="null">All energy levels</option>
+          @for (e of energyLevels; track e) {
+            <option [ngValue]="e">{{ e }}</option>
+          }
+        </select>
+
+        <select
+          class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-ink hover:border-accent transition-colors cursor-pointer"
+          [(ngModel)]="statusFilterValue"
+          (ngModelChange)="applyFilter()"
+        >
+          <option [ngValue]="null">All statuses</option>
+          @for (s of statuses; track s) {
+            <option [ngValue]="s">{{ s }}</option>
+          }
+        </select>
+
+        @if (difficultyFilterValue || energyFilterValue || statusFilterValue) {
+          <button
+            class="text-sm text-ink-muted hover:text-accent transition-colors"
+            (click)="clearFilters()"
+          >
+            Clear filters
+          </button>
         }
-      </select>
+      </div>
 
-      <select
-        class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm"
-        [(ngModel)]="energyFilterValue"
-        (ngModelChange)="applyFilter()"
-      >
-        <option [ngValue]="null">All energy levels</option>
-        @for (e of energyLevels; track e) {
-          <option [ngValue]="e">{{ e }}</option>
-        }
-      </select>
-
-      <select
-        class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm"
-        [(ngModel)]="statusFilterValue"
-        (ngModelChange)="applyFilter()"
-      >
-        <option [ngValue]="null">All statuses</option>
-        @for (s of statuses; track s) {
-          <option [ngValue]="s">{{ s }}</option>
-        }
-      </select>
-
-      <button
-        class="text-sm text-gray-400 hover:text-white transition-colors"
-        (click)="clearFilters()"
-      >
-        Clear filters
-      </button>
+      <div class="flex items-center gap-1 border border-slate-200 rounded-lg p-1">
+        <button
+          [class]="
+            viewMode === 'grid'
+              ? 'p-1.5 rounded-md bg-accent-soft text-accent'
+              : 'p-1.5 rounded-md text-ink-muted hover:text-ink transition-colors'
+          "
+          (click)="viewMode = 'grid'"
+          title="Grid view"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+        </button>
+        <button
+          [class]="
+            viewMode === 'list'
+              ? 'p-1.5 rounded-md bg-accent-soft text-accent'
+              : 'p-1.5 rounded-md text-ink-muted hover:text-ink transition-colors'
+          "
+          (click)="viewMode = 'list'"
+          title="List view"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     @if (loading()) {
-      <div class="text-gray-400 text-sm">Loading resources...</div>
+      <div class="flex items-center gap-2 text-ink-muted text-sm py-12 justify-center">
+        <svg
+          class="animate-spin w-4 h-4"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+        </svg>
+        Loading resources...
+      </div>
     }
 
     @if (error()) {
-      <div class="text-red-400 text-sm">{{ error() }}</div>
+      <div class="text-red-500 text-sm py-4 text-center">{{ error() }}</div>
     }
 
-    @if (!loading() && !error()) {
+    @if (!loading() && !error() && viewMode === 'grid') {
       @if (resources().length === 0) {
-        <div class="text-gray-500 text-sm">No resources found.</div>
+        <div class="text-center py-16 text-ink-muted text-sm">No resources found.</div>
       } @else {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           @for (resource of resources(); track resource.id) {
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col gap-3">
+            <div
+              class="group bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-3 hover:border-accent/40 hover:shadow-sm transition-all duration-200 cursor-pointer"
+            >
               <div class="flex items-start justify-between gap-2">
-                <h2 class="text-sm font-semibold leading-snug">{{ resource.title }}</h2>
+                <h2
+                  class="text-sm font-semibold text-ink leading-snug group-hover:text-accent transition-colors"
+                >
+                  {{ resource.title }}
+                </h2>
                 <span [class]="getStatusClass(resource.status)">
                   {{ resource.status }}
                 </span>
               </div>
-
               <div class="flex gap-2 flex-wrap">
                 <span [class]="getDifficultyClass(resource.difficulty)">
                   {{ resource.difficulty }}
@@ -77,17 +170,54 @@
                 <span [class]="getEnergyClass(resource.energyLevel)">
                   ⚡ {{ resource.energyLevel }}
                 </span>
-                <span class="text-xs px-2 py-0.5 rounded-md bg-gray-800 text-gray-400">
+                <span class="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-ink-muted">
                   {{ resource.estimatedDuration.value }} min
                 </span>
               </div>
               @if (resource.url) {
                 <a>
-                  [href]="resource.url" target="_blank" class="text-xs text-gray-500
-                  hover:text-gray-300 truncate transition-colors">
+                  [href]="resource.url" target="_blank" class="text-xs text-ink-muted
+                  hover:text-accent truncate transition-colors" (click)="$event.stopPropagation()">
                   {{ resource.url }}
                 </a>
               }
+            </div>
+          }
+        </div>
+      }
+    }
+
+    @if (!loading() && !error() && viewMode === 'list') {
+      @if (resources().length === 0) {
+        <div class="text-center py-16 text-ink-muted text-sm">No resources found.</div>
+      } @else {
+        <div class="flex flex-col divide-y divide-slate-100">
+          @for (resource of resources(); track resource.id) {
+            <div
+              class="group flex items-center gap-4 py-3 hover:bg-slate-50 px-3 rounded-lg transition-colors cursor-pointer"
+            >
+              <div class="flex-1 min-w-0">
+                <span
+                  class="text-sm font-medium text-ink group-hover:text-accent transition-colors truncate block"
+                >
+                  {{ resource.title }}
+                </span>
+                @if (resource.url) {
+                  <span class="text-xs text-ink-muted truncate block">{{ resource.url }}</span>
+                }
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span [class]="getDifficultyClass(resource.difficulty)">{{
+                  resource.difficulty
+                }}</span>
+                <span [class]="getEnergyClass(resource.energyLevel)"
+                  >⚡ {{ resource.energyLevel }}</span
+                >
+                <span class="text-xs text-ink-muted w-16 text-right"
+                  >{{ resource.estimatedDuration.value }} min</span
+                >
+                <span [class]="getStatusClass(resource.status)">{{ resource.status }}</span>
+              </div>
             </div>
           }
         </div>
