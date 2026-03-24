@@ -10,6 +10,7 @@ export * from "./mocks/index.js";
 
 export * from "./use-cases/learning-resource/index.js";
 export * from "./use-cases/toggles/index.js";
+export * from "./use-cases/topics/index.js";
 export * from "./use-case-map.js";
 
 // ============= UTILS =============
