@@ -10,6 +10,8 @@ import {
   TypeOrmResourceTypeRepository,
 } from "@learning-resource/infrastructure";
 import { CryptoServiceImpl } from "infrastructure-lib";
+import { TopicController } from "./topic.controller.js";
+import { ResourceTypeController } from "./resource-type.controller.js";
 
 @Module({
   imports: [
@@ -19,7 +21,11 @@ import { CryptoServiceImpl } from "infrastructure-lib";
       ResourceTypeEntity,
     ]),
   ],
-  controllers: [LearningResourceController],
+  controllers: [
+    LearningResourceController,
+    TopicController,
+    ResourceTypeController,
+  ],
   providers: [
     {
       provide: "ILearningResourceRepository",
