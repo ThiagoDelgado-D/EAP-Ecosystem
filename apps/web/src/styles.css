@@ -1,3 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@theme {
+    --color-accent: #4F86C6;
+    --color-accent-soft: #EEF4FB;
+    --color-ink: #1A1A2E;
+    --color-ink-muted: #64748B;
+    --font-family-sans: "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+    body {
+        color: var(--color-ink);
+        font-family: var(--font-family-sans);
+        -webkit-font-smoothing: antialiased;
+    }
+}
