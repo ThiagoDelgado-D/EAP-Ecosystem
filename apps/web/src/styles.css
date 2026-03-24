@@ -78,6 +78,10 @@
     background-color: var(--color-accent) !important;
 }
 
+.dark .divide-gray-200\/50 {
+    border-color: rgba(51, 65, 85, 0.5);
+}
+
 .dark .hover\:bg-accent\/90:hover {
     background-color: color-mix(in srgb, var(--color-accent) 90%, transparent) !important;
 }

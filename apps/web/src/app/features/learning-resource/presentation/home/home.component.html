@@ -221,9 +221,12 @@
                 </span>
               </div>
               @if (resource.url) {
-                <a>
-                  [href]="resource.url" target="_blank" class="text-xs text-ink-muted
-                  hover:text-accent truncate transition-colors" (click)="$event.stopPropagation()">
+                <a
+                  [href]="resource.url"
+                  target="_blank"
+                  class="text-xs text-ink-muted hover:text-accent truncate transition-colors"
+                  (click)="$event.stopPropagation()"
+                >
                   {{ resource.url }}
                 </a>
               }
@@ -237,7 +240,7 @@
       @if (resources().length === 0) {
         <div class="text-center py-16 text-ink-muted text-sm">No resources found.</div>
       } @else {
-        <div class="flex flex-col divide-y divide-slate-100">
+        <div class="flex flex-col divide-y divide-gray-200/50">
           @for (resource of resources(); track resource.id) {
             <div
               class="group flex items-center gap-4 py-3 hover:bg-slate-50 px-3 rounded-lg transition-colors cursor-pointer"
