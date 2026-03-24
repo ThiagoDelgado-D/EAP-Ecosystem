@@ -9,6 +9,7 @@ import type {
   ResourceStatus,
 } from '../../domain/learning-resource.model';
 import { FormsModule } from '@angular/forms';
+import { ThemeService } from '@core/theme/theme.service.js';
 
 @Component({
   selector: 'app-home',
@@ -26,6 +27,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class HomeComponent implements OnInit {
   private readonly service = inject(LearningResourceService);
+  readonly themeService = inject(ThemeService);
 
   readonly resources = this.service.resources;
   readonly loading = this.service.loading;
@@ -58,6 +60,10 @@ export class HomeComponent implements OnInit {
 
     const hasFilters = Object.keys(filter).length > 0;
     hasFilters ? await this.service.loadByFilter(filter) : await this.service.loadAll();
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
   }
 
   getStatusClass(status: ResourceStatus): string {
