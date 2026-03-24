@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { LearningResourceRepository } from '../domain/learning-resource.repository';
 import type {
+  DifficultyLevel,
+  EnergyLevel,
   LearningResource,
   LearningResourceFilter,
   ResourceStatus,
@@ -21,10 +23,16 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
   }
 
   async getByFilter(filter: LearningResourceFilter): Promise<LearningResource[]> {
+    const params: Record<string, string> = {};
+
+    if (filter.difficulty) params['difficulty'] = this.toApiDifficulty(filter.difficulty);
+    if (filter.energyLevel) params['energyLevel'] = this.toApiEnergyLevel(filter.energyLevel);
+    if (filter.status) params['status'] = this.toApiStatus(filter.status);
+    if (filter.topicIds) params['topicIds'] = filter.topicIds.join(',');
+    if (filter.typeId) params['typeId'] = filter.typeId;
+
     const response = await firstValueFrom(
-      this.http.get<LearningResourceListDto>(`${this.baseUrl}/filter`, {
-        params: { ...filter },
-      }),
+      this.http.get<LearningResourceListDto>(`${this.baseUrl}/filter`, { params }),
     );
     return response.resources.map((dto) => this.toDomain(dto));
   }
@@ -32,6 +40,23 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
   async getById(id: string): Promise<LearningResource> {
     const dto = await firstValueFrom(this.http.get<LearningResourceDto>(`${this.baseUrl}/${id}`));
     return this.toDomain(dto);
+  }
+
+  private toApiStatus(status: ResourceStatus): string {
+    const map: Record<ResourceStatus, string> = {
+      Pending: 'pending',
+      InProgress: 'in_progress',
+      Completed: 'completed',
+    };
+    return map[status];
+  }
+
+  private toApiDifficulty(difficulty: DifficultyLevel): string {
+    return difficulty.toLowerCase();
+  }
+
+  private toApiEnergyLevel(energyLevel: EnergyLevel): string {
+    return energyLevel.toLowerCase();
   }
 
   private capitalize(value: string): string {
