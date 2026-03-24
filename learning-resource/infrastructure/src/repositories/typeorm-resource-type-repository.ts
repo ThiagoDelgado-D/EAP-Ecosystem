@@ -19,8 +19,10 @@ export class TypeOrmResourceTypeRepository implements IResourceTypeRepository {
   }
 
   async findAll(): Promise<ResourceType[]> {
-    const entities = await this.repository.find();
-    return entities.map((e) => this.toDomain(e));
+    const entities = await this.repository.find({
+      where: { isActive: true },
+    });
+    return entities.map(this.toDomain);
   }
 
   async findById(id: UUID): Promise<ResourceType | null> {
