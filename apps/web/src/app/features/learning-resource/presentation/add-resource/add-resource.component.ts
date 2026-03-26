@@ -15,7 +15,10 @@ import { ResourceTypeHttpRepository } from '../../infrastructure/resource-type-h
 import { TopicService } from '../../application/topic.service';
 import { ResourceTypeService } from '../../application/resource-type.service';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
-import { ResourceStatus } from '@features/learning-resource/domain/learning-resource.model';
+import {
+  LearningResource,
+  ResourceStatus,
+} from '@features/learning-resource/domain/learning-resource.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
 import { ThemeService } from '@core/theme/theme.service';
@@ -164,9 +167,12 @@ export class AddResourceComponent implements OnInit {
       title: this.step1Form.value.title,
       url: this.step1Form.value.url || undefined,
       notes: this.step2Form.value.notes || undefined,
-      difficulty: this.step2Form.value.difficulty,
-      energyLevel: this.step2Form.value.energyLevel,
-      estimatedDuration: this.step2Form.value.estimatedDuration,
+      difficulty: this.step2Form.value.difficulty as LearningResource['difficulty'],
+      energyLevel: this.step2Form.value.energyLevel as LearningResource['energyLevel'],
+      estimatedDuration: {
+        value: this.step2Form.value.estimatedDuration.value,
+        isEstimated: this.step2Form.value.estimatedDuration.isEstimated,
+      },
       topicIds: this.step1Form.value.topicIds,
       typeId: this.step1Form.value.typeId,
       status: INITIAL_RESOURCE_STATUS,
@@ -181,7 +187,6 @@ export class AddResourceComponent implements OnInit {
       this.isSubmitting = false;
     }
   }
-
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach((control) => {
       control.markAsTouched();
