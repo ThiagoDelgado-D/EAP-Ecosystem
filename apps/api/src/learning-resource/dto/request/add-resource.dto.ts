@@ -25,7 +25,11 @@ export class AddResourceDto {
   title: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsUrl({
+    require_tld: true,
+    require_protocol: true,
+    protocols: ["https"],
+  })
   url?: string;
 
   @IsUUID()
