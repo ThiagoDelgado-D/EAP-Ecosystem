@@ -35,4 +35,11 @@ export class LearningResourceService {
       this.loading.set(false);
     }
   }
+
+  async addResource(
+    resource: Omit<LearningResource, 'id' | 'createdAt' | 'updatedAt' | 'lastViewed'>,
+  ): Promise<void> {
+    await this.repository.addResourceLearning(resource);
+    await this.loadAll();
+  }
 }
