@@ -10,6 +10,7 @@ import type {
 } from '../../domain/learning-resource.model';
 import { FormsModule } from '@angular/forms';
 import { ThemeService } from '@core/theme/theme.service.js';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -23,7 +24,7 @@ import { ThemeService } from '@core/theme/theme.service.js';
       useClass: LearningResourceHttpRepository,
     },
   ],
-  imports: [FormsModule],
+  imports: [FormsModule, RouterModule],
 })
 export class HomeComponent implements OnInit {
   private readonly service = inject(LearningResourceService);
@@ -69,9 +70,9 @@ export class HomeComponent implements OnInit {
   getStatusClass(status: ResourceStatus): string {
     const base = 'text-xs px-2 py-0.5 rounded-md font-medium shrink-0';
     const map: Record<ResourceStatus, string> = {
-      Pending: 'bg-gray-700/50 text-gray-300',
-      InProgress: 'bg-blue-500/20 text-blue-300',
-      Completed: 'bg-green-500/20 text-green-300',
+      Pending: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+      InProgress: 'bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300',
+      Completed: 'bg-green-50 text-green-600 dark:bg-green-900/40 dark:text-green-300',
     };
     return `${base} ${map[status]}`;
   }
@@ -79,9 +80,9 @@ export class HomeComponent implements OnInit {
   getDifficultyClass(difficulty: DifficultyLevel): string {
     const base = 'text-xs px-2 py-0.5 rounded-md font-medium';
     const map: Record<DifficultyLevel, string> = {
-      Low: 'bg-green-500/20 text-green-300',
-      Medium: 'bg-yellow-500/20 text-yellow-300',
-      High: 'bg-red-500/20 text-red-300',
+      Low: 'bg-green-50 text-green-600 dark:bg-green-900/40 dark:text-green-300',
+      Medium: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-300',
+      High: 'bg-red-50 text-red-600 dark:bg-red-900/40 dark:text-red-300',
     };
     return `${base} ${map[difficulty]}`;
   }
@@ -89,9 +90,9 @@ export class HomeComponent implements OnInit {
   getEnergyClass(energy: EnergyLevel): string {
     const base = 'text-xs px-2 py-0.5 rounded-md font-medium';
     const map: Record<EnergyLevel, string> = {
-      Low: 'bg-green-500/10 text-green-400',
-      Medium: 'bg-yellow-500/10 text-yellow-400',
-      High: 'bg-red-500/10 text-red-400',
+      Low: 'bg-green-50 text-green-500 dark:bg-green-900/40 dark:text-green-300',
+      Medium: 'bg-yellow-50 text-yellow-500 dark:bg-yellow-900/40 dark:text-yellow-300',
+      High: 'bg-red-50 text-red-500 dark:bg-red-900/40 dark:text-red-300',
     };
     return `${base} ${map[energy]}`;
   }
