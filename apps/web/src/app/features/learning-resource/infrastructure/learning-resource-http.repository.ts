@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { LearningResourceRepository } from '../domain/learning-resource.repository';
 import type {
@@ -23,13 +23,23 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
   }
 
   async getByFilter(filter: LearningResourceFilter): Promise<LearningResource[]> {
-    const params: Record<string, string> = {};
+    let params = new HttpParams();
 
-    if (filter.difficulty) params['difficulty'] = this.toApiDifficulty(filter.difficulty);
-    if (filter.energyLevel) params['energyLevel'] = this.toApiEnergyLevel(filter.energyLevel);
-    if (filter.status) params['status'] = this.toApiStatus(filter.status);
-    if (filter.topicIds) params['topicIds'] = filter.topicIds.join(',');
-    if (filter.typeId) params['typeId'] = filter.typeId;
+    if (filter.difficulty) {
+      params = params.set('difficulty', this.toApiDifficulty(filter.difficulty));
+    }
+    if (filter.energyLevel) {
+      params = params.set('energyLevel', this.toApiEnergyLevel(filter.energyLevel));
+    }
+    if (filter.status) {
+      params = params.set('status', this.toApiStatus(filter.status));
+    }
+    if (filter.topicIds && filter.topicIds.length > 0) {
+      params = params.set('topicIds', filter.topicIds.join(','));
+    }
+    if (filter.typeId) {
+      params = params.set('typeId', filter.typeId);
+    }
 
     const response = await firstValueFrom(
       this.http.get<LearningResourceListDto>(`${this.baseUrl}/filter`, { params }),
