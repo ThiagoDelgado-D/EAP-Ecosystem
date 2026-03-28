@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { LearningResourceService } from '../../application/learning-resource.service';
 import { LearningResourceRepository } from '../../domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '../../infrastructure/learning-resource-http.repository';
@@ -34,10 +34,6 @@ export class HomeComponent implements OnInit {
   readonly loading = this.service.loading;
   readonly error = this.service.error;
 
-  readonly difficultyFilter = signal<DifficultyLevel | null>(null);
-  readonly energyFilter = signal<EnergyLevel | null>(null);
-  readonly statusFilter = signal<ResourceStatus | null>(null);
-
   difficultyFilterValue: DifficultyLevel | null = null;
   energyFilterValue: EnergyLevel | null = null;
   statusFilterValue: ResourceStatus | null = null;
@@ -55,12 +51,25 @@ export class HomeComponent implements OnInit {
   async applyFilter(): Promise<void> {
     const filter: LearningResourceFilter = {};
 
-    if (this.difficultyFilterValue) filter.difficulty = this.difficultyFilterValue;
-    if (this.energyFilterValue) filter.energyLevel = this.energyFilterValue;
-    if (this.statusFilterValue) filter.status = this.statusFilterValue;
+    if (this.difficultyFilterValue !== null) {
+      filter.difficulty = this.difficultyFilterValue;
+    }
+
+    if (this.energyFilterValue !== null) {
+      filter.energyLevel = this.energyFilterValue;
+    }
+
+    if (this.statusFilterValue !== null) {
+      filter.status = this.statusFilterValue;
+    }
 
     const hasFilters = Object.keys(filter).length > 0;
-    hasFilters ? await this.service.loadByFilter(filter) : await this.service.loadAll();
+
+    if (hasFilters) {
+      await this.service.loadByFilter(filter);
+    } else {
+      await this.service.loadAll();
+    }
   }
 
   toggleTheme() {
@@ -98,9 +107,9 @@ export class HomeComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.difficultyFilter.set(null);
-    this.energyFilter.set(null);
-    this.statusFilter.set(null);
+    this.difficultyFilterValue = null;
+    this.energyFilterValue = null;
+    this.statusFilterValue = null;
     this.service.loadAll();
   }
 }

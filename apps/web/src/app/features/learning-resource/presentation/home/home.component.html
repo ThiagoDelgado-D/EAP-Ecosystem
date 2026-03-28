@@ -69,6 +69,7 @@
     <div class="flex items-center justify-between gap-4 mb-6">
       <div class="flex items-center gap-3 flex-wrap">
         <select
+          name="difficulty"
           class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm text-ink dark:text-slate-200 hover:border-accent transition-colors cursor-pointer"
           [(ngModel)]="difficultyFilterValue"
           (ngModelChange)="applyFilter()"
@@ -80,6 +81,7 @@
         </select>
 
         <select
+          name="energy"
           class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm text-ink dark:text-slate-200 hover:border-accent transition-colors cursor-pointer"
           [(ngModel)]="energyFilterValue"
           (ngModelChange)="applyFilter()"
@@ -198,8 +200,37 @@
 
     @if (!loading() && !error() && viewMode === 'grid') {
       @if (resources().length === 0) {
-        <div class="text-center py-16 text-ink-muted dark:text-slate-400 text-sm">
-          No resources found.
+        <div class="flex flex-col items-center justify-center py-24 gap-4">
+          <div
+            class="w-14 h-14 rounded-2xl bg-accent-soft dark:bg-accent/10 flex items-center justify-center"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-accent"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </div>
+          <div class="text-center">
+            <p class="text-sm font-medium text-ink dark:text-slate-200 mb-1">No resources yet</p>
+            <p class="text-xs text-ink-muted dark:text-slate-400">
+              Start building your learning library
+            </p>
+          </div>
+          <button
+            routerLink="/add"
+            class="flex items-center gap-2 bg-accent text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors"
+          >
+            + Add your first resource
+          </button>
         </div>
       } @else {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
