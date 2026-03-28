@@ -22,6 +22,7 @@ import {
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
 import { ThemeService } from '@core/theme/theme.service';
+import { ToastService } from '@core/toast/toast.service.js';
 
 @Component({
   selector: 'app-add-resource',
@@ -44,6 +45,7 @@ export class AddResourceComponent implements OnInit {
   private readonly resourceTypeService = inject(ResourceTypeService);
   private readonly learningResourceService = inject(LearningResourceService);
   readonly themeService = inject(ThemeService);
+  private readonly toastService = inject(ToastService);
 
   readonly topics = this.topicService.topics;
   readonly resourceTypes = this.resourceTypeService.resourceTypes;
@@ -180,8 +182,10 @@ export class AddResourceComponent implements OnInit {
 
     try {
       await this.learningResourceService.addResource(payload);
+      this.toastService.show('Resource created successfully');
       this.router.navigate(['/']);
     } catch {
+      this.toastService.show('Failed to create resource. Please try again.', 'error');
       this.submitError = 'Failed to create resource. Please try again.';
     } finally {
       this.isSubmitting = false;
