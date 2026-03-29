@@ -28,7 +28,7 @@ export class AddResourceDto {
   @IsUrl({
     require_tld: true,
     require_protocol: true,
-    protocols: ["https"],
+    protocols: ["http", "https"],
   })
   url?: string;
 
