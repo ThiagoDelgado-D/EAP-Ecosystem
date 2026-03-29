@@ -95,7 +95,25 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
 
   private capitalizeStatus(value: string): ResourceStatus {
     if (value === 'in_progress') return 'InProgress';
-    return this.capitalize(value) as ResourceStatus;
+    if (value === 'pending') return 'Pending';
+    if (value === 'completed') return 'Completed';
+    throw new Error(`Unknown status value from API: ${value}`);
+  }
+
+  private capitalizeDifficulty(value: string): DifficultyLevel {
+    const capitalized = this.capitalize(value);
+    if (capitalized === 'Low' || capitalized === 'Medium' || capitalized === 'High') {
+      return capitalized;
+    }
+    throw new Error(`Unknown difficulty value from API: ${value}`);
+  }
+
+  private capitalizeEnergyLevel(value: string): EnergyLevel {
+    const capitalized = this.capitalize(value);
+    if (capitalized === 'Low' || capitalized === 'Medium' || capitalized === 'High') {
+      return capitalized;
+    }
+    throw new Error(`Unknown energy level value from API: ${value}`);
   }
 
   private toDomain(dto: LearningResourceDto): LearningResource {
@@ -104,8 +122,8 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
       title: dto.title,
       url: dto.url ?? undefined,
       notes: dto.notes ?? undefined,
-      difficulty: this.capitalize(dto.difficulty) as LearningResource['difficulty'],
-      energyLevel: this.capitalize(dto.energyLevel) as LearningResource['energyLevel'],
+      difficulty: this.capitalizeDifficulty(dto.difficulty),
+      energyLevel: this.capitalizeEnergyLevel(dto.energyLevel),
       status: this.capitalizeStatus(dto.status),
       estimatedDuration: dto.estimatedDuration ?? { value: 0, isEstimated: true },
       topicIds: dto.topicIds,
