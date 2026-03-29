@@ -6,7 +6,7 @@ export interface LearningResourceDto {
   difficulty: string;
   energyLevel: string;
   status: string;
-  estimatedDuration?: {
+  estimatedDuration: {
     value: number;
     isEstimated: boolean;
   };
