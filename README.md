@@ -14,8 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
 [![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
@@ -29,20 +28,24 @@ Managing learning resources is harder than it looks. Bookmarks pile up, courses 
 
 The long-term goal is a recommendation engine that suggests what to study based on how much time and mental energy you actually have at that moment.
 
-**Right now**, EAP is a REST API that lets you manage your learning resources. The frontend and recommendations are coming in upcoming versions.
+**Right now**, EAP is a full-stack application with a REST API and an Angular 21 frontend
+that lets you manage your learning resources, filter them by difficulty and energy level,
+and add new ones via a guided step-by-step form. Recommendations and advanced features
+are coming in upcoming versions.
 
 ---
 
-## Current Status — v0.3.0
+## Current Status — v0.4.0
 
-| Layer                       | Status      |
-| --------------------------- | ----------- |
-| Domain & Application        | ✅ Complete |
-| REST API (NestJS)           | ✅ Complete |
-| PostgreSQL (Infrastructure) | ✅ Complete |
-| Frontend (Angular)          | 📅 Planned  |
-| User & Auth                 | 📅 Planned  |
-| Recommendations             | 📅 Planned  |
+| Layer                       | Status         |
+| --------------------------- | -------------- |
+| Domain & Application        | ✅ Complete    |
+| REST API (NestJS)           | ✅ Complete    |
+| PostgreSQL (Infrastructure) | ✅ Complete    |
+| Frontend (Angular)          | ✅ Complete    |
+| Resource Library Enhanced   | 🚧 In progress |
+| User & Auth                 | 📅 Planned     |
+| Recommendations             | 📅 Planned     |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
@@ -84,6 +87,15 @@ yarn workspace api start:dev
 
 The API will be available at `http://localhost:3000`.
 
+### Run the Frontend
+
+```bash
+cd apps/web
+npm run start
+```
+
+The frontend will be available at `http://localhost:4200`.
+
 ### Run tests
 
 ```bash
@@ -123,14 +135,16 @@ Base URL: `http://localhost:3000/api/v1`
 
 ## Tech Stack
 
-| Area          | Technology           |
-| ------------- | -------------------- |
-| Runtime       | Node.js 20 + ESM     |
-| Language      | TypeScript 5.7       |
-| API Framework | NestJS 11            |
-| Monorepo      | Yarn 4 Workspaces    |
-| Testing       | Jest + Supertest     |
-| Storage       | PostgreSQL + TypeORM |
+| Area          | Technology                |
+| ------------- | ------------------------- |
+| Runtime       | Node.js 20 + ESM          |
+| Language      | TypeScript 5.7            |
+| API Framework | NestJS 11                 |
+| Frontend      | Angular 21                |
+| Styling       | Tailwind CSS v4           |
+| Monorepo      | Yarn 4 Workspaces         |
+| Testing       | Jest + Supertest + Vitest |
+| Storage       | PostgreSQL + TypeORM      |
 
 ---
 
@@ -140,6 +154,7 @@ Base URL: `http://localhost:3000/api/v1`
 EAP-Ecosystem/
 ├── apps/
 │   └── api/                        # NestJS REST API
+│   └── web/                        # Angular 21 frontend
 ├── learning-resource/
 │   ├── domain/                     # Entities, repository interfaces
 │   ├── application/                # Use cases, validation, errors
