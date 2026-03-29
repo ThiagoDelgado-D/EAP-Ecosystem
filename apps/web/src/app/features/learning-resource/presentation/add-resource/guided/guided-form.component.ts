@@ -65,7 +65,7 @@ export class GuidedFormComponent implements OnInit {
     this.step1Form = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(200)]],
       typeId: ['', Validators.required],
-      topicIds: [[], Validators.required],
+      topicIds: [[], [Validators.required, Validators.minLength(1)]],
       url: [''],
     });
 
@@ -98,7 +98,7 @@ export class GuidedFormComponent implements OnInit {
   }
 
   nextStep(): void {
-    if (this.step1Form.valid) {
+    if (this.step1Form.valid && this.step1Form.value.topicIds.length > 0) {
       this.currentStep = 2;
     } else {
       this.markFormGroupTouched(this.step1Form);
