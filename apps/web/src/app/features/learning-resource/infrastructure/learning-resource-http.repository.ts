@@ -35,10 +35,12 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
       params = params.set('status', this.toApiStatus(filter.status));
     }
     if (filter.topicIds && filter.topicIds.length > 0) {
-      params = params.set('topicIds', filter.topicIds.join(','));
+      filter.topicIds.forEach((id) => {
+        params = params.append('topicIds', id);
+      });
     }
     if (filter.typeId) {
-      params = params.set('typeId', filter.typeId);
+      params = params.set('resourceTypeId', filter.typeId);
     }
 
     const response = await firstValueFrom(
