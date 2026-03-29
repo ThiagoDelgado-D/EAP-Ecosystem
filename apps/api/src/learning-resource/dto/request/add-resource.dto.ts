@@ -17,6 +17,7 @@ import {
   ResourceStatusType,
 } from "@learning-resource/domain";
 import type { UUID } from "domain-lib";
+import { Transform } from "class-transformer";
 
 export class AddResourceDto {
   @IsString()
@@ -25,13 +26,13 @@ export class AddResourceDto {
   title: string;
 
   @IsOptional()
+  @Transform(({ value }) => (value === "" ? undefined : value))
   @IsUrl({
     require_tld: true,
     require_protocol: true,
     protocols: ["http", "https"],
   })
   url?: string;
-
   @IsUUID()
   resourceTypeId: UUID;
 
