@@ -45,17 +45,17 @@ const filtersSchemaMap = {
   difficulty: enumField(
     Object.values(DifficultyType) as DifficultyType[],
     "Difficulty",
-    { required: false }
+    { required: false },
   ),
   energyLevel: enumField(
     Object.values(EnergyLevelType) as EnergyLevelType[],
     "Energy Level",
-    { required: false }
+    { required: false },
   ),
   status: enumField(
     Object.values(ResourceStatusType) as ResourceStatusType[],
     "Status",
-    { required: false }
+    { required: false },
   ),
   resourceTypeId: uuidField("Resource Type ID", { required: false }),
 };
@@ -70,82 +70,55 @@ export const getResourcesSchema =
 
 export const getResourcesByFilter = async (
   { learningResourceRepository }: GetResourcesDependencies,
-  request: GetResourcesRequestModel = {}
+  request: GetResourcesRequestModel = {},
 ): Promise<GetResourcesResponseModel> => {
   const validatedResult = getResourcesSchema(request);
-
   if (validatedResult instanceof ValidationError) {
-    const resources = await learningResourceRepository.findAll();
-    return {
-      resources,
-      total: resources.length,
-    };
+    return { resources: [], total: 0 };
   }
 
-  const validatedData = validatedResult;
-  const { filters } = validatedData;
+  const { filters } = validatedResult;
 
   if (!filters || Object.keys(filters).length === 0) {
     const resources = await learningResourceRepository.findAll();
-    return {
-      resources,
-      total: resources.length,
-    };
+    return { resources, total: resources.length };
   }
 
   if (filters.topicIds) {
     const resources = await learningResourceRepository.findByTopicIds(
-      filters.topicIds
+      filters.topicIds,
     );
-    return {
-      resources,
-      total: resources.length,
-    };
+    return { resources, total: resources.length };
   }
 
   if (filters.difficulty) {
     const resources = await learningResourceRepository.findByDifficulty(
-      filters.difficulty
+      filters.difficulty,
     );
-    return {
-      resources,
-      total: resources.length,
-    };
+    return { resources, total: resources.length };
   }
 
   if (filters.energyLevel) {
     const resources = await learningResourceRepository.findByEnergyLevel(
-      filters.energyLevel
+      filters.energyLevel,
     );
-    return {
-      resources,
-      total: resources.length,
-    };
+    return { resources, total: resources.length };
   }
 
   if (filters.status) {
     const resources = await learningResourceRepository.findByStatus(
-      filters.status
+      filters.status,
     );
-    return {
-      resources,
-      total: resources.length,
-    };
+    return { resources, total: resources.length };
   }
 
   if (filters.resourceTypeId) {
     const resources = await learningResourceRepository.findByResourceTypeId(
-      filters.resourceTypeId
+      filters.resourceTypeId,
     );
-    return {
-      resources,
-      total: resources.length,
-    };
+    return { resources, total: resources.length };
   }
 
-  const allResources = await learningResourceRepository.findAll();
-  return {
-    resources: allResources,
-    total: allResources.length,
-  };
+  const resources = await learningResourceRepository.findAll();
+  return { resources, total: resources.length };
 };

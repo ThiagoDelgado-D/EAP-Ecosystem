@@ -161,7 +161,7 @@ describe("getResourcesByFilter", () => {
   test("Should return all resources when no filters are provided", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      {}
+      {},
     );
 
     expect(result.total).toBe(6);
@@ -171,7 +171,7 @@ describe("getResourcesByFilter", () => {
   test("Should return all resources when no filters are provided", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      { filters: {} }
+      { filters: {} },
     );
 
     expect(result.total).toBe(6);
@@ -183,7 +183,7 @@ describe("getResourcesByFilter", () => {
 
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      {}
+      {},
     );
 
     expect(result.total).toBe(0);
@@ -197,12 +197,12 @@ describe("getResourcesByFilter", () => {
         filters: {
           topicIds: [topicProgrammingId],
         },
-      }
+      },
     );
 
     expect(result.total).toBe(4);
     expect(
-      result.resources.every((r) => r.topicIds.includes(topicProgrammingId))
+      result.resources.every((r) => r.topicIds.includes(topicProgrammingId)),
     ).toBe(true);
   });
 
@@ -213,7 +213,7 @@ describe("getResourcesByFilter", () => {
         filters: {
           topicIds: [topicDesignId, topicScienceId],
         },
-      }
+      },
     );
 
     expect(result.total).toBe(3);
@@ -221,8 +221,8 @@ describe("getResourcesByFilter", () => {
       result.resources.every(
         (r) =>
           r.topicIds.includes(topicDesignId) ||
-          r.topicIds.includes(topicScienceId)
-      )
+          r.topicIds.includes(topicScienceId),
+      ),
     ).toBe(true);
   });
 
@@ -233,7 +233,7 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { topicIds: [nonExistentTopicId] },
-      }
+      },
     );
 
     expect(result.total).toBe(0);
@@ -245,12 +245,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { difficulty: DifficultyType.LOW },
-      }
+      },
     );
 
     expect(result.total).toBe(2);
     expect(
-      result.resources.every((r) => r.difficulty === DifficultyType.LOW)
+      result.resources.every((r) => r.difficulty === DifficultyType.LOW),
     ).toBe(true);
   });
 
@@ -259,12 +259,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { difficulty: DifficultyType.MEDIUM },
-      }
+      },
     );
 
     expect(result.total).toBe(2);
     expect(
-      result.resources.every((r) => r.difficulty === DifficultyType.MEDIUM)
+      result.resources.every((r) => r.difficulty === DifficultyType.MEDIUM),
     ).toBe(true);
   });
 
@@ -273,12 +273,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { difficulty: DifficultyType.HIGH },
-      }
+      },
     );
 
     expect(result.total).toBe(2);
     expect(
-      result.resources.every((r) => r.difficulty === DifficultyType.HIGH)
+      result.resources.every((r) => r.difficulty === DifficultyType.HIGH),
     ).toBe(true);
   });
 
@@ -287,12 +287,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { energyLevel: EnergyLevelType.LOW },
-      }
+      },
     );
 
     expect(result.total).toBe(2);
     expect(
-      result.resources.every((r) => r.energyLevel === EnergyLevelType.LOW)
+      result.resources.every((r) => r.energyLevel === EnergyLevelType.LOW),
     ).toBe(true);
   });
 
@@ -301,12 +301,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { energyLevel: EnergyLevelType.MEDIUM },
-      }
+      },
     );
 
     expect(result.total).toBe(2);
     expect(
-      result.resources.every((r) => r.energyLevel === EnergyLevelType.MEDIUM)
+      result.resources.every((r) => r.energyLevel === EnergyLevelType.MEDIUM),
     ).toBe(true);
   });
 
@@ -315,12 +315,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { energyLevel: EnergyLevelType.HIGH },
-      }
+      },
     );
 
     expect(result.total).toBe(2);
     expect(
-      result.resources.every((r) => r.energyLevel === EnergyLevelType.HIGH)
+      result.resources.every((r) => r.energyLevel === EnergyLevelType.HIGH),
     ).toBe(true);
   });
 
@@ -329,12 +329,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { status: ResourceStatusType.PENDING },
-      }
+      },
     );
 
     expect(result.total).toBe(3);
     expect(
-      result.resources.every((r) => r.status === ResourceStatusType.PENDING)
+      result.resources.every((r) => r.status === ResourceStatusType.PENDING),
     ).toBe(true);
   });
 
@@ -343,7 +343,7 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { status: ResourceStatusType.IN_PROGRESS },
-      }
+      },
     );
 
     expect(result.total).toBe(1);
@@ -355,12 +355,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { status: ResourceStatusType.COMPLETED },
-      }
+      },
     );
 
     expect(result.total).toBe(2);
     expect(
-      result.resources.every((r) => r.status === ResourceStatusType.COMPLETED)
+      result.resources.every((r) => r.status === ResourceStatusType.COMPLETED),
     ).toBe(true);
   });
 
@@ -369,12 +369,12 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { resourceTypeId: typeArticleId },
-      }
+      },
     );
 
     expect(result.total).toBe(3);
     expect(result.resources.every((r) => r.typeId === typeArticleId)).toBe(
-      true
+      true,
     );
   });
 
@@ -385,7 +385,7 @@ describe("getResourcesByFilter", () => {
       { learningResourceRepository },
       {
         filters: { resourceTypeId: nonExistentTypeId },
-      }
+      },
     );
 
     expect(result.total).toBe(0);
@@ -403,37 +403,38 @@ describe("getResourcesByFilter", () => {
           status: undefined,
           resourceTypeId: undefined,
         },
-      }
+      },
     );
 
     expect(result.total).toBe(6);
     expect(result.resources).toHaveLength(6);
   });
 
-  test("Should return all resources when filters validation fails (invalid UUID in topicIds)", async () => {
+  test("Should return empty array when filters validation fails (invalid UUID in topicIds)", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
       {
         filters: {
           topicIds: ["not-a-valid-uuid" as UUID],
         },
-      }
+      },
     );
 
-    expect(result.total).toBe(6);
-    expect(result.resources).toHaveLength(6);
+    expect(result.total).toBe(0);
+    expect(result.resources).toHaveLength(0);
   });
-  test("Should return all resources when filters validation fails (non-array topicIds)", async () => {
+
+  test("Should return empty array when filters validation fails (non-array topicIds)", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
       {
         filters: {
           topicIds: "not-an-array" as any,
         },
-      }
+      },
     );
 
-    expect(result.total).toBe(6);
-    expect(result.resources).toHaveLength(6);
+    expect(result.total).toBe(0);
+    expect(result.resources).toHaveLength(0);
   });
 });
