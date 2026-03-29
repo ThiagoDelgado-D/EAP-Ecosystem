@@ -85,31 +85,41 @@ export const getResourcesByFilter = async (
     return { resources, total: resources.length };
   }
 
-  let resources = await learningResourceRepository.findAll();
-
   if (filters.topicIds) {
-    const byTopic = await learningResourceRepository.findByTopicIds(
+    const resources = await learningResourceRepository.findByTopicIds(
       filters.topicIds,
     );
-    const ids = new Set(byTopic.map((r) => r.id));
-    resources = resources.filter((r) => ids.has(r.id));
+    return { resources, total: resources.length };
   }
 
   if (filters.difficulty) {
-    resources = resources.filter((r) => r.difficulty === filters.difficulty);
+    const resources = await learningResourceRepository.findByDifficulty(
+      filters.difficulty,
+    );
+    return { resources, total: resources.length };
   }
 
   if (filters.energyLevel) {
-    resources = resources.filter((r) => r.energyLevel === filters.energyLevel);
+    const resources = await learningResourceRepository.findByEnergyLevel(
+      filters.energyLevel,
+    );
+    return { resources, total: resources.length };
   }
 
   if (filters.status) {
-    resources = resources.filter((r) => r.status === filters.status);
+    const resources = await learningResourceRepository.findByStatus(
+      filters.status,
+    );
+    return { resources, total: resources.length };
   }
 
   if (filters.resourceTypeId) {
-    resources = resources.filter((r) => r.typeId === filters.resourceTypeId);
+    const resources = await learningResourceRepository.findByResourceTypeId(
+      filters.resourceTypeId,
+    );
+    return { resources, total: resources.length };
   }
 
+  const resources = await learningResourceRepository.findAll();
   return { resources, total: resources.length };
 };
