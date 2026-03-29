@@ -5,7 +5,12 @@ import { ToastService } from './toast.service';
   selector: 'app-toast',
   standalone: true,
   template: `
-    <div class="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+    <div
+      class="fixed bottom-6 right-6 z-50 flex flex-col gap-2"
+      role="status"
+      aria-live="polite"
+      aria-atomic="false"
+    >
       @for (toast of toastService.toasts(); track toast.id) {
         <div
           [class]="
@@ -50,6 +55,7 @@ import { ToastService } from './toast.service';
           {{ toast.message }}
           <button
             (click)="toastService.dismiss(toast.id)"
+            aria-label="Dismiss notification"
             class="ml-auto text-ink-muted dark:text-slate-400 hover:text-ink transition-colors"
           >
             <svg
