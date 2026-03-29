@@ -1,13 +1,104 @@
 ## [Unreleased]
 
-### Planned for v0.4.0 - Angular Frontend
+### Planned for v0.5.0 - Resource Library Enhanced
 
-- Angular project setup with Clean Architecture
-- Learning resource CRUD views
-- Filter and search interface
-- Basic responsive layout
+- Resource cards with thumbnails and cover images
+- Advanced filters by content type, mental state and topic
+- ALL / SAVED / RECENT tabs
+- Search bar in resource library
+- Architect's Pulse summary widget
 
 ---
+
+## [0.4.0] - 2026-03-29
+
+### Angular Frontend Foundation
+
+This release introduces the first usable UI for managing learning resources
+from the browser, built with Angular 21, standalone components, Signals,
+and Tailwind CSS v4.
+
+### Added
+
+#### Frontend Application (`apps/web`)
+
+- Angular 21 project setup inside `apps/web/` with Clean Architecture structure
+- Tailwind CSS v4 with custom design tokens (`--color-accent`, `--color-ink`,
+  `--color-ink-muted`, `--color-accent-soft`)
+- Inter font with antialiasing
+- Dark mode via native Tailwind v4 `dark:` prefixes and `@custom-variant`
+- `ThemeService` with system preference detection and `localStorage` persistence,
+  guarded against non-browser environments
+- `ToastService` and `ToastComponent` with accessible live region and dismiss button
+- `ApiConfig` centralized in `core/config`
+- Path aliases (`@core/*`, `@shared/*`, `@features/*`) in `tsconfig.json`
+
+#### Feature: Learning Resource
+
+**Domain:**
+
+- `LearningResource` model with `DifficultyLevel`, `EnergyLevel`, `ResourceStatus`
+- `LearningResourceFilter` interface
+- `LearningResourceRepository` abstract class (injectable token)
+- `Topic` and `ResourceType` domain models and repository contracts
+
+**Infrastructure:**
+
+- `LearningResourceHttpRepository` — GET all, GET by filter, GET by id, POST
+- `TopicHttpRepository` — GET all topics
+- `ResourceTypeHttpRepository` — GET all resource types
+- DTOs and mappers with strict enum validation before domain cast
+- Filter values mapped to API enum format before sending
+- Date parsing with fail-fast validation
+
+**Application:**
+
+- `LearningResourceService` — signals-based state, `loadAll`, `loadByFilter`,
+  `addResource`
+- `TopicService` — signals-based state, `loadAll`
+- `ResourceTypeService` — signals-based state, `loadAll`
+
+**Presentation:**
+
+- Lazy loaded routing per feature with subroutes for each creation method
+- `HomeComponent` — resource list with grid/list toggle, filters by difficulty,
+  energy and status, dark mode, empty state with CTA, Notion-style colored badges
+- `AddResourceHubComponent` — entry point at `/add` with method selector
+- `GuidedFormComponent` — 2-step wizard at `/add/guided` with topic pills,
+  visual difficulty/energy selector cards, skeleton loading, toast on success
+- Placeholder pages for `/add/url`, `/add/voice`, `/add/import` (coming soon)
+
+#### Backend additions
+
+- `TopicController` — `GET /api/v1/topics`
+- `ResourceTypeController` — `GET /api/v1/resource-types`
+- `getTopics` use case with full test coverage
+- `getResourceTypes` use case with full test coverage
+- CORS origin configurable via `CORS_ORIGIN` environment variable
+
+### Changed
+
+- `getResourcesByFilter` now applies AND logic when combining multiple filters,
+  loading all resources and filtering in-memory
+- `getResourcesByFilter` returns empty array instead of all resources when
+  filter validation fails
+- URL validation in `AddResourceDto` relaxed to accept standard `http/https` URLs
+- Empty string `url` normalized to `undefined` before `@IsUrl` validation
+
+### Fixed
+
+- `topicIds` sent as repeated query params instead of comma-separated string
+- `resourceTypeId` used correctly instead of `typeId` in filter requests
+- `clearFilters` now awaits `loadAll()` to prevent race conditions
+- Stray `>` character removed from resource URL link in home template
+- `rel="noopener noreferrer"` added to all external links
+- View toggle buttons now expose `aria-label` and `aria-pressed` state
+- Toast dismiss button labeled with `aria-label` for screen readers
+- Toast container exposes `role="status"` and `aria-live="polite"`
+- Unavailable method cards in hub disabled at control level with `aria-disabled`
+- `estimatedDuration` aligned as required in DTO matching domain contract
+- Date parsing in `toDomain` mapper fails fast on invalid date strings
+- `app.spec.ts` updated to match router-outlet based template
 
 ## [0.3.0] - 2026-03-18
 
