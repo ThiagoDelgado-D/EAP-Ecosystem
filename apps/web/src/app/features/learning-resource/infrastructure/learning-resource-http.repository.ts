@@ -116,6 +116,13 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     throw new Error(`Unknown energy level value from API: ${value}`);
   }
 
+  private parseDate(value: string | null | undefined): Date {
+    if (!value) throw new Error(`Invalid date value: ${value}`);
+    const date = new Date(value);
+    if (isNaN(date.getTime())) throw new Error(`Invalid date string: ${value}`);
+    return date;
+  }
+
   private toDomain(dto: LearningResourceDto): LearningResource {
     return {
       id: dto.id,
@@ -128,9 +135,9 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
       estimatedDuration: dto.estimatedDuration ?? { value: 0, isEstimated: true },
       topicIds: dto.topicIds,
       typeId: dto.typeId,
-      lastViewed: dto.lastViewed ? new Date(dto.lastViewed) : undefined,
-      createdAt: dto.createdAt ? new Date(dto.createdAt) : new Date(),
-      updatedAt: dto.updatedAt ? new Date(dto.updatedAt) : new Date(),
+      lastViewed: dto.lastViewed ? this.parseDate(dto.lastViewed) : undefined,
+      createdAt: this.parseDate(dto.createdAt),
+      updatedAt: this.parseDate(dto.updatedAt),
     };
   }
 }

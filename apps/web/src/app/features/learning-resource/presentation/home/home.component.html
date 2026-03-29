@@ -123,8 +123,10 @@
               : 'p-1.5 rounded-md text-ink-muted dark:text-slate-400 hover:text-ink transition-colors'
           "
           (click)="viewMode = 'grid'"
-          title="Grid view"
+          aria-label="Grid view"
+          [attr.aria-pressed]="viewMode === 'grid'"
         >
+          >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -149,8 +151,10 @@
               : 'p-1.5 rounded-md text-ink-muted dark:text-slate-400 hover:text-ink transition-colors'
           "
           (click)="viewMode = 'list'"
-          title="List view"
+          aria-label="List view"
+          [attr.aria-pressed]="viewMode === 'list'"
         >
+          >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
