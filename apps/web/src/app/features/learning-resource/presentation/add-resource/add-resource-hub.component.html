@@ -69,6 +69,8 @@
       @for (method of methods; track method.id) {
         <button
           (click)="navigate(method)"
+          [disabled]="!method.available"
+          [attr.aria-disabled]="!method.available"
           [class]="
             method.available
               ? 'group text-left w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 hover:border-accent/40 hover:shadow-md transition-all duration-200 cursor-pointer'
