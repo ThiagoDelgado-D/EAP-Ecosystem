@@ -106,10 +106,10 @@ export class HomeComponent implements OnInit {
     return `${base} ${map[energy]}`;
   }
 
-  clearFilters(): void {
+  async clearFilters(): Promise<void> {
     this.difficultyFilterValue = null;
     this.energyFilterValue = null;
     this.statusFilterValue = null;
-    this.service.loadAll();
+    await this.service.loadAll();
   }
 }
