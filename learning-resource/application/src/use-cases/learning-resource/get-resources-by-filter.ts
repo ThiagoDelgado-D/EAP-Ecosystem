@@ -74,8 +74,7 @@ export const getResourcesByFilter = async (
 ): Promise<GetResourcesResponseModel> => {
   const validatedResult = getResourcesSchema(request);
   if (validatedResult instanceof ValidationError) {
-    const resources = await learningResourceRepository.findAll();
-    return { resources, total: resources.length };
+    return { resources: [], total: 0 };
   }
 
   const { filters } = validatedResult;
