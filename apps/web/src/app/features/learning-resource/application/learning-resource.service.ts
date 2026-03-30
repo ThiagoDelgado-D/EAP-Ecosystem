@@ -16,7 +16,8 @@ export class LearningResourceService {
     try {
       const result = await this.repository.getAll();
       this.resources.set(result);
-    } catch {
+    } catch (error) {
+      console.error('Error loading resources:', error);
       this.error.set('Failed to load resources');
     } finally {
       this.loading.set(false);

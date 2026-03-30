@@ -117,7 +117,10 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
   }
 
   private parseDate(value: string | null | undefined): Date {
-    if (!value) throw new Error(`Invalid date value: ${value}`);
+    if (!value) {
+      console.warn('Missing date value, using current date as fallback');
+      return new Date();
+    }
     const date = new Date(value);
     if (isNaN(date.getTime())) throw new Error(`Invalid date string: ${value}`);
     return date;
