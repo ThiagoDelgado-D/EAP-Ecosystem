@@ -5,4 +5,7 @@ export interface User extends Entity, Person, TimestampedEntity {
   emailVerified: boolean;
   hashedPassword: string;
   enabled: boolean;
+  emailValidationToken?: string | null;
+  tokenConfirmedAt?: Date | null;
+  tokenExpiresAt?: Date | null;
 }
