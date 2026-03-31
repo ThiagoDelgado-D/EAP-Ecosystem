@@ -2,13 +2,13 @@ import type { UUID } from "domain-lib";
 import type {
   ILearningResourceRepository,
   LearningResource,
+  MentalStateType,
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
 } from "@learning-resource/domain";
 
-export interface MockedLearningResourceRepository
-  extends ILearningResourceRepository {
+export interface MockedLearningResourceRepository extends ILearningResourceRepository {
   learningResources: LearningResource[];
   reset(): void;
   clear(): void;
@@ -16,14 +16,14 @@ export interface MockedLearningResourceRepository
 }
 
 export function mockLearningResourceRepository(
-  learningResources: LearningResource[] = []
+  learningResources: LearningResource[] = [],
 ): MockedLearningResourceRepository {
   return {
     learningResources: [...learningResources],
 
     async save(learningResource: LearningResource): Promise<void> {
       const index = this.learningResources.findIndex(
-        (r) => r.id === learningResource.id
+        (r) => r.id === learningResource.id,
       );
       if (index >= 0) {
         this.learningResources[index] = learningResource;
@@ -50,7 +50,7 @@ export function mockLearningResourceRepository(
       };
 
       this.learningResources = this.learningResources.map((r) =>
-        r.id === id ? updatedResource : r
+        r.id === id ? updatedResource : r,
       );
     },
 
@@ -63,32 +63,40 @@ export function mockLearningResourceRepository(
 
     async findByTopicIds(topicIds: UUID[]): Promise<LearningResource[]> {
       return this.learningResources.filter((r) =>
-        r.topicIds.some((topicId) => topicIds.includes(topicId))
+        r.topicIds.some((topicId) => topicIds.includes(topicId)),
       );
     },
 
     async findByDifficulty(
-      difficulty: DifficultyType
+      difficulty: DifficultyType,
     ): Promise<LearningResource[]> {
       return this.learningResources.filter((r) => r.difficulty === difficulty);
     },
 
     async findByEnergyLevel(
-      energyLevel: EnergyLevelType
+      energyLevel: EnergyLevelType,
     ): Promise<LearningResource[]> {
       return this.learningResources.filter(
-        (r) => r.energyLevel === energyLevel
+        (r) => r.energyLevel === energyLevel,
       );
     },
 
     async findByStatus(
-      status: ResourceStatusType
+      status: ResourceStatusType,
     ): Promise<LearningResource[]> {
       return this.learningResources.filter((r) => r.status === status);
     },
 
     async findByResourceTypeId(typeId: UUID): Promise<LearningResource[]> {
       return this.learningResources.filter((r) => r.typeId === typeId);
+    },
+
+    async findByMentalState(
+      mentalState: MentalStateType,
+    ): Promise<LearningResource[]> {
+      return this.learningResources.filter(
+        (r) => r.mentalState === mentalState,
+      );
     },
 
     reset(): void {
