@@ -3,6 +3,7 @@ import {
   DifficultyType,
   EnergyLevelType,
   type LearningResource,
+  MentalStateType,
   ResourceStatusType,
 } from "../entities/learning-resource.js";
 
@@ -17,4 +18,5 @@ export interface ILearningResourceRepository {
   findByEnergyLevel(energy: EnergyLevelType): Promise<LearningResource[]>;
   findByStatus(status: ResourceStatusType): Promise<LearningResource[]>;
   findByResourceTypeId(typeId: UUID): Promise<LearningResource[]>;
+  findByMentalState(mentalState: MentalStateType): Promise<LearningResource[]>;
 }
