@@ -17,3 +17,7 @@ export * from "./services/mocks/index.js";
 // ============= VALIDATIONS =============
 
 export * from "./validations/index.js";
+
+// ============= UTILS =============
+
+export * from "./utils/index.js";
