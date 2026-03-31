@@ -4053,7 +4053,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@user/domain@workspace:user/domain":
+"@user/application@workspace:user/application":
+  version: 0.0.0-use.local
+  resolution: "@user/application@workspace:user/application"
+  dependencies:
+    "@user/domain": "workspace:^"
+    "@vitest/coverage-v8": "npm:4.0.13"
+    domain-lib: "workspace:^"
+    vitest: "npm:^4.0.13"
+  languageName: unknown
+  linkType: soft
+
+"@user/domain@workspace:^, @user/domain@workspace:user/domain":
   version: 0.0.0-use.local
   resolution: "@user/domain@workspace:user/domain"
   dependencies:
