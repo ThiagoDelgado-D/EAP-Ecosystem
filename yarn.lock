@@ -4053,6 +4053,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@user/domain@workspace:user/domain":
+  version: 0.0.0-use.local
+  resolution: "@user/domain@workspace:user/domain"
+  dependencies:
+    "@vitest/coverage-v8": "npm:4.0.13"
+    domain-lib: "workspace:^"
+    vitest: "npm:^4.0.13"
+  languageName: unknown
+  linkType: soft
+
 "@vitejs/plugin-basic-ssl@npm:2.1.4":
   version: 2.1.4
   resolution: "@vitejs/plugin-basic-ssl@npm:2.1.4"
