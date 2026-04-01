@@ -3,7 +3,11 @@ import {
   mockUserRepository,
   type MockedUserRepository,
 } from "../../mocks/mock-user-repository.js";
-import { mockCryptoService } from "domain-lib";
+import {
+  DefaultEmailTemplates,
+  mockCryptoService,
+  type TemplateSendEmailOptions,
+} from "domain-lib";
 import { MockedEmailService } from "../../mocks/mock-email-service.js";
 import { registerUser, type RegisterUserRequestModel } from "./register.js";
 import { EmailAlreadyExistsError } from "../../errors/email-already-exists.js";
@@ -101,11 +105,12 @@ describe("Register user use case", () => {
     expect(token.length).toBe(10);
 
     expect(emailService.sentEmails).toHaveLength(1);
-    const emailCall = emailService.sentEmails[0];
-    expect(emailCall).toHaveProperty("template", "EMAIL_VERIFICATION");
-    expect(emailCall).toHaveProperty("to", [defaultRequest.email]);
-    expect(emailCall).toHaveProperty("data.email", defaultRequest.email);
-    expect(emailCall).toHaveProperty("data.validationToken", token);
+    const emailCall = emailService
+      .sentEmails[0] as TemplateSendEmailOptions<DefaultEmailTemplates>;
+    expect(emailCall.template).toBe("EMAIL_VERIFICATION");
+    expect(emailCall.to).toEqual([defaultRequest.email]);
+    expect(emailCall.data).toHaveProperty("verificationLink");
+    expect(emailCall.data.verificationLink).toContain(token);
   });
 
   test("Should throw when emailService.sendTemplateEmail fails", async () => {
