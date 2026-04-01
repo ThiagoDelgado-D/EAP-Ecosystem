@@ -25,7 +25,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
-      "@learning-resource/domain": resolve(__dirname, "../domain/src"),
+      "@user/domain": resolve(__dirname, "../domain/src"),
     },
   },
 });
