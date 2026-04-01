@@ -14,6 +14,7 @@ import {
   DifficultyType,
   EnergyLevelType,
   type LearningResource,
+  MentalStateType,
   ResourceStatusType,
   type ResourceType,
   type Topic,
@@ -113,7 +114,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         title: "Updated Title",
-      }
+      },
     );
 
     expect(result).toBeUndefined();
@@ -134,7 +135,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         url: "https://new-url.com",
-      }
+      },
     );
 
     expect(result).toBeUndefined();
@@ -154,7 +155,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         typeId: newTypeId,
-      }
+      },
     );
 
     expect(result).toBeUndefined();
@@ -173,7 +174,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         topicIds: [newTopicId],
-      }
+      },
     );
 
     expect(result).toBeUndefined();
@@ -192,7 +193,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         estimatedDurationMinutes: 120,
-      }
+      },
     );
 
     expect(result).toBeUndefined();
@@ -212,7 +213,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         notes: "Updated notes",
-      }
+      },
     );
 
     expect(result).toBeUndefined();
@@ -232,7 +233,7 @@ describe("updateResource", () => {
         id: resourceId,
         title: "New Title",
         url: "https://new-url.com",
-      }
+      },
     );
 
     expect(result).toBeUndefined();
@@ -257,7 +258,7 @@ describe("updateResource", () => {
         topicIds: [newTopicId],
         estimatedDurationMinutes: 90,
         notes: "Brand new notes",
-      }
+      },
     );
 
     expect(result).toBeUndefined();
@@ -280,7 +281,7 @@ describe("updateResource", () => {
       },
       {
         id: resourceId,
-      }
+      },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
@@ -299,7 +300,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         title: "x".repeat(501),
-      }
+      },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
@@ -320,7 +321,7 @@ describe("updateResource", () => {
       {
         id: nonExistentId,
         title: "New Title",
-      }
+      },
     );
 
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
@@ -338,7 +339,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         typeId: nonExistentTypeId,
-      }
+      },
     );
 
     expect(result).toBeInstanceOf(NotFoundError);
@@ -360,7 +361,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         topicIds: [nonExistentTopicId],
-      }
+      },
     );
 
     expect(result).toBeInstanceOf(NotFoundError);
@@ -380,7 +381,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         title: "  Trimmed Title  ",
-      }
+      },
     );
 
     const updated = await learningResourceRepository.findById(resourceId);
@@ -398,7 +399,7 @@ describe("updateResource", () => {
         id: resourceId,
         url: "  https://example.com  ",
         notes: "  Some notes  ",
-      }
+      },
     );
 
     const updated = await learningResourceRepository.findById(resourceId);
@@ -417,12 +418,12 @@ describe("updateResource", () => {
       {
         id: resourceId,
         title: "New Title",
-      }
+      },
     );
 
     const updated = await learningResourceRepository.findById(resourceId);
     expect(updated?.updatedAt.getTime()).toBeGreaterThanOrEqual(
-      before.getTime()
+      before.getTime(),
     );
   });
   test("Should set URL to undefined when empty string is provided", async () => {
@@ -435,7 +436,7 @@ describe("updateResource", () => {
       {
         id: resourceId,
         url: "",
-      }
+      },
     );
 
     const updated = await learningResourceRepository.findById(resourceId);
@@ -452,10 +453,41 @@ describe("updateResource", () => {
       {
         id: resourceId,
         notes: "",
-      }
+      },
     );
 
     const updated = await learningResourceRepository.findById(resourceId);
     expect(updated?.notes).toBeUndefined();
+  });
+
+  test("Should update only imageUrl", async () => {
+    const result = await updateResource(
+      { learningResourceRepository, resourceTypeRepository, topicRepository },
+      { id: resourceId, imageUrl: "https://example.com/image.jpg" },
+    );
+
+    expect(result).toBeUndefined();
+    const updated = await learningResourceRepository.findById(resourceId);
+    expect(updated?.imageUrl).toBe("https://example.com/image.jpg");
+  });
+
+  test("Should update only mentalState", async () => {
+    const result = await updateResource(
+      { learningResourceRepository, resourceTypeRepository, topicRepository },
+      { id: resourceId, mentalState: MentalStateType.DEEP_FOCUS },
+    );
+
+    expect(result).toBeUndefined();
+    const updated = await learningResourceRepository.findById(resourceId);
+    expect(updated?.mentalState).toBe(MentalStateType.DEEP_FOCUS);
+  });
+
+  test("Should return InvalidDataError when only new fields omitted", async () => {
+    const result = await updateResource(
+      { learningResourceRepository, resourceTypeRepository, topicRepository },
+      { id: resourceId },
+    );
+
+    expect(result).toBeInstanceOf(InvalidDataError);
   });
 });

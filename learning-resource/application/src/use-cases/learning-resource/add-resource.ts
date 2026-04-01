@@ -17,6 +17,7 @@ import {
 import {
   DifficultyType,
   EnergyLevelType,
+  MentalStateType,
   type ILearningResourceRepository,
   type IResourceTypeRepository,
   type ITopicRepository,
@@ -35,11 +36,13 @@ export interface AddResourceDependencies {
 export interface AddResourceRequestModel {
   title: string;
   url?: string;
+  imageUrl?: string;
   resourceTypeId: UUID;
   topicIds: UUID[];
   difficulty: DifficultyType;
   estimatedDurationMinutes: number;
   energyLevel?: EnergyLevelType;
+  mentalState?: MentalStateType;
   status?: ResourceStatusType;
   notes?: string;
 }
@@ -51,6 +54,7 @@ export const addResourceSchema =
       maxLength: 500,
     }),
     url: urlField("Url", { required: false }),
+    imageUrl: urlField("ImageUrl", { required: false }),
     resourceTypeId: uuidField("ResourceTypeId", { required: true }),
     topicIds: arrayField<UUID>("TopicIds", {
       required: true,
@@ -59,7 +63,7 @@ export const addResourceSchema =
     difficulty: enumField(
       Object.values(DifficultyType) as DifficultyType[],
       "Difficulty",
-      { required: true }
+      { required: true },
     ),
     estimatedDurationMinutes: numberField("EstimatedDuration", {
       required: true,
@@ -68,11 +72,15 @@ export const addResourceSchema =
     }),
     energyLevel: optionalEnum(
       Object.values(EnergyLevelType) as EnergyLevelType[],
-      "Energy Level"
+      "Energy Level",
+    ),
+    mentalState: optionalEnum(
+      Object.values(MentalStateType) as MentalStateType[],
+      "Mental State",
     ),
     status: optionalEnum(
       Object.values(ResourceStatusType) as ResourceStatusType[],
-      "Status"
+      "Status",
     ),
     notes: optionalString("Notes", { maxLength: 5000 }),
   });
@@ -84,20 +92,18 @@ export const addResource = async (
     topicRepository,
     cryptoService,
   }: AddResourceDependencies,
-  request: AddResourceRequestModel
+  request: AddResourceRequestModel,
 ): Promise<void | InvalidDataError | NotFoundError> => {
   const validationResult = await addResourceSchema(request);
   if (validationResult instanceof ValidationError) {
-    const validationErrors = validationResult.errors;
-    return new InvalidDataError(validationErrors);
+    return new InvalidDataError(validationResult.errors);
   }
 
   const validatedData = validationResult;
 
   const existingResourceType = await resourceTypeRepository.findById(
-    validatedData.resourceTypeId
+    validatedData.resourceTypeId,
   );
-
   if (!existingResourceType) {
     return new NotFoundError({
       resource: "ResourceType",
@@ -116,7 +122,7 @@ export const addResource = async (
     validatedData.energyLevel ||
     calculateEnergyLevel(
       validatedData.difficulty,
-      validatedData.estimatedDurationMinutes
+      validatedData.estimatedDurationMinutes,
     );
 
   const id = await cryptoService.generateUUID();
@@ -126,6 +132,7 @@ export const addResource = async (
     id,
     title: validatedData.title,
     url: validatedData.url,
+    imageUrl: validatedData.imageUrl,
     typeId: validatedData.resourceTypeId,
     topicIds: validatedData.topicIds,
     difficulty: validatedData.difficulty,
@@ -134,9 +141,8 @@ export const addResource = async (
       isEstimated: true,
     },
     energyLevel,
-    status: validatedData.status
-      ? validatedData.status
-      : ResourceStatusType.PENDING,
+    mentalState: validatedData.mentalState,
+    status: validatedData.status ?? ResourceStatusType.PENDING,
     lastViewed: undefined,
     notes: validatedData.notes,
     createdAt: now,

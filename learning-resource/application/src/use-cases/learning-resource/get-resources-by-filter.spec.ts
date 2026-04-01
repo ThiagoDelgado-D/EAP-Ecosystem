@@ -5,6 +5,7 @@ import {
   DifficultyType,
   EnergyLevelType,
   type LearningResource,
+  MentalStateType,
   ResourceStatusType,
   type Topic,
 } from "@learning-resource/domain";
@@ -436,5 +437,105 @@ describe("getResourcesByFilter", () => {
 
     expect(result.total).toBe(0);
     expect(result.resources).toHaveLength(0);
+  });
+
+  test("Should return resources filtered by mental state DEEP_FOCUS", async () => {
+    const deepFocusId = await cryptoService.generateUUID();
+    const lightReadId = await cryptoService.generateUUID();
+
+    await learningResourceRepository.save({
+      id: deepFocusId,
+      title: "Deep Work",
+      typeId: typeVideoId,
+      topicIds: [topicProgrammingId],
+      difficulty: DifficultyType.HIGH,
+      energyLevel: EnergyLevelType.HIGH,
+      mentalState: MentalStateType.DEEP_FOCUS,
+      status: ResourceStatusType.PENDING,
+      estimatedDuration: { value: 90, isEstimated: true },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await learningResourceRepository.save({
+      id: lightReadId,
+      title: "Quick Tips",
+      typeId: typeArticleId,
+      topicIds: [topicDesignId],
+      difficulty: DifficultyType.LOW,
+      energyLevel: EnergyLevelType.LOW,
+      mentalState: MentalStateType.LIGHT_READ,
+      status: ResourceStatusType.PENDING,
+      estimatedDuration: { value: 10, isEstimated: true },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { mentalState: MentalStateType.DEEP_FOCUS } },
+    );
+
+    expect(result.total).toBe(1);
+    expect(result.resources[0].title).toBe("Deep Work");
+    expect(result.resources[0].mentalState).toBe(MentalStateType.DEEP_FOCUS);
+  });
+
+  test("Should filter by mentalState combined with difficulty (AND logic)", async () => {
+    const id1 = await cryptoService.generateUUID();
+    const id2 = await cryptoService.generateUUID();
+
+    await learningResourceRepository.save({
+      id: id1,
+      title: "Deep Focus High",
+      typeId: typeVideoId,
+      topicIds: [topicProgrammingId],
+      difficulty: DifficultyType.HIGH,
+      energyLevel: EnergyLevelType.HIGH,
+      mentalState: MentalStateType.DEEP_FOCUS,
+      status: ResourceStatusType.PENDING,
+      estimatedDuration: { value: 90, isEstimated: true },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await learningResourceRepository.save({
+      id: id2,
+      title: "Deep Focus Low",
+      typeId: typeArticleId,
+      topicIds: [topicDesignId],
+      difficulty: DifficultyType.LOW,
+      energyLevel: EnergyLevelType.LOW,
+      mentalState: MentalStateType.DEEP_FOCUS,
+      status: ResourceStatusType.PENDING,
+      estimatedDuration: { value: 30, isEstimated: true },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      {
+        filters: {
+          mentalState: MentalStateType.DEEP_FOCUS,
+          difficulty: DifficultyType.HIGH,
+        },
+      },
+    );
+
+    expect(result.total).toBe(1);
+    expect(result.resources[0].title).toBe("Deep Focus High");
+  });
+
+  test("Should return resources without mentalState when filter is not provided", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { difficulty: DifficultyType.LOW } },
+    );
+
+    expect(result.total).toBe(2);
+    expect(
+      result.resources.every((r) => r.difficulty === DifficultyType.LOW),
+    ).toBe(true);
   });
 });

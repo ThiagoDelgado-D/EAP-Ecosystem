@@ -3,6 +3,7 @@ import type {
   EnergyLevelType,
   ILearningResourceRepository,
   LearningResource,
+  MentalStateType,
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { In, type Repository } from "typeorm";
@@ -29,6 +30,9 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
 
     if ("url" in resource) updateData.url = resource.url ?? null;
     if ("notes" in resource) updateData.notes = resource.notes ?? null;
+    if ("imageUrl" in resource) updateData.imageUrl = resource.imageUrl ?? null;
+    if ("mentalState" in resource)
+      updateData.mentalState = resource.mentalState ?? null;
 
     if (estimatedDuration !== undefined) {
       updateData.estimatedDurationMinutes = estimatedDuration.value;
@@ -49,9 +53,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
         relations: ["topics"],
       });
       if (entity) {
-        entity.topics = await this.topicRepository.findBy({
-          id: In(topicIds),
-        });
+        entity.topics = await this.topicRepository.findBy({ id: In(topicIds) });
         await this.repository.save(entity);
       }
     }
@@ -66,9 +68,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
   }
 
   async findAll(): Promise<LearningResource[]> {
-    const entities = await this.repository.find({
-      relations: ["topics"],
-    });
+    const entities = await this.repository.find({ relations: ["topics"] });
     return entities.map((e) => this.toDomain(e));
   }
 
@@ -127,15 +127,27 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
     return entities.map((e) => this.toDomain(e));
   }
 
+  async findByMentalState(
+    mentalState: MentalStateType,
+  ): Promise<LearningResource[]> {
+    const entities = await this.repository.find({
+      where: { mentalState },
+      relations: ["topics"],
+    });
+    return entities.map((e) => this.toDomain(e));
+  }
+
   private toDomain(entity: LearningResourceEntity): LearningResource {
     return {
       id: entity.id as UUID,
       title: entity.title,
       url: entity.url ?? undefined,
+      imageUrl: entity.imageUrl ?? undefined,
       typeId: entity.resourceTypeId as UUID,
       topicIds: entity.topics.map((t) => t.id as UUID),
       difficulty: entity.difficulty as LearningResource["difficulty"],
       energyLevel: entity.energyLevel as LearningResource["energyLevel"],
+      mentalState: (entity.mentalState as MentalStateType) ?? undefined,
       status: entity.status as LearningResource["status"],
       estimatedDuration: {
         value: entity.estimatedDurationMinutes ?? 0,
@@ -155,9 +167,11 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
     entity.id = resource.id;
     entity.title = resource.title;
     entity.url = resource.url ?? null;
+    entity.imageUrl = resource.imageUrl ?? null;
     entity.notes = resource.notes ?? null;
     entity.difficulty = resource.difficulty;
     entity.energyLevel = resource.energyLevel;
+    entity.mentalState = resource.mentalState ?? null;
     entity.status = resource.status;
     entity.estimatedDurationMinutes = resource.estimatedDuration.value;
     entity.isDurationEstimated = resource.estimatedDuration.isEstimated;
