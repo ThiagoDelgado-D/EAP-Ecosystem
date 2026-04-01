@@ -4,9 +4,8 @@ import {
   type MockedUserRepository,
 } from "../../mocks/mock-user-repository.js";
 import { mockCryptoService } from "domain-lib";
-import type { RegisterUserRequestModel } from "user/application/dist/use-cases/index.js";
 import { MockedEmailService } from "../../mocks/mock-email-service.js";
-import { registerUser } from "./register.js";
+import { registerUser, type RegisterUserRequestModel } from "./register.js";
 import { EmailAlreadyExistsError } from "../../errors/email-already-exists.js";
 import type { User } from "@user/domain";
 
