@@ -62,11 +62,12 @@ export const registerUser = async (
 
   await userRepository.save(user);
 
+  const verificationLink = `${process.env.WEB_HOST}/verify-email?token=${emailValidationToken}&email=${user.email}`;
+
   await emailService.sendTemplateEmail({
     template: "EMAIL_VERIFICATION",
     data: {
-      email: user.email,
-      validationToken: emailValidationToken,
+      verificationLink,
     },
     to: [user.email],
   });
