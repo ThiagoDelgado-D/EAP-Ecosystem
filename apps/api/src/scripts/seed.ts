@@ -4,6 +4,7 @@ import { In } from "typeorm";
 import {
   DifficultyType,
   EnergyLevelType,
+  MentalStateType,
   ResourceStatusType,
 } from "@learning-resource/domain";
 import type {
@@ -55,6 +56,7 @@ const topics: Topic[] = Array.from({ length: 10 }, () => {
 const difficulties = Object.values(DifficultyType);
 const energyLevels = Object.values(EnergyLevelType);
 const statuses = Object.values(ResourceStatusType);
+const mentalStates = Object.values(MentalStateType);
 
 const learningResources: LearningResource[] = Array.from({ length: 30 }, () => {
   const createdAt = faker.date.past({ years: 1 });
@@ -62,6 +64,9 @@ const learningResources: LearningResource[] = Array.from({ length: 30 }, () => {
     id: faker.string.uuid() as UUID,
     title: faker.hacker.phrase(),
     url: faker.internet.url(),
+    imageUrl: faker.datatype.boolean()
+      ? faker.image.url({ width: 640, height: 360 })
+      : undefined,
     typeId: faker.helpers.arrayElement(resourceTypes).id,
     topicIds: faker.helpers
       .arrayElements(topics, { min: 1, max: 3 })
@@ -72,6 +77,9 @@ const learningResources: LearningResource[] = Array.from({ length: 30 }, () => {
       isEstimated: faker.datatype.boolean(),
     },
     energyLevel: faker.helpers.arrayElement(energyLevels),
+    mentalState: faker.datatype.boolean()
+      ? faker.helpers.arrayElement(mentalStates)
+      : undefined,
     status: faker.helpers.arrayElement(statuses),
     notes: faker.datatype.boolean() ? faker.lorem.sentence() : undefined,
     createdAt,
@@ -120,9 +128,11 @@ try {
         entity.id = lr.id;
         entity.title = lr.title;
         entity.url = lr.url ?? null;
+        entity.imageUrl = lr.imageUrl ?? null;
         entity.notes = lr.notes ?? null;
         entity.difficulty = lr.difficulty;
         entity.energyLevel = lr.energyLevel;
+        entity.mentalState = lr.mentalState ?? null;
         entity.status = lr.status;
         entity.estimatedDurationMinutes = lr.estimatedDuration.value;
         entity.isDurationEstimated = lr.estimatedDuration.isEstimated;

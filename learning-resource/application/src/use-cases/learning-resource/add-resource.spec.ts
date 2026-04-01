@@ -12,6 +12,7 @@ import { addResource, type AddResourceRequestModel } from "./add-resource.js";
 import {
   DifficultyType,
   EnergyLevelType,
+  MentalStateType,
   ResourceStatusType,
   type ResourceType,
   type Topic,
@@ -75,7 +76,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     const stored = learningResourceRepository.learningResources[0];
@@ -105,10 +106,83 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
+  });
+
+  test("Should persist imageUrl when provided", async () => {
+    const request: AddResourceRequestModel = {
+      title: "Clean Architecture",
+      url: "https://example.com",
+      imageUrl: "https://example.com/image.jpg",
+      resourceTypeId,
+      topicIds: [topicId],
+      difficulty: DifficultyType.MEDIUM,
+      estimatedDurationMinutes: 60,
+    };
+
+    await addResource(
+      {
+        cryptoService,
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      request,
+    );
+
+    const stored = learningResourceRepository.learningResources[0];
+    expect(stored.imageUrl).toBe("https://example.com/image.jpg");
+  });
+
+  test("Should persist mentalState when provided", async () => {
+    const request: AddResourceRequestModel = {
+      title: "Deep Work",
+      resourceTypeId,
+      topicIds: [topicId],
+      difficulty: DifficultyType.HIGH,
+      estimatedDurationMinutes: 120,
+      mentalState: MentalStateType.DEEP_FOCUS,
+    };
+
+    await addResource(
+      {
+        cryptoService,
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      request,
+    );
+
+    const stored = learningResourceRepository.learningResources[0];
+    expect(stored.mentalState).toBe(MentalStateType.DEEP_FOCUS);
+  });
+
+  test("Should set mentalState to undefined when not provided", async () => {
+    const request: AddResourceRequestModel = {
+      title: "Quick Read",
+      resourceTypeId,
+      topicIds: [topicId],
+      difficulty: DifficultyType.LOW,
+      estimatedDurationMinutes: 10,
+    };
+
+    await addResource(
+      {
+        cryptoService,
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+      },
+      request,
+    );
+
+    const stored = learningResourceRepository.learningResources[0];
+    expect(stored.mentalState).toBeUndefined();
+    expect(stored.imageUrl).toBeUndefined();
   });
   test("Should auto-suggest HIGH energy level for difficult + long content", async () => {
     const request: AddResourceRequestModel = {
@@ -127,7 +201,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     const stored = learningResourceRepository.learningResources[0];
@@ -152,7 +226,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     expect(result).toBeInstanceOf(NotFoundError);
@@ -180,7 +254,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     expect(result).toBeInstanceOf(NotFoundError);
@@ -209,7 +283,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     expect(result).toBeInstanceOf(NotFoundError);
@@ -235,7 +309,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     const stored = learningResourceRepository.learningResources[0];
@@ -257,7 +331,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     const stored = learningResourceRepository.learningResources[0];
@@ -280,7 +354,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     const stored = learningResourceRepository.learningResources[0];
@@ -304,7 +378,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     const stored = learningResourceRepository.learningResources[0];
@@ -328,7 +402,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     const stored = learningResourceRepository.learningResources[0];
@@ -351,7 +425,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     const stored = learningResourceRepository.learningResources[0];
@@ -375,7 +449,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
     expect(result).toBeInstanceOf(InvalidDataError);
     expect((result as InvalidDataError).context).toHaveProperty("title");
@@ -397,7 +471,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
     expect(result).toBeInstanceOf(InvalidDataError);
   });
@@ -419,7 +493,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
     expect(result).toBeInstanceOf(InvalidDataError);
   });
@@ -439,7 +513,7 @@ describe("addResource", () => {
         resourceTypeRepository,
         topicRepository,
       },
-      request
+      request,
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);

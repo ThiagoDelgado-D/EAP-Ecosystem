@@ -2,6 +2,7 @@ import { IsArray, IsEnum, IsOptional, IsUUID } from "class-validator";
 import {
   DifficultyType,
   EnergyLevelType,
+  MentalStateType,
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { Transform } from "class-transformer";
@@ -31,4 +32,8 @@ export class GetResourcesFilterDto {
   @IsOptional()
   @IsUUID()
   resourceTypeId?: UUID;
+
+  @IsOptional()
+  @IsEnum(MentalStateType)
+  mentalState?: MentalStateType;
 }

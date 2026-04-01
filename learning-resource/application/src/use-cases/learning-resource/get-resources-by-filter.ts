@@ -3,6 +3,7 @@ import {
   type LearningResource,
   DifficultyType,
   EnergyLevelType,
+  MentalStateType,
   ResourceStatusType,
 } from "@learning-resource/domain";
 import {
@@ -25,6 +26,7 @@ export interface GetResourcesFilters {
   energyLevel?: EnergyLevelType;
   status?: ResourceStatusType;
   resourceTypeId?: UUID;
+  mentalState?: MentalStateType;
 }
 
 export interface GetResourcesRequestModel {
@@ -58,6 +60,11 @@ const filtersSchemaMap = {
     { required: false },
   ),
   resourceTypeId: uuidField("Resource Type ID", { required: false }),
+  mentalState: enumField(
+    Object.values(MentalStateType) as MentalStateType[],
+    "Mental State",
+    { required: false },
+  ),
 };
 
 export const getResourcesSchema =
@@ -84,41 +91,35 @@ export const getResourcesByFilter = async (
     return { resources, total: resources.length };
   }
 
+  let resources = await learningResourceRepository.findAll();
+
   if (filters.topicIds) {
-    const resources = await learningResourceRepository.findByTopicIds(
+    const byTopic = await learningResourceRepository.findByTopicIds(
       filters.topicIds,
     );
-    return { resources, total: resources.length };
+    const ids = new Set(byTopic.map((r) => r.id));
+    resources = resources.filter((r) => ids.has(r.id));
   }
 
   if (filters.difficulty) {
-    const resources = await learningResourceRepository.findByDifficulty(
-      filters.difficulty,
-    );
-    return { resources, total: resources.length };
+    resources = resources.filter((r) => r.difficulty === filters.difficulty);
   }
 
   if (filters.energyLevel) {
-    const resources = await learningResourceRepository.findByEnergyLevel(
-      filters.energyLevel,
-    );
-    return { resources, total: resources.length };
+    resources = resources.filter((r) => r.energyLevel === filters.energyLevel);
   }
 
   if (filters.status) {
-    const resources = await learningResourceRepository.findByStatus(
-      filters.status,
-    );
-    return { resources, total: resources.length };
+    resources = resources.filter((r) => r.status === filters.status);
   }
 
   if (filters.resourceTypeId) {
-    const resources = await learningResourceRepository.findByResourceTypeId(
-      filters.resourceTypeId,
-    );
-    return { resources, total: resources.length };
+    resources = resources.filter((r) => r.typeId === filters.resourceTypeId);
   }
 
-  const resources = await learningResourceRepository.findAll();
+  if (filters.mentalState) {
+    resources = resources.filter((r) => r.mentalState === filters.mentalState);
+  }
+
   return { resources, total: resources.length };
 };

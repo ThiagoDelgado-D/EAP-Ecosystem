@@ -1,14 +1,16 @@
-import type {
-  ILearningResourceRepository,
-  IResourceTypeRepository,
-  ITopicRepository,
-  LearningResource,
+import {
+  MentalStateType,
+  type ILearningResourceRepository,
+  type IResourceTypeRepository,
+  type ITopicRepository,
+  type LearningResource,
 } from "@learning-resource/domain";
 import {
   arrayField,
   createValidationSchema,
   InvalidDataError,
   NotFoundError,
+  optionalEnum,
   optionalNumber,
   optionalString,
   urlField,
@@ -28,9 +30,11 @@ export interface UpdateResourceRequestModel {
   id: UUID;
   title?: string;
   url?: string;
+  imageUrl?: string;
   typeId?: UUID;
   topicIds?: UUID[];
   estimatedDurationMinutes?: number;
+  mentalState?: MentalStateType;
   notes?: string;
 }
 
@@ -39,6 +43,7 @@ export const updateResourceSchema =
     id: uuidField("ResourceId", { required: true }),
     title: optionalString("Title", { allowEmpty: true, maxLength: 250 }),
     url: urlField("Url", { required: false, allowEmpty: true }),
+    imageUrl: urlField("ImageUrl", { required: false, allowEmpty: true }),
     typeId: uuidField("ResourceType", { required: false }),
     topicIds: arrayField<UUID>("TopicIds", {
       required: false,
@@ -47,6 +52,10 @@ export const updateResourceSchema =
       positive: true,
       integer: true,
     }),
+    mentalState: optionalEnum(
+      Object.values(MentalStateType) as MentalStateType[],
+      "Mental State",
+    ),
     notes: optionalString("Notes", { maxLength: 5000, allowEmpty: true }),
   });
 
@@ -56,16 +65,18 @@ export const updateResource = async (
     resourceTypeRepository,
     topicRepository,
   }: UpdateResourceDependencies,
-  request: UpdateResourceRequestModel
+  request: UpdateResourceRequestModel,
 ): Promise<
   void | InvalidDataError | LearningResourceNotFoundError | NotFoundError
 > => {
   const hasUpdates =
     request.title !== undefined ||
     request.url !== undefined ||
+    request.imageUrl !== undefined ||
     request.typeId !== undefined ||
     request.topicIds !== undefined ||
     request.estimatedDurationMinutes !== undefined ||
+    request.mentalState !== undefined ||
     request.notes !== undefined;
 
   if (!hasUpdates) {
@@ -83,7 +94,7 @@ export const updateResource = async (
   const validatedData = validationResult;
 
   const existingResource = await learningResourceRepository.findById(
-    validatedData.id
+    validatedData.id,
   );
   if (!existingResource) {
     return new LearningResourceNotFoundError();
@@ -91,7 +102,7 @@ export const updateResource = async (
 
   if (validatedData.typeId !== undefined) {
     const resourceType = await resourceTypeRepository.findById(
-      validatedData.typeId
+      validatedData.typeId,
     );
     if (!resourceType) {
       return new NotFoundError({
@@ -116,36 +127,26 @@ export const updateResource = async (
     }
   }
 
-  const updates: Partial<LearningResource> = {
-    updatedAt: new Date(),
-  };
+  const updates: Partial<LearningResource> = { updatedAt: new Date() };
 
-  if (validatedData.title !== undefined) {
-    updates.title = validatedData.title;
-  }
-
-  if (validatedData.url !== undefined) {
+  if (validatedData.title !== undefined) updates.title = validatedData.title;
+  if (validatedData.url !== undefined)
     updates.url = validatedData.url || undefined;
-  }
-
-  if (validatedData.typeId !== undefined) {
-    updates.typeId = validatedData.typeId;
-  }
-
-  if (validatedData.topicIds !== undefined) {
+  if (validatedData.imageUrl !== undefined)
+    updates.imageUrl = validatedData.imageUrl || undefined;
+  if (validatedData.typeId !== undefined) updates.typeId = validatedData.typeId;
+  if (validatedData.topicIds !== undefined)
     updates.topicIds = validatedData.topicIds;
-  }
-
   if (validatedData.estimatedDurationMinutes !== undefined) {
     updates.estimatedDuration = {
       value: validatedData.estimatedDurationMinutes,
       isEstimated: true,
     };
   }
-
-  if (validatedData.notes !== undefined) {
+  if (validatedData.mentalState !== undefined)
+    updates.mentalState = validatedData.mentalState;
+  if (validatedData.notes !== undefined)
     updates.notes = validatedData.notes || undefined;
-  }
 
   await learningResourceRepository.update(validatedData.id, updates);
 };

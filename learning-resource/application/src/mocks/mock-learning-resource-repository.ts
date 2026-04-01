@@ -2,6 +2,7 @@ import type { UUID } from "domain-lib";
 import type {
   ILearningResourceRepository,
   LearningResource,
+  MentalStateType,
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
@@ -88,6 +89,14 @@ export function mockLearningResourceRepository(
 
     async findByResourceTypeId(typeId: UUID): Promise<LearningResource[]> {
       return this.learningResources.filter((r) => r.typeId === typeId);
+    },
+
+    async findByMentalState(
+      mentalState: MentalStateType,
+    ): Promise<LearningResource[]> {
+      return this.learningResources.filter(
+        (r) => r.mentalState === mentalState,
+      );
     },
 
     reset(): void {

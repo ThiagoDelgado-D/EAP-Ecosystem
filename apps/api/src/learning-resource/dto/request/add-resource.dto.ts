@@ -14,6 +14,7 @@ import {
 import {
   DifficultyType,
   EnergyLevelType,
+  MentalStateType,
   ResourceStatusType,
 } from "@learning-resource/domain";
 import type { UUID } from "domain-lib";
@@ -33,6 +34,16 @@ export class AddResourceDto {
     protocols: ["http", "https"],
   })
   url?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => (value === "" ? undefined : value))
+  @IsUrl({
+    require_tld: true,
+    require_protocol: true,
+    protocols: ["http", "https"],
+  })
+  imageUrl?: string;
+
   @IsUUID()
   resourceTypeId: UUID;
 
@@ -51,6 +62,10 @@ export class AddResourceDto {
   @IsOptional()
   @IsEnum(EnergyLevelType)
   energyLevel?: EnergyLevelType;
+
+  @IsOptional()
+  @IsEnum(MentalStateType)
+  mentalState?: MentalStateType;
 
   @IsOptional()
   @IsEnum(ResourceStatusType)

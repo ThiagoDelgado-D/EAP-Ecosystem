@@ -3,11 +3,13 @@ import type { Entity, TimestampedEntity, UUID } from "domain-lib";
 export interface LearningResource extends Entity, TimestampedEntity {
   title: string;
   url?: string;
+  imageUrl?: string;
   typeId: UUID;
   topicIds: UUID[];
   difficulty: DifficultyType;
   estimatedDuration: Duration;
   energyLevel: EnergyLevelType;
+  mentalState?: MentalStateType;
   status: ResourceStatusType;
   lastViewed?: Date;
   notes?: string;
@@ -44,3 +46,14 @@ export const EnergyLevelType = {
 
 export type EnergyLevelType =
   (typeof EnergyLevelType)[keyof typeof EnergyLevelType];
+
+export const MentalStateType = {
+  DEEP_FOCUS: "deep_focus",
+  LIGHT_READ: "light_read",
+  CREATIVE: "creative",
+  QUICK_OP: "quick_op",
+  REVIEW: "review",
+} as const;
+
+export type MentalStateType =
+  (typeof MentalStateType)[keyof typeof MentalStateType];

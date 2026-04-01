@@ -23,6 +23,9 @@ export class LearningResourceEntity {
   @Column({ type: "varchar", nullable: true, length: 2048 })
   url!: string | null;
 
+  @Column({ type: "varchar", nullable: true, length: 2048 })
+  imageUrl!: string | null;
+
   @Column({ type: "text", nullable: true })
   notes!: string | null;
 
@@ -34,6 +37,9 @@ export class LearningResourceEntity {
 
   @Column({ length: 20 })
   status!: string;
+
+  @Column({ type: "varchar", length: 20, nullable: true })
+  mentalState!: string | null;
 
   @Column({ type: "int", nullable: true })
   estimatedDurationMinutes!: number | null;
