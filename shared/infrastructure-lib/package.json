@@ -8,12 +8,11 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "domain-lib": "workspace:^",
-    "nodemailer": "^6.9.16"
+    "nodemailer": "^8.0.4"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
     "@types/node": "^24.10.1",
-    "@types/nodemailer": "^6.4.17",
     "@vitest/coverage-v8": "^4.0.18",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
