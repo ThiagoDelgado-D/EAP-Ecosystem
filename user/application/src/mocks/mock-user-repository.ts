@@ -10,13 +10,11 @@ export interface MockedUserRepository extends IUserRepository {
 export function mockUserRepository(
   initialUsers: User[] = [],
 ): MockedUserRepository {
-  let users: User[] = [...initialUsers];
-
   return {
-    users,
+    users: [...initialUsers],
 
     async findByEmail(email: string): Promise<User | null> {
-      return users.find((user) => user.email === email) || null;
+      return this.users.find((user) => user.email === email) || null;
     },
 
     async findById(id: string): Promise<User | null> {
@@ -24,25 +22,24 @@ export function mockUserRepository(
     },
 
     async save(user: User): Promise<void> {
-      const index = users.findIndex((user) => user.id === user.id);
-
+      const index = this.users.findIndex((existing) => existing.id === user.id);
       if (index >= 0) {
-        users[index] = user;
+        this.users[index] = user;
       } else {
-        users.push(user);
+        this.users.push(user);
       }
     },
 
     reset(): void {
-      users = [];
+      this.users = [];
     },
 
     clear(): void {
-      users = [];
+      this.users = [];
     },
 
     count(): number {
-      return users.length;
+      return this.users.length;
     },
   };
 }
