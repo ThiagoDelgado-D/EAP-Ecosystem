@@ -8,9 +8,6 @@
       "domain-lib": [
         "shared/domain-lib/dist/index.d.ts"
       ],
-      "@learning-resource/domain": [
-        "learning-resource/domain/dist/index.d.ts"
-      ]
     }
   },
   "exclude": [
