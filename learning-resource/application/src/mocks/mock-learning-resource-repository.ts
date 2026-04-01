@@ -1,45 +1,105 @@
-import type { IUserRepository, User } from "@user/domain";
+import type { UUID } from "domain-lib";
+import type {
+  ILearningResourceRepository,
+  LearningResource,
+  DifficultyType,
+  EnergyLevelType,
+  ResourceStatusType,
+} from "@learning-resource/domain";
 
-export interface MockedUserRepository extends IUserRepository {
-  users: User[];
+export interface MockedLearningResourceRepository extends ILearningResourceRepository {
+  learningResources: LearningResource[];
   reset(): void;
   clear(): void;
   count(): number;
 }
 
-export function mockUserRepository(
-  initialUsers: User[] = [],
-): MockedUserRepository {
+export function mockLearningResourceRepository(
+  learningResources: LearningResource[] = [],
+): MockedLearningResourceRepository {
   return {
-    users: [...initialUsers],
+    learningResources: [...learningResources],
 
-    async findByEmail(email: string): Promise<User | null> {
-      return this.users.find((user) => user.email === email) || null;
-    },
-
-    async findById(id: string): Promise<User | null> {
-      return this.users.find((user) => user.id === id) || null;
-    },
-
-    async save(user: User): Promise<void> {
-      const index = this.users.findIndex((existing) => existing.id === user.id);
+    async save(learningResource: LearningResource): Promise<void> {
+      const index = this.learningResources.findIndex(
+        (r) => r.id === learningResource.id,
+      );
       if (index >= 0) {
-        this.users[index] = user;
+        this.learningResources[index] = learningResource;
       } else {
-        this.users.push(user);
+        this.learningResources.push(learningResource);
       }
     },
 
+    async findById(id: UUID): Promise<LearningResource | null> {
+      return this.learningResources.find((r) => r.id === id) || null;
+    },
+
+    async findAll(): Promise<LearningResource[]> {
+      return [...this.learningResources];
+    },
+
+    async update(id: UUID, data: Partial<LearningResource>): Promise<void> {
+      const index = this.learningResources.findIndex((r) => r.id === id);
+
+      const updatedResource = {
+        ...this.learningResources[index],
+        ...data,
+        updatedAt: new Date(),
+      };
+
+      this.learningResources = this.learningResources.map((r) =>
+        r.id === id ? updatedResource : r,
+      );
+    },
+
+    async delete(id: UUID): Promise<void> {
+      const index = this.learningResources.findIndex((r) => r.id === id);
+      if (index >= 0) {
+        this.learningResources.splice(index, 1);
+      }
+    },
+
+    async findByTopicIds(topicIds: UUID[]): Promise<LearningResource[]> {
+      return this.learningResources.filter((r) =>
+        r.topicIds.some((topicId) => topicIds.includes(topicId)),
+      );
+    },
+
+    async findByDifficulty(
+      difficulty: DifficultyType,
+    ): Promise<LearningResource[]> {
+      return this.learningResources.filter((r) => r.difficulty === difficulty);
+    },
+
+    async findByEnergyLevel(
+      energyLevel: EnergyLevelType,
+    ): Promise<LearningResource[]> {
+      return this.learningResources.filter(
+        (r) => r.energyLevel === energyLevel,
+      );
+    },
+
+    async findByStatus(
+      status: ResourceStatusType,
+    ): Promise<LearningResource[]> {
+      return this.learningResources.filter((r) => r.status === status);
+    },
+
+    async findByResourceTypeId(typeId: UUID): Promise<LearningResource[]> {
+      return this.learningResources.filter((r) => r.typeId === typeId);
+    },
+
     reset(): void {
-      this.users = [];
+      this.learningResources = [];
     },
 
     clear(): void {
-      this.users = [];
+      this.learningResources = [];
     },
 
     count(): number {
-      return this.users.length;
+      return this.learningResources.length;
     },
   };
 }
