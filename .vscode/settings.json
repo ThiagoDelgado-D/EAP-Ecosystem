@@ -21,7 +21,6 @@
   "typescript.preferences.importModuleSpecifierEnding": "js",
   "vitest.rootConfig": "./vitest.config.ts",
   "vitest.disableWorkspaceWarning": true,
-  "vitest.maximumConfigs": 10,
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },

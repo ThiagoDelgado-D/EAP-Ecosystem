@@ -1,0 +1,24 @@
+{
+  "name": "@user/domain",
+  "packageManager": "yarn@4.9.2",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "domain-lib": "workspace:^"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./entities": "./dist/entities/index.js"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.0.13",
+    "vitest": "^4.0.13"
+  },
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "build": "tsc -p tsconfig.build.json",
+    "type-check": "tsc --noEmit"
+  }
+}

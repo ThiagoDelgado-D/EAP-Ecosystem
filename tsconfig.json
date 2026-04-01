@@ -16,6 +16,12 @@
       ],
       "@learning-resource/infrastructure": [
         "learning-resource/infrastructure/src/index.ts"
+      ],
+      "@user/domain": [
+        "user/domain/src/index.ts"
+      ],
+      "@user/application": [
+        "user/application/src/index.ts"
       ]
     },
     "target": "ES2023",
