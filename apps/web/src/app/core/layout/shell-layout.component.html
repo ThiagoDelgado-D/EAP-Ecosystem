@@ -1,0 +1,331 @@
+<div class="flex flex-col min-h-screen bg-slate-950 text-slate-100">
+  <header
+    class="h-14 flex-shrink-0 flex items-center justify-between px-4 sm:px-5 bg-slate-900 border-b border-slate-800 z-30"
+  >
+    <div class="flex items-center gap-3">
+      <button
+        (click)="toggleSidebar()"
+        class="p-2 -ml-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+        aria-label="Toggle sidebar"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      <div>
+        <span class="text-sm font-bold tracking-tight text-slate-100 leading-none"> EAP </span>
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 leading-none mt-0.5">
+          Ecosystem
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 sm:gap-3">
+      <input
+        type="text"
+        placeholder="Search resources…"
+        class="hidden sm:block bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-400 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 w-44 lg:w-56 transition-colors"
+      />
+
+      <nav class="hidden md:flex items-center gap-1">
+        <span
+          class="text-sm text-slate-500 hover:text-slate-300 px-2 py-1 rounded-md hover:bg-slate-800 cursor-pointer transition-colors"
+        >
+          Help
+        </span>
+        <span
+          class="text-sm text-slate-500 hover:text-slate-300 px-2 py-1 rounded-md hover:bg-slate-800 cursor-pointer transition-colors"
+        >
+          Support
+        </span>
+      </nav>
+
+      <button
+        (click)="toggleTheme()"
+        class="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+        aria-label="Toggle theme"
+      >
+        @if (themeService.isDarkMode()) {
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="5" />
+            <path
+              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42
+                     M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+            />
+          </svg>
+        } @else {
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        }
+      </button>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden relative">
+    @if (mobileDrawerOpen()) {
+      <div
+        class="fixed inset-0 bg-black/60 z-20 lg:hidden"
+        (click)="closeMobileDrawer()"
+        aria-hidden="true"
+      ></div>
+    }
+
+    <aside
+      [class]="
+        [
+          'flex flex-col justify-between bg-slate-900 border-r border-slate-800',
+          'transition-[width,transform] duration-300 ease-in-out overflow-hidden',
+          'z-20 flex-shrink-0',
+          'hidden lg:flex',
+          sidebarOpen() ? 'lg:w-48' : 'lg:w-0 lg:border-r-0',
+        ].join(' ')
+      "
+    >
+      <nav class="flex flex-col gap-0.5 p-2 mt-2 w-48">
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all whitespace-nowrap"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="flex-shrink-0"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+          Dashboard
+        </a>
+        <a
+          routerLink="/resources"
+          routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all whitespace-nowrap"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="flex-shrink-0"
+          >
+            <path
+              d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1
+                     2-2h5l2 3h9a2 2 0 0 1 2 2z"
+            />
+          </svg>
+          Resources
+        </a>
+        <a
+          routerLink="/add"
+          routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all whitespace-nowrap"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="flex-shrink-0"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+          Create
+        </a>
+      </nav>
+
+      <div class="p-2 pb-4 w-48">
+        <a
+          routerLink="/add"
+          class="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-slate-400 border border-slate-700 hover:bg-slate-800 hover:text-slate-200 transition-all whitespace-nowrap"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          New Entry
+        </a>
+
+        <div class="flex items-center gap-2.5 mt-4 px-2">
+          <div
+            class="w-8 h-8 rounded-full bg-slate-800 border border-violet-700 flex items-center justify-center text-xs font-semibold text-violet-400 flex-shrink-0"
+          >
+            AC
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-slate-200 leading-none truncate">Alex Chen</p>
+            <p class="text-xs text-slate-500 mt-0.5">Pro Plan</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <aside
+      [class]="
+        [
+          'fixed top-14 left-0 bottom-0 w-64 flex flex-col justify-between',
+          'bg-slate-900 border-r border-slate-800 z-30 lg:hidden',
+          'transition-transform duration-300 ease-in-out',
+          mobileDrawerOpen() ? 'translate-x-0' : '-translate-x-full',
+        ].join(' ')
+      "
+    >
+      <nav class="flex flex-col gap-0.5 p-3 mt-2">
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+          (click)="closeMobileDrawer()"
+          class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="flex-shrink-0"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+          Dashboard
+        </a>
+        <a
+          routerLink="/resources"
+          routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+          (click)="closeMobileDrawer()"
+          class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="flex-shrink-0"
+          >
+            <path
+              d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1
+                     2-2h5l2 3h9a2 2 0 0 1 2 2z"
+            />
+          </svg>
+          Resources
+        </a>
+        <a
+          routerLink="/add"
+          routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+          (click)="closeMobileDrawer()"
+          class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="flex-shrink-0"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+          Create
+        </a>
+      </nav>
+
+      <div class="px-3 pb-2">
+        <input
+          type="text"
+          placeholder="Search resources…"
+          class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-400 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 transition-colors"
+        />
+      </div>
+
+      <div class="p-3 pb-5 border-t border-slate-800">
+        <a
+          routerLink="/add"
+          (click)="closeMobileDrawer()"
+          class="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-slate-400 border border-slate-700 hover:bg-slate-800 hover:text-slate-200 transition-all mb-4"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          New Entry
+        </a>
+        <div class="flex items-center gap-2.5 px-1">
+          <div
+            class="w-9 h-9 rounded-full bg-slate-800 border border-violet-700 flex items-center justify-center text-sm font-semibold text-violet-400 flex-shrink-0"
+          >
+            AC
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-200 leading-none">Alex Chen</p>
+            <p class="text-xs text-slate-500 mt-0.5">Pro Plan</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ─── Page content ─────────────────────────────────────────── -->
+    <main class="flex-1 overflow-y-auto">
+      <router-outlet />
+    </main>
+  </div>
+</div>
