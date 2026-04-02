@@ -1,28 +1,28 @@
 <div>
-  <div class="flex items-center justify-between mb-2">
-    <p class="text-[10px] uppercase tracking-widest text-slate-500">Pending Tasks</p>
+  <div class="flex items-center justify-between mb-3">
+    <p class="text-xs uppercase tracking-widest text-slate-500 font-medium">Pending Tasks</p>
     <button
       type="button"
-      class="text-[10px] text-violet-400 hover:text-violet-300 font-medium transition-colors"
+      class="text-xs text-violet-400 hover:text-violet-300 font-medium transition-colors"
     >
       View All
     </button>
   </div>
 
-  <div class="flex flex-col gap-1.5">
+  <div class="flex flex-col gap-2">
     @for (task of tasks; track task.id) {
       <div
-        class="flex items-center gap-3 px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-lg hover:border-slate-700 hover:bg-slate-800/60 transition-all cursor-pointer group"
+        class="flex items-center gap-3 px-3 sm:px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 hover:bg-slate-800/60 transition-all cursor-pointer group"
       >
         <div
-          class="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+          class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0"
           [class]="getIconBg(task.iconVariant)"
         >
           @switch (task.iconVariant) {
             @case ('lightning') {
               <svg
-                width="13"
-                height="13"
+                width="17"
+                height="17"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -33,8 +33,8 @@
             }
             @case ('edit') {
               <svg
-                width="13"
-                height="13"
+                width="17"
+                height="17"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -46,8 +46,8 @@
             }
             @case ('code') {
               <svg
-                width="13"
-                height="13"
+                width="17"
+                height="17"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -59,8 +59,8 @@
             }
             @case ('folder') {
               <svg
-                width="13"
-                height="13"
+                width="17"
+                height="17"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -76,18 +76,18 @@
 
         <div class="flex-1 min-w-0">
           <p
-            class="text-xs font-medium text-slate-200 truncate group-hover:text-slate-100 transition-colors"
+            class="text-sm font-medium text-slate-200 truncate group-hover:text-slate-100 transition-colors"
           >
             {{ task.name }}
           </p>
-          <p class="text-[10px] text-slate-500 mt-0.5">
+          <p class="text-xs text-slate-500 mt-0.5">
             {{ task.category }} · {{ task.estimateLabel }} estimate
           </p>
         </div>
 
         <svg
-          width="13"
-          height="13"
+          width="14"
+          height="14"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
