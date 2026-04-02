@@ -1,0 +1,192 @@
+<div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+  <header
+    class="flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-800"
+  >
+    <div>
+      <span class="text-sm font-bold tracking-tight text-slate-100">EAP</span>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 leading-none mt-0.5">
+        Ecosystem
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input
+        type="text"
+        placeholder="Search resources..."
+        class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-400 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 w-44 transition-colors"
+      />
+      <span class="text-xs text-slate-500 hover:text-slate-300 cursor-pointer transition-colors"
+        >Help</span
+      >
+      <span class="text-xs text-slate-500 hover:text-slate-300 cursor-pointer transition-colors"
+        >Support</span
+      >
+      <button
+        (click)="toggleTheme()"
+        class="p-1.5 rounded-md text-slate-500 hover:text-slate-300 transition-colors"
+        aria-label="Toggle theme"
+      >
+        @if (themeService.isDarkMode()) {
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="5" />
+            <path
+              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+            />
+          </svg>
+        } @else {
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        }
+      </button>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+    <aside
+      class="w-44 bg-slate-900 border-r border-slate-800 flex flex-col justify-between py-4 flex-shrink-0"
+    >
+      <nav class="flex flex-col gap-0.5 px-2">
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="bg-slate-800 text-violet-400 border border-slate-700"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+          </svg>
+          Dashboard
+        </a>
+        <a
+          routerLink="/"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          </svg>
+          Resources
+        </a>
+        <a
+          routerLink="/add"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+          Create
+        </a>
+      </nav>
+
+      <div class="px-2">
+        <button
+          routerLink="/add"
+          class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-400 border border-slate-700 hover:bg-slate-800 hover:text-slate-200 transition-all"
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          New Entry
+        </button>
+
+        <div class="flex items-center gap-2 mt-4 px-1">
+          <div
+            class="w-7 h-7 rounded-full bg-slate-800 border border-violet-800 flex items-center justify-center text-[10px] font-semibold text-violet-400 flex-shrink-0"
+          >
+            AC
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-200 leading-none">Alex Chen</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Pro Plan</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto">
+      <div class="grid grid-cols-[1fr_280px] min-h-full">
+        <div class="p-5 flex flex-col gap-5 border-r border-slate-800">
+          <app-system-check
+            [selectedEnergy]="selectedEnergy()"
+            [selectedMentalState]="selectedMentalState()"
+            (energyChange)="onEnergyChange($event)"
+            (mentalStateChange)="onMentalStateChange($event)"
+          />
+
+          <div>
+            <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Ideal Match</p>
+
+            @if (loading()) {
+              <div class="rounded-xl border border-slate-800 bg-slate-900 h-52 animate-pulse"></div>
+            } @else if (error()) {
+              <div
+                class="rounded-xl border border-red-900/40 bg-red-950/20 p-4 text-xs text-red-400"
+              >
+                Failed to load recommendation. Check your API connection.
+              </div>
+            } @else {
+              <app-ideal-match
+                [resource]="idealResource()"
+                [energyLevel]="selectedEnergy()"
+                [mentalState]="selectedMentalState()"
+              />
+            }
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="p-5 flex flex-col gap-5">
+          <app-focus-pulse />
+          <app-pending-tasks />
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
