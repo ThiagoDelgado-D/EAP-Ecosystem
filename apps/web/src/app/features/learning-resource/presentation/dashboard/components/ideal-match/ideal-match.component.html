@@ -1,0 +1,117 @@
+<div class="relative rounded-xl border border-slate-800 overflow-hidden min-h-52 bg-slate-950">
+  @if (displayResource().imageUrl) {
+    <img
+      [src]="displayResource().imageUrl"
+      alt=""
+      aria-hidden="true"
+      class="absolute inset-0 w-full h-full object-cover opacity-30"
+    />
+  } @else {
+    <svg
+      class="absolute inset-0 w-full h-full opacity-20"
+      viewBox="0 0 600 220"
+      preserveAspectRatio="xMidYMid slice"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <radialGradient id="rg" cx="50%" cy="50%" r="60%">
+          <stop offset="0%" stop-color="#7c3aed" stop-opacity=".7" />
+          <stop offset="100%" stop-color="#7c3aed" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="600" height="220" fill="#050a18" />
+      <ellipse cx="300" cy="110" rx="200" ry="120" fill="url(#rg)" />
+      <path
+        d="M100,110 Q200,50 300,110 Q400,170 500,110"
+        stroke="#7c3aed"
+        stroke-width=".8"
+        fill="none"
+      />
+      <path
+        d="M80,110 Q190,30 300,110 Q410,190 520,110"
+        stroke="#7c3aed"
+        stroke-width=".5"
+        fill="none"
+        opacity=".6"
+      />
+      <path
+        d="M60,110 Q180,15 300,110 Q420,205 540,110"
+        stroke="#7c3aed"
+        stroke-width=".3"
+        fill="none"
+        opacity=".4"
+      />
+    </svg>
+  }
+
+  <div
+    class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"
+  ></div>
+
+  <div class="relative z-10 p-5 flex flex-col h-full justify-end">
+    <div class="flex items-center gap-3 mb-2">
+      <span
+        class="inline-flex items-center gap-1.5 border border-violet-700/60 bg-violet-950/50 rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-300"
+      >
+        <span class="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0"></span>
+        {{ energyBadgeLabel() }}
+      </span>
+      <span class="text-[10px] text-slate-500">
+        · {{ mentalStateLabel() }} · {{ displayResource().duration }} min session
+      </span>
+    </div>
+
+    <h3 class="text-lg font-bold text-slate-100 leading-tight mb-1">
+      {{ displayResource().title }}
+    </h3>
+
+    <p class="text-xs text-slate-400 leading-relaxed mb-4 line-clamp-2">
+      {{ displayResource().desc }}
+    </p>
+
+    <div class="flex items-center gap-2">
+      @if (displayResource().url) {
+        <a
+          [href]="displayResource().url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="white">
+            <polygon points="5,3 19,12 5,21" />
+          </svg>
+          Start Learning
+        </a>
+      } @else {
+        <!-- No URL yet — button still looks clickable, disabled state -->
+        <button
+          type="button"
+          disabled
+          class="flex items-center gap-2 bg-violet-600/60 text-white/70 text-xs font-semibold px-4 py-2 rounded-lg cursor-not-allowed"
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="white">
+            <polygon points="5,3 19,12 5,21" />
+          </svg>
+          Start Learning
+        </button>
+      }
+
+      <button
+        type="button"
+        class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-all"
+        aria-label="Bookmark resource"
+      >
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
