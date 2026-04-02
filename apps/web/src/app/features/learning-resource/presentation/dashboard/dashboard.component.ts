@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { LearningResourceService } from '../../application/learning-resource.service';
 import { LearningResourceRepository } from '../../domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '../../infrastructure/learning-resource-http.repository';
@@ -8,7 +7,6 @@ import type {
   LearningResource,
   MentalStateType,
 } from '../../domain/learning-resource.model';
-import { ThemeService } from '@core/theme/theme.service';
 import { SystemCheckComponent } from './components/system-check/system-check.component.js';
 import { IdealMatchComponent } from './components/ideal-match/ideal-match.component.js';
 import { FocusPulseComponent } from './components/focus-pulse/focus-pulse.component.js';
@@ -17,13 +15,7 @@ import { PendingTasksComponent } from './components/pending-tasks/pending-tasks.
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    RouterModule,
-    SystemCheckComponent,
-    IdealMatchComponent,
-    FocusPulseComponent,
-    PendingTasksComponent,
-  ],
+  imports: [SystemCheckComponent, IdealMatchComponent, FocusPulseComponent, PendingTasksComponent],
   providers: [
     LearningResourceService,
     { provide: LearningResourceRepository, useClass: LearningResourceHttpRepository },
@@ -32,7 +24,6 @@ import { PendingTasksComponent } from './components/pending-tasks/pending-tasks.
 })
 export class DashboardComponent implements OnInit {
   private readonly resourceService = inject(LearningResourceService);
-  readonly themeService = inject(ThemeService);
 
   readonly selectedEnergy = signal<EnergyLevel>('Medium');
   readonly selectedMentalState = signal<MentalStateType>('deep_focus');
@@ -42,7 +33,6 @@ export class DashboardComponent implements OnInit {
 
   readonly idealResource = computed<LearningResource | null>(() => {
     const resources = this.resourceService.resources();
-    if (!resources.length) return null;
     return resources[0] ?? null;
   });
 
@@ -66,9 +56,5 @@ export class DashboardComponent implements OnInit {
       mentalState: this.selectedMentalState(),
       status: 'Pending',
     });
-  }
-
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
   }
 }
