@@ -2,13 +2,25 @@ import { Routes } from '@angular/router';
 
 export const learningResourceRoutes: Routes = [
   {
-    path: 'dashboard',
-    loadComponent: () =>
-      import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
-  },
-  {
     path: '',
-    loadComponent: () => import('./home/home.component').then((m) => m.HomeComponent),
+    loadComponent: () =>
+      import('../../../core/layout/shell-layout.component').then((m) => m.ShellLayoutComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
+      },
+      {
+        path: 'resources',
+        loadComponent: () => import('./home/home.component').then((m) => m.HomeComponent),
+      },
+    ],
   },
   {
     path: 'add',
