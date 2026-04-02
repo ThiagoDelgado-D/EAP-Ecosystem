@@ -1,64 +1,121 @@
-<div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
-  <div class="flex items-center justify-between mb-3">
-    <h2 class="text-sm font-semibold text-slate-100">System Check</h2>
+<div class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+    <h2 class="text-base sm:text-lg font-semibold text-slate-100">System Check</h2>
     <span
-      class="text-[10px] uppercase tracking-widest text-slate-500 border border-slate-700 rounded px-2 py-0.5"
+      class="self-start sm:self-auto text-[10px] sm:text-xs uppercase tracking-widest text-slate-500 border border-slate-700 rounded px-2 py-1"
     >
       Current Biological State
     </span>
   </div>
 
-  <p class="text-xs text-slate-500 mb-4">
+  <p class="text-sm text-slate-500 mb-5">
     Select your current energy floor to calibrate your focus recommendation.
   </p>
 
-  <div class="grid grid-cols-3 gap-2 mb-4">
+  <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
     @for (option of energyOptions; track option.value) {
       <button
         type="button"
         (click)="selectEnergy(option.value)"
         [class]="
           [
-            'flex flex-col items-center gap-2 rounded-lg py-3 px-2 border transition-all',
+            'flex flex-col items-center gap-3 rounded-xl py-4 sm:py-5 px-2 border-2',
+            'transition-all duration-300 ease-in-out',
             selectedEnergy() === option.value
-              ? 'border-violet-600 bg-slate-800'
-              : 'border-slate-700 bg-slate-900 hover:border-slate-600 hover:bg-slate-800',
+              ? ['bg-slate-800', option.activeRing].join(' ')
+              : 'border-slate-700 bg-slate-900/60 hover:border-slate-600 hover:bg-slate-800/40',
           ].join(' ')
         "
       >
         <div
           [class]="
-            ['w-7 h-7 rounded-full flex items-center justify-center', option.bgColor].join(' ')
+            [
+              'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center',
+              'transition-transform duration-300',
+              option.bgColor,
+              selectedEnergy() === option.value ? 'scale-110' : 'scale-100',
+            ].join(' ')
           "
         >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            [class]="option.iconColor"
-          >
-            <rect x="6" y="4" width="12" height="17" rx="2" />
-            <line x1="10" y1="4" x2="10" y2="1" />
-            <line x1="14" y1="4" x2="14" y2="1" />
-            <rect
-              x="8"
-              [attr.y]="8 + (2 - getBatteryFill(option.value) / 50)"
-              width="8"
-              [attr.height]="getBatteryFill(option.value) / 10"
-              rx="1"
-              [class]="option.iconColor"
-              style="fill: currentColor; stroke: none"
-            />
-          </svg>
+          @switch (option.value) {
+            @case ('Low') {
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                [class]="option.iconColor"
+              >
+                <rect x="6" y="4" width="12" height="17" rx="2" />
+                <line x1="10" y1="4" x2="10" y2="2" stroke-linecap="round" />
+                <line x1="14" y1="4" x2="14" y2="2" stroke-linecap="round" />
+                <rect
+                  x="8.5"
+                  y="16"
+                  width="7"
+                  height="3"
+                  rx="1"
+                  style="fill: currentColor; stroke: none"
+                />
+              </svg>
+            }
+            @case ('Medium') {
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                [class]="option.iconColor"
+              >
+                <rect x="6" y="4" width="12" height="17" rx="2" />
+                <line x1="10" y1="4" x2="10" y2="2" stroke-linecap="round" />
+                <line x1="14" y1="4" x2="14" y2="2" stroke-linecap="round" />
+                <rect
+                  x="8.5"
+                  y="12"
+                  width="7"
+                  height="7"
+                  rx="1"
+                  style="fill: currentColor; stroke: none"
+                />
+              </svg>
+            }
+            @case ('High') {
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                [class]="option.iconColor"
+              >
+                <rect x="6" y="4" width="12" height="17" rx="2" />
+                <line x1="10" y1="4" x2="10" y2="2" stroke-linecap="round" />
+                <line x1="14" y1="4" x2="14" y2="2" stroke-linecap="round" />
+                <rect
+                  x="8.5"
+                  y="7"
+                  width="7"
+                  height="12"
+                  rx="1"
+                  style="fill: currentColor; stroke: none"
+                />
+              </svg>
+            }
+          }
         </div>
+
         <span
           [class]="
             [
-              'text-[10px] uppercase tracking-wider font-medium',
-              selectedEnergy() === option.value ? 'text-violet-300' : 'text-slate-500',
+              'text-xs sm:text-sm uppercase tracking-wider font-medium',
+              'transition-colors duration-300',
+              selectedEnergy() === option.value ? 'text-slate-100' : 'text-slate-500',
             ].join(' ')
           "
         >
@@ -69,15 +126,16 @@
   </div>
 
   <div>
-    <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Mental State</p>
-    <div class="flex flex-wrap gap-1.5">
+    <p class="text-xs uppercase tracking-widest text-slate-500 mb-2.5 font-medium">Mental State</p>
+    <div class="flex flex-wrap gap-2">
       @for (option of mentalStateOptions; track option.value) {
         <button
           type="button"
           (click)="selectMentalState(option.value)"
           [class]="
             [
-              'px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all',
+              'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border',
+              'transition-all duration-200',
               selectedMentalState() === option.value
                 ? 'bg-slate-800 border-violet-600 text-violet-300'
                 : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300',

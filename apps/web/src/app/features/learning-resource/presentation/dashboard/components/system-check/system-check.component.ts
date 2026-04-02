@@ -9,6 +9,7 @@ interface EnergyOption {
   label: string;
   iconColor: string;
   bgColor: string;
+  activeRing: string;
 }
 
 interface MentalStateOption {
@@ -29,9 +30,27 @@ export class SystemCheckComponent {
   readonly mentalStateChange = output<MentalStateType>();
 
   readonly energyOptions: EnergyOption[] = [
-    { value: 'Low', label: 'Low', iconColor: 'text-orange-400', bgColor: 'bg-orange-950/50' },
-    { value: 'Medium', label: 'Med', iconColor: 'text-violet-400', bgColor: 'bg-violet-950/50' },
-    { value: 'High', label: 'High', iconColor: 'text-emerald-400', bgColor: 'bg-emerald-950/50' },
+    {
+      value: 'Low',
+      label: 'Low',
+      iconColor: 'text-orange-400',
+      bgColor: 'bg-orange-950/60',
+      activeRing: 'border-orange-500/60',
+    },
+    {
+      value: 'Medium',
+      label: 'Med',
+      iconColor: 'text-violet-400',
+      bgColor: 'bg-violet-950/60',
+      activeRing: 'border-violet-500',
+    },
+    {
+      value: 'High',
+      label: 'High',
+      iconColor: 'text-emerald-400',
+      bgColor: 'bg-emerald-950/60',
+      activeRing: 'border-emerald-500/60',
+    },
   ];
 
   readonly mentalStateOptions: MentalStateOption[] = [
@@ -48,9 +67,5 @@ export class SystemCheckComponent {
 
   selectMentalState(value: MentalStateType): void {
     this.mentalStateChange.emit(value);
-  }
-
-  getBatteryFill(value: EnergyLevel): number {
-    return value === 'Low' ? 30 : value === 'Medium' ? 60 : 95;
   }
 }
