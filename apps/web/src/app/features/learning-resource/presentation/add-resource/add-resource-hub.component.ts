@@ -1,16 +1,15 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { ThemeService } from '@core/theme/theme.service';
 
 interface AddMethod {
   id: string;
   title: string;
   description: string;
   features: string[];
-  icon: string;
+  iconVariant: 'form' | 'url' | 'import' | 'voice';
   route: string;
   available: boolean;
-  accentColor: string;
+  ctaLabel: string;
 }
 
 @Component({
@@ -21,48 +20,47 @@ interface AddMethod {
 })
 export class AddResourceHubComponent {
   private readonly router = inject(Router);
-  readonly themeService = inject(ThemeService);
 
   readonly methods: AddMethod[] = [
     {
       id: 'guided',
       title: 'Guided Form',
-      description: 'Step-by-step form with real-time validation',
+      description: 'A structured, step-by-step walkthrough for complex entry creation.',
       features: ['Real-time validation', 'Visual progress', 'Smart fields'],
-      icon: '📋',
+      iconVariant: 'form',
       route: '/add/guided',
       available: true,
-      accentColor: 'blue',
+      ctaLabel: 'Initialize',
     },
     {
       id: 'url',
-      title: 'Import from URL',
-      description: 'Paste a URL and autocomplete resource info',
+      title: 'URL Scrape',
+      description: 'Convert any web source into structured data instantly.',
       features: ['Smart autocomplete', 'Instant preview', 'Auto metadata'],
-      icon: '🔗',
+      iconVariant: 'url',
       route: '/add/url',
       available: false,
-      accentColor: 'purple',
-    },
-    {
-      id: 'import',
-      title: 'Import File',
-      description: 'Upload CSV or JSON to import multiple resources',
-      features: ['CSV and JSON', 'Bulk import', 'Data validation'],
-      icon: '📤',
-      route: '/add/import',
-      available: false,
-      accentColor: 'green',
+      ctaLabel: 'Initialize',
     },
     {
       id: 'voice',
       title: 'Voice Capture',
-      description: 'Dictate your resource and review before saving',
+      description: 'Dictate your resource and let the AI transcribe and categorize.',
       features: ['Voice recognition', 'Draft editing', 'Review before submit'],
-      icon: '🎙️',
+      iconVariant: 'voice',
       route: '/add/voice',
       available: false,
-      accentColor: 'pink',
+      ctaLabel: 'Initialize',
+    },
+    {
+      id: 'import',
+      title: 'Import Externals',
+      description: 'Batch upload JSON, PDF, or Markdown directly to the repository.',
+      features: ['CSV and JSON', 'Bulk import', 'Data validation'],
+      iconVariant: 'import',
+      route: '/add/import',
+      available: false,
+      ctaLabel: 'Initialize',
     },
   ];
 
@@ -71,11 +69,7 @@ export class AddResourceHubComponent {
     this.router.navigate([method.route]);
   }
 
-  goHome(): void {
-    this.router.navigate(['/']);
-  }
-
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }
