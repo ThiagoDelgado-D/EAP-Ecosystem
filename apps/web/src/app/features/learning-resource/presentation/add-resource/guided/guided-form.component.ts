@@ -11,17 +11,18 @@ import { CommonModule } from '@angular/common';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
 import type {
   LearningResource,
+  MentalStateType,
   ResourceStatus,
 } from '@features/learning-resource/domain/learning-resource.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
-import { ToastService } from '@core/toast/toast.service.js';
-import { TopicService } from '@features/learning-resource/application/topic.service.js';
-import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service.js';
-import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository.js';
-import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository.js';
-import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository.js';
-import { TopicRepository } from '@features/learning-resource/domain/topic.repository.js';
+import { ToastService } from '@core/toast/toast.service';
+import { TopicService } from '@features/learning-resource/application/topic.service';
+import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service';
+import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
+import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
+import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
+import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 
 @Component({
   selector: 'app-guided-form',
@@ -51,13 +52,20 @@ export class GuidedFormComponent implements OnInit {
   readonly loadingTypes = this.resourceTypeService.loading;
 
   currentStep = 1;
-  step1Form: FormGroup;
-  step2Form: FormGroup;
+  step1Form!: FormGroup;
+  step2Form!: FormGroup;
   isSubmitting = false;
   submitError: string | null = null;
 
   readonly difficulties = ['Low', 'Medium', 'High'];
   readonly energyLevels = ['Low', 'Medium', 'High'];
+  readonly mentalStates: { value: MentalStateType; label: string }[] = [
+    { value: 'deep_focus', label: 'Deep Focus' },
+    { value: 'light_read', label: 'Light Read' },
+    { value: 'creative', label: 'Creative' },
+    { value: 'quick_op', label: 'Quick Op' },
+    { value: 'review', label: 'Review' },
+  ];
 
   constructor() {
     this.step1Form = this.fb.group({
@@ -65,11 +73,13 @@ export class GuidedFormComponent implements OnInit {
       typeId: ['', Validators.required],
       topicIds: [[], [Validators.required, Validators.minLength(1)]],
       url: [''],
+      imageUrl: [''],
     });
 
     this.step2Form = this.fb.group({
       difficulty: ['Medium', Validators.required],
       energyLevel: ['Medium', Validators.required],
+      mentalState: [null],
       estimatedDuration: this.fb.group({
         value: [30, [Validators.required, Validators.min(1)]],
         isEstimated: [true],
@@ -93,6 +103,11 @@ export class GuidedFormComponent implements OnInit {
       : [...current, topicId];
     this.step1Form.patchValue({ topicIds: updated });
     this.step1Form.get('topicIds')?.markAsTouched();
+  }
+
+  toggleMentalState(value: MentalStateType): void {
+    const current = this.step2Form.get('mentalState')?.value;
+    this.step2Form.patchValue({ mentalState: current === value ? null : value });
   }
 
   nextStep(): void {
@@ -149,12 +164,14 @@ export class GuidedFormComponent implements OnInit {
     this.isSubmitting = true;
     this.submitError = null;
 
-    const payload = {
+    const payload: Omit<LearningResource, 'id' | 'createdAt' | 'updatedAt' | 'lastViewed'> = {
       title: this.step1Form.value.title,
       url: this.step1Form.value.url || undefined,
+      imageUrl: this.step1Form.value.imageUrl || undefined,
       notes: this.step2Form.value.notes || undefined,
       difficulty: this.step2Form.value.difficulty as LearningResource['difficulty'],
       energyLevel: this.step2Form.value.energyLevel as LearningResource['energyLevel'],
+      mentalState: this.step2Form.value.mentalState ?? undefined,
       estimatedDuration: {
         value: this.step2Form.value.estimatedDuration.value,
         isEstimated: this.step2Form.value.estimatedDuration.isEstimated,
