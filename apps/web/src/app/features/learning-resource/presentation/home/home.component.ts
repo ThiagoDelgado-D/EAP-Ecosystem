@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, computed } from '@angular/core';
+import { Component, inject, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { LearningResourceService } from '../../application/learning-resource.service';
@@ -60,9 +60,9 @@ export class HomeComponent implements OnInit {
   readonly loading = this.service.loading;
   readonly error = this.service.error;
 
-  activeTab: TabMode = 'all';
-  viewMode: 'grid' | 'list' = 'grid';
-  searchQuery = '';
+  activeTab = signal<TabMode>('all');
+  viewMode = signal<'grid' | 'list'>('grid');
+  searchQuery = signal('');
 
   tabs: { value: TabMode; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -70,10 +70,10 @@ export class HomeComponent implements OnInit {
     { value: 'recent', label: 'Recent' },
   ];
 
-  difficultyFilterValue: DifficultyLevel | null = null;
-  energyFilterValue: EnergyLevel | null = null;
-  statusFilterValue: ResourceStatus | null = null;
-  mentalStateFilterValue: MentalStateType | null = null;
+  difficultyFilterValue = signal<DifficultyLevel | null>(null);
+  energyFilterValue = signal<EnergyLevel | null>(null);
+  statusFilterValue = signal<ResourceStatus | null>(null);
+  mentalStateFilterValue = signal<MentalStateType | null>(null);
 
   readonly difficulties: DifficultyLevel[] = ['Low', 'Medium', 'High'];
   readonly energyLevels: EnergyLevel[] = ['Low', 'Medium', 'High'];
@@ -88,7 +88,7 @@ export class HomeComponent implements OnInit {
 
   readonly tabFilteredResources = computed<LearningResource[]>(() => {
     const all = this.allResources();
-    switch (this.activeTab) {
+    switch (this.activeTab()) {
       case 'saved':
         return all.filter((r) => this.libraryService.isSaved(r.id));
       case 'recent': {
@@ -103,7 +103,7 @@ export class HomeComponent implements OnInit {
   });
 
   readonly displayedResources = computed<LearningResource[]>(() => {
-    const q = this.searchQuery.trim().toLowerCase();
+    const q = this.searchQuery().trim().toLowerCase();
     if (!q) return this.tabFilteredResources();
     return this.tabFilteredResources().filter((r) => r.title.toLowerCase().includes(q));
   });
@@ -139,17 +139,16 @@ export class HomeComponent implements OnInit {
     await Promise.all([this.service.loadAll(), this.typeService.loadAll()]);
   }
 
-  // ─── Tab ──────────────────────────────────────────────────────────────────
   setTab(tab: TabMode): void {
-    this.activeTab = tab;
+    this.activeTab.set(tab);
   }
 
   async applyFilter(): Promise<void> {
     const filter: LearningResourceFilter = {};
-    if (this.difficultyFilterValue) filter.difficulty = this.difficultyFilterValue;
-    if (this.energyFilterValue) filter.energyLevel = this.energyFilterValue;
-    if (this.statusFilterValue) filter.status = this.statusFilterValue;
-    if (this.mentalStateFilterValue) filter.mentalState = this.mentalStateFilterValue;
+    if (this.difficultyFilterValue()) filter.difficulty = this.difficultyFilterValue()!;
+    if (this.energyFilterValue()) filter.energyLevel = this.energyFilterValue()!;
+    if (this.statusFilterValue()) filter.status = this.statusFilterValue()!;
+    if (this.mentalStateFilterValue()) filter.mentalState = this.mentalStateFilterValue()!;
 
     if (Object.keys(filter).length > 0) {
       await this.service.loadByFilter(filter);
@@ -159,10 +158,10 @@ export class HomeComponent implements OnInit {
   }
 
   async clearFilters(): Promise<void> {
-    this.difficultyFilterValue = null;
-    this.energyFilterValue = null;
-    this.statusFilterValue = null;
-    this.mentalStateFilterValue = null;
+    this.difficultyFilterValue.set(null);
+    this.energyFilterValue.set(null);
+    this.statusFilterValue.set(null);
+    this.mentalStateFilterValue.set(null);
     await this.service.loadAll();
   }
 

@@ -27,7 +27,8 @@
         <input
           type="text"
           placeholder="Search resources…"
-          [(ngModel)]="searchQuery"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
           class="bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-300 placeholder:text-slate-600 w-44 sm:w-52 focus:outline-none focus:border-violet-500 transition-colors"
         />
       </div>
@@ -59,7 +60,7 @@
         [class]="
           [
             'px-4 py-2 text-sm font-medium transition-colors relative',
-            activeTab === tab.value
+            activeTab() === tab.value
               ? 'text-slate-100 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-violet-500 after:rounded-full'
               : 'text-slate-500 hover:text-slate-300',
           ].join(' ')
@@ -73,11 +74,11 @@
     <div class="flex items-center gap-1 border border-slate-700 rounded-lg p-1 mb-1">
       <button
         [class]="
-          viewMode === 'grid'
+          viewMode() === 'grid'
             ? 'p-1.5 rounded-md bg-slate-700 text-slate-200'
             : 'p-1.5 rounded-md text-slate-500 hover:text-slate-300 transition-colors'
         "
-        (click)="viewMode = 'grid'"
+        (click)="viewMode.set('grid')"
         aria-label="Grid view"
       >
         <svg
@@ -96,11 +97,11 @@
       </button>
       <button
         [class]="
-          viewMode === 'list'
+          viewMode() === 'list'
             ? 'p-1.5 rounded-md bg-slate-700 text-slate-200'
             : 'p-1.5 rounded-md text-slate-500 hover:text-slate-300 transition-colors'
         "
-        (click)="viewMode = 'list'"
+        (click)="viewMode.set('list')"
         aria-label="List view"
       >
         <svg
@@ -201,7 +202,7 @@
     <div class="text-red-400 text-sm py-4 text-center">{{ error() }}</div>
   }
 
-  @if (!loading() && !error() && viewMode === 'grid') {
+  @if (!loading() && !error() && viewMode() === 'grid') {
     @if (displayedResources().length === 0) {
       <div class="flex flex-col items-center justify-center py-24 gap-4">
         <div
@@ -222,16 +223,16 @@
         <div class="text-center">
           <p class="text-sm font-medium text-slate-200 mb-1">No resources found</p>
           <p class="text-xs text-slate-500">
-            @if (activeTab === 'saved') {
+            @if (activeTab() === 'saved') {
               Save some resources to see them here.
-            } @else if (activeTab === 'recent') {
+            } @else if (activeTab() === 'recent') {
               Open a resource to track it here.
             } @else {
               Try adjusting your filters or add a new resource.
             }
           </p>
         </div>
-        @if (activeTab === 'all') {
+        @if (activeTab() === 'all') {
           <a
             routerLink="/add"
             class="bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
@@ -430,7 +431,7 @@
     }
   }
 
-  @if (!loading() && !error() && viewMode === 'list') {
+  @if (!loading() && !error() && viewMode() === 'list') {
     @if (displayedResources().length === 0) {
       <div class="text-center py-16 text-slate-500 text-sm">No resources found.</div>
     } @else {
