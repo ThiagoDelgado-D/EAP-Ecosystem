@@ -1,14 +1,110 @@
-## [Unreleased]
+## [Unreleased] — v0.6.0 URL Import
 
-### Planned for v0.5.0 - Resource Library Enhanced
+### Planned
 
-- Resource cards with thumbnails and cover images
-- Advanced filters by content type, mental state and topic
-- ALL / SAVED / RECENT tabs
-- Search bar in resource library
-- Architect's Pulse summary widget
+- Backend metadata scraping endpoint for learning resources
+- Title, description and resource type auto-detection via Open Graph / oEmbed
+- Supported sites: YouTube, Medium, Dev.to, GitHub, any Open Graph site
+- Angular frontend: URL input with live preview before saving
+- Auto-populate title, notes and typeId from scraped metadata
+- Fallback to manual entry when scraping fails or site is unsupported
 
 ---
+
+## [0.5.0] - 2026-04-06
+
+### Added
+
+#### Backend — Mental State & Image URL (PR #44)
+
+- `MentalStateType` domain concept with five values: `deep_focus`, `light_read`,
+  `creative`, `quick_op`, `review`
+- `imageUrl?: string` and `mentalState?: MentalStateType` optional fields on
+  `LearningResource` entity
+- `findByMentalState()` method added to `ILearningResourceRepository`
+- `mentalState` filter support in `getResourcesByFilter` use case with AND logic
+- TypeORM entity columns: `imageUrl varchar(2048)` and `mentalState varchar(20)`
+  (nullable, no default)
+- Database migration `Migration1774968984426`
+- `AddResourceDto`, `UpdateResourceDto`, `GetResourcesFilterDto` updated with
+  optional `imageUrl` and `mentalState` fields
+- Seed script updated with random `imageUrl` and `mentalState` data
+
+#### Backend — User Module Foundation (PR #43)
+
+- `user/` module with Clean Architecture layers: `domain/`, `application/`,
+  `infrastructure/`
+- `User` entity with `id`, `email`, `name`, `status`, `createdAt`, `updatedAt`,
+  and email verification token fields
+- `IUserRepository` abstract class with CRUD contracts
+- `registerUser` use case with email validation, password hashing, token
+  generation, and email verification workflow
+- `EmailAlreadyExistsError` domain error
+- `EmailService` interface and `EmailServiceImpl` via nodemailer (SMTP)
+- Email templates for registration and verification
+- `MockedEmailService` and `MockUserRepository` for isolated unit testing
+- ADR-0010 documenting auth integration within the user module
+- Workspace and TypeScript path alias integration (`@user/domain`,
+  `@user/application`)
+
+#### Frontend — Dashboard & Shell Layout (PR #45)
+
+- `ShellLayoutComponent` in `core/layout/` — responsive header and sidebar
+  (desktop collapsible, mobile slide-in drawer with backdrop), theme toggle,
+  `isPlatformBrowser` guard for SSR safety
+- `DashboardComponent` — orchestrator with `selectedEnergy` and
+  `selectedMentalState` signals, generation-counter guard to prevent stale
+  filter responses
+- `SystemCheckComponent` — energy selector (Low / Med / High) with battery
+  SVG icons and mental state chip selector; `duration-300` transitions
+- `IdealMatchComponent` — displays first matching resource from API with
+  hardcoded fallback map per energy level
+- `FocusPulseComponent` — weekly efficiency bar chart and energy flow bar
+  (hardcoded — pending session tracking)
+- `PendingTasksComponent` — task list with icon variants (hardcoded — pending
+  task module)
+- `ResourceLibraryService` — `providedIn: 'root'` service persisting
+  `savedIds` (Set) and `recentIds` (last 10) in `localStorage` with
+  `isPlatformBrowser` SSR guard
+- Resource Library (HomeComponent) — thumbnail cards with `imageUrl` support
+  and type-based SVG placeholder icons, ALL / SAVED / RECENT tabs,
+  client-side search bar, mental state filter, Architect's Pulse stats widget
+- `imageUrl` field added to guided form step 1
+- `mentalState` chip selector added to guided form step 2 (deselectable)
+- `MentalStateType` union type and `imageUrl` / `mentalState` fields added to
+  `LearningResource` frontend model and `LearningResourceFilter`
+- `learning-resource.dto.ts` extended with `imageUrl` and `mentalState` fields
+- `LearningResourceHttpRepository` sends `mentalState` query param and maps
+  both new fields in `toDomain` with type-safe `parseMentalState` guard
+
+### Changed
+
+- Dashboard is now the default route (`/` redirects to `/dashboard`)
+- `HomeComponent` accessible at `/resources` (previously `/`)
+- Add resource pages (`/add`, `/add/guided`, etc.) outside the shell layout
+- All add-resource pages aligned to dark palette (`slate-950`)
+- `AddResourceHubComponent` redesigned as "Creation Hub" with SVG icons per
+  method variant and "Initialize →" pill CTA
+- `GuidedFormComponent` redirect on success changed from `/` to `/dashboard`
+- `UrlImportComponent` renamed to "URL Scrape"
+- `FileImportComponent` renamed to "Import Externals"
+
+### Fixed
+
+- `ShellLayoutComponent`: `window.innerWidth` access deferred to `ngOnInit`
+  with `isPlatformBrowser` guard — prevents `ReferenceError` in non-browser
+  contexts (PR #45)
+- `DashboardComponent`: generation-counter pattern prevents stale filter
+  responses from overwriting newer selections (PR #45)
+- `ResourceLibraryService`: `localStorage` access guarded with
+  `isPlatformBrowser` (PR #45)
+- `mock-user-repository.ts`: `findIndex` predicate self-comparison bug fixed;
+  `reset`/`clear` now mutate the same array reference (PR #43)
+- `register.spec.ts`: import path changed from `dist/` artifact to source
+  module (PR #43)
+- `EmailServiceImpl`: `verificationLink` field name aligned between template
+  and use case payload (PR #43)
+- nodemailer updated to v8.0.4 (PR #43)
 
 ## [0.4.0] - 2026-03-29
 
