@@ -9,20 +9,20 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
-import {
+import type {
   LearningResource,
+  MentalStateType,
   ResourceStatus,
 } from '@features/learning-resource/domain/learning-resource.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
-import { ThemeService } from '@core/theme/theme.service';
-import { ToastService } from '@core/toast/toast.service.js';
-import { TopicService } from '@features/learning-resource/application/topic.service.js';
-import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service.js';
-import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository.js';
-import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository.js';
-import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository.js';
-import { TopicRepository } from '@features/learning-resource/domain/topic.repository.js';
+import { ToastService } from '@core/toast/toast.service';
+import { TopicService } from '@features/learning-resource/application/topic.service';
+import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service';
+import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
+import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
+import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
+import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 
 @Component({
   selector: 'app-guided-form',
@@ -44,7 +44,6 @@ export class GuidedFormComponent implements OnInit {
   private readonly topicService = inject(TopicService);
   private readonly resourceTypeService = inject(ResourceTypeService);
   private readonly learningResourceService = inject(LearningResourceService);
-  readonly themeService = inject(ThemeService);
   private readonly toastService = inject(ToastService);
 
   readonly topics = this.topicService.topics;
@@ -53,13 +52,20 @@ export class GuidedFormComponent implements OnInit {
   readonly loadingTypes = this.resourceTypeService.loading;
 
   currentStep = 1;
-  step1Form: FormGroup;
-  step2Form: FormGroup;
+  step1Form!: FormGroup;
+  step2Form!: FormGroup;
   isSubmitting = false;
   submitError: string | null = null;
 
   readonly difficulties = ['Low', 'Medium', 'High'];
   readonly energyLevels = ['Low', 'Medium', 'High'];
+  readonly mentalStates: { value: MentalStateType; label: string }[] = [
+    { value: 'deep_focus', label: 'Deep Focus' },
+    { value: 'light_read', label: 'Light Read' },
+    { value: 'creative', label: 'Creative' },
+    { value: 'quick_op', label: 'Quick Op' },
+    { value: 'review', label: 'Review' },
+  ];
 
   constructor() {
     this.step1Form = this.fb.group({
@@ -67,11 +73,13 @@ export class GuidedFormComponent implements OnInit {
       typeId: ['', Validators.required],
       topicIds: [[], [Validators.required, Validators.minLength(1)]],
       url: [''],
+      imageUrl: [''],
     });
 
     this.step2Form = this.fb.group({
       difficulty: ['Medium', Validators.required],
       energyLevel: ['Medium', Validators.required],
+      mentalState: [null],
       estimatedDuration: this.fb.group({
         value: [30, [Validators.required, Validators.min(1)]],
         isEstimated: [true],
@@ -97,6 +105,11 @@ export class GuidedFormComponent implements OnInit {
     this.step1Form.get('topicIds')?.markAsTouched();
   }
 
+  toggleMentalState(value: MentalStateType): void {
+    const current = this.step2Form.get('mentalState')?.value;
+    this.step2Form.patchValue({ mentalState: current === value ? null : value });
+  }
+
   nextStep(): void {
     if (this.step1Form.valid && this.step1Form.value.topicIds.length > 0) {
       this.currentStep = 2;
@@ -109,54 +122,40 @@ export class GuidedFormComponent implements OnInit {
     this.currentStep = 1;
   }
 
-  goHome(): void {
-    this.router.navigate(['/']);
-  }
-
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
+  goBack(): void {
+    this.router.navigate(['/add']);
   }
 
   getDifficultyIcon(difficulty: string): string {
-    const map: Record<string, string> = {
-      Low: '🌱',
-      Medium: '⚡',
-      High: '🔥',
-    };
-    return map[difficulty] ?? '';
+    return ({ Low: '🌱', Medium: '⚡', High: '🔥' } as Record<string, string>)[difficulty] ?? '';
   }
 
   getEnergyIcon(energy: string): string {
-    const map: Record<string, string> = {
-      Low: '😌',
-      Medium: '🧠',
-      High: '🚀',
-    };
-    return map[energy] ?? '';
+    return ({ Low: '😌', Medium: '🧠', High: '🚀' } as Record<string, string>)[energy] ?? '';
   }
 
   getDifficultySelectedClass(d: string): string {
     const map: Record<string, string> = {
-      Low: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-green-400 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 transition-all',
+      Low: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-emerald-600/60 bg-emerald-950/40 text-emerald-300 transition-all',
       Medium:
-        'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 transition-all',
-      High: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-red-400 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 transition-all',
+        'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-yellow-600/60 bg-yellow-950/40 text-yellow-300 transition-all',
+      High: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-red-600/60 bg-red-950/40 text-red-300 transition-all',
     };
     return map[d] ?? '';
   }
 
   getEnergySelectedClass(e: string): string {
     const map: Record<string, string> = {
-      Low: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-green-400 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 transition-all',
+      Low: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-emerald-600/60 bg-emerald-950/40 text-emerald-300 transition-all',
       Medium:
-        'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 transition-all',
-      High: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-red-400 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 transition-all',
+        'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-yellow-600/60 bg-yellow-950/40 text-yellow-300 transition-all',
+      High: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-red-600/60 bg-red-950/40 text-red-300 transition-all',
     };
     return map[e] ?? '';
   }
 
   async onSubmit(): Promise<void> {
-    const INITIAL_RESOURCE_STATUS: ResourceStatus = 'Pending';
+    const INITIAL_STATUS: ResourceStatus = 'Pending';
     if (!this.step2Form.valid) {
       this.markFormGroupTouched(this.step2Form);
       return;
@@ -165,25 +164,27 @@ export class GuidedFormComponent implements OnInit {
     this.isSubmitting = true;
     this.submitError = null;
 
-    const payload = {
+    const payload: Omit<LearningResource, 'id' | 'createdAt' | 'updatedAt' | 'lastViewed'> = {
       title: this.step1Form.value.title,
       url: this.step1Form.value.url || undefined,
+      imageUrl: this.step1Form.value.imageUrl || undefined,
       notes: this.step2Form.value.notes || undefined,
       difficulty: this.step2Form.value.difficulty as LearningResource['difficulty'],
       energyLevel: this.step2Form.value.energyLevel as LearningResource['energyLevel'],
+      mentalState: this.step2Form.value.mentalState ?? undefined,
       estimatedDuration: {
         value: this.step2Form.value.estimatedDuration.value,
         isEstimated: this.step2Form.value.estimatedDuration.isEstimated,
       },
       topicIds: this.step1Form.value.topicIds,
       typeId: this.step1Form.value.typeId,
-      status: INITIAL_RESOURCE_STATUS,
+      status: INITIAL_STATUS,
     };
 
     try {
       await this.learningResourceService.addResource(payload);
       this.toastService.show('Resource created successfully');
-      this.router.navigate(['/']);
+      this.router.navigate(['/dashboard']);
     } catch {
       this.toastService.show('Failed to create resource. Please try again.', 'error');
       this.submitError = 'Failed to create resource. Please try again.';
@@ -191,12 +192,11 @@ export class GuidedFormComponent implements OnInit {
       this.isSubmitting = false;
     }
   }
+
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach((control) => {
       control.markAsTouched();
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
-      }
+      if (control instanceof FormGroup) this.markFormGroupTouched(control);
     });
   }
 }

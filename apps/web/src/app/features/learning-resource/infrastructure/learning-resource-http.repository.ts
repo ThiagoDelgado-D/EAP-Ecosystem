@@ -7,6 +7,7 @@ import type {
   EnergyLevel,
   LearningResource,
   LearningResourceFilter,
+  MentalStateType,
   ResourceStatus,
 } from '../domain/learning-resource.model';
 import type { LearningResourceDto, LearningResourceListDto } from './learning-resource.dto';
@@ -42,6 +43,10 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     if (filter.typeId) {
       params = params.set('resourceTypeId', filter.typeId);
     }
+    // Added in PR #44 — mentalState filter support
+    if (filter.mentalState) {
+      params = params.set('mentalState', filter.mentalState);
+    }
 
     const response = await firstValueFrom(
       this.http.get<LearningResourceListDto>(`${this.baseUrl}/filter`, { params }),
@@ -60,9 +65,11 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     const payload = {
       title: resource.title,
       url: resource.url ?? undefined,
+      imageUrl: resource.imageUrl ?? undefined,
       notes: resource.notes ?? undefined,
       difficulty: resource.difficulty.toLowerCase(),
       energyLevel: resource.energyLevel.toLowerCase(),
+      mentalState: resource.mentalState ?? undefined,
       estimatedDurationMinutes: resource.estimatedDuration.value,
       topicIds: resource.topicIds,
       resourceTypeId: resource.typeId,
@@ -116,6 +123,14 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     throw new Error(`Unknown energy level value from API: ${value}`);
   }
 
+  private parseMentalState(value: string | null | undefined): MentalStateType | undefined {
+    if (!value) return undefined;
+    const valid: MentalStateType[] = ['deep_focus', 'light_read', 'creative', 'quick_op', 'review'];
+    if (valid.includes(value as MentalStateType)) return value as MentalStateType;
+    console.warn(`Unknown mentalState value from API: ${value}`);
+    return undefined;
+  }
+
   private parseDate(value: string | null | undefined): Date {
     if (!value) {
       console.warn('Missing date value, using current date as fallback');
@@ -131,9 +146,11 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
       id: dto.id,
       title: dto.title,
       url: dto.url ?? undefined,
+      imageUrl: dto.imageUrl ?? undefined,
       notes: dto.notes ?? undefined,
       difficulty: this.capitalizeDifficulty(dto.difficulty),
       energyLevel: this.capitalizeEnergyLevel(dto.energyLevel),
+      mentalState: this.parseMentalState(dto.mentalState),
       status: this.capitalizeStatus(dto.status),
       estimatedDuration: dto.estimatedDuration ?? { value: 0, isEstimated: true },
       topicIds: dto.topicIds,

@@ -1,0 +1,33 @@
+<div class="flex flex-col lg:grid lg:grid-cols-[1fr_300px] min-h-full">
+  <div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-5 lg:border-r lg:border-slate-800">
+    <app-system-check
+      [selectedEnergy]="selectedEnergy()"
+      [selectedMentalState]="selectedMentalState()"
+      (energyChange)="onEnergyChange($event)"
+      (mentalStateChange)="onMentalStateChange($event)"
+    />
+
+    <div>
+      <p class="text-xs uppercase tracking-widest text-slate-500 mb-2 font-medium">Ideal Match</p>
+
+      @if (loading()) {
+        <div class="rounded-xl border border-slate-800 bg-slate-900 h-56 animate-pulse"></div>
+      } @else if (error()) {
+        <div class="rounded-xl border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-400">
+          Failed to load recommendation. Check your API connection.
+        </div>
+      } @else {
+        <app-ideal-match
+          [resource]="idealResource()"
+          [energyLevel]="selectedEnergy()"
+          [mentalState]="selectedMentalState()"
+        />
+      }
+    </div>
+  </div>
+
+  <div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-5 border-t border-slate-800 lg:border-t-0">
+    <app-focus-pulse />
+    <app-pending-tasks />
+  </div>
+</div>
