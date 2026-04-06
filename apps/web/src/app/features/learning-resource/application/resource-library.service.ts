@@ -1,56 +1,72 @@
-import { Injectable, signal, computed } from '@angular/core';
-
-const SAVED_KEY = 'eap_saved_resources';
-const RECENT_KEY = 'eap_recent_resources';
-const RECENT_MAX = 10;
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceLibraryService {
-  private readonly _savedIds = signal<Set<string>>(this.loadSaved());
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
 
-  readonly savedIds = computed(() => this._savedIds());
+  private readonly savedIdsSignal = signal<string[]>([]);
+  private readonly recentIdsSignal = signal<string[]>([]);
 
-  toggleSaved(id: string): void {
-    const current = new Set(this._savedIds());
-    if (current.has(id)) {
-      current.delete(id);
-    } else {
-      current.add(id);
+  readonly savedIds = this.savedIdsSignal.asReadonly();
+  readonly recentIds = this.recentIdsSignal.asReadonly();
+
+  private initialized = false;
+
+  constructor() {
+    if (this.isBrowser) {
+      this.loadFromLocalStorage();
     }
-    this._savedIds.set(current);
-    localStorage.setItem(SAVED_KEY, JSON.stringify([...current]));
   }
 
-  isSaved(id: string): boolean {
-    return this._savedIds().has(id);
+  private loadFromLocalStorage(): void {
+    this.savedIdsSignal.set(this.loadSaved());
+    this.recentIdsSignal.set(this.loadRecent());
+    this.initialized = true;
   }
 
-  private readonly _recentIds = signal<string[]>(this.loadRecent());
-
-  readonly recentIds = computed(() => this._recentIds());
-
-  trackRecent(id: string): void {
-    const current = this._recentIds().filter((r) => r !== id);
-    const updated = [id, ...current].slice(0, RECENT_MAX);
-    this._recentIds.set(updated);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
-  }
-
-  private loadSaved(): Set<string> {
-    try {
-      const raw = localStorage.getItem(SAVED_KEY);
-      return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
-    } catch {
-      return new Set();
-    }
+  private loadSaved(): string[] {
+    if (!this.isBrowser) return [];
+    const saved = localStorage.getItem('saved_resources');
+    return saved ? JSON.parse(saved) : [];
   }
 
   private loadRecent(): string[] {
-    try {
-      const raw = localStorage.getItem(RECENT_KEY);
-      return raw ? (JSON.parse(raw) as string[]) : [];
-    } catch {
-      return [];
-    }
+    if (!this.isBrowser) return [];
+    const recent = localStorage.getItem('recent_resources');
+    return recent ? JSON.parse(recent) : [];
+  }
+
+  private persistSaved(): void {
+    if (!this.isBrowser) return;
+    localStorage.setItem('saved_resources', JSON.stringify(this.savedIdsSignal()));
+  }
+
+  private persistRecent(): void {
+    if (!this.isBrowser) return;
+    localStorage.setItem('recent_resources', JSON.stringify(this.recentIdsSignal()));
+  }
+
+  isSaved(id: string): boolean {
+    return this.savedIdsSignal().includes(id);
+  }
+
+  toggleSaved(id: string): void {
+    if (!this.isBrowser) return;
+    const current = this.savedIdsSignal();
+    const updated = current.includes(id) ? current.filter((i) => i !== id) : [...current, id];
+    this.savedIdsSignal.set(updated);
+    this.persistSaved();
+  }
+
+  trackRecent(id: string): void {
+    if (!this.isBrowser) return;
+    const current = this.recentIdsSignal();
+    const filtered = current.filter((i) => i !== id);
+    const updated = [id, ...filtered].slice(0, 20);
+    this.recentIdsSignal.set(updated);
+    this.persistRecent();
   }
 }
