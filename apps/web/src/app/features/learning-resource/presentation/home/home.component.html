@@ -523,7 +523,7 @@
     }
   }
 
-  @if (!loading() && pulseStats()) {
+  @if (!loading() && !error() && pulseStats()) {
     <div
       class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5"
     >
