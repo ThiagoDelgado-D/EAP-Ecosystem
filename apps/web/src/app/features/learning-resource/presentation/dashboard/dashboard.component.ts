@@ -36,18 +36,42 @@ export class DashboardComponent implements OnInit {
     return resources[0] ?? null;
   });
 
+  private filterInFlight = false;
+  private refreshQueued = false;
+
   async ngOnInit(): Promise<void> {
     await this.applyFilter();
   }
 
   onEnergyChange(energy: EnergyLevel): void {
     this.selectedEnergy.set(energy);
-    this.applyFilter();
+    this.requestFilterRefresh();
   }
 
   onMentalStateChange(state: MentalStateType): void {
     this.selectedMentalState.set(state);
-    this.applyFilter();
+    this.requestFilterRefresh();
+  }
+
+  private requestFilterRefresh(): void {
+    if (this.filterInFlight) {
+      this.refreshQueued = true;
+      return;
+    }
+    void this.runFilter();
+  }
+
+  private async runFilter(): Promise<void> {
+    this.filterInFlight = true;
+    try {
+      await this.applyFilter();
+    } finally {
+      this.filterInFlight = false;
+      if (this.refreshQueued) {
+        this.refreshQueued = false;
+        void this.runFilter();
+      }
+    }
   }
 
   private async applyFilter(): Promise<void> {

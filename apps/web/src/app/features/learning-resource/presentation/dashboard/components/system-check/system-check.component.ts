@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import {
+import type {
   EnergyLevel,
   MentalStateType,
 } from '@features/learning-resource/domain/learning-resource.model.js';
