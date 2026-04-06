@@ -35,17 +35,18 @@ are coming in upcoming versions.
 
 ---
 
-## Current Status — v0.4.0
+## 🎯 Current Status (v0.5.0)
 
-| Layer                       | Status         |
-| --------------------------- | -------------- |
-| Domain & Application        | ✅ Complete    |
-| REST API (NestJS)           | ✅ Complete    |
-| PostgreSQL (Infrastructure) | ✅ Complete    |
-| Frontend (Angular)          | ✅ Complete    |
-| Resource Library Enhanced   | 🚧 In progress |
-| User & Auth                 | 📅 Planned     |
-| Recommendations             | 📅 Planned     |
+| Component                 | Status               | Notes                                                      |
+| ------------------------- | -------------------- | ---------------------------------------------------------- |
+| **Domain Layer**          | ✅ Stable            | `LearningResource` + `User` domains complete               |
+| **Application Layer**     | ✅ Stable            | Use cases + registration flow                              |
+| **API Layer**             | ✅ Stable            | NestJS REST, PostgreSQL, TypeORM                           |
+| **Frontend**              | ✅ Stable            | Angular 21, dashboard, resource library                    |
+| **User Module**           | 🚧 Foundation        | Domain + application only, not wired to API or auth        |
+| **Authentication**        | 📅 Next (v0.8.0)     | Magic link → OAuth → MFA                                   |
+| **Session Tracking**      | 📅 Planned (v0.10.0) | Focus Pulse and Pulse widget use hardcoded data until then |
+| **Recommendation Engine** | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then          |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
