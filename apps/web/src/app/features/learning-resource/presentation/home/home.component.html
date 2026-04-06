@@ -27,6 +27,7 @@
         <input
           type="text"
           placeholder="Search resources…"
+          aria-label="Search resources"
           [ngModel]="searchQuery()"
           (ngModelChange)="searchQuery.set($event)"
           class="bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-300 placeholder:text-slate-600 w-44 sm:w-52 focus:outline-none focus:border-violet-500 transition-colors"
@@ -126,6 +127,7 @@
     <select
       class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
       [(ngModel)]="mentalStateFilterValue"
+      aria-label="Filter by mental state"
       (ngModelChange)="applyFilter()"
     >
       <option [ngValue]="null">Mental State</option>
@@ -137,6 +139,7 @@
     <select
       class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
       [(ngModel)]="difficultyFilterValue"
+      aria-label="Filter by difficulty"
       (ngModelChange)="applyFilter()"
     >
       <option [ngValue]="null">Difficulty</option>
@@ -148,6 +151,7 @@
     <select
       class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
       [(ngModel)]="energyFilterValue"
+      aria-label="Filter by energy"
       (ngModelChange)="applyFilter()"
     >
       <option [ngValue]="null">Energy</option>
@@ -159,6 +163,7 @@
     <select
       class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
       [(ngModel)]="statusFilterValue"
+      aria-label="Filter by status"
       (ngModelChange)="applyFilter()"
     >
       <option [ngValue]="null">Status</option>
