@@ -251,7 +251,11 @@
         @for (resource of displayedResources(); track resource.id) {
           <div
             class="group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 hover:bg-slate-800/40 transition-all duration-200 cursor-pointer flex flex-col"
+            tabindex="0"
+            role="button"
             (click)="onCardClick(resource)"
+            (keydown.enter)="onCardClick(resource)"
+            (keydown.space)="onCardClick(resource); $event.preventDefault()"
           >
             <div class="relative h-36 overflow-hidden flex-shrink-0">
               @if (resource.imageUrl) {
@@ -445,6 +449,11 @@
           <div
             class="group flex items-center gap-4 py-3 hover:bg-slate-800/40 px-3 rounded-lg transition-colors cursor-pointer"
             (click)="onCardClick(resource)"
+            tabindex="0"
+            role="button"
+            (click)="onCardClick(resource)"
+            (keydown.enter)="onCardClick(resource)"
+            (keydown.space)="onCardClick(resource); $event.preventDefault()"
           >
             <div
               class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
