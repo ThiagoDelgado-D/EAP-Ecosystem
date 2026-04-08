@@ -8,6 +8,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Inject,
   Param,
   Patch,
@@ -17,6 +18,7 @@ import {
 import {
   AddResourceDto,
   GetResourcesFilterDto,
+  PreviewUrlDto,
   ToggleDifficultyDto,
   ToggleEnergyDto,
   ToggleStatusDto,
@@ -37,7 +39,6 @@ import {
 } from "@learning-resource/application";
 import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import { toHttpException } from "../errors/domain-error-mapper.js";
-import type { PreviewUrlDto } from "./dto/request/preview-url.dto.js";
 
 @Controller("api/v1/learning-resources")
 export class LearningResourceController {
