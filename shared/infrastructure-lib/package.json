@@ -9,7 +9,7 @@
     "@types/nodemailer": "^7.0.11",
     "bcryptjs": "^3.0.3",
     "domain-lib": "workspace:^",
-    "nodemailer": "^8.0.4"
+    "nodemailer": "^8.0.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",

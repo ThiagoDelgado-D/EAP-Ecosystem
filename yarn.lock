@@ -2423,14 +2423,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/core@npm:^11.0.1":
-  version: 11.1.13
-  resolution: "@nestjs/core@npm:11.1.13"
+"@nestjs/core@npm:^11.1.18":
+  version: 11.1.18
+  resolution: "@nestjs/core@npm:11.1.18"
   dependencies:
     "@nuxt/opencollective": "npm:0.4.1"
     fast-safe-stringify: "npm:2.1.1"
     iterare: "npm:1.2.1"
-    path-to-regexp: "npm:8.3.0"
+    path-to-regexp: "npm:8.4.2"
     tslib: "npm:2.8.1"
     uid: "npm:2.0.2"
   peerDependencies:
@@ -2447,7 +2447,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: 10c0/1cc791554595eb690d44a44a2f8248c495698d2b2c9dbd0faff521c612549535b68504b51e300dd9e71dce986218aeec181061a892d4a02d944d50d197d4e7bf
+  checksum: 10c0/324d7006b6a564cba7c7939a99928270d4e2f3c31172c596297ba97a150857458c431eae78ed5ef1c697aa754cf4179444be44184931183ed3063416cca1d381
   languageName: node
   linkType: hard
 
@@ -4877,7 +4877,7 @@ __metadata:
     "@nestjs/cli": "npm:^11.0.0"
     "@nestjs/common": "npm:^11.0.1"
     "@nestjs/config": "npm:^4.0.3"
-    "@nestjs/core": "npm:^11.0.1"
+    "@nestjs/core": "npm:^11.1.18"
     "@nestjs/platform-express": "npm:^11.0.1"
     "@nestjs/schematics": "npm:^11.0.0"
     "@nestjs/testing": "npm:^11.1.14"
@@ -7099,8 +7099,8 @@ __metadata:
   linkType: hard
 
 "handlebars@npm:^4.7.8":
-  version: 4.7.8
-  resolution: "handlebars@npm:4.7.8"
+  version: 4.7.9
+  resolution: "handlebars@npm:4.7.9"
   dependencies:
     minimist: "npm:^1.2.5"
     neo-async: "npm:^2.6.2"
@@ -7112,7 +7112,7 @@ __metadata:
       optional: true
   bin:
     handlebars: bin/handlebars
-  checksum: 10c0/7aff423ea38a14bb379316f3857fe0df3c5d66119270944247f155ba1f08e07a92b340c58edaa00cfe985c21508870ee5183e0634dcb53dd405f35c93ef7f10d
+  checksum: 10c0/22f8105a7e68e81aff2662bb434edf05f757d21d850731d71cec886d69c10cd33d3c43e34b2892968ec62de8241611851d3d0674c8ef324ea3e01dc66262faa9
   languageName: node
   linkType: hard
 
@@ -7158,9 +7158,9 @@ __metadata:
   linkType: hard
 
 "hono@npm:^4.11.4":
-  version: 4.12.9
-  resolution: "hono@npm:4.12.9"
-  checksum: 10c0/393256552642f681e52935163508d9605e5552e186d9b99ff2caf219d4248341b83e3eb975c40a97149c86890d19d73421efc889aa465a28eb5920ccc42cff34
+  version: 4.12.12
+  resolution: "hono@npm:4.12.12"
+  checksum: 10c0/7e514cac7f0fde53a93b5344605a11bc944c55c7b68e586ab722269a60c2d78e81b91c298e934b232d44aa8fcbfd2584b7cd7e01fb3f0edaaba0597a584b2ead
   languageName: node
   linkType: hard
 
@@ -7345,7 +7345,7 @@ __metadata:
     "@vitest/coverage-v8": "npm:^4.0.18"
     bcryptjs: "npm:^3.0.3"
     domain-lib: "workspace:^"
-    nodemailer: "npm:^8.0.4"
+    nodemailer: "npm:^8.0.5"
     typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.18"
   languageName: unknown
@@ -9099,10 +9099,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^8.0.4":
-  version: 8.0.4
-  resolution: "nodemailer@npm:8.0.4"
-  checksum: 10c0/5fb6fa72645b541c18b84b861de46f4740449e1d7c987b4d9ef715d815d613f93262225bc319e217df6215d6f123efadb9a412dcf937fe0a41cbecf279dfb2a0
+"nodemailer@npm:^8.0.5":
+  version: 8.0.5
+  resolution: "nodemailer@npm:8.0.5"
+  checksum: 10c0/5e8450499bd059c56d74ba96fa5f9928de2ecdae0d53c083dba5661d797114c1f9524d30f992d0263cc5a7dcf5a54b9c1d92dc1f766da150c9d0bde7d3798431
   languageName: node
   linkType: hard
 
@@ -9519,6 +9519,13 @@ __metadata:
   version: 8.3.0
   resolution: "path-to-regexp@npm:8.3.0"
   checksum: 10c0/ee1544a73a3f294a97a4c663b0ce71bbf1621d732d80c9c9ed201b3e911a86cb628ebad691b9d40f40a3742fe22011e5a059d8eed2cf63ec2cb94f6fb4efe67c
+  languageName: node
+  linkType: hard
+
+"path-to-regexp@npm:8.4.2":
+  version: 8.4.2
+  resolution: "path-to-regexp@npm:8.4.2"
+  checksum: 10c0/05b115c49b47ad252ce05faa32930f643f23769c68b8bcfe78ad833545140c48bbffb3266986d6c8d5db13a64cf12e07e0d72d9882cab830efeefa553533ebaf
   languageName: node
   linkType: hard
 
