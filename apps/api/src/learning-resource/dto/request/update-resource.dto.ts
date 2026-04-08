@@ -12,7 +12,6 @@ import {
 } from "class-validator";
 import { MentalStateType } from "@learning-resource/domain";
 import type { UUID } from "domain-lib";
-import { Transform } from "class-transformer";
 
 export class UpdateResourceDto {
   @IsOptional()
@@ -21,12 +20,16 @@ export class UpdateResourceDto {
   title?: string;
 
   @IsOptional()
-  @ValidateIf((o) => o.url !== "")
-  @IsUrl()
+  @ValidateIf((o) => o.url !== undefined && o.url !== "")
+  @IsUrl({
+    require_tld: true,
+    require_protocol: true,
+    protocols: ["http", "https"],
+  })
   url?: string;
 
   @IsOptional()
-  @Transform(({ value }) => (value === "" ? undefined : value))
+  @ValidateIf((o) => o.imageUrl !== undefined && o.imageUrl !== "")
   @IsUrl({
     require_tld: true,
     require_protocol: true,
