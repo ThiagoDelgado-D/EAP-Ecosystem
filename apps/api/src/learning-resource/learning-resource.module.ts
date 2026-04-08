@@ -1,13 +1,14 @@
 import { Module } from "@nestjs/common";
 import { getRepositoryToken, TypeOrmModule } from "@nestjs/typeorm";
 import { LearningResourceController } from "./learning-resource.controller.js";
-import { LearningResourceEntity } from "@learning-resource/infrastructure";
-import { TopicEntity } from "@learning-resource/infrastructure";
-import { ResourceTypeEntity } from "@learning-resource/infrastructure";
 import {
+  LearningResourceEntity,
+  TopicEntity,
+  ResourceTypeEntity,
   TypeOrmLearningResourceRepository,
   TypeOrmTopicRepository,
   TypeOrmResourceTypeRepository,
+  UrlMetadataService,
 } from "@learning-resource/infrastructure";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { TopicController } from "./topic.controller.js";
@@ -47,6 +48,7 @@ import { ResourceTypeController } from "./resource-type.controller.js";
       inject: [getRepositoryToken(ResourceTypeEntity)],
     },
     { provide: "ICryptoService", useClass: CryptoServiceImpl },
+    { provide: "IUrlMetadataService", useClass: UrlMetadataService },
   ],
 })
 export class LearningResourceModule {}

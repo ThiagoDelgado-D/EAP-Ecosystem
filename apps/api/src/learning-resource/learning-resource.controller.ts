@@ -28,13 +28,16 @@ import {
   GetResourceById,
   getResourcesByFilter,
   listFormattedResourcesLearning,
+  previewUrl,
   toggleResourceDifficulty,
   toggleResourceEnergy,
   toggleStatus,
   updateResource,
+  type IUrlMetadataService,
 } from "@learning-resource/application";
 import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import { toHttpException } from "../errors/domain-error-mapper.js";
+import type { PreviewUrlDto } from "./dto/request/preview-url.dto.js";
 
 @Controller("api/v1/learning-resources")
 export class LearningResourceController {
@@ -47,6 +50,8 @@ export class LearningResourceController {
     private readonly resourceTypeRepository: IResourceTypeRepository,
     @Inject("ICryptoService")
     private readonly cryptoService: CryptoService,
+    @Inject("IUrlMetadataService")
+    private readonly urlMetadataService: IUrlMetadataService,
   ) {}
 
   @Post()
@@ -140,5 +145,18 @@ export class LearningResourceController {
       { id, status: dto.status },
     );
     if (result instanceof BaseError) toHttpException(result);
+  }
+
+  @Post("preview")
+  async preview(@Body() dto: PreviewUrlDto) {
+    const result = await previewUrl(
+      {
+        urlMetadataService: this.urlMetadataService,
+        resourceTypeRepository: this.resourceTypeRepository,
+      },
+      { url: dto.url },
+    );
+    if (result instanceof BaseError) toHttpException(result);
+    return result;
   }
 }
