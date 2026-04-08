@@ -1,8 +1,7 @@
-import { IsNotEmpty, IsUrl } from "class-validator";
-import { Expose } from "class-transformer";
+import { IsNotEmpty, IsString, IsUrl } from "class-validator";
 
 export class PreviewUrlDto {
-  @Expose()
+  @IsString()
   @IsNotEmpty()
   @IsUrl({ require_protocol: true, protocols: ["http", "https"] })
   url: string;
