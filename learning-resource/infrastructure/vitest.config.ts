@@ -23,12 +23,15 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
       "infrastructure-lib": resolve(
         __dirname,
         "../../shared/infrastructure-lib/src",
       ),
       "@learning-resource/domain": resolve(__dirname, "../domain/src"),
+      "@learning-resource/application": resolve(
+        __dirname,
+        "../application/src",
+      ),
     },
   },
 });

@@ -5,7 +5,9 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
+    "@learning-resource/application": "workspace:^",
     "@learning-resource/domain": "workspace:^",
+    "cheerio": "^1.2.0",
     "infrastructure-lib": "workspace:^",
     "typeorm": "^0.3.28"
   },
