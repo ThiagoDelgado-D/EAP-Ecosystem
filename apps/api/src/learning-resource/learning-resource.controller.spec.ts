@@ -2,6 +2,7 @@ import {
   mockLearningResourceRepository,
   mockResourceTypeRepository,
   mockTopicRepository,
+  type IUrlMetadataService,
 } from "@learning-resource/application";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
@@ -23,6 +24,7 @@ describe("LearningResourceController (integration)", () => {
   let topicRepo: ReturnType<typeof mockTopicRepository>;
   let resourceTypeRepo: ReturnType<typeof mockResourceTypeRepository>;
   let cryptoService: CryptoServiceImpl;
+  let mockMetadataService: IUrlMetadataService;
 
   let topicId: UUID;
   let resourceTypeId: UUID;
@@ -52,6 +54,21 @@ describe("LearningResourceController (integration)", () => {
       },
     ]);
 
+    mockMetadataService = {
+      extract: async (url: string) => {
+        if (url.includes("youtube.com") || url.includes("youtu.be")) {
+          return { title: "Some Video", resourceTypeCode: "video" };
+        }
+        if (url.includes("github.com")) {
+          return { title: "Some Repo", resourceTypeCode: "document" };
+        }
+        if (url.includes("example.com/empty")) {
+          return {};
+        }
+        return { title: "Some Article", resourceTypeCode: "article" };
+      },
+    };
+
     const module = await Test.createTestingModule({
       imports: [LearningResourceModule],
     })
@@ -69,6 +86,8 @@ describe("LearningResourceController (integration)", () => {
       .useValue(resourceTypeRepo)
       .overrideProvider("ICryptoService")
       .useValue(cryptoService)
+      .overrideProvider("IUrlMetadataService")
+      .useValue(mockMetadataService)
       .compile();
 
     app = module.createNestApplication();
@@ -530,6 +549,66 @@ describe("LearningResourceController (integration)", () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/status`)
         .send({ status: "INVALID" })
+        .expect(400);
+    });
+  });
+
+  describe("POST /api/v1/learning-resources/preview", () => {
+    test("Should return 200 with metadata for a YouTube URL", async () => {
+      const response = await request(app.getHttpServer())
+        .post("/api/v1/learning-resources/preview")
+        .send({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" })
+        .expect(201);
+
+      expect(response.body.title).toBe("Some Video");
+      expect(response.body.resourceTypeCode).toBe("video");
+    });
+
+    test("Should resolve resourceTypeId when code matches an existing resource type", async () => {
+      const response = await request(app.getHttpServer())
+        .post("/api/v1/learning-resources/preview")
+        .send({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" })
+        .expect(201);
+
+      expect(response.body.resourceTypeId).toBe(resourceTypeId);
+    });
+
+    test("Should return 200 with empty body when site returns no metadata", async () => {
+      const response = await request(app.getHttpServer())
+        .post("/api/v1/learning-resources/preview")
+        .send({ url: "https://example.com/empty" })
+        .expect(201);
+
+      expect(response.body).toBeDefined();
+      expect(response.body.title).toBeUndefined();
+      expect(response.body.resourceTypeId).toBeUndefined();
+    });
+
+    test("Should return 400 when URL is missing", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources/preview")
+        .send({})
+        .expect(400);
+    });
+
+    test("Should return 400 when URL is malformed", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources/preview")
+        .send({ url: "not-a-valid-url" })
+        .expect(400);
+    });
+
+    test("Should return 400 when URL is empty string", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources/preview")
+        .send({ url: "" })
+        .expect(400);
+    });
+
+    test("Should ignore extra fields (whitelist)", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources/preview")
+        .send({ url: "https://github.com/test", extra: "field" })
         .expect(400);
     });
   });
