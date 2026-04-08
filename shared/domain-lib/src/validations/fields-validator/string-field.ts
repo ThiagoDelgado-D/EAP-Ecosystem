@@ -44,12 +44,12 @@ export interface StringFieldOptions extends ValidatorOptions {
 export function stringField(): FieldValidator<string>;
 export function stringField(
   fieldName: string,
-  options: { required: true } & StringFieldOptions
+  options: { required: true } & StringFieldOptions,
 ): FieldValidator<string>;
 
 export function stringField(
   fieldName: string,
-  options?: { required?: boolean } & StringFieldOptions
+  options?: { required?: boolean } & StringFieldOptions,
 ): FieldValidator<string | undefined>;
 
 /**
@@ -69,7 +69,7 @@ export function stringField(
  */
 export function stringField(
   fieldName: string = "Field",
-  options: StringFieldOptions = {}
+  options: StringFieldOptions = {},
 ): FieldValidator<string | undefined> {
   const {
     required = true,
@@ -157,51 +157,88 @@ export function stringField(
  */
 export function optionalString(
   fieldName: string = "Field",
-  options: Omit<StringFieldOptions, "required"> = {}
+  options: Omit<StringFieldOptions, "required"> = {},
 ): FieldValidator<string | undefined> {
   return stringField(fieldName, { ...options, required: false });
 }
 
+/**
+ * Checks if a string is a valid URL.
+ * If the string doesn't have a protocol, it tries to prepend "https://" and revalidates.
+ * Additionally, for protocol‑less URLs, it requires the hostname to contain a dot (.) or be 'localhost'
+ * to avoid accepting arbitrary random strings.
+ */
+function isValidUrl(urlString: string): boolean {
+  try {
+    new URL(urlString);
+    return true;
+  } catch {
+    try {
+      new URL(`https://${urlString}`);
+      if (!urlString.includes(".") && urlString !== "localhost") return false;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
 export function urlField(
   fieldName: string,
-  options: { required: true } & StringFieldOptions
+  options: { required: true } & StringFieldOptions,
 ): FieldValidator<string>;
 
 export function urlField(
   fieldName: string,
-  options?: { required?: false } & StringFieldOptions
+  options?: { required?: false } & StringFieldOptions,
 ): FieldValidator<string | undefined>;
 
 /**
- * Creates a field validator that validates URL strings using the provided options.
+ * Creates a field validator that validates URL strings.
+ * It trims the input, then checks URL validity using the native URL constructor.
+ * URLs without a protocol (e.g., "example.com") are accepted only if the hostname contains a dot or is "localhost".
  *
  * @param fieldName - Label used in error messages; defaults to `"URL"`.
  * @param options - StringFieldOptions to customize validation behavior (e.g., `required`, `minLength`, `maxLength`, `trim`, `allowEmpty`, `transform`).
- * @returns A `FieldValidator<string | undefined>` that validates the value as a URL, applies the provided string options, and returns the processed string when valid or `undefined` for absent/optional values.
+ * @returns A `FieldValidator<string | undefined>` that validates the value as a URL.
  */
 export function urlField(
   fieldName: string = "URL",
-  options: StringFieldOptions = {}
+  options: StringFieldOptions = {},
 ): FieldValidator<string | undefined> {
-  const urlPattern = {
-    regex: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-?=&]*)*\/?$/i,
-    message: `${fieldName} must be a valid URL`,
-  };
+  const baseValidator = stringField(fieldName, options);
+  const { allowEmpty = false } = options;
 
-  return stringField(fieldName, {
-    ...options,
-    pattern: urlPattern,
-  });
+  return (value: unknown): FieldValidationResult<string | undefined> => {
+    const baseResult = baseValidator(value);
+    if (!baseResult.isValid) return baseResult;
+
+    let strValue = baseResult.value;
+    if (strValue === undefined) return { isValid: true, value: undefined };
+
+    if (allowEmpty && strValue === "") {
+      return { isValid: true, value: "" };
+    }
+
+    if (!isValidUrl(strValue)) {
+      return {
+        isValid: false,
+        error: `${fieldName} must be a valid URL`,
+      };
+    }
+
+    return { isValid: true, value: strValue };
+  };
 }
 
 export function emailField(
   fieldName: string,
-  options: { required: true } & StringFieldOptions
+  options: { required: true } & StringFieldOptions,
 ): FieldValidator<string>;
 
 export function emailField(
   fieldName: string,
-  options?: { required?: boolean } & StringFieldOptions
+  options?: { required?: boolean } & StringFieldOptions,
 ): FieldValidator<string | undefined>;
 
 /**
@@ -213,7 +250,7 @@ export function emailField(
  */
 export function emailField(
   fieldName: string = "Email",
-  options: StringFieldOptions = {}
+  options: StringFieldOptions = {},
 ): FieldValidator<string | undefined> {
   const emailPattern = {
     regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,

@@ -408,6 +408,14 @@ describe("urlField", () => {
       const result = validate("example.com");
       expect(result.isValid).toBe(true);
     });
+
+    test("Should accept URLs with @ symbol in path (e.g., Medium articles)", () => {
+      const validate = urlField("Website");
+      const mediumUrl =
+        "https://medium.com/@satish-a/api-lifecycle-designing-api-fe529a220a1b";
+      const result = validate(mediumUrl);
+      expect(result).toEqual({ isValid: true, value: mediumUrl });
+    });
   });
 
   describe("optional URLs", () => {
