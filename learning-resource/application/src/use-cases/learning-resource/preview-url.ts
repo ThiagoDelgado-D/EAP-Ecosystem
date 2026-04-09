@@ -5,7 +5,10 @@ import {
   ValidationError,
 } from "domain-lib";
 import type { IResourceTypeRepository } from "@learning-resource/domain";
-import type { IUrlMetadataService } from "../../ports/IUrl-metadata-service.js";
+import type {
+  IUrlMetadataService,
+  UrlMetadata,
+} from "../../ports/IUrl-metadata-service.js";
 import type { UUID } from "domain-lib";
 
 export interface PreviewUrlDependencies {
@@ -40,7 +43,12 @@ export const previewUrl = async (
     return new InvalidDataError(validationResult.errors);
   }
 
-  const metadata = await urlMetadataService.extract(validationResult.url);
+  let metadata: UrlMetadata;
+  try {
+    metadata = await urlMetadataService.extract(validationResult.url);
+  } catch {
+    metadata = {};
+  }
 
   let resourceTypeId: UUID | undefined;
   if (metadata.resourceTypeCode) {
