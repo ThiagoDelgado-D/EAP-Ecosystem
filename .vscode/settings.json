@@ -25,6 +25,8 @@
     "editor.defaultFormatter": "vscode.json-language-features"
   },
   "cSpell.words": [
-    "dtos"
+    "dtos",
+    "oembed",
+    "youtu"
   ]
 }

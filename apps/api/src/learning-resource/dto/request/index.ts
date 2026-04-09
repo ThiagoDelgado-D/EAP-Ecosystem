@@ -4,3 +4,4 @@ export * from "./toggle-difficulty.dto.js";
 export * from "./toggle-energy.dto.js";
 export * from "./toggle-status.dto.js";
 export * from "./get-resources-filter.dto.js";
+export * from "./preview-url.dto.js";

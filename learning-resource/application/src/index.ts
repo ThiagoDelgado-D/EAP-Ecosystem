@@ -17,3 +17,7 @@ export * from "./use-case-map.js";
 // ============= UTILS =============
 
 export * from "./utils/index.js";
+
+// ============= PORTS =============
+
+export * from "./ports/index.js";

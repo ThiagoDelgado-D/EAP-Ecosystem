@@ -29,6 +29,10 @@ export default defineConfig({
         "../../shared/infrastructure-lib/src",
       ),
       "@learning-resource/domain": resolve(__dirname, "../domain/src"),
+      "@learning-resource/application": resolve(
+        __dirname,
+        "../application/src",
+      ),
     },
   },
 });
