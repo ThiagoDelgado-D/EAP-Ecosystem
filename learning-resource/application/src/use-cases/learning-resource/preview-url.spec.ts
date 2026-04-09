@@ -1,4 +1,4 @@
-import { beforeEach, describe, test } from "vitest";
+import { beforeEach, describe, test, expect } from "vitest";
 import { mockUrlMetadataService } from "../../mocks/mock-preview-url.js";
 import { mockResourceTypeRepository } from "../../mocks/mock-resource-type-repository.js";
 import { previewUrl } from "./preview-url.js";
