@@ -149,6 +149,7 @@ export class LearningResourceController {
   }
 
   @Post("preview")
+  @HttpCode(200)
   async preview(@Body() dto: PreviewUrlDto) {
     const result = await previewUrl(
       {
