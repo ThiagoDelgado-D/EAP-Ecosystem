@@ -23,7 +23,25 @@ export class UrlMetadataService implements IUrlMetadataService {
     return {};
   }
 
+  private isPrivateUrl(url: string): boolean {
+    try {
+      const hostname = new URL(url).hostname;
+      return (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname.startsWith("192.168.") ||
+        hostname.startsWith("10.") ||
+        hostname.startsWith("172.16.") ||
+        hostname === "0.0.0.0" ||
+        hostname.endsWith(".local")
+      );
+    } catch {
+      return true;
+    }
+  }
+
   private async tryOEmbed(url: string): Promise<UrlMetadata | null> {
+    if (this.isPrivateUrl(url)) return null;
     try {
       const hostname = new URL(url).hostname.replace("www.", "");
       const endpoint = OEMBED_PROVIDERS[hostname];
@@ -59,6 +77,7 @@ export class UrlMetadataService implements IUrlMetadataService {
   }
 
   private async tryOpenGraph(url: string): Promise<UrlMetadata | null> {
+    if (this.isPrivateUrl(url)) return null;
     try {
       const response = await fetch(url, {
         headers: { "User-Agent": "EAP-Ecosystem/1.0 (metadata-fetcher)" },
