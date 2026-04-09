@@ -23,6 +23,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
       "infrastructure-lib": resolve(
         __dirname,
         "../../shared/infrastructure-lib/src",
