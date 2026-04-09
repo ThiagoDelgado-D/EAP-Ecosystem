@@ -170,7 +170,8 @@ export function optionalString(
  */
 function isValidUrl(urlString: string): boolean {
   try {
-    new URL(urlString);
+    const parsed = new URL(urlString);
+    if (!["http:", "https:"].includes(parsed.protocol)) return false;
     return true;
   } catch {
     try {
