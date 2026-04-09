@@ -113,7 +113,7 @@ export class UrlMetadataService implements IUrlMetadataService {
     ) {
       return "video";
     }
-    if (url.includes("github.com")) return "document";
+    if (url.includes("github.com")) return "article";
     return "article";
   }
 }
