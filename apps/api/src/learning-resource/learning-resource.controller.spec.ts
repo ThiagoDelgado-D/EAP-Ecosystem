@@ -558,7 +558,7 @@ describe("LearningResourceController (integration)", () => {
       const response = await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
         .send({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" })
-        .expect(201);
+        .expect(200);
 
       expect(response.body.title).toBe("Some Video");
       expect(response.body.resourceTypeCode).toBe("video");
@@ -568,7 +568,7 @@ describe("LearningResourceController (integration)", () => {
       const response = await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
         .send({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" })
-        .expect(201);
+        .expect(200);
 
       expect(response.body.resourceTypeId).toBe(resourceTypeId);
     });
@@ -577,7 +577,7 @@ describe("LearningResourceController (integration)", () => {
       const response = await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
         .send({ url: "https://example.com/empty" })
-        .expect(201);
+        .expect(200);
 
       expect(response.body).toBeDefined();
       expect(response.body.title).toBeUndefined();
