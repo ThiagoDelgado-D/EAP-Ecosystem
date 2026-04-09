@@ -35,12 +35,16 @@ export class AddResourceHubComponent {
     {
       id: 'url',
       title: 'URL Scrape',
-      description: 'Convert any web source into structured data instantly.',
-      features: ['Smart autocomplete', 'Instant preview', 'Auto metadata'],
+      description: 'Extract metadata from any article, documentation or repository.',
+      features: [
+        'Auto-fetch title & description',
+        'Preview before saving',
+        'Supports articles, GitHub, docs',
+      ],
       iconVariant: 'url',
+      available: true,
+      ctaLabel: 'Import URL',
       route: '/add/url',
-      available: false,
-      ctaLabel: 'Initialize',
     },
     {
       id: 'voice',
