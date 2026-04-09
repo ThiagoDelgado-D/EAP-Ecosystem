@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { API_CONFIG } from '@core/config/api.config';
 
 export interface PreviewResponse {
   title?: string;
@@ -15,7 +16,7 @@ export interface PreviewResponse {
 @Injectable()
 export class UrlPreviewService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:3000/api/v1/learning-resources';
+  private readonly baseUrl = `${API_CONFIG.baseUrl}/learning-resources`;
 
   readonly previewData = signal<PreviewResponse | null>(null);
   readonly loading = signal(false);
