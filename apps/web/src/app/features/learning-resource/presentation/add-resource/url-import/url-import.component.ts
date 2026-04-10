@@ -119,11 +119,11 @@ export class UrlImportComponent implements OnInit, OnDestroy {
     this.progressInterval = setInterval(() => {
       const current = this.progress();
       if (current < 95) {
-        this.progress.set(current + Math.floor(Math.random() * 10) + 1);
+        const next = current + Math.floor(Math.random() * 10) + 1;
+        this.progress.set(Math.min(next, 95));
       }
     }, 200);
   }
-
   private stopProgressSimulation(): void {
     if (this.progressInterval) clearInterval(this.progressInterval);
     this.progress.set(100);
