@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { LearningResourceRepository } from '../domain/learning-resource.repository';
 import type {
+  AddResourcePayload,
   DifficultyLevel,
   EnergyLevel,
   LearningResource,
@@ -59,24 +60,8 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     return this.toDomain(dto);
   }
 
-  async addResourceLearning(
-    resource: Omit<LearningResource, 'id' | 'createdAt' | 'updatedAt' | 'lastViewed'>,
-  ): Promise<void> {
-    const payload = {
-      title: resource.title,
-      url: resource.url ?? undefined,
-      imageUrl: resource.imageUrl ?? undefined,
-      notes: resource.notes ?? undefined,
-      difficulty: resource.difficulty.toLowerCase(),
-      energyLevel: resource.energyLevel.toLowerCase(),
-      mentalState: resource.mentalState ?? undefined,
-      estimatedDurationMinutes: resource.estimatedDuration.value,
-      topicIds: resource.topicIds,
-      resourceTypeId: resource.typeId,
-      status: this.toApiStatus(resource.status),
-    };
-
-    await firstValueFrom(this.http.post<void>(this.baseUrl, payload));
+  async addResourceLearning(resource: AddResourcePayload): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.baseUrl}`, resource));
   }
 
   private toApiStatus(status: ResourceStatus): string {

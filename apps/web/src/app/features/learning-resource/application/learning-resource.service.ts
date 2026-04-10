@@ -1,6 +1,10 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { LearningResourceRepository } from '../domain/learning-resource.repository';
-import type { LearningResource, LearningResourceFilter } from '../domain/learning-resource.model';
+import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
+import type {
+  AddResourcePayload,
+  LearningResource,
+  LearningResourceFilter,
+} from '@features/learning-resource/domain/learning-resource.model';
 
 @Injectable()
 export class LearningResourceService {
@@ -37,9 +41,7 @@ export class LearningResourceService {
     }
   }
 
-  async addResource(
-    resource: Omit<LearningResource, 'id' | 'createdAt' | 'updatedAt' | 'lastViewed'>,
-  ): Promise<void> {
+  async addResource(resource: AddResourcePayload): Promise<void> {
     await this.repository.addResourceLearning(resource);
     await this.loadAll();
   }
