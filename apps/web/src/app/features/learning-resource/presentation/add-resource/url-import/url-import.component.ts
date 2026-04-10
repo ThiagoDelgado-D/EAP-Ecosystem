@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UrlPreviewService } from '@features/learning-resource/application/url-preview.service';
@@ -14,8 +14,8 @@ import type {
   EnergyLevel,
   ResourceStatus,
 } from '@features/learning-resource/domain/learning-resource.model';
-import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository.js';
-import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository.js';
+import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
+import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
 
 type ViewState = 'idle' | 'loading' | 'error' | 'success';
 
@@ -34,12 +34,13 @@ type ViewState = 'idle' | 'loading' | 'error' | 'success';
   ],
   templateUrl: './url-import.component.html',
 })
-export class UrlImportComponent implements OnInit {
+export class UrlImportComponent implements OnInit, OnDestroy {
   private readonly previewService = inject(UrlPreviewService);
   private readonly resourceTypeService = inject(ResourceTypeService);
   private readonly learningResourceService = inject(LearningResourceService);
   private readonly topicService = inject(TopicService);
   private readonly router = inject(Router);
+  private typeInitInterval: number | undefined;
 
   readonly previewData = this.previewService.previewData.asReadonly();
   readonly loadingPreview = this.previewService.loading.asReadonly();
@@ -65,19 +66,24 @@ export class UrlImportComponent implements OnInit {
     { name: 'Vimeo', url: 'vimeo.com', icon: '🎬' },
   ];
 
-  private progressInterval: any;
+  private progressInterval: number | undefined;
 
   ngOnInit(): void {
     this.resourceTypeService.loadAll();
     this.topicService.loadAll();
 
-    const interval = setInterval(() => {
+    this.typeInitInterval = setInterval(() => {
       const types = this.resourceTypeService.resourceTypes();
       if (types.length > 0 && !this.editableTypeId) {
         this.editableTypeId = types[0].id;
-        clearInterval(interval);
+        clearInterval(this.typeInitInterval);
       }
     }, 100);
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.typeInitInterval);
+    this.stopProgressSimulation();
   }
 
   async fetchMetadata(): Promise<void> {
