@@ -10,6 +10,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
 import type {
+  AddResourcePayload,
   LearningResource,
   MentalStateType,
   ResourceStatus,
@@ -164,7 +165,7 @@ export class GuidedFormComponent implements OnInit {
     this.isSubmitting = true;
     this.submitError = null;
 
-    const payload: Omit<LearningResource, 'id' | 'createdAt' | 'updatedAt' | 'lastViewed'> = {
+    const payload: AddResourcePayload = {
       title: this.step1Form.value.title,
       url: this.step1Form.value.url || undefined,
       imageUrl: this.step1Form.value.imageUrl || undefined,
@@ -172,12 +173,9 @@ export class GuidedFormComponent implements OnInit {
       difficulty: this.step2Form.value.difficulty as LearningResource['difficulty'],
       energyLevel: this.step2Form.value.energyLevel as LearningResource['energyLevel'],
       mentalState: this.step2Form.value.mentalState ?? undefined,
-      estimatedDuration: {
-        value: this.step2Form.value.estimatedDuration.value,
-        isEstimated: this.step2Form.value.estimatedDuration.isEstimated,
-      },
+      estimatedDurationMinutes: this.step2Form.value.estimatedDuration.value,
       topicIds: this.step1Form.value.topicIds,
-      typeId: this.step1Form.value.typeId,
+      resourceTypeId: this.step1Form.value.typeId,
       status: INITIAL_STATUS,
     };
 
