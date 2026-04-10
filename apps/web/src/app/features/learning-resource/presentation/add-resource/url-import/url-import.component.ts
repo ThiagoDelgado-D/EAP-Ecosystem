@@ -155,15 +155,12 @@ export class UrlImportComponent implements OnInit, OnDestroy {
       title: this.editableTitle || preview.title || 'Untitled',
       url: this.urlInput.trim(),
       imageUrl: preview.imageUrl,
-      typeId: typeId,
+      resourceTypeId: typeId,
       topicIds: this.selectedTopicIds(),
       difficulty: 'Medium' as DifficultyLevel,
       energyLevel: 'Medium' as EnergyLevel,
       status: 'Pending' as ResourceStatus,
-      estimatedDuration: {
-        value: 30,
-        isEstimated: true,
-      },
+      estimatedDurationMinutes: 30,
       notes: '',
     };
 
