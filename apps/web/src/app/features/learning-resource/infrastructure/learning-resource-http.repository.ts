@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { LearningResourceRepository } from '../domain/learning-resource.repository';
 import type {
+  AddResourcePayload,
   DifficultyLevel,
   EnergyLevel,
   LearningResource,
@@ -59,26 +60,25 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     return this.toDomain(dto);
   }
 
-  async addResourceLearning(
-    resource: Omit<LearningResource, 'id' | 'createdAt' | 'updatedAt' | 'lastViewed'>,
-  ): Promise<void> {
+  async addResourceLearning(resource: AddResourcePayload): Promise<void> {
     const payload = {
       title: resource.title,
-      url: resource.url ?? undefined,
-      imageUrl: resource.imageUrl ?? undefined,
-      notes: resource.notes ?? undefined,
-      difficulty: resource.difficulty.toLowerCase(),
-      energyLevel: resource.energyLevel.toLowerCase(),
-      mentalState: resource.mentalState ?? undefined,
-      estimatedDurationMinutes: resource.estimatedDuration.value,
+      url: resource.url,
+      imageUrl: resource.imageUrl,
+      notes: resource.notes,
+      difficulty: this.toApiDifficulty(resource.difficulty),
+      estimatedDurationMinutes: resource.estimatedDurationMinutes,
       topicIds: resource.topicIds,
-      resourceTypeId: resource.typeId,
-      status: this.toApiStatus(resource.status),
+      resourceTypeId: resource.resourceTypeId,
+      ...(resource.energyLevel !== undefined && {
+        energyLevel: this.toApiEnergyLevel(resource.energyLevel),
+      }),
+      ...(resource.status !== undefined && { status: this.toApiStatus(resource.status) }),
+      ...(resource.mentalState !== undefined && { mentalState: resource.mentalState }),
     };
 
-    await firstValueFrom(this.http.post<void>(this.baseUrl, payload));
+    await firstValueFrom(this.http.post(`${this.baseUrl}`, payload));
   }
-
   private toApiStatus(status: ResourceStatus): string {
     const map: Record<ResourceStatus, string> = {
       Pending: 'pending',

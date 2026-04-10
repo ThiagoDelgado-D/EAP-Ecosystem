@@ -33,3 +33,17 @@ export interface LearningResourceFilter {
   topicIds?: string[];
   typeId?: string;
 }
+
+export interface AddResourcePayload {
+  title: string;
+  url?: string;
+  imageUrl?: string;
+  resourceTypeId: string;
+  topicIds: string[];
+  difficulty: DifficultyLevel;
+  estimatedDurationMinutes: number;
+  energyLevel?: EnergyLevel;
+  mentalState?: MentalStateType;
+  status?: ResourceStatus;
+  notes?: string;
+}
