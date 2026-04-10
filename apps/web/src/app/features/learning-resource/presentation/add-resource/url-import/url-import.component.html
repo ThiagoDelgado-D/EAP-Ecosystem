@@ -257,6 +257,10 @@
             }
           </div>
 
+          @if (saveError()) {
+            <p class="text-xs text-red-400 text-right mb-2">{{ saveError() }}</p>
+          }
+
           <div class="flex flex-wrap gap-3 justify-end">
             <button
               (click)="discard()"

@@ -54,6 +54,7 @@ export class UrlImportComponent implements OnInit, OnDestroy {
   editableTitle = '';
   editableTypeId = '';
   selectedTopicIds = signal<string[]>([]);
+  saveError = signal<string | null>(null);
 
   readonly supportedDomains = [
     { name: 'Medium', url: 'medium.com', icon: '📝' },
@@ -172,7 +173,7 @@ export class UrlImportComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error(error);
       this.previewService.error.set('Failed to save resource');
-      this.viewState.set('error');
+      this.saveError.set('Failed to save resource. Please try again.');
     }
   }
 
@@ -192,6 +193,7 @@ export class UrlImportComponent implements OnInit, OnDestroy {
     this.editableTitle = '';
     this.editableTypeId = '';
     this.selectedTopicIds.set([]);
+    this.saveError.set(null);
   }
 
   goBack(): void {
