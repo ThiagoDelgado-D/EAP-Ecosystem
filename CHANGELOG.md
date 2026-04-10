@@ -1,15 +1,98 @@
-## [Unreleased] — v0.6.0 URL Import
+## [Unreleased] — v0.7.0
 
 ### Planned
 
-- Backend metadata scraping endpoint for learning resources
-- Title, description and resource type auto-detection via Open Graph / oEmbed
-- Supported sites: YouTube, Medium, Dev.to, GitHub, any Open Graph site
-- Angular frontend: URL input with live preview before saving
-- Auto-populate title, notes and typeId from scraped metadata
-- Fallback to manual entry when scraping fails or site is unsupported
+- Voice capture with transcription and draft review
+- CSV / JSON bulk import with format validation
+- Drag and drop file upload
 
 ---
+
+## [0.6.0] - 2026-04-09
+
+### URL Import — Backend & Frontend
+
+This release introduces URL Import, the first smart capture method in EAP.
+Users paste a URL and the system automatically extracts title, description,
+thumbnail and resource type before saving — eliminating manual data entry
+for the common case.
+
+### Added
+
+#### Backend — URL Metadata Extraction (PR #52)
+
+- `IUrlMetadataService` port in `learning-resource/application/src/ports/`
+  defining the `extract(url): Promise<UrlMetadata>` contract
+- `previewUrl` use case — validates the URL, delegates extraction to
+  `IUrlMetadataService`, resolves `resourceTypeId` when the inferred
+  `resourceTypeCode` matches an existing type
+- `mockUrlMetadataService` with `setResponse`, `setError`, and `clear`
+  for isolated unit testing (12 unit tests)
+- `UrlMetadataService` in `learning-resource/infrastructure/` implementing
+  a three-tier extraction pipeline:
+  - **Tier 1 — oEmbed**: structured JSON from YouTube and Vimeo endpoints
+  - **Tier 2 — Open Graph**: server-side Cheerio scraping for `og:title`,
+    `og:description`, `og:image`, `og:site_name`, `og:type`; resource type
+    inferred from URL patterns when `og:type` is absent
+  - **Tier 3 — Graceful degradation**: returns empty `UrlMetadata` when
+    both tiers fail; feature never throws to the caller
+- `POST /api/v1/learning-resources/preview` endpoint returning `200`
+- `PreviewUrlDto` and `PreviewUrlResponseDto`
+- SSRF mitigation: private IP ranges and localhost blocked before fetch
+- ADR-0011 documenting the three-tier extraction strategy
+- ADR-0012 documenting the modular dashboard widget configuration system
+  (deferred — planned post-MVP)
+
+#### Frontend — URL Import UI (PR #53)
+
+- `UrlPreviewService` — signals-based service calling `/preview`, managing
+  `previewData`, `loading`, and `error` state; uses `API_CONFIG.baseUrl`
+- `UrlImportComponent` with four view states:
+  - **idle**: URL input with supported domains list
+  - **loading**: spinner with simulated progress bar (clamped at 95%)
+  - **error**: retry input + "Complete Manually" fallback to `/add/guided`
+  - **success**: editable preview card — title field, resource type select,
+    topic chip selector (mandatory), image header when `imageUrl` present
+- Save errors shown inline without leaving the preview state
+- Redirect to `/resources` on successful save
+- URL Scrape method enabled in `AddResourceHubComponent`
+- `OnDestroy` implemented — both `setInterval` instances torn down on
+  component destruction
+
+### Fixed
+
+- `urlField` in `domain-lib` now accepts empty strings when `required: false`,
+  allowing `PATCH /learning-resources/:id` to clear the `url` field
+- `UpdateResourceDto` — `url` and `imageUrl` use `@ValidateIf` to allow
+  empty strings, mirroring the domain-lib fix
+- `UrlPreviewService` — `baseUrl` aligned to `API_CONFIG.baseUrl` instead
+  of hardcoded `localhost`
+
+---
+
+## [0.5.1] - 2026-04
+
+### User Module Foundation (PR #43)
+
+Backend-only. Structural setup for the user module following Clean Architecture.
+Not yet wired to the frontend or authentication system.
+
+### Added
+
+- `user/` module with Clean Architecture layers: `domain/`, `application/`,
+  `infrastructure/`
+- `User` entity with `id`, `email`, `name`, `status`, `createdAt`, `updatedAt`,
+  and email verification token fields
+- `IUserRepository` abstract class with CRUD contracts
+- `registerUser` use case with email validation, password hashing, token
+  generation, and email verification workflow
+- `EmailAlreadyExistsError` domain error
+- `EmailService` interface and `EmailServiceImpl` via nodemailer (SMTP)
+- Email templates for registration and verification
+- `MockedEmailService` and `MockUserRepository` for isolated unit testing
+- ADR-0010 documenting auth integration within the user module
+- Workspace and TypeScript path alias integration (`@user/domain`,
+  `@user/application`)
 
 ## [0.5.0] - 2026-04-06
 

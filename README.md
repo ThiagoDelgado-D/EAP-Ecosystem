@@ -14,7 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
 
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
 [![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
@@ -35,18 +35,20 @@ are coming in upcoming versions.
 
 ---
 
-## 🎯 Current Status (v0.5.0)
+## 🎯 Current Status (v0.6.0)
 
-| Component                 | Status               | Notes                                                      |
-| ------------------------- | -------------------- | ---------------------------------------------------------- |
-| **Domain Layer**          | ✅ Stable            | `LearningResource` + `User` domains complete               |
-| **Application Layer**     | ✅ Stable            | Use cases + registration flow                              |
-| **API Layer**             | ✅ Stable            | NestJS REST, PostgreSQL, TypeORM                           |
-| **Frontend**              | ✅ Stable            | Angular 21, dashboard, resource library                    |
-| **User Module**           | 🚧 Foundation        | Domain + application only, not wired to API or auth        |
-| **Authentication**        | 📅 Next (v0.8.0)     | Magic link → OAuth → MFA                                   |
-| **Session Tracking**      | 📅 Planned (v0.10.0) | Focus Pulse and Pulse widget use hardcoded data until then |
-| **Recommendation Engine** | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then          |
+| Component                       | Status               | Notes                                               |
+| ------------------------------- | -------------------- | --------------------------------------------------- |
+| **Domain Layer**                | ✅ Stable            | `LearningResource` + `User` domains complete        |
+| **Application Layer**           | ✅ Stable            | Use cases + URL preview port                        |
+| **API Layer**                   | ✅ Stable            | NestJS REST, PostgreSQL, TypeORM                    |
+| **Frontend**                    | ✅ Stable            | Angular 21, dashboard, resource library, URL Import |
+| **URL Import**                  | ✅ Complete          | oEmbed + Open Graph + graceful fallback (v0.6.0)    |
+| **URL Voice & CSV/JSON import** | 📅 Next (v0.7.0)     | Voice capture with transcription and draft review   |
+| **User Module**                 | 🚧 Foundation        | Domain + application only, not wired to API or auth |
+| **Authentication**              | 📅 Next (v0.8.0)     | Magic link → OAuth → MFA                            |
+| **Session Tracking**            | 📅 Planned (v0.10.0) | Focus Pulse uses hardcoded data until then          |
+| **Recommendation Engine**       | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then   |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
@@ -131,6 +133,7 @@ Base URL: `http://localhost:3000/api/v1`
 | PATCH  | `/learning-resources/:id/energy`     | Toggle energy level                                 |
 | PATCH  | `/learning-resources/:id/status`     | Toggle status                                       |
 | GET    | `/health`                            | Health check                                        |
+| POST   | `/learning-resources/preview`        | Extract metadata from URL                           |
 
 ---
 
