@@ -61,9 +61,24 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
   }
 
   async addResourceLearning(resource: AddResourcePayload): Promise<void> {
-    await firstValueFrom(this.http.post(`${this.baseUrl}`, resource));
-  }
+    const payload = {
+      title: resource.title,
+      url: resource.url,
+      imageUrl: resource.imageUrl,
+      notes: resource.notes,
+      difficulty: this.toApiDifficulty(resource.difficulty),
+      estimatedDurationMinutes: resource.estimatedDurationMinutes,
+      topicIds: resource.topicIds,
+      resourceTypeId: resource.resourceTypeId,
+      ...(resource.energyLevel !== undefined && {
+        energyLevel: this.toApiEnergyLevel(resource.energyLevel),
+      }),
+      ...(resource.status !== undefined && { status: this.toApiStatus(resource.status) }),
+      ...(resource.mentalState !== undefined && { mentalState: resource.mentalState }),
+    };
 
+    await firstValueFrom(this.http.post(`${this.baseUrl}`, payload));
+  }
   private toApiStatus(status: ResourceStatus): string {
     const map: Record<ResourceStatus, string> = {
       Pending: 'pending',
