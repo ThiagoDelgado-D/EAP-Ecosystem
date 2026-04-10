@@ -29,10 +29,11 @@ It is intentionally deferred until the following conditions are met:
 
 Implement a widget configuration system with three layers:
 
-### Domain — `UserPreferences`
+### Domain — `User` entity
 
-Add `widgetConfig: WidgetConfig[]` to the `UserPreferences` entity in the
-user module.
+Add `widgetConfig: WidgetConfig[]` directly to the existing `User` entity
+as a JSON column. A separate `UserPreferences` entity is not introduced —
+the configuration is lightweight enough to live as a serialized field.
 
 ```typescript
 export type WidgetId =
@@ -48,6 +49,16 @@ export interface WidgetConfig {
   enabled: boolean;
   order: number;
   config?: Record<string, unknown>; // widget-specific settings
+}
+```
+
+```typescript
+export interface User {
+  id: UUID;
+  email: string;
+  name: string;
+  widgetConfig: WidgetConfig[];
+  // Others fields
 }
 ```
 
@@ -71,6 +82,27 @@ GET    /api/v1/preferences/widgets
 PATCH  /api/v1/preferences/widgets
 DELETE /api/v1/preferences/widgets  (reset to defaults)
 ```
+
+### Backend validation of `WidgetId`
+
+The backend mirrors the frontend `WidgetId` union as a TypeScript `const`
+enum in the user domain:
+
+```typescript
+export const VALID_WIDGET_IDS = [
+  "ideal-match",
+  "system-check",
+  "focus-pulse",
+  "pending-tasks",
+  "pomodoro",
+  "session-history",
+] as const;
+```
+
+`updateWidgetConfig` validates incoming IDs against this list.
+Frontend and backend stay synchronized because the source of truth is the
+backend enum — the frontend `WidgetId` type is derived from it via the API
+contract. Adding a new widget requires updating the backend enum first.
 
 ### Frontend — widget registry
 
