@@ -88,7 +88,6 @@
         </p>
       </div>
 
-      <!-- Transcript area -->
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6 min-h-40 relative">
         @if (recordingState() === 'idle') {
           <p class="text-slate-600 text-sm italic">Your transcript will appear here...</p>
@@ -112,11 +111,11 @@
         }
       </div>
 
-      <!-- Controls -->
       <div class="flex justify-center gap-3">
         @if (recordingState() === 'idle') {
           <button
             (click)="startRecording()"
+            aria-label="Start voice recording"
             class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
           >
             <svg
@@ -137,6 +136,7 @@
         @if (recordingState() === 'recording') {
           <button
             (click)="stopRecording()"
+            aria-label="Stop recording"
             class="bg-red-700 hover:bg-red-600 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -149,12 +149,14 @@
         @if (recordingState() === 'done') {
           <button
             (click)="restart()"
+            aria-label="Record again"
             class="border border-slate-700 text-slate-300 hover:border-slate-500 font-medium px-5 py-3 rounded-lg transition-colors"
           >
             Record Again
           </button>
           <button
             disabled
+            aria-label="Continue to transcript text"
             class="bg-violet-600 opacity-40 cursor-not-allowed text-white font-medium px-8 py-3 rounded-lg"
           >
             Continue →
