@@ -1,0 +1,174 @@
+<div class="min-h-screen bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
+  <div class="max-w-2xl mx-auto">
+    <button
+      (click)="goBack()"
+      class="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+      Back to methods
+    </button>
+
+    @if (recordingState() === 'unsupported') {
+      <div class="text-center py-16">
+        <div
+          class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-6"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            class="text-slate-500"
+          >
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+          </svg>
+        </div>
+        <h1 class="text-xl font-semibold text-slate-100 mb-2">Voice input not supported</h1>
+        <p class="text-sm text-slate-500 mb-6">
+          Your browser doesn't support voice recognition. Try Chrome or Edge.
+        </p>
+        <button
+          (click)="goBack()"
+          class="border border-slate-700 text-slate-300 hover:border-slate-500 px-5 py-2 rounded-lg text-sm font-medium"
+        >
+          Back to methods
+        </button>
+      </div>
+    }
+
+    @if (recordingState() !== 'unsupported') {
+      <div class="text-center mb-10">
+        <div
+          class="w-16 h-16 rounded-2xl bg-amber-950/70 flex items-center justify-center mx-auto mb-4"
+          [class.ring-2]="recordingState() === 'recording'"
+          [class.ring-amber-500]="recordingState() === 'recording'"
+          [class.ring-offset-2]="recordingState() === 'recording'"
+          [class.ring-offset-slate-950]="recordingState() === 'recording'"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            class="text-amber-400"
+          >
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <line x1="12" y1="19" x2="12" y2="23" />
+            <line x1="8" y1="23" x2="16" y2="23" />
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-100 mb-1">Voice Capture</h1>
+        <p class="text-sm text-slate-500">
+          @if (recordingState() === 'idle') {
+            Press the button and start speaking
+          }
+          @if (recordingState() === 'recording') {
+            Listening... press Stop when done
+          }
+          @if (recordingState() === 'done') {
+            Review your transcript below
+          }
+        </p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6 min-h-40 relative">
+        @if (recordingState() === 'idle') {
+          <p class="text-slate-600 text-sm italic">Your transcript will appear here...</p>
+        }
+
+        @if (transcript()) {
+          <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
+            {{ transcript() }}
+          </p>
+        }
+
+        @if (interimText()) {
+          <span class="text-slate-500 text-sm italic">{{ interimText() }}</span>
+        }
+
+        @if (recordingState() === 'recording') {
+          <div class="absolute top-4 right-4 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <span class="text-xs text-slate-500">Recording</span>
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-center gap-3">
+        @if (recordingState() === 'idle') {
+          <button
+            (click)="startRecording()"
+            aria-label="Start voice recording"
+            class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            </svg>
+            Start Recording
+          </button>
+        }
+
+        @if (recordingState() === 'recording') {
+          <button
+            (click)="stopRecording()"
+            aria-label="Stop recording"
+            class="bg-red-700 hover:bg-red-600 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="1" />
+            </svg>
+            Stop
+          </button>
+        }
+
+        @if (recordingState() === 'done') {
+          <button
+            (click)="restart()"
+            aria-label="Record again"
+            class="border border-slate-700 text-slate-300 hover:border-slate-500 font-medium px-5 py-3 rounded-lg transition-colors"
+          >
+            Record Again
+          </button>
+          <button
+            disabled
+            aria-label="Continue to transcript text"
+            class="bg-violet-600 opacity-40 cursor-not-allowed text-white font-medium px-8 py-3 rounded-lg"
+          >
+            Continue →
+          </button>
+        }
+      </div>
+
+      @if (recordingState() === 'done' && !transcript()) {
+        <p class="text-center text-xs text-amber-400 mt-4">
+          No transcript detected. Try recording again.
+        </p>
+      }
+    }
+  </div>
+</div>
