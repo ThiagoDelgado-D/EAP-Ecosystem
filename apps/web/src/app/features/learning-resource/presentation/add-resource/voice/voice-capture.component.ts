@@ -1,6 +1,13 @@
 import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import {
+  SpeechRecognition,
+  SpeechRecognitionConstructor,
+  SpeechRecognitionErrorEvent,
+  SpeechRecognitionEvent,
+  WindowWithSpeech,
+} from './voice-capture.types.js';
 
 type RecordingState = 'idle' | 'recording' | 'done' | 'unsupported';
 
@@ -13,7 +20,7 @@ type RecordingState = 'idle' | 'recording' | 'done' | 'unsupported';
 export class VoiceCaptureComponent implements OnDestroy {
   private readonly router = inject(Router);
 
-  private recognition: any = null;
+  private recognition: SpeechRecognition | null = null;
 
   readonly recordingState = signal<RecordingState>(
     this.isSpeechSupported() ? 'idle' : 'unsupported',
@@ -22,52 +29,68 @@ export class VoiceCaptureComponent implements OnDestroy {
   readonly interimText = signal('');
 
   private isSpeechSupported(): boolean {
-    return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    const win = window as WindowWithSpeech;
+    return !!(win.SpeechRecognition || win.webkitSpeechRecognition);
   }
 
-  startRecording(): void {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  private getSpeechRecognitionConstructor(): SpeechRecognitionConstructor | null {
+    const win = window as WindowWithSpeech;
+    return win.SpeechRecognition || win.webkitSpeechRecognition || null;
+  }
 
-    this.recognition = new SpeechRecognition();
-    this.recognition.lang = 'es-AR';
-    this.recognition.continuous = true;
-    this.recognition.interimResults = true;
+  async startRecording(): Promise<void> {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    this.recognition.onresult = (event: any) => {
-      let final = '';
-      let interim = '';
+      const SpeechRecognitionConstructor = this.getSpeechRecognitionConstructor();
+      if (!SpeechRecognitionConstructor) {
+        this.recordingState.set('unsupported');
+        return;
+      }
 
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          final += result[0].transcript + ' ';
-        } else {
-          interim += result[0].transcript;
+      const lang = navigator.language || 'en-US';
+
+      this.recognition = new SpeechRecognitionConstructor();
+      this.recognition.lang = lang;
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+
+      this.recognition.onresult = (event: SpeechRecognitionEvent) => {
+        let interim = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            this.transcript.update((prev) => (prev + ' ' + result[0].transcript).trim());
+          } else {
+            interim += result[0].transcript;
+          }
         }
-      }
 
-      this.transcript.set(final.trim());
-      this.interimText.set(interim);
-    };
+        this.interimText.set(interim);
+      };
 
-    this.recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
-      this.recordingState.set('done');
-      this.interimText.set('');
-    };
-
-    this.recognition.onend = () => {
-      this.interimText.set('');
-      if (this.recordingState() === 'recording') {
+      this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('Speech recognition error:', event.error);
         this.recordingState.set('done');
-      }
-    };
+        this.interimText.set('');
+      };
 
-    this.transcript.set('');
-    this.interimText.set('');
-    this.recordingState.set('recording');
-    this.recognition.start();
+      this.recognition.onend = () => {
+        this.interimText.set('');
+        if (this.recordingState() === 'recording') {
+          this.recordingState.set('done');
+        }
+      };
+
+      this.transcript.set('');
+      this.interimText.set('');
+      this.recordingState.set('recording');
+      this.recognition.start();
+    } catch (error) {
+      console.error('Microphone permission denied', error);
+      this.recordingState.set('unsupported');
+    }
   }
 
   stopRecording(): void {
@@ -92,6 +115,7 @@ export class VoiceCaptureComponent implements OnDestroy {
   ngOnDestroy(): void {
     if (this.recognition) {
       this.recognition.abort();
+      this.recognition = null;
     }
   }
 }
