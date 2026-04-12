@@ -9,7 +9,13 @@ import {
   WindowWithSpeech,
 } from './voice-capture.types.js';
 
-type RecordingState = 'idle' | 'recording' | 'done' | 'unsupported';
+type RecordingState =
+  | 'idle'
+  | 'recording'
+  | 'done'
+  | 'unsupported'
+  | 'permission-denied'
+  | 'device-error';
 
 @Component({
   selector: 'app-voice-capture',
@@ -40,7 +46,8 @@ export class VoiceCaptureComponent implements OnDestroy {
 
   async startRecording(): Promise<void> {
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop());
 
       const SpeechRecognitionConstructor = this.getSpeechRecognitionConstructor();
       if (!SpeechRecognitionConstructor) {
@@ -87,13 +94,23 @@ export class VoiceCaptureComponent implements OnDestroy {
       this.interimText.set('');
       this.recordingState.set('recording');
       this.recognition.start();
-    } catch (error) {
-      console.error('Microphone permission denied', error);
-      this.recordingState.set('unsupported');
+    } catch (error: unknown) {
+      if (error instanceof DOMException) {
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          this.recordingState.set('permission-denied');
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+          this.recordingState.set('device-error');
+        } else {
+          this.recordingState.set('unsupported');
+        }
+      } else {
+        this.recordingState.set('unsupported');
+      }
     }
   }
 
   stopRecording(): void {
+    if (this.recordingState() !== 'recording') return;
     if (this.recognition) {
       this.recognition.stop();
     }
@@ -101,7 +118,10 @@ export class VoiceCaptureComponent implements OnDestroy {
   }
 
   restart(): void {
-    this.stopRecording();
+    if (this.recognition) {
+      this.recognition.abort();
+      this.recognition = null;
+    }
     this.transcript.set('');
     this.interimText.set('');
     this.recordingState.set('idle');
