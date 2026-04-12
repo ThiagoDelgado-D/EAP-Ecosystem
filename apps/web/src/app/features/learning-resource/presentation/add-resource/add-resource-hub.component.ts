@@ -53,7 +53,7 @@ export class AddResourceHubComponent {
       features: ['Voice recognition', 'Draft editing', 'Review before submit'],
       iconVariant: 'voice',
       route: '/add/voice',
-      available: false,
+      available: true,
       ctaLabel: 'Initialize',
     },
     {
