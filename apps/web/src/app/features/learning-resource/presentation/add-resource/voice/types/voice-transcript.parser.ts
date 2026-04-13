@@ -28,14 +28,14 @@ const TYPE_KEYWORDS: Record<string, string> = {
   repository: 'document',
   github: 'document',
 };
-
 const URL_PATTERN = /https?:\/\/[^\s]+/gi;
 
 export function parseTranscript(transcript: string): MappedFields {
   const text = transcript.trim();
 
   const urlMatch = text.match(URL_PATTERN);
-  const url = urlMatch?.[0];
+  let url = urlMatch?.[0];
+  url = url?.replace(/[.,;:!?]+$/, '');
 
   const textWithoutUrl = url ? text.replace(url, '').trim() : text;
 
