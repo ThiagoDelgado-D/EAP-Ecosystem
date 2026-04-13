@@ -66,15 +66,16 @@ export class VoiceCaptureComponent implements OnInit, OnDestroy {
   readonly saving = signal(false);
 
   readonly editableTranscript = signal('');
+  readonly dataReady = signal(false);
 
   editableTitle = '';
   editableTypeId = '';
   editableUrl = '';
   editableNotes = '';
 
-  ngOnInit(): void {
-    this.resourceTypeService.loadAll();
-    this.topicService.loadAll();
+  async ngOnInit(): Promise<void> {
+    await Promise.all([this.resourceTypeService.loadAll(), this.topicService.loadAll()]);
+    this.dataReady.set(true);
   }
 
   private isSpeechSupported(): boolean {
@@ -191,7 +192,10 @@ export class VoiceCaptureComponent implements OnInit, OnDestroy {
     if (this.selectedTopicIds().length === 0) return;
 
     const typeId = this.editableTypeId || this.resourceTypes()[0]?.id;
-    if (!typeId) return;
+    if (!typeId) {
+      this.saveError.set('Resource type not available. Please try again later.');
+      return;
+    }
 
     this.saving.set(true);
     this.saveError.set(null);
