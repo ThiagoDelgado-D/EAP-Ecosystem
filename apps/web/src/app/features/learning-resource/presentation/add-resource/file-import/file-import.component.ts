@@ -68,13 +68,16 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,`;
   }
 ]`;
 
-    navigator.clipboard.writeText(type === 'csv' ? csvExample : jsonExample).catch(() => {
-      this.copied.set(false);
-    });
-    this.copied.set(true);
-
-    if (this.copyTimeout) clearTimeout(this.copyTimeout);
-    this.copyTimeout = setTimeout(() => this.copied.set(false), 2000);
+    navigator.clipboard
+      .writeText(type === 'csv' ? csvExample : jsonExample)
+      .then(() => {
+        this.copied.set(true);
+        if (this.copyTimeout) clearTimeout(this.copyTimeout);
+        this.copyTimeout = setTimeout(() => this.copied.set(false), 2000);
+      })
+      .catch(() => {
+        this.copied.set(false);
+      });
   }
 
   onDragOver(event: DragEvent): void {
