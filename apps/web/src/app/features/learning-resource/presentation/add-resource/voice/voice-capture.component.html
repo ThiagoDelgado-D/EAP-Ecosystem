@@ -50,124 +50,248 @@
       </div>
     }
 
-    @if (recordingState() !== 'unsupported') {
-      <div class="text-center mb-10">
-        <div
-          class="w-16 h-16 rounded-2xl bg-amber-950/70 flex items-center justify-center mx-auto mb-4"
-          [class.ring-2]="recordingState() === 'recording'"
-          [class.ring-amber-500]="recordingState() === 'recording'"
-          [class.ring-offset-2]="recordingState() === 'recording'"
-          [class.ring-offset-slate-950]="recordingState() === 'recording'"
-        >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            class="text-amber-400"
-          >
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-            <line x1="12" y1="19" x2="12" y2="23" />
-            <line x1="8" y1="23" x2="16" y2="23" />
-          </svg>
-        </div>
-        <h1 class="text-2xl font-bold text-slate-100 mb-1">Voice Capture</h1>
-        <p class="text-sm text-slate-500">
-          @if (recordingState() === 'idle') {
-            Press the button and start speaking
-          }
-          @if (recordingState() === 'recording') {
-            Listening... press Stop when done
-          }
-          @if (recordingState() === 'done') {
-            Review your transcript below
-          }
+    @if (recordingState() === 'permission-denied') {
+      <div class="text-center py-16">
+        <h1 class="text-xl font-semibold text-slate-100 mb-2">Microphone access denied</h1>
+        <p class="text-sm text-slate-500 mb-6">
+          Allow microphone access in your browser settings and try again.
         </p>
+        <button
+          (click)="restart()"
+          class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-5 py-2 rounded-lg text-sm"
+        >
+          Try Again
+        </button>
       </div>
+    }
 
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6 min-h-40 relative">
-        @if (recordingState() === 'idle') {
-          <p class="text-slate-600 text-sm italic">Your transcript will appear here...</p>
-        }
-
-        @if (transcript()) {
-          <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
-            {{ transcript() }}
-          </p>
-        }
-
-        @if (interimText()) {
-          <span class="text-slate-500 text-sm italic">{{ interimText() }}</span>
-        }
-
-        @if (recordingState() === 'recording') {
-          <div class="absolute top-4 right-4 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-            <span class="text-xs text-slate-500">Recording</span>
-          </div>
-        }
+    @if (recordingState() === 'device-error') {
+      <div class="text-center py-16">
+        <h1 class="text-xl font-semibold text-slate-100 mb-2">No microphone found</h1>
+        <p class="text-sm text-slate-500 mb-6">Connect a microphone and try again.</p>
+        <button
+          (click)="restart()"
+          class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-5 py-2 rounded-lg text-sm"
+        >
+          Try Again
+        </button>
       </div>
+    }
 
-      <div class="flex justify-center gap-3">
-        @if (recordingState() === 'idle') {
-          <button
-            (click)="startRecording()"
-            aria-label="Start voice recording"
-            class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
+    @if (
+      recordingState() !== 'unsupported' &&
+      recordingState() !== 'permission-denied' &&
+      recordingState() !== 'device-error'
+    ) {
+      @if (viewState() === 'recording') {
+        <div class="text-center mb-10">
+          <div
+            class="w-16 h-16 rounded-2xl bg-amber-950/70 flex items-center justify-center mx-auto mb-4"
+            [class.ring-2]="recordingState() === 'recording'"
+            [class.ring-amber-500]="recordingState() === 'recording'"
+            [class.ring-offset-2]="recordingState() === 'recording'"
+            [class.ring-offset-slate-950]="recordingState() === 'recording'"
           >
             <svg
-              width="16"
-              height="16"
+              width="28"
+              height="28"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2"
+              stroke-width="1.5"
+              class="text-amber-400"
             >
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
               <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
             </svg>
-            Start Recording
-          </button>
-        }
+          </div>
+          <h1 class="text-2xl font-bold text-slate-100 mb-1">Voice Capture</h1>
+          <p class="text-sm text-slate-500">
+            @if (recordingState() === 'idle') {
+              Press the button and start speaking
+            }
+            @if (recordingState() === 'recording') {
+              Listening... press Stop when done
+            }
+            @if (recordingState() === 'done') {
+              Review your transcript below
+            }
+          </p>
+        </div>
 
-        @if (recordingState() === 'recording') {
-          <button
-            (click)="stopRecording()"
-            aria-label="Stop recording"
-            class="bg-red-700 hover:bg-red-600 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="6" y="6" width="12" height="12" rx="1" />
-            </svg>
-            Stop
-          </button>
-        }
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6 min-h-40 relative">
+          @if (recordingState() === 'idle') {
+            <p class="text-slate-600 text-sm italic">Your transcript will appear here...</p>
+          }
+          @if (transcript()) {
+            <p class="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
+              {{ transcript() }}
+            </p>
+          }
+          @if (interimText()) {
+            <span class="text-slate-500 text-sm italic">{{ interimText() }}</span>
+          }
+          @if (recordingState() === 'recording') {
+            <div class="absolute top-4 right-4 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              <span class="text-xs text-slate-500">Recording</span>
+            </div>
+          }
+        </div>
 
-        @if (recordingState() === 'done') {
-          <button
-            (click)="restart()"
-            aria-label="Record again"
-            class="border border-slate-700 text-slate-300 hover:border-slate-500 font-medium px-5 py-3 rounded-lg transition-colors"
-          >
-            Record Again
-          </button>
-          <button
-            disabled
-            aria-label="Continue to transcript text"
-            class="bg-violet-600 opacity-40 cursor-not-allowed text-white font-medium px-8 py-3 rounded-lg"
-          >
-            Continue →
-          </button>
-        }
-      </div>
+        <div class="flex justify-center gap-3">
+          @if (recordingState() === 'idle') {
+            <button
+              (click)="startRecording()"
+              class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              </svg>
+              Start Recording
+            </button>
+          }
+          @if (recordingState() === 'recording') {
+            <button
+              (click)="stopRecording()"
+              class="bg-red-700 hover:bg-red-600 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="1" />
+              </svg>
+              Stop
+            </button>
+          }
+          @if (recordingState() === 'done') {
+            <button
+              (click)="restart()"
+              class="border border-slate-700 text-slate-300 hover:border-slate-500 font-medium px-5 py-3 rounded-lg transition-colors"
+            >
+              Record Again
+            </button>
+            <button
+              (click)="continueToConfirmation()"
+              [disabled]="!transcript()"
+              class="bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-8 py-3 rounded-lg transition-colors"
+            >
+              Continue →
+            </button>
+          }
+        </div>
 
-      @if (recordingState() === 'done' && !transcript()) {
-        <p class="text-center text-xs text-amber-400 mt-4">
-          No transcript detected. Try recording again.
-        </p>
+        @if (recordingState() === 'done' && !transcript()) {
+          <p class="text-center text-xs text-amber-400 mt-4">
+            No transcript detected. Try recording again.
+          </p>
+        }
+      }
+
+      @if (viewState() === 'confirmation') {
+        <div>
+          <h1 class="text-2xl font-bold text-slate-100 mb-1">Review & Save</h1>
+          <p class="text-sm text-slate-500 mb-6">Edit any field before saving.</p>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-4">
+            <label class="block text-xs text-slate-500 mb-1">Transcript</label>
+            <p class="text-sm text-slate-400 leading-relaxed italic">{{ transcript() }}</p>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs text-slate-500 mb-1">Title</label>
+              <input
+                [(ngModel)]="editableTitle"
+                class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-500 mb-1">Resource Type</label>
+              <select
+                [(ngModel)]="editableTypeId"
+                class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200"
+              >
+                @for (type of resourceTypes(); track type.id) {
+                  <option [value]="type.id">{{ type.displayName }}</option>
+                }
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-500 mb-1">URL (optional)</label>
+              <input
+                [(ngModel)]="editableUrl"
+                class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500"
+                placeholder="https://..."
+              />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-500 mb-1">Notes (optional)</label>
+              <textarea
+                [(ngModel)]="editableNotes"
+                rows="3"
+                class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 resize-none"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-xs text-slate-500 mb-2">Topics (select at least one)</label>
+            <div class="flex flex-wrap gap-2">
+              @for (topic of topics(); track topic.id) {
+                <button
+                  type="button"
+                  (click)="toggleTopic(topic.id)"
+                  [class]="
+                    selectedTopicIds().includes(topic.id)
+                      ? 'bg-violet-600 text-white border-violet-500'
+                      : 'bg-slate-800 text-slate-300 border-slate-700 hover:border-slate-500'
+                  "
+                  class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+                >
+                  {{ topic.name }}
+                </button>
+              }
+            </div>
+            @if (selectedTopicIds().length === 0) {
+              <p class="text-xs text-amber-400 mt-2">
+                ⚠️ You must select at least one topic to save.
+              </p>
+            }
+          </div>
+
+          @if (saveError()) {
+            <p class="text-xs text-red-400 text-right mb-2">{{ saveError() }}</p>
+          }
+
+          <div class="flex justify-end gap-3">
+            <button
+              (click)="restart()"
+              class="border border-slate-700 text-slate-300 hover:border-slate-500 px-5 py-2 rounded-lg text-sm font-medium"
+            >
+              Record Again
+            </button>
+            <button
+              (click)="saveResource()"
+              [disabled]="selectedTopicIds().length === 0 || saving()"
+              class="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium"
+            >
+              @if (saving()) {
+                Saving...
+              } @else {
+                Add to Ecosystem →
+              }
+            </button>
+          </div>
+        </div>
       }
     }
   </div>
