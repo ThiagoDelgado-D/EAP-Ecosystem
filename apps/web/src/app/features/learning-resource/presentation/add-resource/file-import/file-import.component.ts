@@ -201,9 +201,12 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,`;
       : undefined;
 
     const durationRaw = get('estimateddurationminutes') ?? get('duration');
-    const estimatedDurationMinutes = durationRaw
-      ? parseInt(durationRaw, 10) || undefined
-      : undefined;
+    let estimatedDurationMinutes: number | undefined;
+
+    if (durationRaw) {
+      const parsed = parseInt(durationRaw, 10);
+      estimatedDurationMinutes = isNaN(parsed) ? undefined : parsed;
+    }
 
     return {
       title: get('title') ?? '',
