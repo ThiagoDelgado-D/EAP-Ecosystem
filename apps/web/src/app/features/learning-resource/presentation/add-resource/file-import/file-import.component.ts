@@ -37,8 +37,6 @@ export class FileImportComponent implements OnDestroy {
   readonly parseError = signal<string | null>(null);
   readonly isDragOver = signal(false);
 
-  private objectUrl: string | null = null;
-
   readonly exampleTab = signal<'csv' | 'json'>('csv');
   readonly copied = signal(false);
 
@@ -70,7 +68,9 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,`;
   }
 ]`;
 
-    navigator.clipboard.writeText(type === 'csv' ? csvExample : jsonExample);
+    navigator.clipboard.writeText(type === 'csv' ? csvExample : jsonExample).catch(() => {
+      this.copied.set(false);
+    });
     this.copied.set(true);
 
     if (this.copyTimeout) clearTimeout(this.copyTimeout);
@@ -161,13 +161,25 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,`;
         return;
       }
 
-      const rows = parsed.map((item) =>
-        this.normalizeRow(
-          Object.fromEntries(
-            Object.entries(item).map(([k, v]) => [k.toLowerCase(), String(v ?? '')]),
+      const rows = [];
+
+      for (let i = 0; i < parsed.length; i++) {
+        const item = parsed[i];
+
+        if (item === null || typeof item !== 'object') {
+          this.parseError.set(`Item at index ${i} is not an object.`);
+          this.viewState.set('error');
+          return;
+        }
+
+        rows.push(
+          this.normalizeRow(
+            Object.fromEntries(
+              Object.entries(item).map(([k, v]) => [k.toLocaleLowerCase(), String(v ?? '')]),
+            ),
           ),
-        ),
-      );
+        );
+      }
 
       this.parseResult.set({ rows, fileName, totalRows: rows.length, parseErrors: [] });
       this.viewState.set('done');
@@ -219,9 +231,6 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,`;
   }
 
   ngOnDestroy(): void {
-    if (this.objectUrl) {
-      URL.revokeObjectURL(this.objectUrl);
-    }
     if (this.copyTimeout) clearTimeout(this.copyTimeout);
   }
 }
