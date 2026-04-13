@@ -1,60 +1,242 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import Papa from 'papaparse';
+
+export interface ParsedResourceRow {
+  title: string;
+  url?: string;
+  notes?: string;
+  difficulty?: string;
+  energyLevel?: string;
+  status?: string;
+  estimatedDurationMinutes?: number;
+  resourceTypeCode?: string;
+  topicNames?: string[];
+  _raw: Record<string, string>;
+}
+
+export interface ParseResult {
+  rows: ParsedResourceRow[];
+  fileName: string;
+  totalRows: number;
+  parseErrors: string[];
+}
+
+type ViewState = 'idle' | 'parsing' | 'error' | 'done';
 
 @Component({
   selector: 'app-file-import',
   standalone: true,
-  template: `
-    <div class="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-6">
-      <div class="max-w-md w-full text-center">
-        <div
-          class="w-16 h-16 rounded-2xl bg-sky-950/70 flex items-center
-                    justify-center mx-auto mb-6"
-        >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            class="text-sky-400"
-          >
-            <polyline points="16 16 12 12 8 16" />
-            <line x1="12" y1="12" x2="12" y2="21" />
-            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
-          </svg>
-        </div>
-        <h1 class="text-2xl font-bold text-slate-100 mb-2">Import Externals</h1>
-        <p class="text-sm text-slate-500 mb-8 leading-relaxed">
-          Batch upload JSON, PDF, or Markdown directly to the repository. Coming in a future
-          release.
-        </p>
-        <button
-          (click)="goBack()"
-          class="inline-flex items-center gap-2 border border-slate-700 text-slate-300
-                 hover:border-slate-500 hover:text-slate-100 text-sm font-medium
-                 px-5 py-2.5 rounded-full transition-all"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Back to methods
-        </button>
-      </div>
-    </div>
-  `,
+  templateUrl: './file-import.component.html',
 })
-export class FileImportComponent {
+export class FileImportComponent implements OnDestroy {
   private readonly router = inject(Router);
+
+  readonly viewState = signal<ViewState>('idle');
+  readonly parseResult = signal<ParseResult | null>(null);
+  readonly parseError = signal<string | null>(null);
+  readonly isDragOver = signal(false);
+
+  readonly exampleTab = signal<'csv' | 'json'>('csv');
+  readonly copied = signal(false);
+
+  private copyTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  copyExample(type: 'csv' | 'json'): void {
+    const csvExample = `title,url,difficulty,energyLevel,estimatedDurationMinutes,resourceTypeCode,topicNames,notes
+Clean Architecture,https://example.com/book,High,High,480,book,"programming,architecture",Classic by Robert Martin
+CSS Grid Guide,https://css-tricks.com/grid,Low,Low,30,article,design,Quick reference
+Advanced TypeScript,,Medium,Medium,120,video,programming,`;
+
+    const jsonExample = `[
+  {
+    "title": "Clean Architecture",
+    "url": "https://example.com/book",
+    "difficulty": "High",
+    "energyLevel": "High",
+    "estimatedDurationMinutes": 480,
+    "resourceTypeCode": "book",
+    "topicNames": ["programming", "architecture"],
+    "notes": "Classic by Robert Martin"
+  },
+  {
+    "title": "CSS Grid Guide",
+    "url": "https://css-tricks.com/grid",
+    "difficulty": "Low",
+    "resourceTypeCode": "article",
+    "topicNames": ["design"]
+  }
+]`;
+
+    navigator.clipboard
+      .writeText(type === 'csv' ? csvExample : jsonExample)
+      .then(() => {
+        this.copied.set(true);
+        if (this.copyTimeout) clearTimeout(this.copyTimeout);
+        this.copyTimeout = setTimeout(() => this.copied.set(false), 2000);
+      })
+      .catch(() => {
+        this.copied.set(false);
+      });
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver.set(true);
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver.set(false);
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver.set(false);
+
+    const file = event.dataTransfer?.files?.[0];
+    if (file) this.processFile(file);
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.processFile(file);
+    input.value = '';
+  }
+
+  private processFile(file: File): void {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+
+    if (!['csv', 'json'].includes(extension ?? '')) {
+      this.parseError.set('Only .csv and .json files are supported.');
+      this.viewState.set('error');
+      return;
+    }
+
+    this.viewState.set('parsing');
+    this.parseError.set(null);
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (extension === 'csv') {
+        this.parseCsv(content, file.name);
+      } else {
+        this.parseJson(content, file.name);
+      }
+    };
+
+    reader.onerror = () => {
+      this.parseError.set('Failed to read file.');
+      this.viewState.set('error');
+    };
+
+    reader.readAsText(file);
+  }
+
+  private parseCsv(content: string, fileName: string): void {
+    const result = Papa.parse<Record<string, string>>(content, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: (header) => header.trim().toLowerCase(),
+    });
+
+    const parseErrors: string[] = result.errors.map((e) => `Row ${e.row ?? '?'}: ${e.message}`);
+
+    const rows = result.data.map((row) => this.normalizeRow(row));
+
+    this.parseResult.set({ rows, fileName, totalRows: rows.length, parseErrors });
+    this.viewState.set('done');
+  }
+
+  private parseJson(content: string, fileName: string): void {
+    try {
+      const parsed = JSON.parse(content);
+
+      if (!Array.isArray(parsed)) {
+        this.parseError.set('JSON file must contain an array of objects.');
+        this.viewState.set('error');
+        return;
+      }
+
+      const rows = [];
+
+      for (let i = 0; i < parsed.length; i++) {
+        const item = parsed[i];
+
+        if (item === null || typeof item !== 'object') {
+          this.parseError.set(`Item at index ${i} is not an object.`);
+          this.viewState.set('error');
+          return;
+        }
+
+        rows.push(
+          this.normalizeRow(
+            Object.fromEntries(
+              Object.entries(item).map(([k, v]) => [k.toLocaleLowerCase(), String(v ?? '')]),
+            ),
+          ),
+        );
+      }
+
+      this.parseResult.set({ rows, fileName, totalRows: rows.length, parseErrors: [] });
+      this.viewState.set('done');
+    } catch {
+      this.parseError.set('Invalid JSON format.');
+      this.viewState.set('error');
+    }
+  }
+
+  private normalizeRow(raw: Record<string, string>): ParsedResourceRow {
+    const get = (key: string) => raw[key]?.trim() || undefined;
+
+    const topicNamesRaw = get('topicnames') ?? get('topic_names') ?? get('topics');
+    const topicNames = topicNamesRaw
+      ? topicNamesRaw
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : undefined;
+
+    const durationRaw = get('estimateddurationminutes') ?? get('duration');
+    let estimatedDurationMinutes: number | undefined;
+
+    if (durationRaw) {
+      const parsed = parseInt(durationRaw, 10);
+      estimatedDurationMinutes = isNaN(parsed) ? undefined : parsed;
+    }
+
+    return {
+      title: get('title') ?? '',
+      url: get('url'),
+      notes: get('notes'),
+      difficulty: get('difficulty'),
+      energyLevel: get('energylevel') ?? get('energy_level'),
+      status: get('status'),
+      estimatedDurationMinutes,
+      resourceTypeCode: get('resourcetypecode') ?? get('resource_type_code') ?? get('type'),
+      topicNames,
+      _raw: raw,
+    };
+  }
+
+  reset(): void {
+    this.viewState.set('idle');
+    this.parseResult.set(null);
+    this.parseError.set(null);
+    this.isDragOver.set(false);
+  }
+
   goBack(): void {
     this.router.navigate(['/add']);
+  }
+
+  ngOnDestroy(): void {
+    if (this.copyTimeout) clearTimeout(this.copyTimeout);
   }
 }

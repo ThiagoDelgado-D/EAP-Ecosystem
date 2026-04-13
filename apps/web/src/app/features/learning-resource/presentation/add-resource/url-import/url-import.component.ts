@@ -40,7 +40,7 @@ export class UrlImportComponent implements OnInit, OnDestroy {
   private readonly learningResourceService = inject(LearningResourceService);
   private readonly topicService = inject(TopicService);
   private readonly router = inject(Router);
-  private typeInitInterval: number | undefined;
+  private typeInitInterval: ReturnType<typeof setInterval> | undefined;
 
   readonly previewData = this.previewService.previewData.asReadonly();
   readonly loadingPreview = this.previewService.loading.asReadonly();
@@ -67,7 +67,7 @@ export class UrlImportComponent implements OnInit, OnDestroy {
     { name: 'Vimeo', url: 'vimeo.com', icon: '🎬' },
   ];
 
-  private progressInterval: number | undefined;
+  private progressInterval: ReturnType<typeof setInterval> | undefined;
 
   ngOnInit(): void {
     this.resourceTypeService.loadAll();

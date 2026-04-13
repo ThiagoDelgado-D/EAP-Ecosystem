@@ -54,7 +54,7 @@ export class AddResourceHubComponent {
       iconVariant: 'voice',
       route: '/add/voice',
       available: true,
-      ctaLabel: 'Initialize',
+      ctaLabel: 'Start Recording',
     },
     {
       id: 'import',
@@ -63,8 +63,8 @@ export class AddResourceHubComponent {
       features: ['CSV and JSON', 'Bulk import', 'Data validation'],
       iconVariant: 'import',
       route: '/add/import',
-      available: false,
-      ctaLabel: 'Initialize',
+      available: true,
+      ctaLabel: 'Upload File',
     },
   ];
 

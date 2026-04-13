@@ -1,0 +1,298 @@
+<div class="min-h-screen bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
+  <div class="max-w-2xl mx-auto">
+    <button
+      (click)="goBack()"
+      class="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="15 18 9 12 15 6" />
+      </svg>
+      Back to methods
+    </button>
+
+    @if (viewState() === 'idle') {
+      <div class="text-center mb-10">
+        <div
+          class="w-16 h-16 rounded-2xl bg-sky-950/70 flex items-center justify-center mx-auto mb-4"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            class="text-sky-400"
+          >
+            <polyline points="16 16 12 12 8 16" />
+            <line x1="12" y1="12" x2="12" y2="21" />
+            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-100 mb-2">Import Externals</h1>
+        <p class="text-sm text-slate-500">Drop a CSV or JSON file to bulk-import resources.</p>
+      </div>
+
+      <label
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+        [class.border-sky-500]="isDragOver()"
+        [class.bg-sky-950\/20]="isDragOver()"
+        class="block w-full border-2 border-dashed border-slate-700 rounded-xl p-12 text-center cursor-pointer hover:border-slate-500 transition-colors"
+      >
+        <input type="file" accept=".csv,.json" (change)="onFileSelected($event)" class="hidden" />
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1"
+          class="text-slate-600 mx-auto mb-4"
+        >
+          <polyline points="16 16 12 12 8 16" />
+          <line x1="12" y1="12" x2="12" y2="21" />
+          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+        </svg>
+        <p class="text-sm text-slate-400 mb-1">
+          @if (isDragOver()) {
+            Drop to import
+          } @else {
+            Drag & drop your file here, or click to browse
+          }
+        </p>
+        <p class="text-xs text-slate-600">Supports .csv and .json</p>
+      </label>
+
+      <div class="mt-8 bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">
+          Expected format
+        </h3>
+
+        <div class="flex gap-2 mb-4">
+          <button
+            (click)="exampleTab.set('csv')"
+            [class.bg-slate-700]="exampleTab() === 'csv'"
+            [class.text-slate-200]="exampleTab() === 'csv'"
+            [class.text-slate-500]="exampleTab() !== 'csv'"
+            class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
+          >
+            CSV
+          </button>
+          <button
+            (click)="exampleTab.set('json')"
+            [class.bg-slate-700]="exampleTab() === 'json'"
+            [class.text-slate-200]="exampleTab() === 'json'"
+            [class.text-slate-500]="exampleTab() !== 'json'"
+            class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
+          >
+            JSON
+          </button>
+        </div>
+
+        @if (exampleTab() === 'csv') {
+          <div class="relative">
+            <pre
+              class="text-xs text-slate-400 leading-relaxed bg-slate-800 rounded-lg p-4 overflow-x-auto"
+            >
+title,url,difficulty,energyLevel,estimatedDurationMinutes,resourceTypeCode,topicNames,notes
+Clean Architecture,https://example.com/book,High,High,480,book,"programming,architecture",Classic by Robert Martin
+CSS Grid Guide,https://css-tricks.com/grid,Low,Low,30,article,design,Quick reference
+Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
+            >
+            <button
+              (click)="copyExample('csv')"
+              class="absolute top-3 right-3 text-slate-500 hover:text-slate-300 transition-colors"
+              title="Copy example"
+            >
+              @if (copied()) {
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="text-green-400"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              } @else {
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              }
+            </button>
+          </div>
+          <p class="text-xs text-slate-600 mt-3">
+            Only <span class="text-slate-400">title</span> is required. Topic names separated by
+            commas inside quotes.
+          </p>
+        }
+
+        @if (exampleTab() === 'json') {
+          <div class="relative">
+            <pre
+              class="text-xs text-slate-400 leading-relaxed bg-slate-800 rounded-lg p-4 overflow-x-auto"
+            >
+[
+  &#123;
+    "title": "Clean Architecture",
+    "url": "https://example.com/book",
+    "difficulty": "High",
+    "energyLevel": "High",
+    "estimatedDurationMinutes": 480,
+    "resourceTypeCode": "book",
+    "topicNames": ["programming", "architecture"],
+    "notes": "Classic by Robert Martin"
+  &#125;,
+  &#123;
+    "title": "CSS Grid Guide",
+    "url": "https://css-tricks.com/grid",
+    "difficulty": "Low",
+    "resourceTypeCode": "article",
+    "topicNames": ["design"]
+  &#125;
+]</pre
+            >
+            <button
+              (click)="copyExample('json')"
+              class="absolute top-3 right-3 text-slate-500 hover:text-slate-300 transition-colors"
+              title="Copy example"
+            >
+              @if (copied()) {
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="text-green-400"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              } @else {
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              }
+            </button>
+          </div>
+          <p class="text-xs text-slate-600 mt-3">
+            Only <span class="text-slate-400">title</span> is required. All other fields are
+            optional.
+          </p>
+        }
+      </div>
+    }
+
+    @if (viewState() === 'parsing') {
+      <div class="text-center py-16">
+        <div
+          class="w-12 h-12 border-4 border-slate-800 border-t-sky-500 rounded-full animate-spin mx-auto mb-4"
+        ></div>
+        <p class="text-sm text-slate-400">Parsing file...</p>
+      </div>
+    }
+
+    @if (viewState() === 'error') {
+      <div class="text-center py-16">
+        <div
+          class="w-16 h-16 rounded-2xl bg-red-950/70 flex items-center justify-center mx-auto mb-6"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            class="text-red-400"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <circle cx="12" cy="16" r="0.5" fill="currentColor" stroke="none" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-semibold text-slate-100 mb-2">Could not parse file</h2>
+        <p class="text-sm text-slate-500 mb-6">{{ parseError() }}</p>
+        <button
+          (click)="reset()"
+          class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-5 py-2 rounded-lg text-sm"
+        >
+          Try Another File
+        </button>
+      </div>
+    }
+
+    @if (viewState() === 'done' && parseResult(); as result) {
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-slate-100 mb-1">{{ result.fileName }}</h1>
+        <p class="text-sm text-slate-500">
+          {{ result.totalRows }} {{ result.totalRows === 1 ? 'resource' : 'resources' }} detected
+          @if (result.parseErrors.length > 0) {
+            · <span class="text-amber-400">{{ result.parseErrors.length }} parse warnings</span>
+          }
+        </p>
+      </div>
+
+      @if (result.parseErrors.length > 0) {
+        <div class="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 mb-6">
+          <p class="text-xs font-semibold text-amber-400 mb-2">Parse warnings</p>
+          @for (err of result.parseErrors; track $index) {
+            <p class="text-xs text-amber-500">{{ err }}</p>
+          }
+        </div>
+      }
+
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
+        <p class="text-sm text-slate-400">
+          Preview table with inline validation will appear here in the next step.
+        </p>
+        <p class="text-xs text-slate-600 mt-2">
+          {{ result.rows.length }} rows parsed successfully.
+        </p>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          (click)="reset()"
+          class="border border-slate-700 text-slate-300 hover:border-slate-500 px-5 py-2 rounded-lg text-sm font-medium"
+        >
+          Import Different File
+        </button>
+        <button
+          disabled
+          class="bg-sky-600 opacity-40 cursor-not-allowed text-white font-medium px-8 py-2 rounded-lg text-sm"
+        >
+          Review & Import →
+        </button>
+      </div>
+    }
+  </div>
+</div>
