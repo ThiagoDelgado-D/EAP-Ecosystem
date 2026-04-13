@@ -65,6 +65,8 @@ export class VoiceCaptureComponent implements OnInit, OnDestroy {
   readonly saveError = signal<string | null>(null);
   readonly saving = signal(false);
 
+  readonly editableTranscript = signal('');
+
   editableTitle = '';
   editableTypeId = '';
   editableUrl = '';
@@ -161,6 +163,7 @@ export class VoiceCaptureComponent implements OnInit, OnDestroy {
     this.editableTitle = mapped.title;
     this.editableUrl = mapped.url ?? '';
     this.editableNotes = '';
+    this.editableTranscript.set(this.transcript());
 
     const types = this.resourceTypes();
     if (mapped.resourceTypeCode) {
@@ -224,6 +227,12 @@ export class VoiceCaptureComponent implements OnInit, OnDestroy {
     this.saveError.set(null);
     this.recordingState.set('idle');
     this.viewState.set('recording');
+    this.editableTitle = '';
+    this.editableUrl = '';
+    this.editableNotes = '';
+    this.editableTypeId = '';
+    this.editableTranscript.set('');
+    this.selectedTopicIds.set([]);
   }
 
   goBack(): void {

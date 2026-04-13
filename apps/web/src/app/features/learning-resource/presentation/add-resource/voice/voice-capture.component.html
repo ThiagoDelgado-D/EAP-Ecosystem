@@ -58,6 +58,7 @@
         </p>
         <button
           (click)="restart()"
+          aria-label="Record again"
           class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-5 py-2 rounded-lg text-sm"
         >
           Try Again
@@ -71,6 +72,7 @@
         <p class="text-sm text-slate-500 mb-6">Connect a microphone and try again.</p>
         <button
           (click)="restart()"
+          aria-label="Record again"
           class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-5 py-2 rounded-lg text-sm"
         >
           Try Again
@@ -145,6 +147,7 @@
           @if (recordingState() === 'idle') {
             <button
               (click)="startRecording()"
+              aria-label="Start voice recording"
               class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
             >
               <svg
@@ -175,12 +178,14 @@
           @if (recordingState() === 'done') {
             <button
               (click)="restart()"
+              aria-label="Record again"
               class="border border-slate-700 text-slate-300 hover:border-slate-500 font-medium px-5 py-3 rounded-lg transition-colors"
             >
               Record Again
             </button>
             <button
               (click)="continueToConfirmation()"
+              aria-label="Continue to confirmation"
               [disabled]="!transcript()"
               class="bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-8 py-3 rounded-lg transition-colors"
             >
@@ -202,8 +207,13 @@
           <p class="text-sm text-slate-500 mb-6">Edit any field before saving.</p>
 
           <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-4">
-            <label class="block text-xs text-slate-500 mb-1">Transcript</label>
-            <p class="text-sm text-slate-400 leading-relaxed italic">{{ transcript() }}</p>
+            <label class="block text-xs text-slate-500 mb-1">Transcript (editable)</label>
+            <textarea
+              [(ngModel)]="editableTranscript"
+              rows="4"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-violet-500 resize-y"
+              placeholder="Correct any transcription errors here..."
+            ></textarea>
           </div>
 
           <div class="grid sm:grid-cols-2 gap-4 mb-4">
@@ -275,13 +285,14 @@
           <div class="flex justify-end gap-3">
             <button
               (click)="restart()"
+              aria-label="Record again"
               class="border border-slate-700 text-slate-300 hover:border-slate-500 px-5 py-2 rounded-lg text-sm font-medium"
             >
               Record Again
             </button>
             <button
               (click)="saveResource()"
-              [disabled]="selectedTopicIds().length === 0 || saving()"
+              aria-label="Save resource"
               class="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium"
             >
               @if (saving()) {
