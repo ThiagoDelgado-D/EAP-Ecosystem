@@ -85,23 +85,22 @@ export class FileImportComponent implements OnInit, OnDestroy {
   toggleRowSelection(index: number): void {
     const rows = this.validatedRows();
     const row = rows[index];
-    if (row.status === 'error') return;
+    if (row.status === 'error' || row.selectedTopicIds.length === 0) return;
     this.validatedRows.set(rows.map((r, i) => (i === index ? { ...r, selected: !r.selected } : r)));
   }
 
   toggleAll(selected: boolean): void {
-    this.validatedRows.set(
-      this.validatedRows().map((r) => {
-        if (selected) {
+    if (selected) {
+      this.validatedRows.set(
+        this.validatedRows().map((r) => {
           const canSelect = r.status !== 'error' && r.selectedTopicIds.length > 0;
           return canSelect ? { ...r, selected: true } : r;
-        } else {
-          return { ...r, selected: false };
-        }
-      }),
-    );
+        }),
+      );
+    } else {
+      this.validatedRows.set(this.validatedRows().map((r) => ({ ...r, selected: false })));
+    }
   }
-
   toggleTopicForRow(rowIndex: number, topicId: string): void {
     const rows = this.validatedRows();
     const row = rows[rowIndex];
