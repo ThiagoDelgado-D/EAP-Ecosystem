@@ -90,7 +90,14 @@ export class FileImportComponent implements OnInit, OnDestroy {
 
   toggleAll(selected: boolean): void {
     this.validatedRows.set(
-      this.validatedRows().map((r) => (r.status === 'error' ? r : { ...r, selected })),
+      this.validatedRows().map((r) => {
+        if (selected) {
+          const canSelect = r.status !== 'error' && r.selectedTopicIds.length > 0;
+          return canSelect ? { ...r, selected: true } : r;
+        } else {
+          return { ...r, selected: false };
+        }
+      }),
     );
   }
 
