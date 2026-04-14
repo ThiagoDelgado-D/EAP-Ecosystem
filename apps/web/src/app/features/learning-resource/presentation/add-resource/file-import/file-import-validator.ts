@@ -43,17 +43,6 @@ function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }
 
-function resolveStatus(raw?: string): ResourceStatus {
-  if (!raw) return 'Pending';
-  const normalized = raw.toLowerCase().replace('_', '');
-  if (normalized === 'inprogress') return 'InProgress';
-  const capitalized = capitalize(raw);
-  if (VALID_STATUSES.includes(capitalized as ResourceStatus)) {
-    return capitalized as ResourceStatus;
-  }
-  return 'Pending';
-}
-
 export function validateRows(
   rows: ParsedResourceRow[],
   resourceTypes: ResourceType[],
@@ -81,8 +70,8 @@ export function validateRows(
       } else {
         errors.push({
           field: 'difficulty',
-          message: `Unknown difficulty "${row.difficulty}" — defaulting to Medium`,
-          blocking: false,
+          message: `Invalid difficulty "${row.difficulty}" – must be Low, Medium, or High`,
+          blocking: true,
         });
       }
     } else {
@@ -93,7 +82,6 @@ export function validateRows(
       });
     }
 
-    // Energy level
     let resolvedEnergyLevel: EnergyLevel = 'Medium';
     if (row.energyLevel) {
       const capitalized = capitalize(row.energyLevel);
@@ -102,10 +90,35 @@ export function validateRows(
       } else {
         errors.push({
           field: 'energyLevel',
-          message: `Unknown energy level "${row.energyLevel}" — defaulting to Medium`,
-          blocking: false,
+          message: `Invalid energy level "${row.energyLevel}" – must be Low, Medium, or High`,
+          blocking: true,
         });
       }
+    }
+
+    let resolvedStatus: ResourceStatus = 'Pending';
+    if (row.status) {
+      const normalized = row.status.toLowerCase().replace('_', '');
+      if (normalized === 'inprogress') {
+        resolvedStatus = 'InProgress';
+      } else {
+        const capitalized = capitalize(row.status);
+        if (VALID_STATUSES.includes(capitalized as ResourceStatus)) {
+          resolvedStatus = capitalized as ResourceStatus;
+        } else {
+          errors.push({
+            field: 'status',
+            message: `Invalid status "${row.status}" – must be Pending, InProgress, or Completed`,
+            blocking: true,
+          });
+        }
+      }
+    } else {
+      errors.push({
+        field: 'status',
+        message: 'Missing status — defaulting to Pending',
+        blocking: false,
+      });
     }
 
     let resolvedTypeId = resourceTypes[0]?.id ?? '';
@@ -173,7 +186,7 @@ export function validateRows(
       resolvedNotes: row.notes,
       resolvedDifficulty,
       resolvedEnergyLevel,
-      resolvedStatus: resolveStatus(row.status),
+      resolvedStatus,
       resolvedDurationMinutes,
       resolvedTypeId,
       availableTopics,
