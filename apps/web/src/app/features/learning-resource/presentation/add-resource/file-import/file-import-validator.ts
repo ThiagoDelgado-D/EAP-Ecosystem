@@ -160,8 +160,18 @@ export function validateRows(
       });
     }
 
-    const resolvedDurationMinutes = row.estimatedDurationMinutes ?? 30;
-    if (!row.estimatedDurationMinutes) {
+    let resolvedDurationMinutes = 30;
+    if (row.estimatedDurationMinutes !== undefined) {
+      if (row.estimatedDurationMinutes > 0) {
+        resolvedDurationMinutes = row.estimatedDurationMinutes;
+      } else {
+        errors.push({
+          field: 'estimatedDurationMinutes',
+          message: `Duration must be positive (got ${row.estimatedDurationMinutes})`,
+          blocking: true,
+        });
+      }
+    } else {
       errors.push({
         field: 'estimatedDurationMinutes',
         message: 'Missing duration — defaulting to 30 min',
