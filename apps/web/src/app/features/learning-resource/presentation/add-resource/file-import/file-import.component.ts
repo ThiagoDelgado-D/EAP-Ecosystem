@@ -287,13 +287,22 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,`;
           this.viewState.set('error');
           return;
         }
-        rows.push(
-          this.normalizeRow(
-            Object.fromEntries(
-              Object.entries(item).map(([k, v]) => [k.toLowerCase(), String(v ?? '')]),
-            ),
-          ),
-        );
+        const normalizedItem: Record<string, string | string[]> = {};
+        for (const [key, value] of Object.entries(item)) {
+          const lowerKey = key.toLowerCase();
+          if (lowerKey === 'topicnames' || lowerKey === 'topic_names' || lowerKey === 'topics') {
+            if (Array.isArray(value)) {
+              normalizedItem[lowerKey] = value.map((v) => String(v ?? ''));
+            } else if (value !== undefined && value !== null) {
+              normalizedItem[lowerKey] = [String(value)];
+            } else {
+              normalizedItem[lowerKey] = [];
+            }
+          } else {
+            normalizedItem[lowerKey] = String(value ?? '');
+          }
+        }
+        rows.push(this.normalizeRow(normalizedItem));
       }
       this.parseResult.set({ rows, fileName, totalRows: rows.length, parseErrors: [] });
       this.viewState.set('done');
@@ -303,32 +312,42 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,`;
     }
   }
 
-  private normalizeRow(raw: Record<string, string>): ParsedResourceRow {
-    const get = (key: string) => raw[key]?.trim() || undefined;
-    const topicNamesRaw = get('topicnames') ?? get('topic_names') ?? get('topics');
-    const topicNames = topicNamesRaw
-      ? topicNamesRaw
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean)
-      : undefined;
-    const durationRaw = get('estimateddurationminutes') ?? get('duration');
+  private normalizeRow(raw: Record<string, string | string[]>): ParsedResourceRow {
+    const getString = (key: string): string | undefined => {
+      const val = raw[key];
+      if (typeof val === 'string') return val.trim() || undefined;
+      return undefined;
+    };
+
+    const topicNamesRaw = raw['topicnames'] ?? raw['topic_names'] ?? raw['topics'];
+    let topicNames: string[] | undefined;
+    if (Array.isArray(topicNamesRaw)) {
+      topicNames = topicNamesRaw.map((t) => t.trim()).filter(Boolean);
+    } else if (typeof topicNamesRaw === 'string') {
+      topicNames = topicNamesRaw
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+    }
+
+    const durationRaw = getString('estimateddurationminutes') ?? getString('duration');
     let estimatedDurationMinutes: number | undefined;
     if (durationRaw) {
       const parsed = parseInt(durationRaw, 10);
       estimatedDurationMinutes = isNaN(parsed) ? undefined : parsed;
     }
     return {
-      title: get('title') ?? '',
-      url: get('url'),
-      notes: get('notes'),
-      difficulty: get('difficulty'),
-      energyLevel: get('energylevel') ?? get('energy_level'),
-      status: get('status'),
+      title: getString('title') ?? '',
+      url: getString('url'),
+      notes: getString('notes'),
+      difficulty: getString('difficulty'),
+      energyLevel: getString('energylevel') ?? getString('energy_level'),
+      status: getString('status'),
       estimatedDurationMinutes,
-      resourceTypeCode: get('resourcetypecode') ?? get('resource_type_code') ?? get('type'),
+      resourceTypeCode:
+        getString('resourcetypecode') ?? getString('resource_type_code') ?? getString('type'),
       topicNames,
-      _raw: raw,
+      _raw: raw as Record<string, string>,
     };
   }
 
