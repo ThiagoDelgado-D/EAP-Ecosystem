@@ -66,15 +66,16 @@ export class FileImportComponent implements OnInit, OnDestroy {
   readonly importTotal = signal(0);
   readonly importSuccesses = signal(0);
   readonly importFailures = signal<string[]>([]);
+  readonly dataReady = signal(false);
 
   readonly resourceTypes = this.resourceTypeService.resourceTypes.asReadonly();
   readonly topics = this.topicService.topics.asReadonly();
 
   private copyTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  ngOnInit(): void {
-    this.resourceTypeService.loadAll();
-    this.topicService.loadAll();
+  async ngOnInit(): Promise<void> {
+    await Promise.all([this.resourceTypeService.loadAll(), this.topicService.loadAll()]);
+    this.dataReady.set(true);
   }
 
   get selectedRows(): ValidatedRow[] {

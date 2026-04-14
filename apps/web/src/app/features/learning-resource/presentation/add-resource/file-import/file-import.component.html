@@ -278,6 +278,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
         </button>
         <button
           (click)="proceedToPreview()"
+          [disabled]="!dataReady()"
           class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-8 py-2 rounded-lg text-sm"
         >
           Review & Import →
