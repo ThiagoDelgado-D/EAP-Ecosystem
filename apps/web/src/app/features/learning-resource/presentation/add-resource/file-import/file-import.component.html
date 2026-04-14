@@ -76,7 +76,6 @@
         <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">
           Expected format
         </h3>
-
         <div class="flex gap-2 mb-4">
           <button
             (click)="exampleTab.set('csv')"
@@ -101,7 +100,7 @@
         @if (exampleTab() === 'csv') {
           <div class="relative">
             <pre
-              class="text-xs text-slate-400 leading-relaxed bg-slate-800 rounded-lg p-4 overflow-x-auto"
+              class="text-xs text-slate-400 leading-relaxed bg-slate-800 rounded-lg p-4 overflow-x-auto whitespace-pre"
             >
 title,url,difficulty,energyLevel,estimatedDurationMinutes,resourceTypeCode,topicNames,notes
 Clean Architecture,https://example.com/book,High,High,480,book,"programming,architecture",Classic by Robert Martin
@@ -134,7 +133,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                   stroke="currentColor"
                   stroke-width="2"
                 >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
               }
@@ -149,7 +148,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
         @if (exampleTab() === 'json') {
           <div class="relative">
             <pre
-              class="text-xs text-slate-400 leading-relaxed bg-slate-800 rounded-lg p-4 overflow-x-auto"
+              class="text-xs text-slate-400 leading-relaxed bg-slate-800 rounded-lg p-4 overflow-x-auto whitespace-pre"
             >
 [
   &#123;
@@ -197,7 +196,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                   stroke="currentColor"
                   stroke-width="2"
                 >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
               }
@@ -270,15 +269,6 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
         </div>
       }
 
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
-        <p class="text-sm text-slate-400">
-          Preview table with inline validation will appear here in the next step.
-        </p>
-        <p class="text-xs text-slate-600 mt-2">
-          {{ result.rows.length }} rows parsed successfully.
-        </p>
-      </div>
-
       <div class="flex justify-end gap-3">
         <button
           (click)="reset()"
@@ -287,10 +277,223 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
           Import Different File
         </button>
         <button
-          disabled
-          class="bg-sky-600 opacity-40 cursor-not-allowed text-white font-medium px-8 py-2 rounded-lg text-sm"
+          (click)="proceedToPreview()"
+          class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-8 py-2 rounded-lg text-sm"
         >
           Review & Import →
+        </button>
+      </div>
+    }
+
+    @if (viewState() === 'preview') {
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-100 mb-1">Review Resources</h1>
+          <p class="text-sm text-slate-500">
+            {{ selectedRows.length }} of {{ validatedRows().length }} selected
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <button
+            (click)="toggleAll(true)"
+            class="text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 border border-slate-700 rounded-lg transition-colors"
+          >
+            Select all valid
+          </button>
+          <button
+            (click)="toggleAll(false)"
+            class="text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 border border-slate-700 rounded-lg transition-colors"
+          >
+            Deselect all
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-2 mb-6">
+        @for (row of validatedRows(); track row.index) {
+          <div
+            class="bg-slate-900 border rounded-xl p-4 transition-colors"
+            [class.border-slate-800]="row.status === 'valid'"
+            [class.border-amber-800\/50]="row.status === 'warning'"
+            [class.border-red-800\/50]="row.status === 'error'"
+            [class.opacity-50]="row.status === 'error'"
+          >
+            <div class="flex items-start gap-3">
+              <input
+                type="checkbox"
+                [checked]="row.selected"
+                [disabled]="row.status === 'error' || row.selectedTopicIds.length === 0"
+                (change)="toggleRowSelection(row.index)"
+                class="mt-1 accent-violet-500 cursor-pointer disabled:cursor-not-allowed"
+              />
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  @if (row.status === 'valid') {
+                    <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+                  }
+                  @if (row.status === 'warning') {
+                    <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
+                  }
+                  @if (row.status === 'error') {
+                    <span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>
+                  }
+                  <p class="text-sm font-medium text-slate-200 truncate">
+                    {{ row.resolvedTitle || '(no title)' }}
+                  </p>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs text-slate-500 mb-2">
+                  <span>{{ row.resolvedDifficulty }}</span>
+                  <span>·</span>
+                  <span>{{ row.resolvedDurationMinutes }} min</span>
+                  @if (row.resolvedUrl) {
+                    <span>·</span>
+                    <span class="truncate max-w-48">{{ row.resolvedUrl }}</span>
+                  }
+                </div>
+
+                <!-- Topic selector (chips) -->
+                <div class="mt-2 mb-2">
+                  <div class="flex flex-wrap gap-2">
+                    @for (topic of row.availableTopics; track topic.id) {
+                      <button
+                        type="button"
+                        (click)="toggleTopicForRow(row.index, topic.id)"
+                        [class]="
+                          row.selectedTopicIds.includes(topic.id)
+                            ? 'bg-violet-600 text-white border-violet-500'
+                            : 'bg-slate-800 text-slate-300 border-slate-700 hover:border-slate-500'
+                        "
+                        class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
+                      >
+                        {{ topic.name }}
+                      </button>
+                    }
+                  </div>
+                  @if (row.selectedTopicIds.length === 0) {
+                    <p class="text-xs text-amber-400 mt-1">
+                      ⚠️ Select at least one topic for this resource
+                    </p>
+                  }
+                </div>
+
+                @if (row.errors.length > 0) {
+                  <div class="space-y-0.5">
+                    @for (err of row.errors; track err.field) {
+                      <p
+                        class="text-xs"
+                        [class.text-red-400]="err.blocking"
+                        [class.text-amber-500]="!err.blocking"
+                      >
+                        {{ err.blocking ? '✗' : '⚠' }} {{ err.message }}
+                      </p>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          (click)="reset()"
+          class="border border-slate-700 text-slate-300 hover:border-slate-500 px-5 py-2 rounded-lg text-sm font-medium"
+        >
+          Start Over
+        </button>
+        <button
+          (click)="importSelected()"
+          [disabled]="selectedRows.length === 0"
+          class="bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-8 py-2 rounded-lg text-sm"
+        >
+          Import {{ selectedRows.length }}
+          {{ selectedRows.length === 1 ? 'resource' : 'resources' }} →
+        </button>
+      </div>
+    }
+
+    @if (viewState() === 'importing') {
+      <div class="text-center py-16">
+        <div
+          class="w-12 h-12 border-4 border-slate-800 border-t-sky-500 rounded-full animate-spin mx-auto mb-6"
+        ></div>
+        <p class="text-slate-200 font-medium mb-2">Importing resources...</p>
+        <p class="text-sm text-slate-500 mb-6">{{ importProgress() }} / {{ importTotal() }}</p>
+        <div class="w-full max-w-sm mx-auto bg-slate-800 rounded-full h-2">
+          <div
+            class="bg-sky-500 h-2 rounded-full transition-all"
+            [style.width.%]="importTotal() > 0 ? (importProgress() / importTotal()) * 100 : 0"
+          ></div>
+        </div>
+      </div>
+    }
+
+    @if (viewState() === 'summary') {
+      <div class="text-center py-8">
+        <div
+          class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
+          [class.bg-green-950\/70]="importFailures().length === 0"
+          [class.bg-amber-950\/70]="importFailures().length > 0"
+        >
+          @if (importFailures().length === 0) {
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              class="text-green-400"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          } @else {
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              class="text-amber-400"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <circle cx="12" cy="16" r="0.5" fill="currentColor" stroke="none" />
+            </svg>
+          }
+        </div>
+
+        <h2 class="text-xl font-semibold text-slate-100 mb-2">
+          @if (importFailures().length === 0) {
+            Import complete
+          } @else {
+            Import finished with errors
+          }
+        </h2>
+
+        <p class="text-sm text-slate-400 mb-6">
+          {{ importSuccesses() }} {{ importSuccesses() === 1 ? 'resource' : 'resources' }} imported
+          successfully.
+        </p>
+
+        @if (importFailures().length > 0) {
+          <div
+            class="bg-red-950/30 border border-red-800/50 rounded-xl p-4 mb-6 text-left max-w-md mx-auto"
+          >
+            <p class="text-xs font-semibold text-red-400 mb-2">Failed to import</p>
+            @for (title of importFailures(); track $index) {
+              <p class="text-xs text-red-500">✗ {{ title }}</p>
+            }
+          </div>
+        }
+
+        <button
+          (click)="goToResources()"
+          class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-8 py-3 rounded-lg text-sm"
+        >
+          Go to Resources →
         </button>
       </div>
     }
