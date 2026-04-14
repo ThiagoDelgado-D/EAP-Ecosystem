@@ -53,7 +53,7 @@ export class FileImportComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly resourceTypeService = inject(ResourceTypeService);
   private readonly topicService = inject(TopicService);
-  private readonly learningResourceService = inject(LearningResourceService);
+  private readonly learningResourceRepository = inject(LearningResourceRepository);
 
   readonly viewState = signal<ViewState>('idle');
   readonly parseResult = signal<ParseResult | null>(null);
@@ -141,7 +141,7 @@ export class FileImportComponent implements OnInit, OnDestroy {
 
     for (const row of rows) {
       try {
-        await this.learningResourceService.addResource({
+        await this.learningResourceRepository.addResourceLearning({
           title: row.resolvedTitle,
           url: row.resolvedUrl,
           notes: row.resolvedNotes,
