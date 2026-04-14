@@ -324,6 +324,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                 [checked]="row.selected"
                 [disabled]="row.status === 'error' || row.selectedTopicIds.length === 0"
                 (change)="toggleRowSelection(row.index)"
+                [attr.aria-label]="'Select resource: ' + row.resolvedTitle"
                 class="mt-1 accent-violet-500 cursor-pointer disabled:cursor-not-allowed"
               />
               <div class="flex-1 min-w-0">
@@ -351,13 +352,14 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                   }
                 </div>
 
-                <!-- Topic selector (chips) -->
                 <div class="mt-2 mb-2">
                   <div class="flex flex-wrap gap-2">
                     @for (topic of row.availableTopics; track topic.id) {
                       <button
                         type="button"
                         (click)="toggleTopicForRow(row.index, topic.id)"
+                        [attr.aria-pressed]="row.selectedTopicIds.includes(topic.id)"
+                        [attr.aria-label]="'Toggle topic ' + topic.name"
                         [class]="
                           row.selectedTopicIds.includes(topic.id)
                             ? 'bg-violet-600 text-white border-violet-500'
