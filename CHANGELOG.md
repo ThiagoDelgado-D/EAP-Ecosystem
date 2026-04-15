@@ -1,12 +1,167 @@
-## [Unreleased] — v0.7.0
+## [Unreleased] — v0.8.0
 
 ### Planned
 
-- Voice capture with transcription and draft review
-- CSV / JSON bulk import with format validation
-- Drag and drop file upload
+- Authentication – Magic link → OAuth → MFA
+- User profile endpoints
+- Wire FocusPulseComponent and PendingTasksComponent to real data
+- Transformers.js fallback for Firefox voice capture
+
+## [Unreleased] — v0.7.1 · v0.7.2 · v0.7.3 · v0.7.4
+
+### Planned (v0.7.x series – incremental frontend integrations)
+
+These versions will connect existing backend use cases to the Angular frontend,
+adding detail views, editing, deletion, and quick toggles for learning resources.
+
+#### v0.7.1 – Resource detail view & navigation
+
+- `ResourceDetailComponent` – standalone page at `/resources/:id` showing all
+  resource fields (title, URL, image, difficulty, energy, status, duration,
+  topics, notes, timestamps).
+- Link from each card in `HomeComponent` (grid/list) to the detail view.
+- Breadcrumb or back button for easy return to the resource list.
+
+#### v0.7.2 – Delete resource
+
+- Delete button in the detail view with a confirmation dialog.
+- Call `DELETE /api/v1/learning-resources/:id` and redirect to `/resources`
+  on success.
+- Error handling with toast notifications.
+
+#### v0.7.3 – Edit resource
+
+- `EditResourceComponent` at `/resources/:id/edit` – reuses the guided form
+  logic but pre‑fills existing data.
+- Supports partial updates (`PATCH`): title, URL, imageUrl, resource type,
+  topics, difficulty, energy, status, duration, notes, mentalState.
+- Redirect to detail view after successful update.
+
+#### v0.7.4 – Quick toggles (difficulty, energy, status)
+
+- Clickable badges in both the list (`HomeComponent`) and detail view.
+- Toggle endpoints: `PATCH /:id/difficulty`, `PATCH /:id/energy`, `PATCH /:id/status`.
+- Optimistic UI update with rollback on error.
+- Visual feedback (spinner, toast) for each toggle.
 
 ---
+
+## [0.7.0] - 2026-04-14
+
+### Voice Capture & File Import
+
+This release completes the v0.7.0 roadmap with two major smart capture methods:
+**Voice Capture** (hands‑free entry via browser speech recognition) and
+**File Import** (bulk addition from CSV/JSON files). Both features are
+purely frontend, client‑side only – no new backend endpoints were required.
+
+---
+
+### Added
+
+#### Voice Capture – PR 1 & 2 (`feature/voice-recording-ui`, `feature/voice-field-mapping`)
+
+- `VoiceCaptureComponent` with four‑state UI (`idle`, `recording`, `done`, `unsupported`)
+  and granular error states (`permission-denied`, `device-error`).
+- **Web Speech API** integration with `continuous: true`, `interimResults: true`,
+  live transcript area, and red pulsing indicator.
+- `parseTranscript()` pure function – rule‑based field mapping:
+  - URL detection → `url` field
+  - Keyword matching (EN/ES: `libro`, `book`, `video`, `artículo`, `course`, etc.) → `resourceTypeCode` hint
+  - Remaining text → `title` field
+- Confirmation screen (no redirect to Guided Form):
+  - Editable transcript text area, pre‑filled title, URL, resource type selector,
+    notes field, and mandatory topic chip selector.
+  - Save via `LearningResourceService.addResource()` with defaults
+    (`difficulty: Medium`, `energyLevel: Medium`, `estimatedDurationMinutes: 30`).
+  - Save errors shown inline without leaving the confirmation state.
+  - Redirect to `/resources` on success.
+- `OnDestroy` cleanup for recognition instance and microphone permission stream.
+- **Accessibility**: full typing for `SpeechRecognition` API (no `any`), `aria‑label`
+  and `aria-pressed` on interactive elements.
+
+#### File Import – PR 3, 4 & 5 (`feature/file-import-dropzone`, `feature/file-import-preview-table`, `feature/file-import-batch-import`)
+
+- **Drag & drop zone** + click‑to‑browse, client‑side parsing only (`FileReader`).
+- CSV parsing via `papaparse`, JSON parsing with array validation.
+- `normalizeRow()` maps case‑insensitive columns and handles alternate keys
+  (`topicnames` / `topic_names` / `topics`, `energylevel` / `energy_level`,
+  `estimateddurationminutes` / `duration`).
+- **Preview table** with inline validation per row:
+  - Blocking errors: missing `title`, invalid `difficulty`/`energyLevel`/`status`,
+    invalid URL format, zero topics resolved.
+  - Warnings: missing optional fields (defaults applied).
+  - **Per‑row topic selector** (chips) – manual selection, file’s `topicNames` used
+    only as pre‑selection hint.
+  - Checkbox only enabled when row has at least one topic and no blocking errors.
+  - “Select all valid” / “Deselect all” respect the same eligibility rules.
+- **Batch import** – sequential `POST` calls via `LearningResourceRepository.addResourceLearning()`
+  (no per‑row `loadAll` spam). Progress bar + counter, summary screen with success
+  count and failure list.
+- **Expected format section** with CSV / JSON tabs, copy‑to‑clipboard examples,
+  and field reference.
+- `ngOnDestroy` cleans up clipboard timeout and object URLs.
+
+---
+
+### Fixed
+
+- `urlField` in `domain-lib` now correctly handles empty strings when `allowEmpty: true`
+  (used by `PATCH` to clear URL fields).
+- `PreviewUrlDto` – added `@IsString()` and `@Transform` for whitespace trimming
+  before `@IsUrl()` validation.
+- `toggleAll(true)` in File Import no longer selects rows without topics.
+- Invalid `difficulty` / `energyLevel` / `status` values now produce **blocking**
+  errors instead of silent defaults.
+- Duration validation: `0` minutes is now a blocking error (must be positive);
+  missing duration shows a non‑blocking warning and defaults to 30.
+- JSON parsing preserves `topicNames` as an array (no unintended comma‑splitting).
+- `toggleAll` and `toggleRowSelection` now respect the “at least one topic” rule.
+- `ngOnInit` in `FileImportComponent` awaits `loadAll()` for `resourceTypes` and
+  `topics` before enabling the “Review & Import” button.
+- Added `aria‑label` to row checkboxes and `aria‑pressed` to topic chips for
+  screen‑reader accessibility.
+- `copyExample()` clipboard promise now sets `copied` only on success (no false
+  positive flash).
+
+---
+
+### Architecture Notes
+
+- **Voice**: Firefox fallback (Transformers.js + MediaRecorder) is explicitly **out
+  of scope** for v0.7.0 – tracked for a future isolated PR.
+- **File Import** uses the repository directly (`addResourceLearning`) to avoid
+  unnecessary `GET` requests after each POST during batch import.
+- Both features follow the same product pattern as URL Import: **capture → preview
+  (editable) → save**. No redirect to Guided Form, no extra navigation steps.
+- All validation rules are pure functions, easily unit‑testable without Angular
+  TestBed.
+
+---
+
+### How to Test
+
+```bash
+# Backend (if needed for reference data)
+yarn workspace api start:dev
+
+# Frontend
+cd apps/web && npm run start
+```
+
+**Voice Capture:** `/add` → Voice Capture (Chrome/Edge required)
+**File Import:** `/add` → Import Externals
+
+---
+
+### Known Limitations (intentional)
+
+- Voice Capture does not work in Firefox (browser limitation). A Transformers.js
+  fallback is planned for a later version.
+- Very large CSV/JSON files (>1000 rows) may cause UI slowness – row virtualization
+  is not implemented for v0.7.0.
+- The rule‑based voice parser may mis‑map edge cases; the confirmation screen
+  is the safety net.
 
 ## [0.6.0] - 2026-04-09
 
@@ -682,30 +837,32 @@ This release establishes the complete architectural foundation of EAP-Ecosystem,
 **Project Structure**:
 
 ```
+
 EAP-Ecosystem/
 ├── shared/
-│   ├── domain-lib/              ✅ Complete (v0.1.0)
-│   │   ├── entities/
-│   │   ├── errors/
-│   │   ├── services/
-│   │   ├── types/
-│   │   ├── utils/
-│   │   └── validations/        ✅ Comprehensive
-│   └── infrastructure-lib/      ✅ Complete (v0.1.0)
-│       └── services/
+│ ├── domain-lib/ ✅ Complete (v0.1.0)
+│ │ ├── entities/
+│ │ ├── errors/
+│ │ ├── services/
+│ │ ├── types/
+│ │ ├── utils/
+│ │ └── validations/ ✅ Comprehensive
+│ └── infrastructure-lib/ ✅ Complete (v0.1.0)
+│ └── services/
 ├── learning-resource/
-│   ├── domain/                  ✅ Complete (v0.1.0)
-│   │   ├── entities/
-│   │   └── repositories/
-│   ├── application/             ✅ Complete (v0.1.0)
-│   │   ├── use-cases/
-│   │   ├── errors/
-│   │   ├── mocks/
-│   │   └── utils/
-│   └── infrastructure/          📅 Planned (v0.2.0)
-├── user/                        📅 Planned (v0.5.0)
-├── recommendation/              📅 Planned (v0.5.0)
-└── api/                         📅 Planned (v0.2.0)
+│ ├── domain/ ✅ Complete (v0.1.0)
+│ │ ├── entities/
+│ │ └── repositories/
+│ ├── application/ ✅ Complete (v0.1.0)
+│ │ ├── use-cases/
+│ │ ├── errors/
+│ │ ├── mocks/
+│ │ └── utils/
+│ └── infrastructure/ 📅 Planned (v0.2.0)
+├── user/ 📅 Planned (v0.5.0)
+├── recommendation/ 📅 Planned (v0.5.0)
+└── api/ 📅 Planned (v0.2.0)
+
 ```
 
 ### Development Experience
@@ -745,3 +902,7 @@ This release is the foundation. No migrations needed.
 - Thiago Delgado (@ThiagoDelgado-D) - Architecture, Implementation, Documentation
 
 ---
+
+```
+
+```
