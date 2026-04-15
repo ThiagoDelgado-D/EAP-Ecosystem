@@ -35,20 +35,21 @@ are coming in upcoming versions.
 
 ---
 
-## 🎯 Current Status (v0.6.0)
+## 🎯 Current Status (v0.7.0)
 
-| Component                       | Status               | Notes                                               |
-| ------------------------------- | -------------------- | --------------------------------------------------- |
-| **Domain Layer**                | ✅ Stable            | `LearningResource` + `User` domains complete        |
-| **Application Layer**           | ✅ Stable            | Use cases + URL preview port                        |
-| **API Layer**                   | ✅ Stable            | NestJS REST, PostgreSQL, TypeORM                    |
-| **Frontend**                    | ✅ Stable            | Angular 21, dashboard, resource library, URL Import |
-| **URL Import**                  | ✅ Complete          | oEmbed + Open Graph + graceful fallback (v0.6.0)    |
-| **URL Voice & CSV/JSON import** | 📅 Next (v0.7.0)     | Voice capture with transcription and draft review   |
-| **User Module**                 | 🚧 Foundation        | Domain + application only, not wired to API or auth |
-| **Authentication**              | 📅 Next (v0.8.0)     | Magic link → OAuth → MFA                            |
-| **Session Tracking**            | 📅 Planned (v0.10.0) | Focus Pulse uses hardcoded data until then          |
-| **Recommendation Engine**       | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then   |
+| Component                 | Status               | Notes                                               |
+| ------------------------- | -------------------- | --------------------------------------------------- |
+| **Domain Layer**          | ✅ Stable            | `LearningResource` + `User` domains complete        |
+| **Application Layer**     | ✅ Stable            | Use cases + URL preview port                        |
+| **API Layer**             | ✅ Stable            | NestJS REST, PostgreSQL, TypeORM                    |
+| **Frontend**              | ✅ Stable            | Angular 21, dashboard, resource library, URL Import |
+| **URL Import**            | ✅ Complete          | oEmbed + Open Graph + graceful fallback (v0.6.0)    |
+| **Voice Capture**         | ✅ Complete          | Web Speech API + rule‑based mapping (v0.7.0)        |
+| **CSV/JSON File Import**  | ✅ Complete          | Drag & drop, preview table, batch import (v0.7.0)   |
+| **User Module**           | 🚧 Foundation        | Domain + application only, not wired to API or auth |
+| **Authentication**        | 📅 Next (v0.8.0)     | Magic link → OAuth → MFA                            |
+| **Session Tracking**      | 📅 Planned (v0.10.0) | Focus Pulse uses hardcoded data until then          |
+| **Recommendation Engine** | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then   |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
