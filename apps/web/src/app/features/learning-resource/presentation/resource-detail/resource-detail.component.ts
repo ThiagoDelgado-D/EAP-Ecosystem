@@ -14,6 +14,7 @@ import { ResourceTypeService } from '@features/learning-resource/application/res
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository.js';
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository.js';
 import { MarkdownPipe } from '@shared/pipes/markdown.pipe.js';
+import { ToastService } from '@core/toast/toast.service.js';
 
 @Component({
   selector: 'app-resource-detail',
@@ -32,6 +33,7 @@ export class ResourceDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly resourceService = inject(LearningResourceService);
   private readonly resourceTypeService = inject(ResourceTypeService);
+  private readonly toastService = inject(ToastService);
 
   readonly resource = signal<LearningResource | null>(null);
   readonly loading = this.resourceService.loading;
@@ -116,5 +118,9 @@ export class ResourceDetailComponent implements OnInit {
       High: 'bg-red-950/60 text-red-400',
     };
     return `${base} ${map[energy]}`;
+  }
+
+  showComingSoon(): void {
+    this.toastService.show('Coming soon – will be available in a future version.', 'info');
   }
 }
