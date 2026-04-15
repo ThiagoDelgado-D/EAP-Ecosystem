@@ -15,8 +15,18 @@ export class MarkdownPipe implements PipeTransform {
       gfm: true,
     });
 
-    const rawHtml = await marked.parse(value);
-    const cleanHtml = DOMPurify.sanitize(rawHtml);
-    return cleanHtml;
+    try {
+      const rawHtml = await marked.parse(value);
+      const cleanHtml = DOMPurify.sanitize(rawHtml);
+      return cleanHtml;
+    } catch (error) {
+      console.error('Markdown parsing failed:', error);
+      return value.replace(/[&<>]/g, (m) => {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
   }
 }
