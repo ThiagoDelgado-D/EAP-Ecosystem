@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import {
   DifficultyType,
   EnergyLevelType,
+  MentalStateType,
   ResourceStatusType,
   type LearningResource,
 } from "@learning-resource/domain";
@@ -24,7 +25,7 @@ describe("GetResourceById", () => {
 
     const result = await GetResourceById(
       { learningResourceRepository: repository },
-      { resourceId: id }
+      { resourceId: id },
     );
 
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
@@ -47,7 +48,10 @@ describe("GetResourceById", () => {
       },
       energyLevel: EnergyLevelType.HIGH,
       status: ResourceStatusType.COMPLETED,
-      notes: "Some notes",
+      imageUrl: "https://example.com/image.jpg",
+      mentalState: MentalStateType.DEEP_FOCUS,
+      notes:
+        "## Executive Summary\n\nThis deep-dive session...\n\n## Key takeaways\n\n- Item 1\n- Item 2",
       typeId,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -57,7 +61,7 @@ describe("GetResourceById", () => {
 
     const result = await GetResourceById(
       { learningResourceRepository: repository },
-      { resourceId: id }
+      { resourceId: id },
     );
 
     if (result instanceof LearningResourceNotFoundError) {
@@ -77,13 +81,15 @@ describe("GetResourceById", () => {
     expect(result.estimatedDurationMinutes).toBe(120);
     expect(result.energyLevel).toBe(EnergyLevelType.HIGH);
     expect(result.status).toBe(ResourceStatusType.COMPLETED);
-    expect(result.notes).toBe("Some notes");
+    expect(result.imageUrl).toBe("https://example.com/image.jpg");
+    expect(result.mentalState).toBe(MentalStateType.DEEP_FOCUS);
+    expect(result.notes).toBe(resource.notes);
   });
 
   test("Should return InvalidDataError when resourceId is not a valid UUID", async () => {
     const result = await GetResourceById(
       { learningResourceRepository: repository },
-      { resourceId: "not-a-valid-uuid" as any }
+      { resourceId: "not-a-valid-uuid" as any },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
