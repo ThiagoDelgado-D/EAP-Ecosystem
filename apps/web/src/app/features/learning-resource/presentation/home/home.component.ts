@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { LearningResourceService } from '../../application/learning-resource.service';
 import { LearningResourceRepository } from '../../domain/learning-resource.repository';
 import { ResourceTypeRepository } from '../../domain/resource-type.repository';
@@ -59,6 +59,7 @@ export class HomeComponent implements OnInit {
   readonly resourceTypes = this.typeService.resourceTypes;
   readonly loading = this.service.loading;
   readonly error = this.service.error;
+  private router = inject(Router);
 
   activeTab = signal<TabMode>('all');
   viewMode = signal<'grid' | 'list'>('grid');
@@ -167,7 +168,7 @@ export class HomeComponent implements OnInit {
 
   onCardClick(resource: LearningResource): void {
     this.libraryService.trackRecent(resource.id);
-    if (resource.url) window.open(resource.url, '_blank', 'noopener,noreferrer');
+    this.router.navigate(['/resources', resource.id]);
   }
 
   toggleSaved(event: Event, id: string): void {
