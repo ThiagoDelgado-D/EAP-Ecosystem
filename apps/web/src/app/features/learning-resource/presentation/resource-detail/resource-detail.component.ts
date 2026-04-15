@@ -38,8 +38,8 @@ export class ResourceDetailComponent implements OnInit {
   readonly error = this.resourceService.error;
 
   readonly resourceTypes = this.resourceTypeService.resourceTypes.asReadonly();
-
   ngOnInit(): void {
+    this.resourceTypeService.loadAll();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadResource(id);
