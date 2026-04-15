@@ -19,7 +19,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:host ::ng-deep .prose {
+.prose {
 
     h1,
     h2,
