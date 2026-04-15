@@ -18,3 +18,42 @@
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+.prose {
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        @apply font-bold text-slate-100 mt-4 mb-2;
+    }
+
+    h1 {
+        @apply text-2xl;
+    }
+
+    h2 {
+        @apply text-xl;
+    }
+
+    p {
+        @apply text-slate-300 mb-3 leading-relaxed;
+    }
+
+    ul,
+    ol {
+        @apply list-disc pl-6 mb-3 text-slate-300;
+    }
+
+    li {
+        @apply mb-1;
+    }
+
+    strong {
+        @apply font-semibold text-violet-300;
+    }
+
+    a {
+        @apply text-violet-400 underline;
+    }
+}

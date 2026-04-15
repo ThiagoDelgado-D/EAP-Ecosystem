@@ -16,7 +16,9 @@ import { ToastService } from './toast.service';
           [class]="
             toast.type === 'success'
               ? 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-ink dark:text-slate-100 text-sm font-medium'
-              : 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium'
+              : toast.type === 'error'
+                ? 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium'
+                : 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-sm font-medium'
           "
         >
           @if (toast.type === 'success') {
@@ -34,7 +36,7 @@ import { ToastService } from './toast.service';
             >
               <polyline points="20 6 9 17 4 12" />
             </svg>
-          } @else {
+          } @else if (toast.type === 'error') {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -50,6 +52,23 @@ import { ToastService } from './toast.service';
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12" y2="16" />
+            </svg>
+          } @else {
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-blue-500 shrink-0"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="12" x2="12" y2="16" />
+              <line x1="12" y1="8" x2="12" y2="8" />
             </svg>
           }
           {{ toast.message }}

@@ -45,4 +45,19 @@ export class LearningResourceService {
     await this.repository.addResourceLearning(resource);
     await this.loadAll();
   }
+
+  async getById(id: string): Promise<LearningResource> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const result = await this.repository.getById(id);
+      return result;
+    } catch (err) {
+      console.error('Error loading resource:', err);
+      this.error.set('Failed to load resource');
+      throw err;
+    } finally {
+      this.loading.set(false);
+    }
+  }
 }

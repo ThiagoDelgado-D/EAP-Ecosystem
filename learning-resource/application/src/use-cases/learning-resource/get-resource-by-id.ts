@@ -2,6 +2,7 @@ import {
   DifficultyType,
   EnergyLevelType,
   type ILearningResourceRepository,
+  MentalStateType,
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
@@ -25,10 +26,12 @@ export interface GetResourceByIdResponseModel {
   resourceId: UUID;
   title: string;
   url?: string;
+  imageUrl?: string;
   topicIds: UUID[];
   difficulty: DifficultyType;
   estimatedDurationMinutes: number;
   energyLevel?: EnergyLevelType;
+  mentalState?: MentalStateType;
   status?: ResourceStatusType;
   notes?: string;
 }
@@ -40,7 +43,7 @@ export const getResourceByIdSchema =
 
 export const GetResourceById = async (
   { learningResourceRepository }: GetResourceByIdDependencies,
-  { resourceId }: GetResourceByIdRequestModel
+  { resourceId }: GetResourceByIdRequestModel,
 ): Promise<
   | GetResourceByIdResponseModel
   | LearningResourceNotFoundError
@@ -63,10 +66,12 @@ export const GetResourceById = async (
     resourceId: resource.id,
     title: resource.title,
     url: resource.url,
+    imageUrl: resource.imageUrl,
     topicIds: resource.topicIds,
     difficulty: resource.difficulty,
     estimatedDurationMinutes: resource.estimatedDuration.value,
     energyLevel: resource.energyLevel,
+    mentalState: resource.mentalState,
     status: resource.status,
     notes: resource.notes,
   };

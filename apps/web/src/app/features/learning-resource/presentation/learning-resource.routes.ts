@@ -53,6 +53,13 @@ export const learningResourceRoutes: Routes = [
             (m) => m.AddResourceHubComponent,
           ),
       },
+      {
+        path: 'resources/:id',
+        loadComponent: () =>
+          import('./resource-detail/resource-detail.component').then(
+            (m) => m.ResourceDetailComponent,
+          ),
+      },
     ],
   },
 ];

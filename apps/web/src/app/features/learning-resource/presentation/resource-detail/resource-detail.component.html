@@ -1,0 +1,341 @@
+<div class="min-h-screen bg-slate-950">
+  <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <!-- Header nav -->
+    <div class="flex items-center justify-between mb-8">
+      <button
+        (click)="goBack()"
+        class="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors tracking-widest uppercase"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Resource Detail
+      </button>
+      <div class="flex gap-2">
+        <button
+          (click)="editResource()"
+          class="text-xs text-slate-400 hover:text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 transition-colors"
+        >
+          Edit
+        </button>
+        <button
+          (click)="deleteResource()"
+          class="text-xs text-red-400 hover:text-red-300 border border-red-800/50 rounded-lg px-3 py-1.5 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="flex justify-center py-16">
+        <div
+          class="w-12 h-12 border-4 border-slate-800 border-t-violet-500 rounded-full animate-spin"
+        ></div>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error()) {
+      <div class="text-center py-16 text-red-400">Failed to load resource. Please try again.</div>
+    }
+
+    <!-- Content -->
+    @if (resource(); as r) {
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
+        <!-- LEFT COLUMN -->
+        <div>
+          <!-- Category tag -->
+          <div class="mb-4">
+            <span
+              [class]="getTypeMeta(r.typeId).color"
+              class="inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase"
+            >
+              {{ getTypeMeta(r.typeId).label }}
+            </span>
+          </div>
+
+          <!-- Title -->
+          <h1 class="text-4xl sm:text-5xl font-black text-white leading-tight mb-6 tracking-tight">
+            {{ r.title }}
+          </h1>
+
+          <!-- Badges row -->
+          <div class="flex flex-wrap gap-2 mb-8">
+            <!-- Type badge -->
+            <span
+              [class]="getTypeMeta(r.typeId).color"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+            >
+              {{ getTypeMeta(r.typeId).label }}
+            </span>
+
+            <!-- Difficulty badge — matches getDifficultyClass() from home/resource-detail -->
+            <span
+              class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium"
+              [class]="getDifficultyClass(r.difficulty)"
+            >
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              {{ r.difficulty }} Difficulty
+            </span>
+
+            <!-- Energy badge — matches getEnergyClass() -->
+            <span
+              class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium"
+              [class]="getEnergyClass(r.energyLevel)"
+            >
+              <svg
+                width="9"
+                height="9"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="5" />
+                <line x1="12" y1="1" x2="12" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="23" />
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                <line x1="1" y1="12" x2="3" y2="12" />
+                <line x1="21" y1="12" x2="23" y2="12" />
+              </svg>
+              {{ r.energyLevel }} Energy
+            </span>
+
+            <!-- Duration badge -->
+            <span
+              class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-800 text-slate-400"
+            >
+              <svg
+                width="9"
+                height="9"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              {{ r.estimatedDuration.value }} min
+            </span>
+
+            @if (r.mentalState) {
+              <span
+                class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-800 text-slate-400"
+              >
+                <svg
+                  width="9"
+                  height="9"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+                  <path d="M8 12v4a4 4 0 0 0 8 0v-4" />
+                  <path d="M4 8h2M18 8h2M8 4l2 2M14 6l2-2" />
+                </svg>
+                {{ r.mentalState | titlecase }}
+              </span>
+            }
+
+            <span
+              class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-medium uppercase tracking-wide"
+              [class]="getStatusClass(r.status)"
+            >
+              {{ r.status }}
+            </span>
+          </div>
+
+          @if (r.imageUrl) {
+            <div
+              class="relative rounded-2xl overflow-hidden mb-8 border border-slate-800 bg-slate-900 aspect-video"
+            >
+              <img
+                [src]="r.imageUrl"
+                alt="{{ r.title }}"
+                class="w-full h-full object-cover opacity-90"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent"></div>
+              <button
+                class="absolute bottom-4 left-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-medium px-4 py-2 rounded-full hover:bg-white/20 transition-colors"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Preview Abstract
+              </button>
+            </div>
+          }
+
+          <div class="mb-8">
+            <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center gap-3">
+              Executive Summary
+              <span class="flex-1 h-px bg-slate-800"></span>
+            </h2>
+            @if (r.notes) {
+              <div
+                class="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed prose-strong:text-violet-300 prose-a:text-violet-400 prose-a:underline"
+              >
+                <div [innerHTML]="r.notes | markdown | async"></div>
+              </div>
+            } @else {
+              <p class="text-slate-500 italic text-sm">No notes available for this resource.</p>
+            }
+          </div>
+
+          <div
+            class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500 border-t border-slate-800 pt-4"
+          >
+            <span
+              ><span class="text-slate-400 font-medium">Created:</span>
+              {{ r.createdAt | date: 'medium' }}</span
+            >
+            <span
+              ><span class="text-slate-400 font-medium">Updated:</span>
+              {{ r.updatedAt | date: 'medium' }}</span
+            >
+            @if (r.url) {
+              <span>
+                <span class="text-slate-400 font-medium">URL:</span>
+                <a
+                  [href]="r.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-violet-400 hover:underline ml-1 break-all"
+                  >{{ r.url }}</a
+                >
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <p class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-3">
+              Energy Level
+            </p>
+            <div class="flex items-end gap-3 mb-3">
+              <span class="text-5xl font-black text-white leading-none">
+                {{ r.energyLevel === 'High' ? '94' : r.energyLevel === 'Medium' ? '62' : '30' }}%
+              </span>
+              <span class="text-xs text-emerald-400 font-medium mb-1">Optimal Flow State</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-1.5">
+              <div
+                class="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 transition-all"
+                [style.width]="
+                  r.energyLevel === 'High' ? '94%' : r.energyLevel === 'Medium' ? '62%' : '30%'
+                "
+              ></div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-violet-950 flex items-center justify-center">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="text-violet-400"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                </div>
+                <span class="text-sm font-semibold text-slate-100">Captured Insights</span>
+              </div>
+              <span
+                class="text-[10px] text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full font-medium"
+                >0 Notes</span
+              >
+            </div>
+
+            <div class="text-center py-6 text-slate-600">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                class="mx-auto mb-2 opacity-40"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <p class="text-xs">No insights captured yet</p>
+            </div>
+
+            <div class="mt-2 rounded-xl bg-slate-800/60 border border-slate-700 p-3">
+              <textarea
+                rows="2"
+                placeholder="Capture a new insight..."
+                class="w-full bg-transparent text-xs text-slate-300 placeholder-slate-600 resize-none outline-none"
+              ></textarea>
+              <div class="flex justify-end mt-2">
+                <button
+                  class="text-[10px] font-semibold bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Save Note
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="w-full flex items-center justify-between bg-slate-800/60 hover:bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 transition-colors group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-7 h-7 rounded-lg bg-sky-950 flex items-center justify-center">
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="text-sky-400"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-slate-200">Initialize Deep Work</span>
+            </div>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="text-slate-500 group-hover:text-slate-300 transition-colors"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
