@@ -66,7 +66,6 @@ export class LearningResourceService {
     this.error.set(null);
     try {
       await this.repository.deleteResource(id);
-      await this.loadAll();
     } catch (err) {
       console.error('Error deleting resource:', err);
       this.error.set('Failed to delete resource');
