@@ -1,10 +1,9 @@
 <div class="min-h-screen bg-slate-950">
   <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-    <!-- Header nav -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between mb-6">
       <button
         (click)="goBack()"
-        class="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors tracking-widest uppercase"
+        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
       >
         <svg
           width="14"
@@ -16,25 +15,31 @@
         >
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        Resource Detail
+        Back to Library
       </button>
+
       <div class="flex gap-2">
         <button
           (click)="editResource()"
-          class="text-xs text-slate-400 hover:text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 transition-colors"
+          [disabled]="loading()"
+          [class.opacity-50]="loading()"
+          [class.cursor-not-allowed]="loading()"
+          class="text-xs text-slate-400 hover:text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 transition-colors disabled:pointer-events-none"
         >
           Edit
         </button>
         <button
-          (click)="deleteResource()"
-          class="text-xs text-red-400 hover:text-red-300 border border-red-800/50 rounded-lg px-3 py-1.5 transition-colors"
+          (click)="openDeleteConfirm()"
+          [disabled]="loading()"
+          [class.opacity-50]="loading()"
+          [class.cursor-not-allowed]="loading()"
+          class="text-xs text-red-400 hover:text-red-300 border border-red-800/50 rounded-lg px-3 py-1.5 transition-colors disabled:pointer-events-none"
         >
           Delete
         </button>
       </div>
     </div>
 
-    <!-- Loading -->
     @if (loading()) {
       <div class="flex justify-center py-16">
         <div
@@ -43,17 +48,13 @@
       </div>
     }
 
-    <!-- Error -->
     @if (error()) {
       <div class="text-center py-16 text-red-400">Failed to load resource. Please try again.</div>
     }
 
-    <!-- Content -->
     @if (resource(); as r) {
       <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
-        <!-- LEFT COLUMN -->
         <div>
-          <!-- Category tag -->
           <div class="mb-4">
             <span
               [class]="getTypeMeta(r.typeId).color"
@@ -63,14 +64,11 @@
             </span>
           </div>
 
-          <!-- Title -->
           <h1 class="text-4xl sm:text-5xl font-black text-white leading-tight mb-6 tracking-tight">
             {{ r.title }}
           </h1>
 
-          <!-- Badges row -->
           <div class="flex flex-wrap gap-2 mb-8">
-            <!-- Type badge -->
             <span
               [class]="getTypeMeta(r.typeId).color"
               class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
@@ -78,7 +76,6 @@
               {{ getTypeMeta(r.typeId).label }}
             </span>
 
-            <!-- Difficulty badge — matches getDifficultyClass() from home/resource-detail -->
             <span
               class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium"
               [class]="getDifficultyClass(r.difficulty)"
@@ -89,7 +86,6 @@
               {{ r.difficulty }} Difficulty
             </span>
 
-            <!-- Energy badge — matches getEnergyClass() -->
             <span
               class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium"
               [class]="getEnergyClass(r.energyLevel)"
@@ -113,7 +109,6 @@
               {{ r.energyLevel }} Energy
             </span>
 
-            <!-- Duration badge -->
             <span
               class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-800 text-slate-400"
             >
