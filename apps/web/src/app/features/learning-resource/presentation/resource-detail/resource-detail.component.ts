@@ -15,11 +15,13 @@ import { ResourceTypeRepository } from '@features/learning-resource/domain/resou
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository.js';
 import { MarkdownPipe } from '@shared/pipes/markdown.pipe.js';
 import { ToastService } from '@core/toast/toast.service.js';
+import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service.js';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-resource-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, MarkdownPipe],
+  imports: [CommonModule, RouterModule, MarkdownPipe, MatDialogModule],
   providers: [
     LearningResourceService,
     ResourceTypeService,
@@ -34,17 +36,20 @@ export class ResourceDetailComponent implements OnInit {
   private readonly resourceService = inject(LearningResourceService);
   private readonly resourceTypeService = inject(ResourceTypeService);
   private readonly toastService = inject(ToastService);
+  private confirmDialog = inject(ConfirmDialogService);
 
   readonly resource = signal<LearningResource | null>(null);
   readonly loading = this.resourceService.loading;
   readonly error = this.resourceService.error;
 
   readonly resourceTypes = this.resourceTypeService.resourceTypes.asReadonly();
+  private resourceId: string | null = null;
+
   ngOnInit(): void {
     this.resourceTypeService.loadAll();
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadResource(id);
+    this.resourceId = this.route.snapshot.paramMap.get('id');
+    if (this.resourceId) {
+      this.loadResource(this.resourceId);
     } else {
       this.router.navigate(['/resources']);
     }
@@ -66,8 +71,29 @@ export class ResourceDetailComponent implements OnInit {
     if (id) this.router.navigate(['/resources', id, 'edit']);
   }
 
-  deleteResource(): void {
-    alert('Delete not yet implemented');
+  async deleteResource(): Promise<void> {
+    if (!this.resourceId) {
+      this.toastService.show('Resource ID is missing', 'error');
+      return;
+    }
+
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete resource',
+      message: `Are you sure you want to delete this resource? This action cannot be undone.`,
+      confirmLabel: 'Delete',
+      confirmButtonClass: 'bg-red-600 hover:bg-red-500 text-white',
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await this.resourceService.deleteResource(this.resourceId);
+      this.toastService.show('Resource deleted successfully', 'success');
+      this.router.navigate(['/resources']);
+    } catch (error) {
+      console.error('Delete error:', error);
+      this.toastService.show('Failed to delete resource. Please try again.', 'error');
+    }
   }
 
   getTypeMeta(typeId: string) {
