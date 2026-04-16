@@ -79,6 +79,11 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
 
     await firstValueFrom(this.http.post(`${this.baseUrl}`, payload));
   }
+
+  async deleteResource(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete(`${this.baseUrl}/${id}`));
+  }
+
   private toApiStatus(status: ResourceStatus): string {
     const map: Record<ResourceStatus, string> = {
       Pending: 'pending',

@@ -60,4 +60,19 @@ export class LearningResourceService {
       this.loading.set(false);
     }
   }
+
+  async deleteResource(id: string): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      await this.repository.deleteResource(id);
+      await this.loadAll();
+    } catch (err) {
+      console.error('Error deleting resource:', err);
+      this.error.set('Failed to delete resource');
+      throw err;
+    } finally {
+      this.loading.set(false);
+    }
+  }
 }
