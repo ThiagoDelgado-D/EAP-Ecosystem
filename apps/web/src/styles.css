@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap";
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
 
 @theme {
     --color-accent: #4F86C6;
@@ -56,4 +57,16 @@
     a {
         @apply text-violet-400 underline;
     }
+}
+
+.confirm-dark-dialog .mat-mdc-dialog-container {
+    background-color: transparent !important;
+    box-shadow: none;
+}
+
+.confirm-dark-dialog .mdc-dialog__surface {
+    background-color: #0f172a !important;
+    border: 1px solid #1e293b;
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }

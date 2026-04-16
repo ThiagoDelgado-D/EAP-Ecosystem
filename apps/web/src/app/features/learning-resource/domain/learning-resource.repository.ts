@@ -9,4 +9,5 @@ export abstract class LearningResourceRepository {
   abstract getByFilter(filter: LearningResourceFilter): Promise<LearningResource[]>;
   abstract getById(id: string): Promise<LearningResource>;
   abstract addResourceLearning(resource: AddResourcePayload): Promise<void>;
+  abstract deleteResource(resourceId: string): Promise<void>;
 }
