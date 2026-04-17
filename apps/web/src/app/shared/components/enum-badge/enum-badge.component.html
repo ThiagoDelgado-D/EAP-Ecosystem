@@ -8,18 +8,20 @@
     [attr.disabled]="readonly || loading ? true : null"
     class="inline-flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wide transition-all select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-slate-500"
     [ngClass]="[
-      currentOption?.badgeClass ?? 'bg-slate-800 text-slate-400',
+      isUnset
+        ? 'bg-transparent border border-dashed border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-400'
+        : (currentOption?.badgeClass ?? 'bg-slate-800 text-slate-400'),
       loading
         ? 'opacity-60 cursor-wait'
         : readonly
           ? 'cursor-default'
-          : 'cursor-pointer hover:brightness-125 active:scale-95',
+          : 'cursor-pointer active:scale-95',
     ]"
     [attr.aria-haspopup]="!readonly ? 'listbox' : null"
     [attr.aria-expanded]="isOpen()"
   >
-    <!-- Colored dot -->
-    @if (!loading) {
+    <!-- Colored dot — only when a value is set and not loading -->
+    @if (!loading && !isUnset) {
       <span
         class="w-1.5 h-1.5 rounded-full shrink-0"
         [ngClass]="currentOption?.dotClass ?? 'bg-slate-500'"
@@ -42,8 +44,8 @@
       </svg>
     }
 
-    <!-- Label -->
-    <span>{{ currentOption?.label ?? value }}</span>
+    <!-- Label — "Set..." placeholder when unset -->
+    <span>{{ isUnset ? 'Set...' : (currentOption?.label ?? value) }}</span>
 
     <!-- Chevron when interactive -->
     @if (!readonly && !loading) {
