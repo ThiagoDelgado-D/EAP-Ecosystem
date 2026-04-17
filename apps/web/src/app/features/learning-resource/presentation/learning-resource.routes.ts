@@ -54,6 +54,11 @@ export const learningResourceRoutes: Routes = [
           ),
       },
       {
+        path: 'resources/:id/edit',
+        loadComponent: () =>
+          import('./edit-resource/edit-resource.component').then((m) => m.EditResourceComponent),
+      },
+      {
         path: 'resources/:id',
         loadComponent: () =>
           import('./resource-detail/resource-detail.component').then(

@@ -75,7 +75,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
   async findById(id: UUID): Promise<LearningResource | null> {
     const entity = await this.repository.findOne({
       where: { id },
-      relations: ["topics"],
+      relations: ["topics", "resourceType"],
     });
     if (!entity) return null;
     return this.toDomain(entity);
@@ -143,7 +143,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
       title: entity.title,
       url: entity.url ?? undefined,
       imageUrl: entity.imageUrl ?? undefined,
-      typeId: entity.resourceTypeId as UUID,
+      typeId: (entity.resourceType?.id ?? entity.resourceTypeId) as UUID,
       topicIds: entity.topics.map((t) => t.id as UUID),
       difficulty: entity.difficulty as LearningResource["difficulty"],
       energyLevel: entity.energyLevel as LearningResource["energyLevel"],

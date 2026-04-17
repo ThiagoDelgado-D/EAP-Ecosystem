@@ -28,12 +28,15 @@ export interface GetResourceByIdResponseModel {
   url?: string;
   imageUrl?: string;
   topicIds: UUID[];
+  typeId: UUID;
   difficulty: DifficultyType;
   estimatedDurationMinutes: number;
   energyLevel?: EnergyLevelType;
   mentalState?: MentalStateType;
   status?: ResourceStatusType;
   notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const getResourceByIdSchema =
@@ -68,12 +71,15 @@ export const GetResourceById = async (
     url: resource.url,
     imageUrl: resource.imageUrl,
     topicIds: resource.topicIds,
+    typeId: resource.typeId,
     difficulty: resource.difficulty,
     estimatedDurationMinutes: resource.estimatedDuration.value,
     energyLevel: resource.energyLevel,
     mentalState: resource.mentalState,
     status: resource.status,
     notes: resource.notes,
+    createdAt: resource.createdAt,
+    updatedAt: resource.updatedAt,
   };
 
   return result;

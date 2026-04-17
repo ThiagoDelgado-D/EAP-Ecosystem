@@ -10,8 +10,13 @@ import type {
   LearningResourceFilter,
   MentalStateType,
   ResourceStatus,
+  UpdateResourcePayload,
 } from '../domain/learning-resource.model';
-import type { LearningResourceDto, LearningResourceListDto } from './learning-resource.dto';
+import type {
+  LearningResourceByIdDto,
+  LearningResourceDto,
+  LearningResourceListDto,
+} from './learning-resource.dto';
 import { API_CONFIG } from '@core/config/api.config';
 
 @Injectable()
@@ -55,9 +60,19 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     return response.resources.map((dto) => this.toDomain(dto));
   }
 
+  async toggleDifficulty(id: string, difficulty: DifficultyLevel): Promise<void> {
+    await firstValueFrom(this.http.patch(`${this.baseUrl}/${id}/difficulty`, { difficulty }));
+  }
+
+  async toggleEnergy(id: string, energyLevel: EnergyLevel): Promise<void> {
+    await firstValueFrom(this.http.patch(`${this.baseUrl}/${id}/energy`, { energyLevel }));
+  }
+
   async getById(id: string): Promise<LearningResource> {
-    const dto = await firstValueFrom(this.http.get<LearningResourceDto>(`${this.baseUrl}/${id}`));
-    return this.toDomain(dto);
+    const dto = await firstValueFrom(
+      this.http.get<LearningResourceByIdDto>(`${this.baseUrl}/${id}`),
+    );
+    return this.toDomainFromById(dto);
   }
 
   async addResourceLearning(resource: AddResourcePayload): Promise<void> {
@@ -78,6 +93,23 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     };
 
     await firstValueFrom(this.http.post(`${this.baseUrl}`, payload));
+  }
+
+  async updateResource(id: string, resource: UpdateResourcePayload): Promise<void> {
+    const payload = {
+      ...(resource.title !== undefined && { title: resource.title }),
+      ...(resource.url !== undefined && { url: resource.url }),
+      ...(resource.imageUrl !== undefined && { imageUrl: resource.imageUrl }),
+      ...(resource.notes !== undefined && { notes: resource.notes }),
+      ...(resource.estimatedDurationMinutes !== undefined && {
+        estimatedDurationMinutes: resource.estimatedDurationMinutes,
+      }),
+      ...(resource.topicIds !== undefined && { topicIds: resource.topicIds }),
+      ...(resource.typeId !== undefined && { typeId: resource.typeId }),
+      ...(resource.mentalState !== undefined && { mentalState: resource.mentalState }),
+    };
+
+    await firstValueFrom(this.http.patch(`${this.baseUrl}/${id}`, payload));
   }
 
   async deleteResource(id: string): Promise<void> {
@@ -150,17 +182,31 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     return {
       id: dto.id,
       title: dto.title,
+      difficulty: this.capitalizeDifficulty(dto.difficulty),
+      energyLevel: this.capitalizeEnergyLevel(dto.energyLevel),
+      status: this.capitalizeStatus(dto.status),
+      typeId: dto.typeId,
+      topicIds: dto.topicIds,
+      estimatedDuration: { value: 0, isEstimated: true },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  private toDomainFromById(dto: LearningResourceByIdDto): LearningResource {
+    return {
+      id: dto.resourceId,
+      title: dto.title,
       url: dto.url ?? undefined,
       imageUrl: dto.imageUrl ?? undefined,
       notes: dto.notes ?? undefined,
       difficulty: this.capitalizeDifficulty(dto.difficulty),
-      energyLevel: this.capitalizeEnergyLevel(dto.energyLevel),
+      energyLevel: dto.energyLevel ? this.capitalizeEnergyLevel(dto.energyLevel) : 'Medium',
       mentalState: this.parseMentalState(dto.mentalState),
-      status: this.capitalizeStatus(dto.status),
-      estimatedDuration: dto.estimatedDuration ?? { value: 0, isEstimated: true },
+      status: dto.status ? this.capitalizeStatus(dto.status) : 'Pending',
+      estimatedDuration: { value: dto.estimatedDurationMinutes, isEstimated: true },
       topicIds: dto.topicIds,
       typeId: dto.typeId,
-      lastViewed: dto.lastViewed ? this.parseDate(dto.lastViewed) : undefined,
       createdAt: this.parseDate(dto.createdAt),
       updatedAt: this.parseDate(dto.updatedAt),
     };

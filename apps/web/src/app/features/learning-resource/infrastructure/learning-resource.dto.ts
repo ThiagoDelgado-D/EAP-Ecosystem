@@ -1,20 +1,28 @@
+// Shape returned by GET /learning-resources (list endpoint)
 export interface LearningResourceDto {
   id: string;
   title: string;
-  url: string | null;
-  imageUrl: string | null;
-  notes: string | null;
   difficulty: string;
   energyLevel: string;
-  mentalState: string | null;
   status: string;
-  estimatedDuration: {
-    value: number;
-    isEstimated: boolean;
-  };
+  typeId: string;
+  topicIds: string[];
+}
+
+// Shape returned by GET /learning-resources/:id
+export interface LearningResourceByIdDto {
+  resourceId: string;
+  title: string;
+  url?: string | null;
+  imageUrl?: string | null;
+  notes?: string | null;
+  difficulty: string;
+  energyLevel?: string;
+  mentalState?: string | null;
+  status?: string;
+  estimatedDurationMinutes: number;
   topicIds: string[];
   typeId: string;
-  lastViewed: string | null;
   createdAt: string;
   updatedAt: string;
 }
