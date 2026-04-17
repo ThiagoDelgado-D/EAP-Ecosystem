@@ -116,7 +116,7 @@ export class LearningResourceService {
 
   async toggleMentalState(id: string, mentalState: MentalStateType): Promise<void> {
     return this.optimisticToggle(id, { mentalState }, () =>
-      this.repository.updateResource(id, { mentalState }),
+      this.repository.toggleMentalState(id, mentalState),
     );
   }
 
