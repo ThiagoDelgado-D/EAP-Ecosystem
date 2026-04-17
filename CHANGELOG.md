@@ -7,42 +7,175 @@
 - Wire FocusPulseComponent and PendingTasksComponent to real data
 - Transformers.js fallback for Firefox voice capture
 
-## [Unreleased] — v0.7.1 · v0.7.2 · v0.7.3 · v0.7.4
+## [0.7.5] - 2026-04-17
 
-### Planned (v0.7.x series – incremental frontend integrations)
+### Mental State Toggle
 
-These versions will connect existing backend use cases to the Angular frontend,
-adding detail views, editing, deletion, and quick toggles for learning resources.
+Completes the inline toggle story by wiring `mentalState` end-to-end: a
+dedicated backend use case, a new `PATCH /:id/mental-state` endpoint, and
+an interactive badge in the resource detail view. As a side effect, the
+`EnumBadgeComponent` now supports null values — rendering a "Set..."
+placeholder that lets users assign a field from scratch without leaving
+the page.
 
-#### v0.7.1 – Resource detail view & navigation
+---
 
-- `ResourceDetailComponent` – standalone page at `/resources/:id` showing all
-  resource fields (title, URL, image, difficulty, energy, status, duration,
-  topics, notes, timestamps).
-- Link from each card in `HomeComponent` (grid/list) to the detail view.
-- Breadcrumb or back button for easy return to the resource list.
+### Added
 
-#### v0.7.2 – Delete resource
+#### Backend — Application
 
-- Delete button in the detail view with a confirmation dialog.
-- Call `DELETE /api/v1/learning-resources/:id` and redirect to `/resources`
-  on success.
-- Error handling with toast notifications.
+- `toggleMentalState` use case
+  (`learning-resource/application/src/use-cases/toggles/toggle-mental-state.ts`) —
+  validates `id` (UUID) + `mentalState` (enum) via `toggleMentalStateSchema`;
+  returns `InvalidDataError` on validation failure, `LearningResourceNotFoundError`
+  when the resource is absent; partial `update()` on the repository
+- `toggle-mental-state.spec.ts` — 8 tests: all five `MentalStateType` values,
+  not-found, invalid value, invalid UUID, and field isolation
+- `toggles/index.ts` and `use-case-map.ts` updated with new export
 
-#### v0.7.3 – Edit resource
+#### Backend — API
 
-- `EditResourceComponent` at `/resources/:id/edit` – reuses the guided form
-  logic but pre‑fills existing data.
-- Supports partial updates (`PATCH`): title, URL, imageUrl, resource type,
-  topics, difficulty, energy, status, duration, notes, mentalState.
-- Redirect to detail view after successful update.
+- `ToggleMentalStateDto` with `@IsEnum(MentalStateType)`
+- `PATCH /api/v1/learning-resources/:id/mental-state` endpoint
+- `dto/request/index.ts` updated
+- 4 integration tests: success (deep_focus, light_read), 404, 400 invalid enum
 
-#### v0.7.4 – Quick toggles (difficulty, energy, status)
+#### Frontend — Shared
 
-- Clickable badges in both the list (`HomeComponent`) and detail view.
-- Toggle endpoints: `PATCH /:id/difficulty`, `PATCH /:id/energy`, `PATCH /:id/status`.
-- Optimistic UI update with rollback on error.
-- Visual feedback (spinner, toast) for each toggle.
+- `EnumBadgeComponent` — `value` changed from `@Input({ required: true }) value!: string`
+  to `@Input() value: string | null = null`; added `isUnset` getter; null state renders
+  a dashed-border "Set..." pill — fully interactive, opens the same dropdown
+- `EnumBadgeComponent` — added `@HostListener('window:scroll')` and
+  `@HostListener('window:resize')` to close the dropdown on viewport changes
+
+#### Frontend — resource-detail
+
+- `resource-detail.component.ts` — imports `EnumBadgeComponent`; adds option arrays
+  for all four toggleable fields; adds `toggleLoadingField` signal; adds `onToggle()`
+  with local optimistic update and rollback (injects `LearningResourceRepository`
+  directly — the service's `optimisticToggle` is not usable in the detail view where
+  `resources[]` is empty); removes dead `getDifficultyClass`, `getEnergyClass`,
+  `getStatusClass` methods
+- `resource-detail.component.html` — static metadata spans replaced with labeled
+  `<app-enum-badge>` pill groups (`bg-slate-800/40` container + `text-slate-300` label);
+  `mentalState` receives `r.mentalState ?? null` — shows "Set..." when unset; Duration
+  moved to last position; duplicate "Learning Context" sidebar card removed
+
+### Fixed
+
+- `LearningResourceService.toggleMentalState` was calling `repository.updateResource`
+  instead of the dedicated `repository.toggleMentalState` — fixed
+- `@HostListener('window:scroll', ['$event'])` caused `TS2554: Expected 0 arguments,
+  but got 1` — fixed by removing the `['$event']` argument
+
+---
+
+## [0.7.4] - 2026-04-17
+
+### Quick Toggles — Inline Badges
+
+Introduces `EnumBadgeComponent`, a reusable Notion-style dropdown badge that
+lets users toggle `difficulty`, `energyLevel`, and `status` directly from the
+resource cards in the home view — no navigation required.
+
+---
+
+### Added
+
+#### Frontend — Shared
+
+- `EnumBadgeComponent` (`apps/web/src/app/shared/components/enum-badge/`) —
+  standalone Angular component with Notion-style inline dropdown
+- `EnumOption<T>` interface — `value`, `label`, `badgeClass`, `dotClass`
+- Module-level `openBadgeId` signal — ensures only one dropdown is open at a
+  time across all badge instances
+- `position: fixed` dropdown via `getBoundingClientRect()` — escapes
+  `overflow: hidden` on parent cards
+- `@HostListener('document:click')` and `@HostListener('document:keydown.escape')`
+  for outside-click and keyboard dismissal
+
+#### Frontend — learning-resource
+
+- `LearningResourceRepository` — added abstract `toggleStatus` and
+  `toggleMentalState` methods to the frontend repository contract
+- `LearningResourceHttpRepository` — implemented `toggleStatus`, `toggleMentalState`;
+  fixed `toggleDifficulty` and `toggleEnergy` to apply API lowercasing
+  (`toApiDifficulty`, `toApiEnergyLevel`) before sending
+- `LearningResourceService` — added private `optimisticToggle` helper; added
+  `toggleDifficulty`, `toggleEnergy`, `toggleStatus`, `toggleMentalState` public
+  methods with optimistic update + rollback on error
+- `HomeComponent` — added `difficultyOptions`, `energyOptions`, `statusOptions`,
+  `mentalStateOptions` arrays; `toggleLoadingId` signal; `onToggle()` handler;
+  replaced static badge spans with `<app-enum-badge>` in grid and list views;
+  removed `getDifficultyClass`, `getEnergyClass`, `getStatusClass`
+
+### Fixed
+
+- Card navigation firing when clicking a badge — `event.stopPropagation()` added
+  inside `toggle()` and `select()` in `EnumBadgeComponent`
+- API toggle calls sending PascalCase values (`Medium`, `High`) instead of
+  lowercase (`medium`, `high`) — applied `toApiDifficulty()` / `toApiEnergyLevel()`
+  in the HTTP repository toggle methods
+- `currentOption` re-evaluated as a getter instead of `computed()` — `computed()`
+  only tracks signal dependencies; plain `@Input()` properties require a getter
+  for correct change detection
+
+---
+
+## [0.7.3] - 2026-04-16
+
+### Edit Resource
+
+Adds `EditResourceComponent` at `/resources/:id/edit`, allowing users to update
+all resource fields inline without recreating the resource.
+
+### Added
+
+- `EditResourceComponent` — standalone page at `/resources/:id/edit`; pre-fills
+  all existing fields on load via `getById`; supports partial updates (`PATCH`)
+  for title, URL, imageUrl, resource type, topics, difficulty, energy, status,
+  duration, notes, and mentalState
+- Redirect to `/resources/:id` (detail view) on successful update
+- Cancel button returns to detail view without saving
+- Toast notifications on success and error
+
+---
+
+## [0.7.2] - 2026-04-15
+
+### Delete Resource
+
+Adds destructive action support to the detail view with a confirmation dialog
+and clean redirect flow.
+
+### Added
+
+- Delete button in `ResourceDetailComponent` — opens a `ConfirmDialogService`
+  modal before calling `DELETE /api/v1/learning-resources/:id`
+- Redirect to `/resources` on successful deletion
+- Toast on success and on error
+
+---
+
+## [0.7.1] - 2026-04-15
+
+### Resource Detail View
+
+Adds `ResourceDetailComponent` — a full standalone page for each learning
+resource, reachable at `/resources/:id`.
+
+### Added
+
+- `ResourceDetailComponent` at `/resources/:id` — displays all resource fields:
+  title, URL, imageUrl, difficulty, energy, status, duration, mentalState, topics,
+  notes, and timestamps
+- Hero image when `imageUrl` is present; markdown rendering for notes via
+  `MarkdownPipe`
+- Navigation from every card in `HomeComponent` (grid and list views) via
+  `onCardClick()` with `ResourceLibraryService.trackRecent()`
+- Back button returning to `/resources`
+- Edit and Delete action buttons (Delete implemented in v0.7.2,
+  Edit implemented in v0.7.3)
 
 ---
 

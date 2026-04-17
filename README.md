@@ -14,7 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
+[![Version](https://img.shields.io/badge/version-0.7.5-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
 
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
 [![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
@@ -30,26 +30,29 @@ The long-term goal is a recommendation engine that suggests what to study based 
 
 **Right now**, EAP is a full-stack application with a REST API and an Angular 21 frontend
 that lets you manage your learning resources, filter them by difficulty and energy level,
-and add new ones via a guided step-by-step form. Recommendations and advanced features
-are coming in upcoming versions.
+add new ones via a guided form or URL/voice/file import, and update metadata inline
+without leaving the list or detail view. Recommendations and advanced features are
+coming in upcoming versions.
 
 ---
 
-## 🎯 Current Status (v0.7.0)
+## 🎯 Current Status (v0.7.5)
 
-| Component                 | Status               | Notes                                               |
-| ------------------------- | -------------------- | --------------------------------------------------- |
-| **Domain Layer**          | ✅ Stable            | `LearningResource` + `User` domains complete        |
-| **Application Layer**     | ✅ Stable            | Use cases + URL preview port                        |
-| **API Layer**             | ✅ Stable            | NestJS REST, PostgreSQL, TypeORM                    |
-| **Frontend**              | ✅ Stable            | Angular 21, dashboard, resource library, URL Import |
-| **URL Import**            | ✅ Complete          | oEmbed + Open Graph + graceful fallback (v0.6.0)    |
-| **Voice Capture**         | ✅ Complete          | Web Speech API + rule‑based mapping (v0.7.0)        |
-| **CSV/JSON File Import**  | ✅ Complete          | Drag & drop, preview table, batch import (v0.7.0)   |
-| **User Module**           | 🚧 Foundation        | Domain + application only, not wired to API or auth |
-| **Authentication**        | 📅 Next (v0.8.0)     | Magic link → OAuth → MFA                            |
-| **Session Tracking**      | 📅 Planned (v0.10.0) | Focus Pulse uses hardcoded data until then          |
-| **Recommendation Engine** | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then   |
+| Component                 | Status               | Notes                                                              |
+| ------------------------- | -------------------- | ------------------------------------------------------------------ |
+| **Domain Layer**          | ✅ Stable            | `LearningResource` + `User` domains complete                       |
+| **Application Layer**     | ✅ Stable            | Use cases + URL preview port + all toggle use cases                |
+| **API Layer**             | ✅ Stable            | NestJS REST, PostgreSQL, TypeORM                                   |
+| **Frontend**              | ✅ Stable            | Angular 21, dashboard, resource library, detail/edit/delete views  |
+| **URL Import**            | ✅ Complete          | oEmbed + Open Graph + graceful fallback (v0.6.0)                   |
+| **Voice Capture**         | ✅ Complete          | Web Speech API + rule‑based mapping (v0.7.0)                       |
+| **CSV/JSON File Import**  | ✅ Complete          | Drag & drop, preview table, batch import (v0.7.0)                  |
+| **Quick Toggles**         | ✅ Complete          | Inline difficulty / energy / status badges with optimistic UI (v0.7.4) |
+| **Mental State Toggle**   | ✅ Complete          | `PATCH /:id/mental-state` + detail view badge with null placeholder (v0.7.5) |
+| **User Module**           | 🚧 Foundation        | Domain + application only, not wired to API or auth                |
+| **Authentication**        | 📅 Next (v0.8.0)     | Magic link → OAuth → MFA                                           |
+| **Session Tracking**      | 📅 Planned (v0.10.0) | Focus Pulse uses hardcoded data until then                         |
+| **Recommendation Engine** | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then                  |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
@@ -130,11 +133,12 @@ Base URL: `http://localhost:3000/api/v1`
 | GET    | `/learning-resources/:id`            | Get by ID                                           |
 | PATCH  | `/learning-resources/:id`            | Update resource                                     |
 | DELETE | `/learning-resources/:id`            | Delete resource                                     |
-| PATCH  | `/learning-resources/:id/difficulty` | Toggle difficulty                                   |
-| PATCH  | `/learning-resources/:id/energy`     | Toggle energy level                                 |
-| PATCH  | `/learning-resources/:id/status`     | Toggle status                                       |
-| GET    | `/health`                            | Health check                                        |
-| POST   | `/learning-resources/preview`        | Extract metadata from URL                           |
+| PATCH  | `/learning-resources/:id/difficulty`    | Toggle difficulty                                   |
+| PATCH  | `/learning-resources/:id/energy`        | Toggle energy level                                 |
+| PATCH  | `/learning-resources/:id/status`        | Toggle status                                       |
+| PATCH  | `/learning-resources/:id/mental-state`  | Toggle mental state                                 |
+| GET    | `/health`                               | Health check                                        |
+| POST   | `/learning-resources/preview`           | Extract metadata from URL                           |
 
 ---
 
@@ -177,7 +181,7 @@ EAP-Ecosystem/
 
 - [Architecture](ARCHITECTURE.md) — architectural principles, patterns, and decisions
 - [Changelog](CHANGELOG.md) — version history
-- [ADRs](.docs/adr/) — individual architectural decision records
+- [ADRs](docs/adr/) — individual architectural decision records
 - [Roadmap & Progress](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) — versioned roadmap and feature tracking
 
 ---
