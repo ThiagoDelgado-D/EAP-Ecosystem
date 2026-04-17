@@ -47,3 +47,14 @@ export interface AddResourcePayload {
   status?: ResourceStatus;
   notes?: string;
 }
+
+export interface UpdateResourcePayload {
+  title?: string;
+  url?: string;
+  imageUrl?: string;
+  typeId?: string;
+  topicIds?: string[];
+  estimatedDurationMinutes?: number;
+  mentalState?: MentalStateType;
+  notes?: string;
+}
