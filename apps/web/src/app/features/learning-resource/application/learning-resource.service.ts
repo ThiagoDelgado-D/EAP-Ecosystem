@@ -2,8 +2,11 @@ import { inject, Injectable, signal } from '@angular/core';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import type {
   AddResourcePayload,
+  DifficultyLevel,
+  EnergyLevel,
   LearningResource,
   LearningResourceFilter,
+  UpdateResourcePayload,
 } from '@features/learning-resource/domain/learning-resource.model';
 
 @Injectable()
@@ -59,6 +62,28 @@ export class LearningResourceService {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async updateResource(id: string, payload: UpdateResourcePayload): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      await this.repository.updateResource(id, payload);
+    } catch (err) {
+      console.error('Error updating resource:', err);
+      this.error.set('Failed to update resource');
+      throw err;
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async toggleDifficulty(id: string, difficulty: DifficultyLevel): Promise<void> {
+    await this.repository.toggleDifficulty(id, difficulty);
+  }
+
+  async toggleEnergy(id: string, energyLevel: EnergyLevel): Promise<void> {
+    await this.repository.toggleEnergy(id, energyLevel);
   }
 
   async deleteResource(id: string): Promise<void> {
