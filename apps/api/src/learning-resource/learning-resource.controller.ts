@@ -21,6 +21,7 @@ import {
   PreviewUrlDto,
   ToggleDifficultyDto,
   ToggleEnergyDto,
+  ToggleMentalStateDto,
   ToggleStatusDto,
   UpdateResourceDto,
 } from "./dto/request/index.js";
@@ -33,6 +34,7 @@ import {
   previewUrl,
   toggleResourceDifficulty,
   toggleResourceEnergy,
+  toggleMentalState,
   toggleStatus,
   updateResource,
   type IUrlMetadataService,
@@ -144,6 +146,18 @@ export class LearningResourceController {
     const result = await toggleStatus(
       { learningResourceRepository: this.learningResourceRepository },
       { id, status: dto.status },
+    );
+    if (result instanceof BaseError) toHttpException(result);
+  }
+
+  @Patch(":id/mental-state")
+  async toggleMentalState(
+    @Param("id") id: UUID,
+    @Body() dto: ToggleMentalStateDto,
+  ) {
+    const result = await toggleMentalState(
+      { learningResourceRepository: this.learningResourceRepository },
+      { id, mentalState: dto.mentalState },
     );
     if (result instanceof BaseError) toHttpException(result);
   }

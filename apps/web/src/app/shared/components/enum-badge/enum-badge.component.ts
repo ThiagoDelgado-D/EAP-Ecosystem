@@ -21,7 +21,7 @@ const openBadgeId = signal<string | null>(null);
   templateUrl: './enum-badge.component.html',
 })
 export class EnumBadgeComponent {
-  @Input({ required: true }) value!: string;
+  @Input() value: string | null = null;
   @Input({ required: true }) options!: EnumOption[];
   @Input() loading = false;
   @Input() readonly = false;
@@ -35,7 +35,12 @@ export class EnumBadgeComponent {
   dropdownPos = signal<{ top: number; left: number } | null>(null);
 
   get currentOption(): EnumOption | undefined {
+    if (!this.value) return undefined;
     return this.options?.find((o) => o.value === this.value);
+  }
+
+  get isUnset(): boolean {
+    return this.value === null || this.value === '';
   }
 
   toggle(event: MouseEvent): void {
