@@ -553,6 +553,60 @@ describe("LearningResourceController (integration)", () => {
     });
   });
 
+  describe("PATCH /api/v1/learning-resources/:id/mental-state", () => {
+    let resourceId: UUID;
+
+    beforeEach(async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-resources")
+        .send({
+          title: "TypeScript Advanced",
+          resourceTypeId,
+          topicIds: [topicId],
+          difficulty: "high",
+          estimatedDurationMinutes: 120,
+        });
+
+      resourceId = resourceRepo.learningResources[0].id;
+    });
+
+    test("Should toggle mental state to deep_focus successfully", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/mental-state`)
+        .send({ mentalState: "deep_focus" })
+        .expect(200);
+
+      const updated = await resourceRepo.findById(resourceId);
+      expect(updated?.mentalState).toBe("deep_focus");
+    });
+
+    test("Should toggle mental state to light_read successfully", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/mental-state`)
+        .send({ mentalState: "light_read" })
+        .expect(200);
+
+      const updated = await resourceRepo.findById(resourceId);
+      expect(updated?.mentalState).toBe("light_read");
+    });
+
+    test("Should return 404 when resource does not exist", async () => {
+      const nonExistentId = await cryptoService.generateUUID();
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${nonExistentId}/mental-state`)
+        .send({ mentalState: "deep_focus" })
+        .expect(404);
+    });
+
+    test("Should return 400 when mentalState is invalid", async () => {
+      await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${resourceId}/mental-state`)
+        .send({ mentalState: "INVALID" })
+        .expect(400);
+    });
+  });
+
   describe("POST /api/v1/learning-resources/preview", () => {
     test("Should return 200 with metadata for a YouTube URL", async () => {
       const response = await request(app.getHttpServer())
