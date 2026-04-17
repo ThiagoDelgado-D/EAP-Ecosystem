@@ -68,7 +68,10 @@
             {{ r.title }}
           </h1>
 
-          <div class="flex flex-wrap gap-2 mb-8">
+          <!-- Metadata pills — interactive badges for toggleable fields -->
+          <div class="flex flex-wrap items-center gap-2 mb-8">
+
+            <!-- Type — static, not toggleable -->
             <span
               [class]="getTypeMeta(r.typeId).color"
               class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
@@ -76,81 +79,62 @@
               {{ getTypeMeta(r.typeId).label }}
             </span>
 
-            <span
-              class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium"
-              [class]="getDifficultyClass(r.difficulty)"
-            >
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-              </svg>
-              {{ r.difficulty }} Difficulty
+            <span class="w-px h-4 bg-slate-800 shrink-0"></span>
+
+            <!-- Difficulty -->
+            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg pl-2.5 pr-1 py-1">
+              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Difficulty</span>
+              <app-enum-badge
+                [value]="r.difficulty"
+                [options]="difficultyOptions"
+                [loading]="toggleLoadingField() === 'difficulty'"
+                (changed)="onToggle($event, 'difficulty')"
+              />
             </span>
 
-            <span
-              class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium"
-              [class]="getEnergyClass(r.energyLevel)"
-            >
-              <svg
-                width="9"
-                height="9"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="23" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                <line x1="1" y1="12" x2="3" y2="12" />
-                <line x1="21" y1="12" x2="23" y2="12" />
-              </svg>
-              {{ r.energyLevel }} Energy
+            <!-- Energy -->
+            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg pl-2.5 pr-1 py-1">
+              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Energy</span>
+              <app-enum-badge
+                [value]="r.energyLevel"
+                [options]="energyOptions"
+                [loading]="toggleLoadingField() === 'energy'"
+                (changed)="onToggle($event, 'energy')"
+              />
             </span>
 
-            <span
-              class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-800 text-slate-400"
-            >
-              <svg
-                width="9"
-                height="9"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              {{ r.estimatedDuration.value }} min
+            <!-- Mental State — interactive; shows "Set..." placeholder when unset -->
+            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg pl-2.5 pr-1 py-1">
+              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Focus</span>
+              <app-enum-badge
+                [value]="r.mentalState ?? null"
+                [options]="mentalStateOptions"
+                [loading]="toggleLoadingField() === 'mentalState'"
+                (changed)="onToggle($event, 'mentalState')"
+              />
             </span>
 
-            @if (r.mentalState) {
-              <span
-                class="inline-flex items-center gap-1.5 text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-800 text-slate-400"
-              >
-                <svg
-                  width="9"
-                  height="9"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
-                  <path d="M8 12v4a4 4 0 0 0 8 0v-4" />
-                  <path d="M4 8h2M18 8h2M8 4l2 2M14 6l2-2" />
+            <!-- Status -->
+            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg pl-2.5 pr-1 py-1">
+              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Status</span>
+              <app-enum-badge
+                [value]="r.status"
+                [options]="statusOptions"
+                [loading]="toggleLoadingField() === 'status'"
+                (changed)="onToggle($event, 'status')"
+              />
+            </span>
+
+            <!-- Duration — static, last since its height is shorter than the interactive badges -->
+            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
+              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Duration</span>
+              <span class="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
                 </svg>
-                {{ r.mentalState | titlecase }}
+                {{ r.estimatedDuration.value }} min
               </span>
-            }
-
-            <span
-              class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded font-medium uppercase tracking-wide"
-              [class]="getStatusClass(r.status)"
-            >
-              {{ r.status }}
             </span>
           </div>
 
