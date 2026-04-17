@@ -67,8 +67,9 @@ export class ResourceDetailComponent implements OnInit {
   }
 
   editResource(): void {
-    const id = this.resource()?.id;
-    if (id) this.router.navigate(['/resources', id, 'edit']);
+    if (this.resourceId) {
+      this.router.navigate(['/resources', this.resourceId, 'edit']);
+    }
   }
 
   async deleteResource(): Promise<void> {
