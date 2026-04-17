@@ -8,6 +8,7 @@ import { listFormattedResourcesLearning } from "./use-cases/learning-resource/li
 import { toggleResourceDifficulty } from "./use-cases/toggles/toggle-resource-difficulty.js";
 import { toggleResourceEnergy } from "./use-cases/toggles/toggle-resource-energy.js";
 import { toggleStatus } from "./use-cases/toggles/toggle-resource-status.js";
+import { toggleMentalState } from "./use-cases/toggles/toggle-mental-state.js";
 
 export const learningResourceUseCaseMap = {
   addResource,
@@ -19,6 +20,7 @@ export const learningResourceUseCaseMap = {
   toggleResourceDifficulty,
   toggleResourceEnergy,
   toggleStatus,
+  toggleMentalState,
 } as const;
 
 export type LearningResourceUseCaseMap = typeof learningResourceUseCaseMap;
