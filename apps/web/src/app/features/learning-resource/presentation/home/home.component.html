@@ -413,28 +413,28 @@
               </h2>
 
               <div class="flex flex-wrap gap-1.5 mt-auto pt-2">
-                <span
-                  class="text-[10px] uppercase tracking-wide font-medium px-1.5 py-0.5 rounded bg-slate-800 text-slate-400"
-                >
-                  Difficulty
-                  <span [class]="getDifficultyClass(resource.difficulty)">
-                    {{ resource.difficulty }}
-                  </span>
-                </span>
-                <span
-                  class="text-[10px] uppercase tracking-wide font-medium px-1.5 py-0.5 rounded bg-slate-800 text-slate-400"
-                >
-                  Energy
-                  <span [class]="getEnergyClass(resource.energyLevel)">
-                    {{ resource.energyLevel }}
-                  </span>
-                </span>
+                <app-enum-badge
+                  [value]="resource.difficulty"
+                  [options]="difficultyOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':difficulty'"
+                  (changed)="onToggle($event, resource, 'difficulty')"
+                />
+                <app-enum-badge
+                  [value]="resource.energyLevel"
+                  [options]="energyOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':energy'"
+                  (changed)="onToggle($event, resource, 'energy')"
+                />
                 <span class="text-[10px] text-slate-500 px-1.5 py-0.5 rounded bg-slate-800">
                   {{ resource.estimatedDuration.value }} min
                 </span>
-                <span [class]="getStatusClass(resource.status)" class="ml-auto">
-                  {{ resource.status }}
-                </span>
+                <app-enum-badge
+                  [value]="resource.status"
+                  [options]="statusOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':status'"
+                  (changed)="onToggle($event, resource, 'status')"
+                  class="ml-auto"
+                />
               </div>
             </div>
           </div>
@@ -488,13 +488,24 @@
             </div>
 
             <div class="flex items-center gap-2 shrink-0">
-              <span [class]="getDifficultyClass(resource.difficulty)">
-                {{ resource.difficulty }}
-              </span>
-              <span [class]="getEnergyClass(resource.energyLevel)">
-                {{ resource.energyLevel }}
-              </span>
-              <span [class]="getStatusClass(resource.status)">{{ resource.status }}</span>
+              <app-enum-badge
+                [value]="resource.difficulty"
+                [options]="difficultyOptions"
+                [loading]="toggleLoadingId() === resource.id + ':difficulty'"
+                (changed)="onToggle($event, resource, 'difficulty')"
+              />
+              <app-enum-badge
+                [value]="resource.energyLevel"
+                [options]="energyOptions"
+                [loading]="toggleLoadingId() === resource.id + ':energy'"
+                (changed)="onToggle($event, resource, 'energy')"
+              />
+              <app-enum-badge
+                [value]="resource.status"
+                [options]="statusOptions"
+                [loading]="toggleLoadingId() === resource.id + ':status'"
+                (changed)="onToggle($event, resource, 'status')"
+              />
 
               <button
                 (click)="toggleSaved($event, resource.id)"

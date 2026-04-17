@@ -1,0 +1,108 @@
+<div class="relative inline-flex">
+
+  <!-- Badge trigger -->
+  <button
+    #triggerBtn
+    type="button"
+    (click)="toggle($event)"
+    [attr.disabled]="readonly || loading ? true : null"
+    class="inline-flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-md font-semibold uppercase tracking-wide transition-all select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-slate-500"
+    [ngClass]="[
+      currentOption?.badgeClass ?? 'bg-slate-800 text-slate-400',
+      loading
+        ? 'opacity-60 cursor-wait'
+        : readonly
+          ? 'cursor-default'
+          : 'cursor-pointer hover:brightness-125 active:scale-95',
+    ]"
+    [attr.aria-haspopup]="!readonly ? 'listbox' : null"
+    [attr.aria-expanded]="isOpen()"
+  >
+    <!-- Colored dot -->
+    @if (!loading) {
+      <span
+        class="w-1.5 h-1.5 rounded-full shrink-0"
+        [ngClass]="currentOption?.dotClass ?? 'bg-slate-500'"
+      ></span>
+    }
+
+    <!-- Spinner when loading -->
+    @if (loading) {
+      <svg
+        class="animate-spin h-2.5 w-2.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <path
+          d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
+          stroke-linecap="round"
+        />
+      </svg>
+    }
+
+    <!-- Label -->
+    <span>{{ currentOption?.label ?? value }}</span>
+
+    <!-- Chevron when interactive -->
+    @if (!readonly && !loading) {
+      <svg
+        class="h-2 w-2 shrink-0 opacity-60"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <polyline points="6 9 12 15 18 9" />
+      </svg>
+    }
+  </button>
+
+  <!-- Dropdown — fixed positioning to escape overflow:hidden on parent cards -->
+  @if (isOpen() && dropdownPos()) {
+    <div
+      class="fixed z-[9999] min-w-[140px] bg-slate-900 border border-slate-700/80 rounded-lg shadow-2xl py-1"
+      role="listbox"
+      [ngStyle]="{ top: dropdownPos()!.top + 'px', left: dropdownPos()!.left + 'px' }"
+    >
+      @for (opt of options; track opt.value) {
+        <button
+          type="button"
+          role="option"
+          [attr.aria-selected]="opt.value === value"
+          (click)="select($event, opt)"
+          class="w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors hover:bg-slate-800/70"
+          [ngClass]="opt.value === value ? 'text-white font-semibold' : 'text-slate-400'"
+        >
+          <!-- Colored dot -->
+          <span
+            class="w-2 h-2 rounded-full shrink-0"
+            [ngClass]="opt.dotClass"
+          ></span>
+
+          <!-- Option label -->
+          <span class="flex-1 text-left">{{ opt.label }}</span>
+
+          <!-- Checkmark for active -->
+          @if (opt.value === value) {
+            <svg
+              class="h-3 w-3 shrink-0 text-slate-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          }
+        </button>
+      }
+    </div>
+  }
+
+</div>

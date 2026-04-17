@@ -49,7 +49,6 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     if (filter.typeId) {
       params = params.set('resourceTypeId', filter.typeId);
     }
-    // Added in PR #44 — mentalState filter support
     if (filter.mentalState) {
       params = params.set('mentalState', filter.mentalState);
     }
@@ -61,11 +60,29 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
   }
 
   async toggleDifficulty(id: string, difficulty: DifficultyLevel): Promise<void> {
-    await firstValueFrom(this.http.patch(`${this.baseUrl}/${id}/difficulty`, { difficulty }));
+    await firstValueFrom(
+      this.http.patch(`${this.baseUrl}/${id}/difficulty`, {
+        difficulty: this.toApiDifficulty(difficulty),
+      }),
+    );
   }
 
   async toggleEnergy(id: string, energyLevel: EnergyLevel): Promise<void> {
-    await firstValueFrom(this.http.patch(`${this.baseUrl}/${id}/energy`, { energyLevel }));
+    await firstValueFrom(
+      this.http.patch(`${this.baseUrl}/${id}/energy`, {
+        energyLevel: this.toApiEnergyLevel(energyLevel),
+      }),
+    );
+  }
+
+  async toggleStatus(id: string, status: ResourceStatus): Promise<void> {
+    await firstValueFrom(
+      this.http.patch(`${this.baseUrl}/${id}/status`, { status: this.toApiStatus(status) }),
+    );
+  }
+
+  async toggleMentalState(id: string, mentalState: MentalStateType): Promise<void> {
+    await firstValueFrom(this.http.patch(`${this.baseUrl}/${id}`, { mentalState }));
   }
 
   async getById(id: string): Promise<LearningResource> {
