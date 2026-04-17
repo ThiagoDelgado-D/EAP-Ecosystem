@@ -18,6 +18,9 @@ import type {
 import type { ResourceType } from '../../domain/resource-type.model';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service.js';
 import { CommonModule } from '@angular/common';
+import { ToastService } from '@core/toast/toast.service';
+import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
+import type { EnumOption } from '@shared/components/enum-badge/enum-badge.types';
 
 export type TabMode = 'all' | 'saved' | 'recent';
 
@@ -48,11 +51,12 @@ const FALLBACK_TYPE_META = {
     { provide: LearningResourceRepository, useClass: LearningResourceHttpRepository },
     { provide: ResourceTypeRepository, useClass: ResourceTypeHttpRepository },
   ],
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, EnumBadgeComponent],
 })
 export class HomeComponent implements OnInit {
   private readonly service = inject(LearningResourceService);
   private readonly typeService = inject(ResourceTypeService);
+  private readonly toastService = inject(ToastService);
   readonly libraryService = inject(ResourceLibraryService);
 
   readonly allResources = this.service.resources;
@@ -85,6 +89,89 @@ export class HomeComponent implements OnInit {
     { value: 'creative', label: 'Creative' },
     { value: 'quick_op', label: 'Quick Op' },
     { value: 'review', label: 'Review' },
+  ];
+
+  readonly toggleLoadingId = signal<string | null>(null);
+
+  readonly difficultyOptions: EnumOption<DifficultyLevel>[] = [
+    {
+      value: 'Low',
+      label: 'Low',
+      badgeClass: 'bg-emerald-950/60 text-emerald-400',
+      dotClass: 'bg-emerald-500',
+    },
+    {
+      value: 'Medium',
+      label: 'Medium',
+      badgeClass: 'bg-yellow-950/60 text-yellow-400',
+      dotClass: 'bg-yellow-500',
+    },
+    {
+      value: 'High',
+      label: 'High',
+      badgeClass: 'bg-red-950/60 text-red-400',
+      dotClass: 'bg-red-500',
+    },
+  ];
+
+  readonly energyOptions: EnumOption<EnergyLevel>[] = [
+    { value: 'Low',    label: 'Low',    badgeClass: 'bg-emerald-950/60 text-emerald-400', dotClass: 'bg-emerald-500' },
+    { value: 'Medium', label: 'Medium', badgeClass: 'bg-yellow-950/60 text-yellow-400',  dotClass: 'bg-yellow-500'  },
+    { value: 'High',   label: 'High',   badgeClass: 'bg-red-950/60 text-red-400',        dotClass: 'bg-red-500'     },
+  ];
+
+  readonly statusOptions: EnumOption<ResourceStatus>[] = [
+    {
+      value: 'Pending',
+      label: 'Pending',
+      badgeClass: 'bg-slate-800 text-slate-400',
+      dotClass: 'bg-slate-500',
+    },
+    {
+      value: 'InProgress',
+      label: 'In Progress',
+      badgeClass: 'bg-blue-950/60 text-blue-300',
+      dotClass: 'bg-blue-500',
+    },
+    {
+      value: 'Completed',
+      label: 'Completed',
+      badgeClass: 'bg-emerald-950/60 text-emerald-300',
+      dotClass: 'bg-emerald-500',
+    },
+  ];
+
+  readonly mentalStateOptions: EnumOption<MentalStateType>[] = [
+    {
+      value: 'deep_focus',
+      label: 'Deep Focus',
+      badgeClass: 'bg-violet-950/60 text-violet-300',
+      dotClass: 'bg-violet-500',
+    },
+    {
+      value: 'light_read',
+      label: 'Light Read',
+      badgeClass: 'bg-sky-950/60 text-sky-300',
+      dotClass: 'bg-sky-500',
+    },
+    {
+      value: 'creative',
+      label: 'Creative',
+      badgeClass: 'bg-pink-950/60 text-pink-300',
+      dotClass: 'bg-pink-500',
+    },
+    {
+      value: 'quick_op',
+      label: 'Quick Op',
+      badgeClass: 'bg-amber-950/60 text-amber-300',
+      dotClass: 'bg-amber-500',
+    },
+    {
+      value: 'review',
+      label: 'Review',
+      badgeClass: 'bg-slate-800 text-slate-300',
+      dotClass: 'bg-slate-400',
+    },
   ];
 
   readonly tabFilteredResources = computed<LearningResource[]>(() => {
@@ -182,33 +269,25 @@ export class HomeComponent implements OnInit {
     return TYPE_META[type.code.toLowerCase()] ?? { ...FALLBACK_TYPE_META, label: type.displayName };
   }
 
-  getStatusClass(status: ResourceStatus): string {
-    const base = 'text-[10px] px-1.5 py-0.5 rounded font-medium uppercase tracking-wide shrink-0';
-    const map: Record<ResourceStatus, string> = {
-      Pending: 'bg-slate-800 text-slate-400',
-      InProgress: 'bg-blue-950/60 text-blue-300',
-      Completed: 'bg-emerald-950/60 text-emerald-300',
-    };
-    return `${base} ${map[status]}`;
-  }
-
-  getDifficultyClass(difficulty: DifficultyLevel): string {
-    const base = 'text-[10px] px-1.5 py-0.5 rounded font-medium';
-    const map: Record<DifficultyLevel, string> = {
-      Low: 'bg-emerald-950/60 text-emerald-400',
-      Medium: 'bg-yellow-950/60 text-yellow-400',
-      High: 'bg-red-950/60 text-red-400',
-    };
-    return `${base} ${map[difficulty]}`;
-  }
-
-  getEnergyClass(energy: EnergyLevel): string {
-    const base = 'text-[10px] px-1.5 py-0.5 rounded font-medium';
-    const map: Record<EnergyLevel, string> = {
-      Low: 'bg-emerald-950/60 text-emerald-400',
-      Medium: 'bg-yellow-950/60 text-yellow-400',
-      High: 'bg-red-950/60 text-red-400',
-    };
-    return `${base} ${map[energy]}`;
+  async onToggle(
+    value: string,
+    resource: LearningResource,
+    field: 'difficulty' | 'energy' | 'status',
+  ): Promise<void> {
+    const key = `${resource.id}:${field}`;
+    this.toggleLoadingId.set(key);
+    try {
+      if (field === 'difficulty') {
+        await this.service.toggleDifficulty(resource.id, value as DifficultyLevel);
+      } else if (field === 'energy') {
+        await this.service.toggleEnergy(resource.id, value as EnergyLevel);
+      } else if (field === 'status') {
+        await this.service.toggleStatus(resource.id, value as ResourceStatus);
+      }
+    } catch {
+      this.toastService.show(`Failed to update ${field}`, 'error');
+    } finally {
+      this.toggleLoadingId.set(null);
+    }
   }
 }
