@@ -12,8 +12,6 @@ import {
 import { CommonModule, NgStyle } from '@angular/common';
 import type { EnumOption } from './enum-badge.types.js';
 
-// Señal a nivel de módulo: solo un badge puede estar abierto en toda la app.
-// Cuando openBadgeId cambia, todos los badges recomputan su isOpen vía computed().
 const openBadgeId = signal<string | null>(null);
 
 @Component({
@@ -36,14 +34,12 @@ export class EnumBadgeComponent {
   readonly isOpen = computed(() => openBadgeId() === this.instanceId);
   dropdownPos = signal<{ top: number; left: number } | null>(null);
 
-  // Getter (no computed) porque `value` y `options` son @Input() planos, no señales.
-  // computed() solo rastrea dependencias que sean señales — con @Input() nunca se recalcularía.
   get currentOption(): EnumOption | undefined {
     return this.options?.find((o) => o.value === this.value);
   }
 
   toggle(event: MouseEvent): void {
-    event.stopPropagation(); // evita que el click llegue a la card y navegue
+    event.stopPropagation();
     if (this.readonly || this.loading) return;
 
     if (this.isOpen()) {
@@ -63,8 +59,6 @@ export class EnumBadgeComponent {
     openBadgeId.set(null);
   }
 
-  // Cualquier click que llega al document es un click fuera de todos los badges
-  // (porque toggle() hace stopPropagation). Simplemente cerramos.
   @HostListener('document:click')
   onDocumentClick(): void {
     openBadgeId.set(null);
@@ -72,6 +66,16 @@ export class EnumBadgeComponent {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    openBadgeId.set(null);
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onWindowScroll(): void {
+    openBadgeId.set(null);
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
     openBadgeId.set(null);
   }
 }
