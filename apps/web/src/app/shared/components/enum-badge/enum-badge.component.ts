@@ -69,7 +69,7 @@ export class EnumBadgeComponent {
     openBadgeId.set(null);
   }
 
-  @HostListener('window:scroll', ['$event'])
+  @HostListener('window:scroll')
   onWindowScroll(): void {
     openBadgeId.set(null);
   }
