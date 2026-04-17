@@ -155,7 +155,7 @@
             <div
               [class]="
                 'h-full rounded-full transition-all ' +
-                getDifficultyBarClass(form.get('energyLevel')?.value)
+                getEnergyBarClass(form.get('energyLevel')?.value)
               "
               [style.width]="
                 form.get('energyLevel')?.value === 'Low'
