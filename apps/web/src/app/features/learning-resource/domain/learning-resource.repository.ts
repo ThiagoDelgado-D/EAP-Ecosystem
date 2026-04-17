@@ -4,6 +4,8 @@ import type {
   EnergyLevel,
   LearningResource,
   LearningResourceFilter,
+  MentalStateType,
+  ResourceStatus,
   UpdateResourcePayload,
 } from './learning-resource.model';
 
@@ -17,4 +19,6 @@ export abstract class LearningResourceRepository {
 
   abstract toggleDifficulty(id: string, difficulty: DifficultyLevel): Promise<void>;
   abstract toggleEnergy(id: string, energyLevel: EnergyLevel): Promise<void>;
+  abstract toggleStatus(id: string, status: ResourceStatus): Promise<void>;
+  abstract toggleMentalState(id: string, mentalState: MentalStateType): Promise<void>;
 }
