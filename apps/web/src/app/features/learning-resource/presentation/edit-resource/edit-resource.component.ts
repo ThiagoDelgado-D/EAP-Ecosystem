@@ -116,9 +116,12 @@ export class EditResourceComponent implements OnInit {
       energyLevel: ['Medium' as EnergyLevel, Validators.required],
     });
 
-    Promise.all([this.topicService.loadAll(), this.resourceTypeService.loadAll()]).then(() =>
-      this.loadResource(this.resourceId!),
-    );
+    Promise.all([this.topicService.loadAll(), this.resourceTypeService.loadAll()])
+      .then(() => this.loadResource(this.resourceId!))
+      .catch(() => {
+        this.toastService.show('Failed to load form data. Please try again.', 'error');
+        this.router.navigate(['/resources']);
+      });
   }
 
   async loadResource(id: string): Promise<void> {
@@ -176,6 +179,15 @@ export class EditResourceComponent implements OnInit {
 
   getDifficultyBarClass(level: DifficultyLevel): string {
     const map: Record<DifficultyLevel, string> = {
+      Low: 'bg-emerald-500',
+      Medium: 'bg-yellow-500',
+      High: 'bg-orange-500',
+    };
+    return map[level];
+  }
+
+  getEnergyBarClass(level: EnergyLevel): string {
+    const map: Record<EnergyLevel, string> = {
       Low: 'bg-emerald-500',
       Medium: 'bg-yellow-500',
       High: 'bg-orange-500',
