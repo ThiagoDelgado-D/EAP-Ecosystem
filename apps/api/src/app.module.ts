@@ -1,13 +1,10 @@
-import {
-  Module,
-  type MiddlewareConsumer,
-  type NestModule,
-} from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { HealthModule } from "./health/health.module.js";
 import { LearningResourceModule } from "./learning-resource/learning-resource.module.js";
 import { DatabaseModule } from "./database/database.module.js";
 import { ConfigModule } from "@nestjs/config";
-import { LoggerMiddleware } from "./middleware/logger-middleware.js";
+import { LoggingInterceptor } from "./interceptors/logging.interceptor.js";
+import { APP_INTERCEPTOR } from "@nestjs/core";
 
 @Module({
   imports: [
@@ -20,10 +17,11 @@ import { LoggerMiddleware } from "./middleware/logger-middleware.js";
     LearningResourceModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(LoggerMiddleware).forRoutes("*");
-  }
-}
+export class AppModule {}
