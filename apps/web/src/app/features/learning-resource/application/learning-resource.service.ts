@@ -6,6 +6,8 @@ import type {
   EnergyLevel,
   LearningResource,
   LearningResourceFilter,
+  MentalStateType,
+  ResourceStatus,
   UpdateResourcePayload,
 } from '@features/learning-resource/domain/learning-resource.model';
 
@@ -78,12 +80,44 @@ export class LearningResourceService {
     }
   }
 
+  private async optimisticToggle(
+    id: string,
+    patch: Partial<LearningResource>,
+    apiCall: () => Promise<void>,
+  ): Promise<void> {
+    const prev = this.resources().find((r) => r.id === id);
+    if (!prev) return;
+
+    this.resources.update((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+
+    try {
+      await apiCall();
+    } catch (err) {
+      this.resources.update((rs) => rs.map((r) => (r.id === id ? prev : r)));
+      throw err;
+    }
+  }
+
   async toggleDifficulty(id: string, difficulty: DifficultyLevel): Promise<void> {
-    await this.repository.toggleDifficulty(id, difficulty);
+    return this.optimisticToggle(id, { difficulty }, () =>
+      this.repository.toggleDifficulty(id, difficulty),
+    );
   }
 
   async toggleEnergy(id: string, energyLevel: EnergyLevel): Promise<void> {
-    await this.repository.toggleEnergy(id, energyLevel);
+    return this.optimisticToggle(id, { energyLevel }, () =>
+      this.repository.toggleEnergy(id, energyLevel),
+    );
+  }
+
+  async toggleStatus(id: string, status: ResourceStatus): Promise<void> {
+    return this.optimisticToggle(id, { status }, () => this.repository.toggleStatus(id, status));
+  }
+
+  async toggleMentalState(id: string, mentalState: MentalStateType): Promise<void> {
+    return this.optimisticToggle(id, { mentalState }, () =>
+      this.repository.updateResource(id, { mentalState }),
+    );
   }
 
   async deleteResource(id: string): Promise<void> {
