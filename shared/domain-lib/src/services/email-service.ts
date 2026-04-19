@@ -31,6 +31,7 @@ export const DefaultEmailTemplates = {
     EMAIL_VERIFICATION: "EMAIL_VERIFICATION",
     WELCOME: "WELCOME",
     PASSWORD_RESET: "PASSWORD_RESET",
+    MAGIC_LINK_CODE: "MAGIC_LINK_CODE",
 } as const;
 
 export type DefaultEmailTemplates = keyof typeof DefaultEmailTemplates;
