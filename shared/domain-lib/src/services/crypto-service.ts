@@ -5,4 +5,5 @@ export interface CryptoService {
   comparePassword(password: string, hashPass: string): Promise<boolean>;
   generateUUID(): Promise<UUID>;
   generateRandomToken(): Promise<string>;
+  generateNumericCode(length: number): Promise<string>;
 }

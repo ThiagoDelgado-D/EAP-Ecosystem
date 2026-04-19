@@ -37,5 +37,11 @@ export function mockCryptoService(): CryptoService {
         }
       ) as UUID;
     },
+    async generateNumericCode(length: number): Promise<string> {
+      await ms(10);
+      const max = Math.pow(10, length);
+      const min = Math.pow(10, length - 1);
+      return String(Math.floor(min + Math.random() * (max - min)));
+    },
   };
 }
