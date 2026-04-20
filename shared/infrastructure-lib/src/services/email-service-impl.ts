@@ -57,6 +57,10 @@ export class EmailServiceImpl implements EmailService<DefaultEmailTemplates> {
         subject: "Reset your password",
         html: `<p>Reset link: ${opts.data.resetLink}</p>`,
       },
+      MAGIC_LINK_CODE: {
+        subject: "Your sign-in code",
+        html: `<p>Your sign-in code is: <strong>${opts.data.code}</strong></p><p>It expires in 10 minutes.</p>`,
+      },
     };
 
     const template = templates[opts.template];

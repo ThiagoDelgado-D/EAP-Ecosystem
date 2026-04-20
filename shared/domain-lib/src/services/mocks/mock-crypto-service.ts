@@ -12,6 +12,10 @@ export function mockCryptoService(): CryptoService {
       await ms(100);
       return "[HASHED]" + pass == hashPass ? true : false;
     },
+    async hashToken(token: string) {
+      await ms(10);
+      return "[TOKEN_HASH]" + token;
+    },
     async generateRandomToken(): Promise<string> {
       await ms(50);
       const char =
@@ -36,6 +40,12 @@ export function mockCryptoService(): CryptoService {
           return v.toString(16);
         }
       ) as UUID;
+    },
+    async generateNumericCode(length: number): Promise<string> {
+      await ms(10);
+      const max = Math.pow(10, length);
+      const min = Math.pow(10, length - 1);
+      return String(Math.floor(min + Math.random() * (max - min)));
     },
   };
 }

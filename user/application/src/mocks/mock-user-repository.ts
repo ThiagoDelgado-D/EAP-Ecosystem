@@ -30,6 +30,13 @@ export function mockUserRepository(
       }
     },
 
+    async update(user: User): Promise<void> {
+      const index = this.users.findIndex((existing) => existing.id === user.id);
+      if (index >= 0) {
+        this.users[index] = { ...this.users[index], ...user, updatedAt: new Date() };
+      }
+    },
+
     reset(): void {
       this.users = [];
     },
