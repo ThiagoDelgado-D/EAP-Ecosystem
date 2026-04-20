@@ -66,10 +66,13 @@ future providers without schema changes to the core user entity.
 ### 3. Opaque refresh token stored in DB with rotation and reuse detection
 
 Access tokens are short-lived JWTs (15 minutes). Refresh tokens are
-cryptographically random opaque strings stored as a bcrypt hash in a
-`Session` entity. On every refresh:
+cryptographically random opaque strings stored as a SHA-256 hash in a
+`Session` entity. SHA-256 is used instead of bcrypt because refresh tokens
+are high-entropy random values (not user-chosen passwords), so the
+brute-force resistance of bcrypt is unnecessary — and its non-determinism
+would prevent O(1) equality lookup by hash. On every refresh:
 
-1. The incoming token is validated against the stored hash.
+1. The incoming token is hashed with SHA-256 and looked up by equality.
 2. A new token pair is issued.
 3. The old `Session` is replaced (rotation).
 4. If a refresh token is used after it has already been rotated (reuse
