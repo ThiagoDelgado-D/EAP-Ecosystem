@@ -155,6 +155,7 @@ describe("verifySignIn", () => {
       email: EMAIL,
       code: VALID_CODE,
     });
+    expect(result).not.toBeInstanceOf(InvalidOrExpiredCodeError);
     if (result instanceof InvalidOrExpiredCodeError) return;
 
     const payload = await jwtService.verify(result.accessToken);
@@ -167,6 +168,7 @@ describe("verifySignIn", () => {
       email: EMAIL,
       code: VALID_CODE,
     });
+    expect(result).not.toBeInstanceOf(InvalidOrExpiredCodeError);
     if (result instanceof InvalidOrExpiredCodeError) return;
 
     expect(sessionRepository.count()).toBe(1);
