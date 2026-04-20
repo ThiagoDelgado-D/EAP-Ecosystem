@@ -4282,6 +4282,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@user/infrastructure@workspace:^, @user/infrastructure@workspace:user/infraestructure":
+  version: 0.0.0-use.local
+  resolution: "@user/infrastructure@workspace:user/infraestructure"
+  dependencies:
+    "@user/domain": "workspace:^"
+    domain-lib: "workspace:^"
+    typeorm: "npm:^0.3.28"
+  languageName: unknown
+  linkType: soft
+
 "@vitejs/plugin-basic-ssl@npm:2.1.4":
   version: 2.1.4
   resolution: "@vitejs/plugin-basic-ssl@npm:2.1.4"
@@ -4869,6 +4879,7 @@ __metadata:
     "@types/node": "npm:^22.10.7"
     "@types/pg": "npm:^8.18.0"
     "@types/supertest": "npm:^7.2.0"
+    "@user/infrastructure": "workspace:^"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     domain-lib: "workspace:^"

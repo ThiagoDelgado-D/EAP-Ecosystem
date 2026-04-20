@@ -1,0 +1,24 @@
+{
+  "name": "@user/infrastructure",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@user/domain": "workspace:^",
+    "domain-lib": "workspace:^",
+    "typeorm": "^0.3.28"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./repositories": "./dist/repositories/index.js",
+    "./entities": "./dist/entities/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "type-check": "tsc --noEmit",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --run --coverage"
+  },
+  "packageManager": "yarn@4.9.2"
+}
