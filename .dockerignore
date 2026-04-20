@@ -1,0 +1,32 @@
+# Dependencies — Docker installs its own via yarn install
+**/node_modules
+
+# Build outputs — Docker produces these during the build stage
+**/dist
+
+# Yarn cache and PnP artifacts
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+.pnp.cjs
+.pnp.loader.mjs
+
+# Local env files — secrets should come from docker compose env_file
+.env
+apps/api/.env
+
+# Git and editor
+.git
+.gitignore
+.gitattributes
+.vscode
+.idea
+*.swp
+*.swo
+
+# Test coverage
+coverage
+
+# OS
+.DS_Store
+Thumbs.db
