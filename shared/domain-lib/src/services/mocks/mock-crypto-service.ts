@@ -12,6 +12,10 @@ export function mockCryptoService(): CryptoService {
       await ms(100);
       return "[HASHED]" + pass == hashPass ? true : false;
     },
+    async hashToken(token: string) {
+      await ms(10);
+      return "[TOKEN_HASH]" + token;
+    },
     async generateRandomToken(): Promise<string> {
       await ms(50);
       const char =

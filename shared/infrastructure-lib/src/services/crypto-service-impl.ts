@@ -1,6 +1,6 @@
 import type { CryptoService } from "domain-lib";
 import bcrypt from "bcryptjs";
-import { randomBytes, randomInt } from "crypto";
+import { createHash, randomBytes, randomInt } from "crypto";
 
 export class CryptoServiceImpl implements CryptoService {
   async hashPassword(password: string) {
@@ -9,6 +9,10 @@ export class CryptoServiceImpl implements CryptoService {
 
   async comparePassword(password: string, hashPass: string) {
     return bcrypt.compare(password, hashPass);
+  }
+
+  async hashToken(token: string) {
+    return createHash("sha256").update(token).digest("hex");
   }
 
   async generateUUID() {

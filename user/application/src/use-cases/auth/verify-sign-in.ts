@@ -100,7 +100,7 @@ export const verifySignIn = async (
 
   const accessToken = await jwtService.sign({ sub: user.id });
   const rawRefreshToken = await cryptoService.generateRandomToken();
-  const refreshTokenHash = await cryptoService.hashPassword(rawRefreshToken);
+  const refreshTokenHash = await cryptoService.hashToken(rawRefreshToken);
 
   const session: Session = {
     id: await cryptoService.generateUUID(),
