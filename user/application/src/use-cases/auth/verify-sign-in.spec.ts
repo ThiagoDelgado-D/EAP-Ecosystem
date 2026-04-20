@@ -6,7 +6,7 @@ import { mockSignInChallengeRepository } from "../../mocks/mock-sign-in-challeng
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { verifySignIn } from "./verify-sign-in.js";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
-import type { SignInChallenge, User } from "@user/domain";
+import type { Identity, SignInChallenge, User } from "@user/domain";
 
 describe("verifySignIn", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -89,10 +89,21 @@ describe("verifySignIn", () => {
     };
     await userRepository.save(existingUser);
 
+    const existingIdentity: Identity = {
+      id: await cryptoService.generateUUID(),
+      userId: existingUser.id,
+      provider: "magic-link",
+      providerSubject: EMAIL,
+      verified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await identityRepository.save(existingIdentity);
+
     await verifySignIn(deps(), { email: EMAIL, code: VALID_CODE });
 
     expect(userRepository.count()).toBe(1);
-    expect(identityRepository.count()).toBe(0);
+    expect(identityRepository.count()).toBe(1);
   });
 
   test("Should return the existing user's data when the email is already registered", async () => {
