@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U $$DB_USER -d $$DB_NAME"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,6 +21,8 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     env_file: apps/api/.env
+    environment:
+      DB_HOST: postgres
     depends_on:
       postgres:
         condition: service_healthy
