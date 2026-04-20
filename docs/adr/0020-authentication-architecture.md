@@ -46,14 +46,14 @@ aligns with the pattern used by Notion and Linear for low-friction onboarding.
   code, invalidates any previous pending challenge for that email, and
   dispatches the code via `EmailService`.
 - `POST /auth/sign-in/verify` — validates hash, expiry, and attempt count;
-  creates `User` + `Identity` if the user is new; issues JWT pair and persists
+  creates `User` + `Identity` if the user is new; issues a JWT access token + opaque refresh token and persists
   `Session` regardless.
 
 ### 2. `Identity` entity separated from `User`
 
 A `User` is an application-level person. An `Identity` is a verified link
 between a `User` and an external or internal authentication provider
-(`magic-link`, `google`, `github`).
+(`magic-link`, `google`, `GitHub`).
 
 One user can have multiple identities. Account linking (e.g., sign in with
 Google on an account originally created via Magic Link) resolves cleanly by
