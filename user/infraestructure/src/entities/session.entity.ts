@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
@@ -22,7 +21,6 @@ export class SessionEntity {
   user!: UserEntity;
 
   @Column({ unique: true })
-  @Index()
   refreshTokenHash!: string;
 
   @Column("timestamp")
