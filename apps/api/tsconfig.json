@@ -17,6 +17,15 @@
       ],
       "@learning-resource/infrastructure": [
         "learning-resource/infrastructure/src/index.ts"
+      ],
+      "@user/domain": [
+        "user/domain/src/index.ts"
+      ],
+      "@user/application": [
+        "user/application/src/index.ts"
+      ],
+      "@user/infrastructure": [
+        "user/infraestructure/src/index.ts"
       ]
     },
     "module": "NodeNext",
