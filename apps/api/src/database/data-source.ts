@@ -13,7 +13,7 @@ import {
   SessionEntity,
 } from "@user/infrastructure";
 
-config();
+config({ path: "../../apps/api/.env" });
 
 export const AppDataSource = new DataSource({
   type: "postgres",
