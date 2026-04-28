@@ -60,7 +60,6 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     entity.expiresAt = session.expiresAt;
     entity.revokedAt = session.revokedAt ?? null;
     entity.userAgent = session.userAgent ?? null;
-    entity.createdAt = session.createdAt;
     return entity;
   }
 }

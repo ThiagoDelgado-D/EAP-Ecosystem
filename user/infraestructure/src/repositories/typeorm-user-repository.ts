@@ -54,8 +54,6 @@ export class TypeOrmUserRepository implements IUserRepository {
     entity.widgetConfig = user.widgetConfig;
     entity.bio = user.bio ?? null;
     entity.avatar = user.avatar ?? null;
-    entity.createdAt = user.createdAt;
-    entity.updatedAt = user.updatedAt;
     return entity;
   }
 }

@@ -1,4 +1,8 @@
-import type { IIdentityRepository, Identity, IdentityProvider } from "@user/domain";
+import type {
+  IIdentityRepository,
+  Identity,
+  IdentityProvider,
+} from "@user/domain";
 import type { UUID } from "domain-lib";
 import type { Repository } from "typeorm";
 import { IdentityEntity } from "../entities/identity.entity.js";
@@ -44,8 +48,6 @@ export class TypeOrmIdentityRepository implements IIdentityRepository {
     entity.provider = identity.provider;
     entity.providerSubject = identity.providerSubject;
     entity.verified = identity.verified;
-    entity.createdAt = identity.createdAt;
-    entity.updatedAt = identity.updatedAt;
     return entity;
   }
 }

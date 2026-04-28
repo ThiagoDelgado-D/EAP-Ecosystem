@@ -3,9 +3,7 @@ import type { UUID } from "domain-lib";
 import type { Repository } from "typeorm";
 import { SignInChallengeEntity } from "../entities/sign-in-challenge.entity.js";
 
-export class TypeOrmSignInChallengeRepository
-  implements ISignInChallengeRepository
-{
+export class TypeOrmSignInChallengeRepository implements ISignInChallengeRepository {
   constructor(private readonly repository: Repository<SignInChallengeEntity>) {}
 
   async save(challenge: SignInChallenge): Promise<void> {
@@ -25,7 +23,10 @@ export class TypeOrmSignInChallengeRepository
   }
 
   async invalidateAllByEmail(email: string): Promise<void> {
-    await this.repository.update({ email, consumed: false }, { consumed: true });
+    await this.repository.update(
+      { email, consumed: false },
+      { consumed: true },
+    );
   }
 
   async incrementAttempts(id: string): Promise<void> {
@@ -52,7 +53,6 @@ export class TypeOrmSignInChallengeRepository
     entity.expiresAt = challenge.expiresAt;
     entity.attempts = challenge.attempts;
     entity.consumed = challenge.consumed;
-    entity.createdAt = challenge.createdAt;
     return entity;
   }
 }
