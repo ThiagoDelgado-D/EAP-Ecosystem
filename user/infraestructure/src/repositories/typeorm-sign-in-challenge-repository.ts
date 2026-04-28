@@ -1,6 +1,6 @@
 import type { ISignInChallengeRepository, SignInChallenge } from "@user/domain";
 import type { UUID } from "domain-lib";
-import type { Repository } from "typeorm";
+import { MoreThan, type Repository } from "typeorm";
 import { SignInChallengeEntity } from "../entities/sign-in-challenge.entity.js";
 
 export class TypeOrmSignInChallengeRepository implements ISignInChallengeRepository {
@@ -12,7 +12,11 @@ export class TypeOrmSignInChallengeRepository implements ISignInChallengeReposit
 
   async findActiveByEmail(email: string): Promise<SignInChallenge | null> {
     const entity = await this.repository.findOne({
-      where: { email, consumed: false },
+      where: {
+        email,
+        consumed: false,
+        expiresAt: MoreThan(new Date()),
+      },
       order: { createdAt: "DESC" },
     });
     return entity ? this.toDomain(entity) : null;

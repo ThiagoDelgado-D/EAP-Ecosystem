@@ -1,6 +1,6 @@
 import type { ISessionRepository, Session } from "@user/domain";
 import type { UUID } from "domain-lib";
-import { IsNull, type Repository } from "typeorm";
+import { IsNull, MoreThan, type Repository } from "typeorm";
 import { SessionEntity } from "../entities/session.entity.js";
 
 export class TypeOrmSessionRepository implements ISessionRepository {
@@ -35,7 +35,11 @@ export class TypeOrmSessionRepository implements ISessionRepository {
 
   async findActiveByUserId(userId: string): Promise<Session[]> {
     const entities = await this.repository.find({
-      where: { userId, revokedAt: IsNull() },
+      where: {
+        userId,
+        revokedAt: IsNull(),
+        expiresAt: MoreThan(new Date()),
+      },
     });
     return entities.map((e) => this.toDomain(e));
   }
