@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
@@ -13,6 +14,7 @@ export class SessionEntity {
   @PrimaryColumn("uuid")
   id!: string;
 
+  @Index()
   @Column("uuid")
   userId!: string;
 

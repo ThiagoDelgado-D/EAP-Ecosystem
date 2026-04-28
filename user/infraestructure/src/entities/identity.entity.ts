@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
@@ -16,6 +17,7 @@ export class IdentityEntity {
   @PrimaryColumn("uuid")
   id!: string;
 
+  @Index()
   @Column("uuid")
   userId!: string;
 
