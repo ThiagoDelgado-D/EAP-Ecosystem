@@ -4282,9 +4282,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@user/infrastructure@workspace:^, @user/infrastructure@workspace:user/infraestructure":
+"@user/infrastructure@workspace:^, @user/infrastructure@workspace:user/infrastructure":
   version: 0.0.0-use.local
-  resolution: "@user/infrastructure@workspace:user/infraestructure"
+  resolution: "@user/infrastructure@workspace:user/infrastructure"
   dependencies:
     "@user/domain": "workspace:^"
     domain-lib: "workspace:^"

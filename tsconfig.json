@@ -24,7 +24,7 @@
         "user/application/src/index.ts"
       ],
       "@user/infrastructure": [
-        "user/infraestructure/src/index.ts"
+        "user/infrastructure/src/index.ts"
       ]
     },
     "target": "ES2023",

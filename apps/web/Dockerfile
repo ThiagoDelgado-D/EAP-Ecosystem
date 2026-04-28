@@ -18,6 +18,7 @@ COPY learning-resource/application/package.json learning-resource/application/
 COPY learning-resource/infrastructure/package.json learning-resource/infrastructure/
 COPY user/domain/package.json user/domain/
 COPY user/application/package.json user/application/
+COPY user/infrastructure/package.json user/infrastructure/ 
 
 RUN yarn install --immutable
 
