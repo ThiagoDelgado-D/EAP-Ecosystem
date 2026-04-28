@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     env_file: apps/api/.env
     environment:
-      POSTGRES_DB: ${DB_NAME:-eap_db}
-      POSTGRES_USER: ${DB_USER:-eap_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
