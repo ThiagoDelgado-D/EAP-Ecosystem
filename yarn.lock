@@ -4261,7 +4261,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@user/application@workspace:user/application":
+"@user/application@workspace:^, @user/application@workspace:user/application":
   version: 0.0.0-use.local
   resolution: "@user/application@workspace:user/application"
   dependencies:
@@ -4881,6 +4881,8 @@ __metadata:
     "@types/node": "npm:^22.10.7"
     "@types/pg": "npm:^8.18.0"
     "@types/supertest": "npm:^7.2.0"
+    "@user/application": "workspace:^"
+    "@user/domain": "workspace:^"
     "@user/infrastructure": "workspace:^"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
