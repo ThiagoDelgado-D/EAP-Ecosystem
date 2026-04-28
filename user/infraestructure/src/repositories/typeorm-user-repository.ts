@@ -1,5 +1,5 @@
 import type { IUserRepository, User } from "@user/domain";
-import type { FeatureKey, WidgetKey } from "@user/domain";
+import { FeatureKey, WidgetKey } from "@user/domain";
 import type { UUID } from "domain-lib";
 import type { Repository } from "typeorm";
 import { UserEntity } from "../entities/user.entity.js";
@@ -33,8 +33,12 @@ export class TypeOrmUserRepository implements IUserRepository {
       lastName: entity.lastName,
       userName: entity.userName ?? null,
       enabled: entity.enabled,
-      featureConfig: entity.featureConfig as FeatureKey[],
-      widgetConfig: entity.widgetConfig as WidgetKey[],
+      featureConfig: entity.featureConfig.filter((k): k is FeatureKey =>
+        (Object.values(FeatureKey) as string[]).includes(k),
+      ),
+      widgetConfig: entity.widgetConfig.filter((k): k is WidgetKey =>
+        (Object.values(WidgetKey) as string[]).includes(k),
+      ),
       bio: entity.bio ?? undefined,
       avatar: (entity.avatar as UUID) ?? undefined,
       createdAt: entity.createdAt,
