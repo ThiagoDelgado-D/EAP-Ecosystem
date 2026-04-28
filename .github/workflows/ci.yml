@@ -45,6 +45,7 @@ jobs:
           - shared/domain-lib
           - learning-resource/application
           - user/application
+          - user/infraestructure
 
     steps:
       - name: Checkout code
