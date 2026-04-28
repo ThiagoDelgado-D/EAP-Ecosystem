@@ -3,11 +3,10 @@ import { resolve } from "path";
 
 export default defineConfig({
   test: {
-    name: "learning-resource-infrastructure",
+    name: "user-infrastructure",
     root: "./",
     globals: true,
     environment: "node",
-    passWithNoTests: true,
     exclude: ["dist/**", "node_modules/**"],
     coverage: {
       provider: "v8",
@@ -21,19 +20,12 @@ export default defineConfig({
       ],
       reporter: ["text", "json", "html"],
     },
+    passWithNoTests: true,
   },
   resolve: {
     alias: {
       "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
-      "infrastructure-lib": resolve(
-        __dirname,
-        "../../shared/infrastructure-lib/src",
-      ),
-      "@learning-resource/domain": resolve(__dirname, "../domain/src"),
-      "@learning-resource/application": resolve(
-        __dirname,
-        "../application/src",
-      ),
+      "@user/domain": resolve(__dirname, "../domain/src"),
     },
   },
 });
