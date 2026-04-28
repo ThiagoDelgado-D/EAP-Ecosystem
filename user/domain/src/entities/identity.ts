@@ -1,7 +1,13 @@
 import type { Entity, TimestampedEntity } from "domain-lib";
 
-export type IdentityProvider = "magic-link" | "google" | "github";
+export const IdentityProvider = {
+  MAGIC_LINK: "magic-link",
+  GOOGLE: "google",
+  GITHUB: "github",
+} as const;
 
+export type IdentityProvider =
+  (typeof IdentityProvider)[keyof typeof IdentityProvider];
 export interface Identity extends Entity, TimestampedEntity {
   userId: string;
   provider: IdentityProvider;
