@@ -4287,8 +4287,10 @@ __metadata:
   resolution: "@user/infrastructure@workspace:user/infrastructure"
   dependencies:
     "@user/domain": "workspace:^"
+    "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
     typeorm: "npm:^0.3.28"
+    vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
 

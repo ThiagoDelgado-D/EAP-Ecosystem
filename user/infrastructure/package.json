@@ -8,6 +8,10 @@
     "domain-lib": "workspace:^",
     "typeorm": "^0.3.28"
   },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.0.13",
+    "vitest": "^4.0.13"
+  },
   "exports": {
     ".": "./dist/index.js",
     "./repositories": "./dist/repositories/index.js",
