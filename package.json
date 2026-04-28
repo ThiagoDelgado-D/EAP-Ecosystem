@@ -13,7 +13,8 @@
     "learning-resource/application",
     "learning-resource/infrastructure",
     "user/domain",
-    "user/application"
+    "user/application",
+    "user/infrastructure"
   ],
   "devDependencies": {
     "@types/node": "^24.9.2",

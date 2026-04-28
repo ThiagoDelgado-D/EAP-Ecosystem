@@ -6,8 +6,14 @@ import {
   ResourceTypeEntity,
   TopicEntity,
 } from "@learning-resource/infrastructure";
+import {
+  UserEntity,
+  IdentityEntity,
+  SignInChallengeEntity,
+  SessionEntity,
+} from "@user/infrastructure";
 
-config();
+config({ path: "../../apps/api/.env" });
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -16,7 +22,15 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [LearningResourceEntity, ResourceTypeEntity, TopicEntity],
+  entities: [
+    LearningResourceEntity,
+    ResourceTypeEntity,
+    TopicEntity,
+    UserEntity,
+    IdentityEntity,
+    SignInChallengeEntity,
+    SessionEntity,
+  ],
   migrations: ["src/database/migrations/*.ts"],
   synchronize: false,
 });

@@ -23,6 +23,7 @@ COPY learning-resource/application/package.json learning-resource/application/
 COPY learning-resource/infrastructure/package.json learning-resource/infrastructure/
 COPY user/domain/package.json user/domain/
 COPY user/application/package.json user/application/
+COPY user/infrastructure/package.json user/infrastructure/
 
 RUN yarn install --immutable
 
@@ -35,7 +36,10 @@ RUN yarn workspace domain-lib build && \
     yarn workspace infrastructure-lib build && \
     yarn workspace @learning-resource/domain build && \
     yarn workspace @learning-resource/application build && \
-    yarn workspace @learning-resource/infrastructure build
+    yarn workspace @learning-resource/infrastructure build  && \
+    yarn workspace @user/domain build && \
+    yarn workspace @user/application build && \
+    yarn workspace @user/infrastructure build
 
 RUN yarn workspace api build
 
@@ -59,6 +63,7 @@ COPY learning-resource/application/package.json learning-resource/application/
 COPY learning-resource/infrastructure/package.json learning-resource/infrastructure/
 COPY user/domain/package.json user/domain/
 COPY user/application/package.json user/application/
+COPY user/infrastructure/package.json user/infrastructure/
 
 RUN yarn install --immutable
 
@@ -69,6 +74,9 @@ COPY --from=builder /app/shared/infrastructure-lib/dist ./shared/infrastructure-
 COPY --from=builder /app/learning-resource/domain/dist ./learning-resource/domain/dist
 COPY --from=builder /app/learning-resource/application/dist ./learning-resource/application/dist
 COPY --from=builder /app/learning-resource/infrastructure/dist ./learning-resource/infrastructure/dist
+COPY --from=builder /app/user/domain/dist ./user/domain/dist
+COPY --from=builder /app/user/application/dist ./user/application/dist
+COPY --from=builder /app/user/infrastructure/dist ./user/infrastructure/dist
 
 EXPOSE 3000
 

@@ -22,6 +22,9 @@
       ],
       "@user/application": [
         "user/application/src/index.ts"
+      ],
+      "@user/infrastructure": [
+        "user/infrastructure/src/index.ts"
       ]
     },
     "target": "ES2023",

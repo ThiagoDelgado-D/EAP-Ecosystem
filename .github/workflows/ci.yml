@@ -44,6 +44,8 @@ jobs:
         workspace:
           - shared/domain-lib
           - learning-resource/application
+          - user/application
+          - user/infrastructure
 
     steps:
       - name: Checkout code
