@@ -1,7 +1,7 @@
-import type {
-  IIdentityRepository,
-  Identity,
+import {
   IdentityProvider,
+  type IIdentityRepository,
+  type Identity,
 } from "@user/domain";
 import type { UUID } from "domain-lib";
 import type { Repository } from "typeorm";
@@ -33,7 +33,13 @@ export class TypeOrmIdentityRepository implements IIdentityRepository {
     return {
       id: entity.id as UUID,
       userId: entity.userId,
-      provider: entity.provider as IdentityProvider,
+      provider: (Object.values(IdentityProvider) as string[]).includes(
+        entity.provider,
+      )
+        ? (entity.provider as IdentityProvider)
+        : (() => {
+            throw new Error(`Unknown IdentityProvider: ${entity.provider}`);
+          })(),
       providerSubject: entity.providerSubject,
       verified: entity.verified,
       createdAt: entity.createdAt,
