@@ -6,6 +6,12 @@ import {
   TopicEntity,
   ResourceTypeEntity,
 } from "@learning-resource/infrastructure";
+import {
+  IdentityEntity,
+  SessionEntity,
+  SignInChallengeEntity,
+  UserEntity,
+} from "@user/infrastructure";
 
 @Module({
   imports: [
@@ -19,7 +25,15 @@ import {
           username: configService.getOrThrow<string>("DB_USER"),
           password: configService.getOrThrow<string>("DB_PASSWORD"),
           database: configService.getOrThrow<string>("DB_NAME"),
-          entities: [LearningResourceEntity, TopicEntity, ResourceTypeEntity],
+          entities: [
+            LearningResourceEntity,
+            TopicEntity,
+            ResourceTypeEntity,
+            UserEntity,
+            IdentityEntity,
+            SignInChallengeEntity,
+            SessionEntity,
+          ],
           synchronize: false,
         };
       },
