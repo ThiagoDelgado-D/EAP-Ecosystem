@@ -8,8 +8,8 @@ import type {
 } from "@user/domain";
 import { requestSignIn, verifySignIn } from "@user/application";
 import { BaseError, type CryptoService, type JwtService } from "domain-lib";
-import type { RequestSignInDto } from "./dto/request/request-sign-in.dto.js";
-import type { VerifySignInDto } from "./dto/request/verify-sign-in.dto.js";
+import { RequestSignInDto } from "./dto/request/request-sign-in.dto.js";
+import { VerifySignInDto } from "./dto/request/verify-sign-in.dto.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import type { Response } from "express";
 
@@ -43,6 +43,7 @@ export class AuthController {
   }
 
   @Post("verify-sign-in")
+  @HttpCode(200)
   async verifySignIn(
     @Body() dto: VerifySignInDto,
     @Res({ passthrough: true }) res: Response,
