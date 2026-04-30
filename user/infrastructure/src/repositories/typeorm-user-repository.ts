@@ -33,6 +33,7 @@ export class TypeOrmUserRepository implements IUserRepository {
       lastName: entity.lastName,
       userName: entity.userName ?? null,
       enabled: entity.enabled,
+      onboardingCompleted: entity.onboardingCompleted,
       featureConfig: entity.featureConfig.filter((k): k is FeatureKey =>
         (Object.values(FeatureKey) as string[]).includes(k),
       ),
@@ -54,6 +55,7 @@ export class TypeOrmUserRepository implements IUserRepository {
     entity.lastName = user.lastName;
     entity.userName = user.userName ?? null;
     entity.enabled = user.enabled;
+    entity.onboardingCompleted = user.onboardingCompleted;
     entity.featureConfig = user.featureConfig;
     entity.widgetConfig = user.widgetConfig;
     entity.bio = user.bio ?? null;

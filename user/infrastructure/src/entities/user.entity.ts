@@ -26,6 +26,9 @@ export class UserEntity {
   @Column({ default: true })
   enabled!: boolean;
 
+  @Column({ default: false })
+  onboardingCompleted!: boolean;
+
   @Column({ type: "text", array: true, default: "{}" })
   featureConfig!: string[];
 

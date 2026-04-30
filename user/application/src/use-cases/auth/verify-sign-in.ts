@@ -28,7 +28,7 @@ export interface VerifySignInRequestModel {
 export interface VerifySignInResponseModel {
   accessToken: string;
   refreshToken: string;
-  user: Pick<User, "id" | "email" | "firstName" | "lastName">;
+  user: Pick<User, "id" | "email" | "firstName" | "lastName" | "onboardingCompleted">;
 }
 
 const verifySignInSchema = createValidationSchema<VerifySignInRequestModel>({
@@ -79,6 +79,7 @@ export const verifySignIn = async (
       lastName: "",
       userName: null,
       enabled: true,
+      onboardingCompleted: false,
       featureConfig: [],
       widgetConfig: [],
       createdAt: new Date(),
@@ -122,6 +123,7 @@ export const verifySignIn = async (
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      onboardingCompleted: user.onboardingCompleted,
     },
   };
 };

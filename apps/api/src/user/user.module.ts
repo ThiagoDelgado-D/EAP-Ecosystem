@@ -13,6 +13,7 @@ import {
 import { AuthController } from "./auth.controller.js";
 import { CryptoServiceImpl, JwtServiceImpl } from "infrastructure-lib";
 import { LoggerEmailService } from "../email/logger-email-service.js";
+import { EnvironmentService } from "../config/environment.service.js";
 
 @Module({
   imports: [
@@ -46,7 +47,15 @@ import { LoggerEmailService } from "../email/logger-email-service.js";
       inject: [getRepositoryToken(SessionEntity)],
     },
     { provide: "ICryptoService", useClass: CryptoServiceImpl },
-    { provide: "IJwtService", useClass: JwtServiceImpl },
+    {
+      provide: "IJwtService",
+      useFactory: (env: EnvironmentService) =>
+        new JwtServiceImpl({
+          secret: env.jwtSecret,
+          expiresInSeconds: env.jwtExpiresInSeconds,
+        }),
+      inject: [EnvironmentService],
+    },
     { provide: "IEmailService", useClass: LoggerEmailService },
   ],
 })
