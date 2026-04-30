@@ -1,0 +1,21 @@
+@switch (step()) {
+  @case ('email') {
+    <app-email-step
+      [loading]="loading()"
+      [error]="error()"
+      (emailSubmit)="onEmailSubmit($event)"
+    />
+  }
+  @case ('code') {
+    <app-code-step
+      [email]="email()"
+      [loading]="loading()"
+      [error]="error()"
+      (codeSubmit)="onCodeSubmit($event)"
+      (changeEmail)="onChangeEmail()"
+    />
+  }
+  @case ('success') {
+    <app-success-step />
+  }
+}
