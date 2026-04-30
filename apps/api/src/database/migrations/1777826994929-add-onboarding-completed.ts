@@ -11,7 +11,7 @@ export class AddOnboardingCompleted1777826994929 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `ALTER TABLE "users" DROP COLUMN "onboardingCompleted"`,
+      `ALTER TABLE "users" DROP COLUMN IF EXISTS "onboardingCompleted"`,
     );
   }
 }
