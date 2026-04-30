@@ -17,6 +17,9 @@ export class EnvironmentService {
 
   constructor(private readonly configService: ConfigService) {
     this._jwtSecret = this.readVar("JWT_SECRET");
+    if (!this._jwtSecret) {
+      throw new Error("Missing required environment variable: JWT_SECRET");
+    }
     this._jwtExpiresInSeconds = this.parseDuration(
       this.readVar("JWT_EXPIRES_IN", "15m"),
     );
