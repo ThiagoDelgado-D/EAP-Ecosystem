@@ -88,6 +88,9 @@ export class EnvironmentService {
     if (match) {
       return parseInt(match[1], 10) * (units[match[2]] ?? 1);
     }
+    if (!/^\d+$/.test(value)) {
+      return 900;
+    }
     const numeric = parseInt(value, 10);
     return isNaN(numeric) ? 900 : numeric;
   }
