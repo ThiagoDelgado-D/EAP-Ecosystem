@@ -6,6 +6,7 @@ import { ConfigModule } from "@nestjs/config";
 import { LoggingInterceptor } from "./interceptors/logging.interceptor.js";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { UserModule } from "./user/user.module.js";
+import { AppConfigModule } from "./config/app-config.module.js";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UserModule } from "./user/user.module.js";
       isGlobal: true,
       envFilePath: ".env",
     }),
+    AppConfigModule,
     DatabaseModule,
     HealthModule,
     LearningResourceModule,
