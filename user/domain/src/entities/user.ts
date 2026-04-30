@@ -22,6 +22,7 @@ export type WidgetKey = (typeof WidgetKey)[keyof typeof WidgetKey];
 export interface User extends Entity, Person, TimestampedEntity {
   userName?: string | null;
   enabled: boolean;
+  onboardingCompleted: boolean;
   featureConfig: FeatureKey[];
   widgetConfig: WidgetKey[];
 }
