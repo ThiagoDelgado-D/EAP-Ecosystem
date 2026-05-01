@@ -11,12 +11,15 @@
 
     <div class="flex flex-col gap-2 mb-6">
       @for (module of modules; track module.key) {
-        <div
+        <button
+          type="button"
           (click)="toggle(module)"
+          [disabled]="module.locked"
+          [attr.aria-pressed]="isOn(module.key)"
+          [attr.aria-label]="module.label + (module.locked ? ' (always on)' : '')"
           [style.border]="'1px solid ' + (isOn(module.key) ? module.color + '44' : '#1e293b')"
           [style.background]="isOn(module.key) ? module.color + '0a' : '#020617'"
-          [style.cursor]="module.locked ? 'default' : 'pointer'"
-          class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150"
+          class="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150 text-left"
         >
           <div
             [style.background]="isOn(module.key) ? module.color + '18' : '#1e293b'"
@@ -65,7 +68,7 @@
               [style.left]="isOn(module.key) ? '18px' : '3px'"
             ></div>
           </div>
-        </div>
+        </button>
       }
     </div>
 
