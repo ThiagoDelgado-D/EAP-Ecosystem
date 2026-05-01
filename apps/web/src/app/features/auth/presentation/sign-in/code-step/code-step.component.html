@@ -41,7 +41,7 @@
           [value]="digit"
           (input)="onDigitInput(i, $event)"
           (keydown)="onKeyDown(i, $event)"
-          [attr.aria-label]="'Dígito ' + ($index + 1) + ' del código'"
+          [attr.aria-label]="'Digit ' + ($index + 1) + ' of the code'"
           class="w-11 h-12 text-center text-xl font-bold bg-slate-800 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-violet-500 transition-colors caret-transparent"
         />
       }
