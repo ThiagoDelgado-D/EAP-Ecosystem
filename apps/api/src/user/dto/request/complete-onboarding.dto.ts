@@ -1,4 +1,5 @@
-import { IsArray, IsString, MinLength } from "class-validator";
+import { IsArray, IsIn, IsString, MinLength } from "class-validator";
+import { FeatureKey } from "@user/domain";
 
 export class CompleteOnboardingDto {
   @IsString()
@@ -6,6 +7,6 @@ export class CompleteOnboardingDto {
   firstName: string;
 
   @IsArray()
-  @IsString({ each: true })
+  @IsIn(Object.values(FeatureKey), { each: true })
   featureConfig: string[];
 }
