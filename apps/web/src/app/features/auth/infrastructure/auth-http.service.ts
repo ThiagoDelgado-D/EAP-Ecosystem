@@ -16,9 +16,7 @@ export class AuthHttpService {
   private readonly base = `${API_CONFIG.baseUrl}/auth`;
 
   async requestSignIn(email: string): Promise<void> {
-    await firstValueFrom(
-      this.http.post<void>(`${this.base}/request-sign-in`, { email }),
-    );
+    await firstValueFrom(this.http.post<void>(`${this.base}/request-sign-in`, { email }));
   }
 
   async verifySignIn(email: string, code: string): Promise<VerifySignInResult> {
@@ -33,6 +31,7 @@ export class AuthHttpService {
         lastName: dto.user.lastName,
         email: dto.user.email,
         onboardingCompleted: dto.user.onboardingCompleted,
+        featureConfig: dto.user.featureConfig ?? [],
       },
     };
   }
