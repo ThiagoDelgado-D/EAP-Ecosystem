@@ -30,7 +30,12 @@ export interface VerifySignInResponseModel {
   refreshToken: string;
   user: Pick<
     User,
-    "id" | "email" | "firstName" | "lastName" | "onboardingCompleted"
+    | "id"
+    | "email"
+    | "firstName"
+    | "lastName"
+    | "onboardingCompleted"
+    | "featureConfig"
   >;
 }
 
@@ -127,6 +132,7 @@ export const verifySignIn = async (
       firstName: user.firstName,
       lastName: user.lastName,
       onboardingCompleted: user.onboardingCompleted,
+      featureConfig: user.featureConfig,
     },
   };
 };
