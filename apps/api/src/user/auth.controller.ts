@@ -11,6 +11,7 @@ import {
 } from "@nestjs/common";
 import type {
   EmailService,
+  FeatureKey,
   IIdentityRepository,
   ISessionRepository,
   ISignInChallengeRepository,
@@ -105,7 +106,7 @@ export class AuthController {
       {
         userId: payload.sub,
         firstName: dto.firstName,
-        featureConfig: dto.featureConfig as any,
+        featureConfig: dto.featureConfig as FeatureKey[],
       },
     );
 
