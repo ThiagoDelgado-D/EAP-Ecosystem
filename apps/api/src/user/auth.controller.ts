@@ -1,4 +1,14 @@
-import { Body, Controller, HttpCode, Inject, Post, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Inject,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+} from "@nestjs/common";
 import type {
   EmailService,
   IIdentityRepository,
@@ -6,12 +16,17 @@ import type {
   ISignInChallengeRepository,
   IUserRepository,
 } from "@user/domain";
-import { requestSignIn, verifySignIn } from "@user/application";
+import {
+  requestSignIn,
+  verifySignIn,
+  completeOnboarding,
+} from "@user/application";
 import { BaseError, type CryptoService, type JwtService } from "domain-lib";
 import { RequestSignInDto } from "./dto/request/request-sign-in.dto.js";
 import { VerifySignInDto } from "./dto/request/verify-sign-in.dto.js";
+import { CompleteOnboardingDto } from "./dto/request/complete-onboarding.dto.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
-import type { Response } from "express";
+import type { Response, Request } from "express";
 
 @Controller("api/v1/auth")
 export class AuthController {
@@ -70,5 +85,31 @@ export class AuthController {
     });
 
     return { accessToken: result.accessToken, user: result.user };
+  }
+
+  @Patch("onboarding")
+  @HttpCode(200)
+  async completeOnboarding(
+    @Body() dto: CompleteOnboardingDto,
+    @Req() req: Request,
+  ) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) throw new UnauthorizedException();
+
+    const token = authHeader.slice(7);
+    const payload = await this.jwtService.verify(token);
+    if (!payload?.sub) throw new UnauthorizedException();
+
+    const result = await completeOnboarding(
+      { userRepository: this.userRepository },
+      {
+        userId: payload.sub,
+        firstName: dto.firstName,
+        featureConfig: dto.featureConfig as any,
+      },
+    );
+
+    if (result instanceof BaseError) toHttpException(result);
+    return result.user;
   }
 }
