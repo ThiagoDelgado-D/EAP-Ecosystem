@@ -28,10 +28,11 @@ Managing learning resources is harder than it looks. Bookmarks pile up, courses 
 
 The long-term goal is a recommendation engine that suggests what to study based on how much time and mental energy you actually have at that moment.
 
-**Right now**, EAP is a full-stack application with a REST API and an Angular 21 frontend
-that lets you manage your learning resources, filter them by difficulty and energy level,
-add new ones via a guided form or URL/voice/file import, and update metadata inline
-without leaving the list or detail view. Recommendations and advanced features are
+**Right now**, EAP is a full-stack application with a REST API and an Angular 21 frontend.
+Users authenticate via magic link, complete a two-step onboarding to select which modules
+to activate, and land on a dashboard with their resource library. Resources can be managed
+with inline metadata editing, filtered by difficulty and energy level, and added via guided
+form, URL import, voice capture, or file import. Recommendations and advanced features are
 coming in upcoming versions.
 
 ---
@@ -49,10 +50,14 @@ coming in upcoming versions.
 | **CSV/JSON File Import**  | ✅ Complete          | Drag & drop, preview table, batch import (v0.7.0)                  |
 | **Quick Toggles**         | ✅ Complete          | Inline difficulty / energy / status badges with optimistic UI (v0.7.4) |
 | **Mental State Toggle**   | ✅ Complete          | `PATCH /:id/mental-state` + detail view badge with null placeholder (v0.7.5) |
-| **Authentication**        | ✅ Complete          | Magic link sign-in, JWT session, httpOnly refresh token (v0.8.1)   |
+| **Docker Deployment**     | ✅ Complete          | Full-stack Compose: PostgreSQL + NestJS API + nginx/Angular (v0.8.0) |
+| **Authentication**        | ✅ Complete          | Magic link sign-in, JWT + httpOnly refresh token, auth guard (v0.8.1) |
 | **Onboarding**            | ✅ Complete          | Two-step flow: name + module selection, persisted to DB (v0.8.1)   |
-| **Session Tracking**      | 📅 Planned (v0.10.0) | Focus Pulse uses hardcoded data until then                         |
-| **Recommendation Engine** | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then                  |
+| **OAuth (Google)**        | 🔜 Next (v0.8.2)    | Google Sign-In, account linking across providers                   |
+| **Learning Paths**        | 📅 Planned (v0.9.0) | Ordered resource sequences with progress tracking                  |
+| **Pomodoro & Sessions**   | 📅 Planned (v0.9.5) | Focus Pulse and Architect's Pulse wired to real session data       |
+| **Spaced Repetition**     | 📅 Planned (v0.10.0)| SRS scheduling + recommendation engine                            |
+| **Recommendation Engine** | 📅 Planned (v0.10.0)| Ideal Match wired to real endpoint                                 |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
