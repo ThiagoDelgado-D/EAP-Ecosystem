@@ -9,7 +9,7 @@ export class AuthStore {
 
   setSession(user: AuthUser, token: string): void {
     this.currentUser.set(user);
-    this.accessToken.set(token);
+    this.accessToken.set(token || null);
   }
 
   clearSession(): void {
