@@ -1,0 +1,102 @@
+<div class="w-full max-w-lg">
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
+    <div class="text-center mb-6">
+      <p class="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-3">Step 2 of 2</p>
+      <h1 class="text-2xl font-bold text-slate-100 mb-2">Build your system, {{ firstName() }}.</h1>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        Choose which modules to activate. You can change this anytime in Settings.<br />
+        Disabled modules don't load routes or make API calls.
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2 mb-6">
+      @for (module of modules; track module.key) {
+        <div
+          (click)="toggle(module)"
+          [style.border]="'1px solid ' + (isOn(module.key) ? module.color + '44' : '#1e293b')"
+          [style.background]="isOn(module.key) ? module.color + '0a' : '#020617'"
+          [style.cursor]="module.locked ? 'default' : 'pointer'"
+          class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150"
+        >
+          <div
+            [style.background]="isOn(module.key) ? module.color + '18' : '#1e293b'"
+            [style.border]="'1px solid ' + (isOn(module.key) ? module.color + '33' : '#334155')"
+            class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center transition-all duration-150"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              [attr.stroke]="isOn(module.key) ? module.color : '#475569'"
+              stroke-width="2"
+            >
+              <path [attr.d]="module.icon" />
+            </svg>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span
+                class="text-xs font-bold"
+                [style.color]="isOn(module.key) ? '#f1f5f9' : '#94a3b8'"
+                >{{ module.label }}</span
+              >
+              @if (module.locked) {
+                <span
+                  class="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                  [style.background]="module.color + '18'"
+                  [style.border]="'1px solid ' + module.color + '33'"
+                  [style.color]="module.color"
+                  >Always on</span
+                >
+              }
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ module.desc }}</p>
+          </div>
+
+          <div
+            [style.background]="isOn(module.key) ? module.color : '#334155'"
+            [style.opacity]="module.locked ? '0.5' : '1'"
+            class="w-9 h-5 rounded-full relative shrink-0 transition-all duration-200"
+          >
+            <div
+              class="absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full shadow transition-all duration-200"
+              [style.left]="isOn(module.key) ? '18px' : '3px'"
+            ></div>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (error()) {
+      <p class="text-xs text-red-400 mb-3 text-center">{{ error() }}</p>
+    }
+
+    <div class="flex gap-3">
+      <button
+        (click)="back.emit()"
+        [disabled]="loading()"
+        class="px-5 py-3 rounded-xl text-sm font-medium text-slate-400 border border-slate-700 hover:border-slate-600 hover:text-slate-300 transition-colors disabled:opacity-50"
+      >
+        Back
+      </button>
+      <button
+        (click)="submit()"
+        [disabled]="loading()"
+        class="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-3 rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        @if (loading()) {
+          Setting up your space...
+        } @else {
+          Enter EAP
+        }
+      </button>
+    </div>
+  </div>
+
+  <div class="flex justify-center items-center gap-2 mt-5">
+    <div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+    <div class="w-6 h-1.5 rounded-full bg-violet-500"></div>
+  </div>
+</div>
