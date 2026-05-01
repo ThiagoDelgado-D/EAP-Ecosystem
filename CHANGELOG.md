@@ -1,11 +1,78 @@
-## [Unreleased] — v0.8.0
+## [Unreleased]
 
 ### Planned
 
-- Authentication – Magic link → OAuth → MFA
-- User profile endpoints
+- User profile page (firstName, lastName, avatar) — v0.9.x
 - Wire FocusPulseComponent and PendingTasksComponent to real data
 - Transformers.js fallback for Firefox voice capture
+
+## [0.8.1] - 2026-05-01
+
+### Authentication & Onboarding
+
+Completes the full authentication loop end-to-end. Users can sign in via magic link,
+complete a two-step onboarding flow (name + module selection), and have their session
+and feature configuration persisted across logins.
+
+---
+
+### Added
+
+#### Infrastructure
+
+- `JwtServiceImpl` — real JWT sign/verify using default import (required for Node.js ESM runtime)
+- `EnvironmentService` — typed wrapper over `process.env` with strict presence checks
+- `onboardingCompleted` column — TypeORM migration added to `users` table
+- `featureConfig` and `widgetConfig` stored as `jsonb` columns on `users` entity
+
+#### Backend — Application (`user` BC)
+
+- `requestSignIn` use case — generates 6-digit code, hashes it, persists `SignInChallenge`, sends magic link email
+- `verifySignIn` use case — validates code + challenge state, creates user on first login, issues `accessToken` + `refreshToken`, opens `Session`; returns `featureConfig` in user payload
+- `completeOnboarding` use case — sets `firstName`, `featureConfig`, `onboardingCompleted: true`
+- `UserNotFoundError` typed error (`USER_NOT_FOUND_ERROR`, HTTP 404)
+- Unit tests for all three use cases following inline-deps convention
+
+#### Backend — API
+
+- `POST /api/v1/auth/request-sign-in` and `POST /api/v1/auth/verify-sign-in`
+- `PATCH /api/v1/auth/onboarding` — Bearer token extraction, delegates to `completeOnboarding`
+- `CompleteOnboardingDto` — `firstName` (trimmed, min 1), `featureConfig` validated via `@IsIn(Object.values(FeatureKey), { each: true })`
+- `refreshToken` set as `httpOnly` cookie (30 days, path: `/api/v1/auth`)
+- `USER_NOT_FOUND_ERROR` registered in `DomainErrorMapper`
+- `credentials: true` added to `enableCors()`
+
+#### Frontend — Auth infrastructure
+
+- `AuthStore` — `providedIn: 'root'`, signals: `currentUser`, `accessToken`, `isAuthenticated`, `setSession`, `clearSession`
+- `AuthHttpService` — `requestSignIn` + `verifySignIn` with `firstValueFrom()`; maps `featureConfig`
+- `OnboardingHttpService` — `completeOnboarding(firstName, featureConfig)` via `PATCH /auth/onboarding`
+- `FEATURE_KEY` const object + `FeatureKey` union type in `auth.model.ts`; `featureConfig` added to `AuthUser` and `AuthUserDto`
+- `authInterceptor` — `withCredentials: true` on all requests; `Authorization: Bearer` when token present
+- `authGuard` — real implementation checking `AuthStore.isAuthenticated()`
+
+#### Frontend — Sign-in UI
+
+- `SignInComponent` — orchestrator with `signal<'email' | 'code' | 'success'>`
+- `EmailStepComponent`, `CodeStepComponent` (6-digit OTP, auto-advance, paste, 30s countdown), `SuccessStepComponent`
+- Routes to `/onboarding` if `onboardingCompleted === false`, else to `/dashboard`
+
+#### Frontend — Onboarding UI
+
+- `OnboardingComponent` — two-step orchestrator, calls API, updates `AuthStore`, navigates to `/dashboard`
+- `NameStepComponent` — first name input with validation
+- `ModulesStepComponent` — five modules with per-module hex color styling; toggles are `<button>` with `aria-pressed`; defaults: Learning Paths + Knowledge Graph
+
+### Fixed
+
+- `jwt.sign is not a function` in Node.js ESM — caused by `import * as jwt` instead of default import
+- `refreshToken` cookie not stored — missing `credentials: true` in CORS config and `withCredentials` in Angular interceptor
+- `featureConfig` collapsing to `[]` on subsequent logins — field was omitted from `verifySignIn` response
+- `USER_NOT_FOUND_ERROR` missing from `DomainErrorMapper` — TypeScript compile error
+- Module toggle rows not keyboard-operable — replaced `<div>` with `<button type="button">`
+- Whitespace-only `firstName` accepted by `@MinLength(1)` — `@Transform` trims before validation
+
+---
 
 ## [0.7.5] - 2026-04-17
 

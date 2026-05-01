@@ -14,7 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.7.5-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
+[![Version](https://img.shields.io/badge/version-0.8.1-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
 
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
 [![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
@@ -36,7 +36,7 @@ coming in upcoming versions.
 
 ---
 
-## 🎯 Current Status (v0.7.5)
+## 🎯 Current Status (v0.8.1)
 
 | Component                 | Status               | Notes                                                              |
 | ------------------------- | -------------------- | ------------------------------------------------------------------ |
@@ -49,8 +49,8 @@ coming in upcoming versions.
 | **CSV/JSON File Import**  | ✅ Complete          | Drag & drop, preview table, batch import (v0.7.0)                  |
 | **Quick Toggles**         | ✅ Complete          | Inline difficulty / energy / status badges with optimistic UI (v0.7.4) |
 | **Mental State Toggle**   | ✅ Complete          | `PATCH /:id/mental-state` + detail view badge with null placeholder (v0.7.5) |
-| **User Module**           | 🚧 Foundation        | Domain + application only, not wired to API or auth                |
-| **Authentication**        | 📅 Next (v0.8.0)     | Magic link → OAuth → MFA                                           |
+| **Authentication**        | ✅ Complete          | Magic link sign-in, JWT session, httpOnly refresh token (v0.8.1)   |
+| **Onboarding**            | ✅ Complete          | Two-step flow: name + module selection, persisted to DB (v0.8.1)   |
 | **Session Tracking**      | 📅 Planned (v0.10.0) | Focus Pulse uses hardcoded data until then                         |
 | **Recommendation Engine** | 📅 Planned (v0.11.0) | Ideal Match uses filter-based approach until then                  |
 
@@ -139,6 +139,9 @@ Base URL: `http://localhost:3000/api/v1`
 | PATCH  | `/learning-resources/:id/mental-state`  | Toggle mental state                                 |
 | GET    | `/health`                               | Health check                                        |
 | POST   | `/learning-resources/preview`           | Extract metadata from URL                           |
+| POST   | `/auth/request-sign-in`                 | Send magic link to email                            |
+| POST   | `/auth/verify-sign-in`                  | Verify OTP code, issue JWT + refresh token cookie   |
+| PATCH  | `/auth/onboarding`                      | Complete onboarding (name + module selection)       |
 
 ---
 
