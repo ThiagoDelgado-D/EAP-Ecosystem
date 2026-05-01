@@ -29,9 +29,9 @@ export const requestSignIn = async (
     cryptoService,
     emailService,
   }: RequestSignInDependencies,
-  input: RequestSignInRequestModel,
+  request: RequestSignInRequestModel,
 ): Promise<RequestSignInResponseModel> => {
-  const validation = await requestSignInSchema(input);
+  const validation = await requestSignInSchema(request);
   if (validation instanceof Error) return;
 
   const { email } = validation;

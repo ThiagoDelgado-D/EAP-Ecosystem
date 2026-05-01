@@ -28,7 +28,15 @@ export interface VerifySignInRequestModel {
 export interface VerifySignInResponseModel {
   accessToken: string;
   refreshToken: string;
-  user: Pick<User, "id" | "email" | "firstName" | "lastName" | "onboardingCompleted">;
+  user: Pick<
+    User,
+    | "id"
+    | "email"
+    | "firstName"
+    | "lastName"
+    | "onboardingCompleted"
+    | "featureConfig"
+  >;
 }
 
 const verifySignInSchema = createValidationSchema<VerifySignInRequestModel>({
@@ -45,9 +53,9 @@ export const verifySignIn = async (
     cryptoService,
     jwtService,
   }: VerifySignInDependencies,
-  input: VerifySignInRequestModel,
+  request: VerifySignInRequestModel,
 ): Promise<VerifySignInResponseModel | InvalidOrExpiredCodeError> => {
-  const validation = await verifySignInSchema(input);
+  const validation = await verifySignInSchema(request);
   if (validation instanceof Error) return new InvalidOrExpiredCodeError();
 
   const { email, code } = validation;
@@ -124,6 +132,7 @@ export const verifySignIn = async (
       firstName: user.firstName,
       lastName: user.lastName,
       onboardingCompleted: user.onboardingCompleted,
+      featureConfig: user.featureConfig,
     },
   };
 };
