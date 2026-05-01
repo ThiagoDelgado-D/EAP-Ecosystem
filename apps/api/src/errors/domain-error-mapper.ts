@@ -11,6 +11,7 @@ const httpStatusMap: Record<ErrorName, number> = {
   LEARNING_RESOURCE_NOT_FOUND_ERROR: 404,
   VALIDATION_ERROR: 400,
   INVALID_OR_EXPIRED_CODE_ERROR: 400,
+  USER_NOT_FOUND_ERROR: 404,
 };
 
 export function toHttpException(error: AppDomainError): never {
