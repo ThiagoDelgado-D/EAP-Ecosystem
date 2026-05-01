@@ -2,9 +2,12 @@
 
 ### Planned
 
-- User profile page (firstName, lastName, avatar) — v0.9.x
-- Wire FocusPulseComponent and PendingTasksComponent to real data
-- Transformers.js fallback for Firefox voice capture
+- OAuth (Google Sign-In) — v0.8.2
+- Account linking across providers — v0.8.2
+- Learning Paths domain + Atlas view (D3.js knowledge graph) — v0.9.0
+- Pomodoro timer + LearningSession entity, Focus Pulse wired to real data — v0.9.5
+- Spaced repetition scheduling + recommendation engine — v0.10.0
+- User profile page (firstName, lastName, avatar) — v0.11.x
 
 ## [0.8.1] - 2026-05-01
 
@@ -71,6 +74,34 @@ and feature configuration persisted across logins.
 - `USER_NOT_FOUND_ERROR` missing from `DomainErrorMapper` — TypeScript compile error
 - Module toggle rows not keyboard-operable — replaced `<div>` with `<button type="button">`
 - Whitespace-only `firstName` accepted by `@MinLength(1)` — `@Transform` trims before validation
+
+---
+
+## [0.8.0] - 2026-04-28
+
+### Docker + User Entity Foundation
+
+Full-stack Docker Compose setup for local and production deployment. Introduces the `User`
+entity with `featureConfig` and `widgetConfig` as first-class fields, and wires the NestJS
+auth module with all required infrastructure (repositories, services, email adapter).
+
+---
+
+### Added
+
+#### Infrastructure
+
+- `docker-compose.yml` — full-stack Compose: PostgreSQL, NestJS API, nginx/Angular with health checks
+- `apps/api/Dockerfile` and `apps/web/Dockerfile` — multi-stage builds
+- `.env.example` — all required environment variables documented
+
+#### Backend — `user` BC
+
+- `User` entity with `featureConfig: FeatureKey[]` and `widgetConfig: WidgetKey[]` from day one
+- `Identity`, `Session`, `SignInChallenge` domain entities and TypeORM implementations
+- `TypeOrmUserRepository`, `TypeOrmIdentityRepository`, `TypeOrmSessionRepository`, `TypeOrmSignInChallengeRepository`
+- `UserModule` wired in NestJS with all repositories and services registered
+- Initial database migration for the `users`, `identities`, `sessions`, and `sign_in_challenges` tables
 
 ---
 
