@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
@@ -14,7 +14,7 @@ type SignInStep = 'email' | 'code' | 'success';
   imports: [EmailStepComponent, CodeStepComponent, SuccessStepComponent],
   templateUrl: './sign-in.component.html',
 })
-export class SignInComponent {
+export class SignInComponent implements OnDestroy {
   private readonly authService = inject(AuthHttpService);
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
@@ -23,6 +23,8 @@ export class SignInComponent {
   readonly email = signal('');
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+
+  private redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
   async onEmailSubmit(email: string): Promise<void> {
     this.loading.set(true);
@@ -48,7 +50,7 @@ export class SignInComponent {
         await this.router.navigate(['/onboarding']);
       } else {
         this.step.set('success');
-        setTimeout(() => void this.router.navigate(['/dashboard']), 1500);
+        this.redirectTimer = setTimeout(() => this.router.navigate(['/dashboard']), 1500);
       }
     } catch {
       this.error.set('Invalid or expired code. Please try again.');
@@ -60,5 +62,9 @@ export class SignInComponent {
   onChangeEmail(): void {
     this.step.set('email');
     this.error.set(null);
+  }
+
+  ngOnDestroy(): void {
+    if (this.redirectTimer) clearTimeout(this.redirectTimer);
   }
 }
