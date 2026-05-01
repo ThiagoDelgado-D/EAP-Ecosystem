@@ -8,8 +8,7 @@ export const authRoutes: Routes = [
     children: [
       {
         path: 'sign-in',
-        loadComponent: () =>
-          import('./sign-in/sign-in.component').then((m) => m.SignInComponent),
+        loadComponent: () => import('./sign-in/sign-in.component').then((m) => m.SignInComponent),
       },
       {
         path: '',
@@ -29,9 +28,7 @@ export const onboardingRoutes: Routes = [
       {
         path: '',
         loadComponent: () =>
-          import('./onboarding/onboarding-coming-soon.component').then(
-            (m) => m.OnboardingComingSoonComponent,
-          ),
+          import('./onboarding/onboarding.component').then((m) => m.OnboardingComponent),
       },
     ],
   },

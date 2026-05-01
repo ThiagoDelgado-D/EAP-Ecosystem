@@ -1,0 +1,14 @@
+@switch (step()) {
+  @case ('name') {
+    <app-name-step (nameSubmit)="onNameSubmit($event)" />
+  }
+  @case ('modules') {
+    <app-modules-step
+      [firstName]="firstName()"
+      [loading]="loading()"
+      [error]="error()"
+      (back)="step.set('name')"
+      (modulesSubmit)="onModulesSubmit($event)"
+    />
+  }
+}
