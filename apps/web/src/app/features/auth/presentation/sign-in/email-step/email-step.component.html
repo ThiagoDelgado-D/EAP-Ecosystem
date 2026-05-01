@@ -1,6 +1,5 @@
 <div class="w-full max-w-lg">
   <div class="bg-slate-900 border border-slate-800 rounded-2xl p-10 shadow-xl">
-    <!-- Logo -->
     <div class="flex flex-col items-center mb-6">
       <div
         class="w-14 h-14 bg-violet-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-violet-900/40"
@@ -23,7 +22,6 @@
       <span class="text-violet-400 text-xs tracking-widest font-medium mt-0.5">ECOSYSTEM</span>
     </div>
 
-    <!-- Heading -->
     <div class="text-center mb-6">
       <h1 class="text-2xl font-bold text-slate-100 mb-1">Welcome back.</h1>
       <p class="text-sm text-slate-500 leading-relaxed">
@@ -32,7 +30,6 @@
       </p>
     </div>
 
-    <!-- Email input -->
     <div class="relative mb-3">
       <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
         <svg
@@ -49,11 +46,13 @@
           />
         </svg>
       </div>
+      <label for="email-input" class="sr-only">Email</label>
       <input
         type="email"
         placeholder="you@example.com"
         [(ngModel)]="emailValue"
         (keydown.enter)="submit()"
+        id="email-input"
         class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 transition-colors"
       />
     </div>
@@ -62,7 +61,6 @@
       <p class="text-xs text-red-400 mb-3">{{ error() }}</p>
     }
 
-    <!-- Continue button -->
     <button
       (click)="submit()"
       [disabled]="!isValid() || loading()"
@@ -75,14 +73,12 @@
       }
     </button>
 
-    <!-- Divider -->
     <div class="flex items-center gap-3 mb-4">
       <div class="flex-1 h-px bg-slate-800"></div>
       <span class="text-xs text-slate-600">or</span>
       <div class="flex-1 h-px bg-slate-800"></div>
     </div>
 
-    <!-- Social buttons — disabled (v0.8.2) -->
     <div class="space-y-2 mb-6">
       <button
         disabled
