@@ -1,4 +1,9 @@
-import { CanActivateFn } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthStore } from '@features/auth/application/auth.store';
 
-// Stub: always passes. Auth check will be implemented in a future branch.
-export const authGuard: CanActivateFn = () => true;
+export const authGuard: CanActivateFn = () => {
+  const store = inject(AuthStore);
+  const router = inject(Router);
+  return store.isAuthenticated() ? true : router.createUrlTree(['/auth/sign-in']);
+};
