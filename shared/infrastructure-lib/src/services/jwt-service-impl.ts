@@ -1,4 +1,4 @@
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import type { JwtPayload, JwtService } from "domain-lib";
 
 export interface JwtConfig {
