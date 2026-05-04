@@ -65,26 +65,33 @@ import { EnvironmentService } from "../config/environment.service.js";
     },
     {
       provide: "IEmailService",
-      useFactory: async (): Promise<EmailServiceImpl> => {
+      useFactory: async (env: EnvironmentService): Promise<EmailServiceImpl> => {
         const templateDir = fileURLToPath(
           new URL("../emails", import.meta.url),
         );
+        const tls = { rejectUnauthorized: !env.smtpSkipCertVerify };
 
         let smtp: SmtpConfig;
 
-        if (process.env.SMTP_HOST) {
+        if (env.smtpHost) {
           smtp = {
-            host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT ?? "587"),
-            secure: process.env.SMTP_SECURE === "true",
+            host: env.smtpHost,
+            port: env.smtpPort,
+            secure: env.smtpSecure,
             auth: {
-              user: process.env.SMTP_USER!,
-              pass: process.env.SMTP_PASS!,
+              user: env.smtpUser,
+              pass: env.smtpPass,
             },
-            from: process.env.SMTP_FROM,
-            tls: { rejectUnauthorized: false },
+            from: env.smtpFrom,
+            tls,
           };
         } else {
+          if (env.isProduction) {
+            throw new Error(
+              "[EmailService] Missing SMTP_HOST in production. Configure SMTP_HOST, SMTP_USER and SMTP_PASS before starting the API.",
+            );
+          }
+
           const account = await nodemailer.createTestAccount();
           smtp = {
             host: "smtp.ethereal.email",
@@ -92,7 +99,7 @@ import { EnvironmentService } from "../config/environment.service.js";
             secure: false,
             auth: { user: account.user, pass: account.pass },
             from: account.user,
-            tls: { rejectUnauthorized: false },
+            tls,
           };
           console.warn(
             "[EmailService] No SMTP_HOST configured — using Ethereal dev account.",
@@ -105,6 +112,7 @@ import { EnvironmentService } from "../config/environment.service.js";
 
         return new EmailServiceImpl(templateDir, EAP_EMAIL_DECLARATIONS, smtp);
       },
+      inject: [EnvironmentService],
     },
   ],
 })

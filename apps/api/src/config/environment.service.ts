@@ -9,11 +9,14 @@ export class EnvironmentService {
   private readonly _jwtExpiresInSeconds: number;
   private readonly _corsOrigin: string;
   private readonly _webHost: string;
+  private readonly _nodeEnv: string;
   private readonly _smtpHost: string;
   private readonly _smtpPort: number;
+  private readonly _smtpSecure: boolean;
   private readonly _smtpUser: string;
   private readonly _smtpPass: string;
   private readonly _smtpFrom: string;
+  private readonly _smtpSkipCertVerify: boolean;
 
   constructor(private readonly configService: ConfigService) {
     this._jwtSecret = this.readVar("JWT_SECRET");
@@ -25,11 +28,16 @@ export class EnvironmentService {
     );
     this._corsOrigin = this.readVar("CORS_ORIGIN", "http://localhost:4200");
     this._webHost = this.readVar("WEB_HOST", "http://localhost:4200");
+    this._nodeEnv = this.readVar("NODE_ENV", "development");
     this._smtpHost = this.readVar("SMTP_HOST");
     this._smtpPort = parseInt(this.readVar("SMTP_PORT", "587"), 10);
+    this._smtpSecure = this.parseBoolean(this.readVar("SMTP_SECURE", "false"));
     this._smtpUser = this.readVar("SMTP_USER");
     this._smtpPass = this.readVar("SMTP_PASS");
     this._smtpFrom = this.readVar("SMTP_FROM");
+    this._smtpSkipCertVerify = this.parseBoolean(
+      this.readVar("SMTP_SKIP_CERT_VERIFY", "false"),
+    );
   }
 
   get jwtSecret(): string {
@@ -48,12 +56,24 @@ export class EnvironmentService {
     return this._webHost;
   }
 
+  get nodeEnv(): string {
+    return this._nodeEnv;
+  }
+
+  get isProduction(): boolean {
+    return this._nodeEnv === "production";
+  }
+
   get smtpHost(): string {
     return this._smtpHost;
   }
 
   get smtpPort(): number {
     return this._smtpPort;
+  }
+
+  get smtpSecure(): boolean {
+    return this._smtpSecure;
   }
 
   get smtpUser(): string {
@@ -66,6 +86,10 @@ export class EnvironmentService {
 
   get smtpFrom(): string {
     return this._smtpFrom;
+  }
+
+  get smtpSkipCertVerify(): boolean {
+    return this._smtpSkipCertVerify;
   }
 
   private readVar(key: string, fallback?: string): string {
@@ -93,5 +117,9 @@ export class EnvironmentService {
     }
     const numeric = parseInt(value, 10);
     return isNaN(numeric) ? 900 : numeric;
+  }
+
+  private parseBoolean(value: string): boolean {
+    return value.toLowerCase() === "true";
   }
 }
