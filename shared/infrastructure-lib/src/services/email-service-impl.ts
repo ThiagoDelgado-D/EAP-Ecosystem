@@ -1,29 +1,92 @@
+import fs from "fs";
+import path from "path";
 import nodemailer from "nodemailer";
+import handlebars from "handlebars";
 import type {
   EmailService,
   BasicSendEmailOptions,
   TemplateSendEmailOptions,
-  DefaultEmailTemplates,
 } from "domain-lib";
 
-export class EmailServiceImpl implements EmailService<DefaultEmailTemplates> {
-  private transporter: nodemailer.Transporter;
+export interface EmailTemplateDeclaration {
+  fileName: string;
+  subject: string;
+}
 
-  constructor() {
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  auth: {
+    user: string;
+    pass: string;
+  };
+  from?: string;
+  tls?: { rejectUnauthorized?: boolean };
+}
+
+export class MissingTemplateError extends Error {
+  constructor(templateName: string, filePath: string) {
+    super(
+      `[EmailService] Template "${templateName}" declared but .hbs file not found: ${filePath}`,
+    );
+    this.name = "MissingTemplateError";
+  }
+}
+
+type CompiledEntry = {
+  subject: string;
+  render: ReturnType<typeof handlebars.compile>;
+};
+
+export class EmailServiceImpl implements EmailService<string> {
+  private readonly transporter: nodemailer.Transporter;
+  private readonly compiled = new Map<string, CompiledEntry>();
+  private readonly defaultFrom: string;
+
+  /**
+   * @param templateDir   Absolute path to the folder containing .hbs files.
+   *                      Resolved by the caller (UserModule) — avoids ESM
+   *                      __dirname issues inside the library.
+   * @param declarations  Map of template name → { fileName, subject }.
+   *                      Every declared template must have a corresponding
+   *                      .hbs file — the constructor throws MissingTemplateError
+   *                      at startup if any file is absent (fail-fast).
+   * @param smtp          Resolved SMTP config. The factory in UserModule is
+   *                      responsible for choosing between real SMTP and Ethereal.
+   */
+  constructor(
+    templateDir: string,
+    declarations: Record<string, EmailTemplateDeclaration>,
+    smtp: SmtpConfig,
+  ) {
+    for (const [name, decl] of Object.entries(declarations)) {
+      const filePath = path.join(templateDir, decl.fileName);
+      if (!fs.existsSync(filePath)) {
+        throw new MissingTemplateError(name, filePath);
+      }
+      const source = fs.readFileSync(filePath, "utf-8");
+      this.compiled.set(name, {
+        subject: decl.subject,
+        render: handlebars.compile(source),
+      });
+    }
+
+    handlebars.registerHelper("year", () => new Date().getFullYear());
+
+    this.defaultFrom = smtp.from ?? `noreply@${smtp.host}`;
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+      host: smtp.host,
+      port: smtp.port,
+      secure: smtp.secure,
+      auth: smtp.auth,
+      tls: smtp.tls,
     });
   }
 
   async sendEmail(opts: BasicSendEmailOptions): Promise<void> {
     await this.transporter.sendMail({
-      from: process.env.SMTP_FROM,
+      from: this.defaultFrom,
       to: opts.to,
       cc: opts.cc,
       bcc: opts.bcc,
@@ -39,37 +102,19 @@ export class EmailServiceImpl implements EmailService<DefaultEmailTemplates> {
   }
 
   async sendTemplateEmail(
-    opts: TemplateSendEmailOptions<DefaultEmailTemplates>,
+    opts: TemplateSendEmailOptions<string>,
   ): Promise<void> {
-    const templates: Record<
-      DefaultEmailTemplates,
-      { subject: string; html: string }
-    > = {
-      EMAIL_VERIFICATION: {
-        subject: "Verify your email",
-        html: `<p>Click here to verify: ${opts.data.verificationLink}</p>`,
-      },
-      WELCOME: {
-        subject: "Welcome!",
-        html: `<p>Welcome ${opts.data.name}!</p>`,
-      },
-      PASSWORD_RESET: {
-        subject: "Reset your password",
-        html: `<p>Reset link: ${opts.data.resetLink}</p>`,
-      },
-      MAGIC_LINK_CODE: {
-        subject: "Your sign-in code",
-        html: `<p>Your sign-in code is: <strong>${opts.data.code}</strong></p><p>It expires in 10 minutes.</p>`,
-      },
-    };
-
-    const template = templates[opts.template];
-    if (!template) throw new Error(`Template ${opts.template} not found`);
-
+    const entry = this.compiled.get(opts.template);
+    if (!entry) {
+      throw new Error(
+        `[EmailService] Template "${opts.template}" is not registered. ` +
+          `Declare it in EAP_EMAIL_DECLARATIONS and add the corresponding .hbs file.`,
+      );
+    }
     await this.sendEmail({
       ...opts,
-      subject: template.subject,
-      html: template.html,
+      subject: entry.subject,
+      html: entry.render(opts.data),
     });
   }
 }

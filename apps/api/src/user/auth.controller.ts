@@ -72,6 +72,7 @@ export class AuthController {
         sessionRepository: this.sessionRepository,
         cryptoService: this.cryptoService,
         jwtService: this.jwtService,
+        emailService: this.emailService,
       },
       { email: dto.email, code: dto.code },
     );

@@ -7,6 +7,8 @@ import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { verifySignIn } from "./verify-sign-in.js";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
 import type { Identity, SignInChallenge, User } from "@user/domain";
+import { MockedEmailService } from "../../mocks/mock-email-service.js";
+import type { TemplateSendEmailOptions } from "domain-lib";
 
 describe("verifySignIn", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -17,6 +19,7 @@ describe("verifySignIn", () => {
     typeof mockSignInChallengeRepository
   >;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
+  let emailService: MockedEmailService;
 
   const EMAIL = "thiago@example.com";
   const VALID_CODE = "482910";
@@ -30,6 +33,7 @@ describe("verifySignIn", () => {
     identityRepository = mockIdentityRepository();
     signInChallengeRepository = mockSignInChallengeRepository();
     sessionRepository = mockSessionRepository();
+    emailService = new MockedEmailService();
 
     activeChallenge = {
       id: await cryptoService.generateUUID(),
@@ -51,7 +55,11 @@ describe("verifySignIn", () => {
     identityRepository,
     signInChallengeRepository,
     sessionRepository,
+    emailService,
   });
+
+  const waitForWelcomeEmail = () =>
+    new Promise((resolve) => setTimeout(resolve, 20));
 
   test("Should create a new User and Identity when the email is not registered", async () => {
     await verifySignIn(deps(), { email: EMAIL, code: VALID_CODE });
@@ -63,6 +71,19 @@ describe("verifySignIn", () => {
     expect(identityRepository.identities[0].provider).toBe("magic-link");
     expect(identityRepository.identities[0].providerSubject).toBe(EMAIL);
     expect(identityRepository.identities[0].verified).toBe(true);
+  });
+
+  test("Should send a welcome email when a user is created", async () => {
+    await verifySignIn(deps(), { email: EMAIL, code: VALID_CODE });
+    await waitForWelcomeEmail();
+
+    expect(emailService.hasTemplateEmail("WELCOME")).toBe(true);
+
+    const welcomeEmail = emailService.getLastEmail() as TemplateSendEmailOptions<"WELCOME">;
+    expect(welcomeEmail.data).toEqual({
+      firstName: "",
+      year: new Date().getFullYear(),
+    });
   });
 
   test("New user identity should be linked to the created user", async () => {
@@ -105,6 +126,44 @@ describe("verifySignIn", () => {
 
     expect(userRepository.count()).toBe(1);
     expect(identityRepository.count()).toBe(1);
+  });
+
+  test("Should not send a welcome email when the email is already registered", async () => {
+    const existingUser: User = {
+      id: await cryptoService.generateUUID(),
+      email: EMAIL,
+      firstName: "Thiago",
+      lastName: "Delgado",
+      userName: null,
+      enabled: true,
+      onboardingCompleted: true,
+      featureConfig: [],
+      widgetConfig: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await userRepository.save(existingUser);
+
+    await verifySignIn(deps(), { email: EMAIL, code: VALID_CODE });
+
+    expect(emailService.hasTemplateEmail("WELCOME")).toBe(false);
+  });
+
+  test("Should not fail sign-in when the welcome email fails", async () => {
+    emailService.sendTemplateEmail = async () => {
+      throw new Error("SMTP unavailable");
+    };
+
+    const result = await verifySignIn(deps(), {
+      email: EMAIL,
+      code: VALID_CODE,
+    });
+
+    expect(result).not.toBeInstanceOf(InvalidOrExpiredCodeError);
+    if (result instanceof InvalidOrExpiredCodeError) return;
+
+    expect(result.accessToken).toBeTruthy();
+    expect(result.refreshToken).toBeTruthy();
   });
 
   test("Should return the existing user's data when the email is already registered", async () => {

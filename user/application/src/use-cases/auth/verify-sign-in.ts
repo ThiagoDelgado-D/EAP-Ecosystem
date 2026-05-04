@@ -7,7 +7,7 @@ import type {
   Session,
   User,
 } from "@user/domain";
-import type { CryptoService, JwtService } from "domain-lib";
+import type { CryptoService, EmailService, JwtService } from "domain-lib";
 import { createValidationSchema, emailField, stringField } from "domain-lib";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
 
@@ -18,6 +18,7 @@ export interface VerifySignInDependencies {
   sessionRepository: ISessionRepository;
   cryptoService: CryptoService;
   jwtService: JwtService;
+  emailService: EmailService;
 }
 
 export interface VerifySignInRequestModel {
@@ -52,6 +53,7 @@ export const verifySignIn = async (
     sessionRepository,
     cryptoService,
     jwtService,
+    emailService,
   }: VerifySignInDependencies,
   request: VerifySignInRequestModel,
 ): Promise<VerifySignInResponseModel | InvalidOrExpiredCodeError> => {
@@ -78,8 +80,10 @@ export const verifySignIn = async (
   }
 
   let user = await userRepository.findByEmail(email);
+  let isNewUser = false;
 
   if (!user) {
+    isNewUser = true;
     user = {
       id: await cryptoService.generateUUID(),
       email,
@@ -122,6 +126,19 @@ export const verifySignIn = async (
   await sessionRepository.save(session);
 
   await signInChallengeRepository.consume(challenge.id);
+
+  if (isNewUser) {
+    void emailService
+      .sendTemplateEmail({
+        template: "WELCOME",
+        data: {
+          firstName: user.firstName,
+          year: new Date().getFullYear(),
+        },
+        to: [email],
+      })
+      .catch(() => undefined);
+  }
 
   return {
     accessToken,

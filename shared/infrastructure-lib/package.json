@@ -9,6 +9,7 @@
     "@types/nodemailer": "^7.0.11",
     "bcryptjs": "^3.0.3",
     "domain-lib": "workspace:^",
+    "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^8.0.5"
   },
