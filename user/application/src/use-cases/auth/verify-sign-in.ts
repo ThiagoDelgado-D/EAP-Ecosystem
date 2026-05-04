@@ -131,7 +131,10 @@ export const verifySignIn = async (
     void emailService
       .sendTemplateEmail({
         template: "WELCOME",
-        data: {},
+        data: {
+          firstName: user.firstName,
+          year: new Date().getFullYear(),
+        },
         to: [email],
       })
       .catch(() => undefined);

@@ -8,6 +8,7 @@ import { verifySignIn } from "./verify-sign-in.js";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
 import type { Identity, SignInChallenge, User } from "@user/domain";
 import { MockedEmailService } from "../../mocks/mock-email-service.js";
+import type { TemplateSendEmailOptions } from "domain-lib";
 
 describe("verifySignIn", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -77,6 +78,12 @@ describe("verifySignIn", () => {
     await waitForWelcomeEmail();
 
     expect(emailService.hasTemplateEmail("WELCOME")).toBe(true);
+
+    const welcomeEmail = emailService.getLastEmail() as TemplateSendEmailOptions<"WELCOME">;
+    expect(welcomeEmail.data).toEqual({
+      firstName: "",
+      year: new Date().getFullYear(),
+    });
   });
 
   test("New user identity should be linked to the created user", async () => {
