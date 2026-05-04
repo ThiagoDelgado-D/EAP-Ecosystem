@@ -80,8 +80,10 @@ export const verifySignIn = async (
   }
 
   let user = await userRepository.findByEmail(email);
+  let isNewUser = false;
 
   if (!user) {
+    isNewUser = true;
     user = {
       id: await cryptoService.generateUUID(),
       email,
@@ -109,12 +111,6 @@ export const verifySignIn = async (
     await identityRepository.save(identity);
   }
 
-  await emailService.sendTemplateEmail({
-    template: "WELCOME",
-    data: {},
-    to: [email],
-  });
-
   const accessToken = await jwtService.sign({ sub: user.id });
   const rawRefreshToken = await cryptoService.generateRandomToken();
   const refreshTokenHash = await cryptoService.hashToken(rawRefreshToken);
@@ -130,6 +126,16 @@ export const verifySignIn = async (
   await sessionRepository.save(session);
 
   await signInChallengeRepository.consume(challenge.id);
+
+  if (isNewUser) {
+    void emailService
+      .sendTemplateEmail({
+        template: "WELCOME",
+        data: {},
+        to: [email],
+      })
+      .catch(() => undefined);
+  }
 
   return {
     accessToken,
