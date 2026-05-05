@@ -12,6 +12,7 @@ import {
   Res,
   UnauthorizedException,
 } from "@nestjs/common";
+import { randomBytes } from "node:crypto";
 import type {
   EmailService,
   FeatureKey,
@@ -34,6 +35,8 @@ import { CompleteOnboardingDto } from "./dto/request/complete-onboarding.dto.js"
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { EnvironmentService } from "../config/environment.service.js";
 import type { Response, Request } from "express";
+
+const GOOGLE_OAUTH_STATE_COOKIE = "google_oauth_state";
 
 @Controller("api/v1/auth")
 export class AuthController {
@@ -124,13 +127,23 @@ export class AuthController {
 
   @Get("google")
   @Redirect()
-  initiateGoogleOAuth() {
+  initiateGoogleOAuth(@Res({ passthrough: true }) res: Response) {
+    const state = randomBytes(32).toString("hex");
+    res.cookie(GOOGLE_OAUTH_STATE_COOKIE, state, {
+      httpOnly: true,
+      secure: this.env.isProduction,
+      sameSite: "lax",
+      path: "/api/v1/auth/google",
+      maxAge: 10 * 60 * 1000,
+    });
+
     const params = new URLSearchParams({
       client_id: this.env.googleClientId,
       redirect_uri: this.env.googleRedirectUri,
       response_type: "code",
       scope: "openid email profile",
       access_type: "offline",
+      state,
     });
     return {
       url: `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
@@ -140,11 +153,26 @@ export class AuthController {
 
   @Get("google/callback")
   async googleCallback(
+    @Req() req: Request,
     @Query("code") code: string,
+    @Query("state") state: string,
     @Res() res: Response,
   ): Promise<void> {
+    const expectedState = this.readCookie(req, GOOGLE_OAUTH_STATE_COOKIE);
+    res.clearCookie(GOOGLE_OAUTH_STATE_COOKIE, {
+      httpOnly: true,
+      secure: this.env.isProduction,
+      sameSite: "lax",
+      path: "/api/v1/auth/google",
+    });
+
     if (!code) {
       res.redirect(`${this.env.webHost}/auth/sign-in?error=oauth_cancelled`);
+      return;
+    }
+
+    if (!state || !expectedState || state !== expectedState) {
+      res.redirect(`${this.env.webHost}/auth/sign-in?error=oauth_state_mismatch`);
       return;
     }
 
@@ -186,6 +214,20 @@ export class AuthController {
       onboarding: String(!result.user.onboardingCompleted),
     });
 
-    res.redirect(`${this.env.webHost}/auth/callback?${params}`);
+    res.redirect(`${this.env.webHost}/auth/callback#${params}`);
+  }
+
+  private readCookie(req: Request, name: string): string | null {
+    const cookieHeader = req.headers.cookie;
+    if (!cookieHeader) return null;
+
+    for (const part of cookieHeader.split(";")) {
+      const [rawName, ...rest] = part.trim().split("=");
+      if (rawName === name) {
+        return decodeURIComponent(rest.join("="));
+      }
+    }
+
+    return null;
   }
 }
