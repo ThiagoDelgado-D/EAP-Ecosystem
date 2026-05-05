@@ -107,14 +107,15 @@ export const handleGoogleOAuth = async (
       return new GoogleOAuthError("User not found for existing identity");
     user = found;
   } else {
-    let existingUser: User | null = null;
-
-    if (profile.verified_email === true) {
-      existingUser = await userRepository.findByEmail(profile.email);
+    if (profile.verified_email !== true) {
+      return new GoogleOAuthError("Google account email is not verified");
     }
 
+    let existingUser: User | null = null;
+    existingUser = await userRepository.findByEmail(profile.email);
+
     if (!existingUser) {
-      existingUser = {
+      const newUser: User = {
         id: await cryptoService.generateUUID(),
         email: profile.email,
         firstName: profile.given_name ?? "",
@@ -127,7 +128,16 @@ export const handleGoogleOAuth = async (
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      await userRepository.save(existingUser);
+
+      try {
+        await userRepository.save(newUser);
+        existingUser = newUser;
+      } catch {
+        existingUser = await userRepository.findByEmail(profile.email);
+        if (!existingUser) {
+          return new GoogleOAuthError("Failed to create Google OAuth user");
+        }
+      }
     }
 
     user = existingUser;
@@ -141,7 +151,25 @@ export const handleGoogleOAuth = async (
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    await identityRepository.save(newIdentity);
+
+    try {
+      await identityRepository.save(newIdentity);
+    } catch {
+      const concurrentIdentity = await identityRepository.findByProvider(
+        "google",
+        profile.id,
+      );
+      if (!concurrentIdentity) {
+        return new GoogleOAuthError("Failed to link Google identity");
+      }
+
+      const linkedUser = await userRepository.findById(concurrentIdentity.userId);
+      if (!linkedUser) {
+        return new GoogleOAuthError("User not found for existing identity");
+      }
+
+      user = linkedUser;
+    }
   }
 
   const accessToken = await jwtService.sign({ sub: user.id });

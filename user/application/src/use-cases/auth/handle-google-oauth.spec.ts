@@ -223,7 +223,7 @@ describe("handleGoogleOAuth", () => {
     expect(googleIdentity!.userId).toBe(existingUser.id);
   });
 
-  test("Should not link to an existing user when Google email is not verified", async () => {
+  test("Should reject Google sign-in when the email is not verified", async () => {
     stubGoogleSuccess({ ...GOOGLE_PROFILE, verified_email: false });
 
     const existingUser: User = {
@@ -241,14 +241,13 @@ describe("handleGoogleOAuth", () => {
     };
     await userRepository.save(existingUser);
 
-    await handleGoogleOAuth(deps(), GOOGLE_CONFIG, { code: "auth_code" });
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
 
-    expect(userRepository.count()).toBe(2);
-    const googleIdentity = identityRepository.identities.find(
-      (i) => i.provider === "google",
-    );
-    expect(googleIdentity).toBeDefined();
-    expect(googleIdentity!.userId).not.toBe(existingUser.id);
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+    expect(userRepository.count()).toBe(1);
+    expect(identityRepository.count()).toBe(0);
   });
 
   test("Should return an accessToken and a refreshToken on success", async () => {
@@ -454,12 +453,14 @@ describe("handleGoogleOAuth", () => {
     expect(user.lastName).toBe("");
   });
 
-  test("Should set verified to false when Google profile has verified_email=false", async () => {
+  test("Should return GoogleOAuthError when Google profile email is not verified", async () => {
     stubGoogleSuccess({ ...GOOGLE_PROFILE, verified_email: false });
 
-    await handleGoogleOAuth(deps(), GOOGLE_CONFIG, { code: "auth_code" });
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
 
-    const identity = identityRepository.identities[0];
-    expect(identity.verified).toBe(false);
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+    expect(identityRepository.count()).toBe(0);
   });
 });
