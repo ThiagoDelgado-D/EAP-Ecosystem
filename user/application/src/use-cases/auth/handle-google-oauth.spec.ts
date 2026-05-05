@@ -223,6 +223,34 @@ describe("handleGoogleOAuth", () => {
     expect(googleIdentity!.userId).toBe(existingUser.id);
   });
 
+  test("Should not link to an existing user when Google email is not verified", async () => {
+    stubGoogleSuccess({ ...GOOGLE_PROFILE, verified_email: false });
+
+    const existingUser: User = {
+      id: await cryptoService.generateUUID(),
+      email: GOOGLE_PROFILE.email,
+      firstName: "Thiago",
+      lastName: "Delgado",
+      userName: null,
+      enabled: true,
+      onboardingCompleted: true,
+      featureConfig: [],
+      widgetConfig: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await userRepository.save(existingUser);
+
+    await handleGoogleOAuth(deps(), GOOGLE_CONFIG, { code: "auth_code" });
+
+    expect(userRepository.count()).toBe(2);
+    const googleIdentity = identityRepository.identities.find(
+      (i) => i.provider === "google",
+    );
+    expect(googleIdentity).toBeDefined();
+    expect(googleIdentity!.userId).not.toBe(existingUser.id);
+  });
+
   test("Should return an accessToken and a refreshToken on success", async () => {
     stubGoogleSuccess();
 
@@ -307,6 +335,31 @@ describe("handleGoogleOAuth", () => {
     expect(result).toBeInstanceOf(GoogleOAuthError);
   });
 
+  test("Should return GoogleOAuthError when the token exchange throws", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("network down"));
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "bad_code",
+    });
+
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+  });
+
+  test("Should return GoogleOAuthError when the token payload cannot be parsed", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => {
+        throw new Error("bad json");
+      },
+    });
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "bad_code",
+    });
+
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+  });
+
   test("Should return GoogleOAuthError when the profile fetch fails", async () => {
     mockFetch
       .mockResolvedValueOnce({
@@ -314,6 +367,41 @@ describe("handleGoogleOAuth", () => {
         json: async () => ({ access_token: "google_access_token" }),
       })
       .mockResolvedValueOnce({ ok: false });
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
+
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+  });
+
+  test("Should return GoogleOAuthError when the profile fetch throws", async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: "google_access_token" }),
+      })
+      .mockRejectedValueOnce(new Error("network down"));
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
+
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+  });
+
+  test("Should return GoogleOAuthError when the profile payload cannot be parsed", async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ access_token: "google_access_token" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => {
+          throw new Error("bad json");
+        },
+      });
 
     const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
       code: "auth_code",

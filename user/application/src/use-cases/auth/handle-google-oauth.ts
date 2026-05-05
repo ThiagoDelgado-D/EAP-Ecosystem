@@ -52,25 +52,6 @@ interface GoogleUserProfile {
   verified_email?: boolean;
 }
 
-export class GoogleOAuthError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "GoogleOAuthError";
-  }
-}
-
-interface GoogleTokenResponse {
-  access_token: string;
-}
-
-interface GoogleUserProfile {
-  id: string;
-  email: string;
-  given_name?: string;
-  family_name?: string;
-  verified_email?: boolean;
-}
-
 export const handleGoogleOAuth = async (
   {
     cryptoService,
@@ -82,34 +63,36 @@ export const handleGoogleOAuth = async (
   { clientId, clientSecret, redirectUrl }: GoogleOAuthConfig,
   request: HandleGoogleOAuthRequestModel,
 ): Promise<HandleGoogleOAuthResponseModel | GoogleOAuthError> => {
-  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      code: request.code,
-      client_id: clientId,
-      client_secret: clientSecret,
-      redirect_uri: redirectUrl,
-      grant_type: "authorization_code",
-    }),
-  });
-
-  if (!tokenResponse.ok) {
-    return new GoogleOAuthError("Failed to exchange authorization code");
-  }
-
-  const tokens = (await tokenResponse.json()) as GoogleTokenResponse;
-
-  const profileResponse = await fetch(
-    "https://www.googleapis.com/oauth2/v2/userinfo",
-    { headers: { Authorization: `Bearer ${tokens.access_token}` } },
+  const timeoutMs = 5000;
+  const tokenResult = await thisFetchWithTimeout<GoogleTokenResponse>(
+    "https://oauth2.googleapis.com/token",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code: request.code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUrl,
+        grant_type: "authorization_code",
+      }),
+    },
+    timeoutMs,
+    "Failed to exchange authorization code",
   );
+  if (tokenResult instanceof GoogleOAuthError) return tokenResult;
 
-  if (!profileResponse.ok) {
-    return new GoogleOAuthError("Failed to fetch Google user profile");
-  }
+  const profileResult = await thisFetchWithTimeout<GoogleUserProfile>(
+    "https://www.googleapis.com/oauth2/v2/userinfo",
+    {
+      headers: { Authorization: `Bearer ${tokenResult.access_token}` },
+    },
+    timeoutMs,
+    "Failed to fetch Google user profile",
+  );
+  if (profileResult instanceof GoogleOAuthError) return profileResult;
 
-  const profile = (await profileResponse.json()) as GoogleUserProfile;
+  const profile = profileResult;
 
   const existingIdentity = await identityRepository.findByProvider(
     "google",
@@ -124,7 +107,11 @@ export const handleGoogleOAuth = async (
       return new GoogleOAuthError("User not found for existing identity");
     user = found;
   } else {
-    let existingUser = await userRepository.findByEmail(profile.email);
+    let existingUser: User | null = null;
+
+    if (profile.verified_email === true) {
+      existingUser = await userRepository.findByEmail(profile.email);
+    }
 
     if (!existingUser) {
       existingUser = {
@@ -184,3 +171,41 @@ export const handleGoogleOAuth = async (
     },
   };
 };
+
+export class GoogleOAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GoogleOAuthError";
+  }
+}
+
+async function thisFetchWithTimeout<T>(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+  errorMessage: string,
+): Promise<T | GoogleOAuthError> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      return new GoogleOAuthError(errorMessage);
+    }
+
+    try {
+      return (await response.json()) as T;
+    } catch {
+      return new GoogleOAuthError(errorMessage);
+    }
+  } catch {
+    return new GoogleOAuthError(errorMessage);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
