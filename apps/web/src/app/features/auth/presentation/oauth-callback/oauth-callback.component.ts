@@ -17,12 +17,15 @@ export class OAuthCallbackComponent implements OnInit {
   private readonly authStore = inject(AuthStore);
 
   ngOnInit(): void {
-    const params = this.route.snapshot.queryParamMap;
+    const fragment = this.route.snapshot.fragment;
+    const params = new URLSearchParams(fragment ?? '');
     const accessToken = params.get('access_token');
     const error = params.get('error');
+    const userId = params.get('user_id');
+    const email = params.get('email');
 
-    if (error || !accessToken) {
-      this.router.navigate(['/auth/sign-in']);
+    if (error || !accessToken || !userId || !email) {
+      this.router.navigate(['/auth/sign-in'], { replaceUrl: true });
       return;
     }
 
@@ -30,8 +33,8 @@ export class OAuthCallbackComponent implements OnInit {
 
     this.authStore.setSession(
       {
-        id: params.get('user_id')!,
-        email: params.get('email')!,
+        id: userId,
+        email,
         firstName: params.get('first_name') ?? '',
         lastName: params.get('last_name') ?? '',
         onboardingCompleted: !onboarding,
@@ -41,9 +44,9 @@ export class OAuthCallbackComponent implements OnInit {
     );
 
     if (onboarding) {
-      this.router.navigate(['/onboarding']);
+      this.router.navigate(['/onboarding'], { replaceUrl: true });
     } else {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/dashboard'], { replaceUrl: true });
     }
   }
 }
