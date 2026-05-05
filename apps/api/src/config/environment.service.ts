@@ -17,6 +17,9 @@ export class EnvironmentService {
   private readonly _smtpPass: string;
   private readonly _smtpFrom: string;
   private readonly _smtpSkipCertVerify: boolean;
+  private readonly _googleClientId: string;
+  private readonly _googleClientSecret: string;
+  private readonly _googleRedirectUrl: string;
 
   constructor(private readonly configService: ConfigService) {
     this._jwtSecret = this.readVar("JWT_SECRET");
@@ -38,6 +41,13 @@ export class EnvironmentService {
     this._smtpSkipCertVerify = this.parseBoolean(
       this.readVar("SMTP_SKIP_CERT_VERIFY", "false"),
     );
+    this._googleClientId = this.readVar("GOOGLE_CLIENT_ID");
+    this._googleClientSecret = this.readVar("GOOGLE_CLIENT_SECRET");
+    this._googleRedirectUrl = this.readVar(
+      "GOOGLE_REDIRECT_URI",
+      "http://localhost:3000/api/v1/auth/google/callback",
+    );
+    this.validateGoogleOAuthConfig();
   }
 
   get jwtSecret(): string {
@@ -62,6 +72,10 @@ export class EnvironmentService {
 
   get isProduction(): boolean {
     return this._nodeEnv === "production";
+  }
+
+  get isDevelopment(): boolean {
+    return this._nodeEnv === "development";
   }
 
   get smtpHost(): string {
@@ -90,6 +104,18 @@ export class EnvironmentService {
 
   get smtpSkipCertVerify(): boolean {
     return this._smtpSkipCertVerify;
+  }
+
+  get googleClientId(): string {
+    return this._googleClientId;
+  }
+
+  get googleClientSecret(): string {
+    return this._googleClientSecret;
+  }
+
+  get googleRedirectUri(): string {
+    return this._googleRedirectUrl;
   }
 
   private readVar(key: string, fallback?: string): string {
@@ -121,5 +147,21 @@ export class EnvironmentService {
 
   private parseBoolean(value: string): boolean {
     return value.toLowerCase() === "true";
+  }
+
+  private validateGoogleOAuthConfig(): void {
+    if (this.isDevelopment) return;
+
+    const missing = [
+      !this._googleClientId && "GOOGLE_CLIENT_ID",
+      !this._googleClientSecret && "GOOGLE_CLIENT_SECRET",
+      !this._googleRedirectUrl && "GOOGLE_REDIRECT_URI",
+    ].filter(Boolean);
+
+    if (missing.length > 0) {
+      throw new Error(
+        `Missing required Google OAuth environment variables: ${missing.join(", ")}`,
+      );
+    }
   }
 }

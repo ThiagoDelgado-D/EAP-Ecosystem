@@ -80,9 +80,9 @@
     </div>
 
     <div class="space-y-2 mb-6">
-      <button
-        disabled
-        class="w-full flex items-center bg-slate-800/40 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-500 cursor-not-allowed"
+      <a
+        [href]="googleAuthUrl"
+        class="w-full flex items-center bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 transition-colors"
       >
         <svg class="w-4 h-4 mr-3 flex-shrink-0" viewBox="0 0 24 24">
           <path
@@ -103,11 +103,7 @@
           />
         </svg>
         <span class="flex-1 text-left">Continue with Google</span>
-        <span
-          class="text-xs text-slate-600 bg-slate-900 px-2 py-0.5 rounded border border-slate-700"
-          >v0.8.2</span
-        >
-      </button>
+      </a>
 
       <button
         disabled
