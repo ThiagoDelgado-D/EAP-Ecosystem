@@ -47,6 +47,7 @@ export class EnvironmentService {
       "GOOGLE_REDIRECT_URI",
       "http://localhost:3000/api/v1/auth/google/callback",
     );
+    this.validateGoogleOAuthConfig();
   }
 
   get jwtSecret(): string {
@@ -71,6 +72,10 @@ export class EnvironmentService {
 
   get isProduction(): boolean {
     return this._nodeEnv === "production";
+  }
+
+  get isDevelopment(): boolean {
+    return this._nodeEnv === "development";
   }
 
   get smtpHost(): string {
@@ -142,5 +147,21 @@ export class EnvironmentService {
 
   private parseBoolean(value: string): boolean {
     return value.toLowerCase() === "true";
+  }
+
+  private validateGoogleOAuthConfig(): void {
+    if (this.isDevelopment) return;
+
+    const missing = [
+      !this._googleClientId && "GOOGLE_CLIENT_ID",
+      !this._googleClientSecret && "GOOGLE_CLIENT_SECRET",
+      !this._googleRedirectUrl && "GOOGLE_REDIRECT_URI",
+    ].filter(Boolean);
+
+    if (missing.length > 0) {
+      throw new Error(
+        `Missing required Google OAuth environment variables: ${missing.join(", ")}`,
+      );
+    }
   }
 }
