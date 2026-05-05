@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { FEATURE_KEY, type FeatureKey } from '@features/auth/domain/auth.model';
 
 @Component({
   selector: 'app-oauth-callback',
@@ -23,6 +24,7 @@ export class OAuthCallbackComponent implements OnInit {
     const error = params.get('error');
     const userId = params.get('user_id');
     const email = params.get('email');
+    const featureConfig = this.parseFeatureConfig(params.get('feature_config'));
 
     if (error || !accessToken || !userId || !email) {
       this.router.navigate(['/auth/sign-in'], { replaceUrl: true });
@@ -38,7 +40,7 @@ export class OAuthCallbackComponent implements OnInit {
         firstName: params.get('first_name') ?? '',
         lastName: params.get('last_name') ?? '',
         onboardingCompleted: !onboarding,
-        featureConfig: [],
+        featureConfig,
       },
       accessToken,
     );
@@ -48,5 +50,15 @@ export class OAuthCallbackComponent implements OnInit {
     } else {
       this.router.navigate(['/dashboard'], { replaceUrl: true });
     }
+  }
+
+  private parseFeatureConfig(raw: string | null): FeatureKey[] {
+    if (!raw) return [];
+
+    const allowed = new Set(Object.values(FEATURE_KEY));
+    return raw
+      .split(',')
+      .map((value) => value.trim())
+      .filter((value): value is FeatureKey => allowed.has(value as FeatureKey));
   }
 }

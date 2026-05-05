@@ -211,6 +211,7 @@ export class AuthController {
       email: result.user.email,
       first_name: result.user.firstName,
       last_name: result.user.lastName,
+      feature_config: result.user.featureConfig.join(","),
       onboarding: String(!result.user.onboardingCompleted),
     });
 
