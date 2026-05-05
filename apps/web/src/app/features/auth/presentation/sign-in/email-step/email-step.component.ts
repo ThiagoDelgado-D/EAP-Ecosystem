@@ -1,5 +1,6 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { API_CONFIG } from '@core/config/api.config.js';
 
 @Component({
   selector: 'app-email-step',
@@ -10,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 export class EmailStepComponent {
   readonly loading = input<boolean>(false);
   readonly error = input<string | null>(null);
+  readonly googleAuthUrl = `${API_CONFIG.baseUrl}/auth/google`;
 
   readonly emailSubmit = output<string>();
 
