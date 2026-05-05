@@ -2,12 +2,64 @@
 
 ### Planned
 
-- OAuth (Google Sign-In) — v0.8.2
-- Account linking across providers — v0.8.2
-- Learning Paths domain + Atlas view (D3.js knowledge graph) — v0.9.0
-- Pomodoro timer + LearningSession entity, Focus Pulse wired to real data — v0.9.5
-- Spaced repetition scheduling + recommendation engine — v0.10.0
-- User profile page (firstName, lastName, avatar) — v0.11.x
+- Learning resources associated to authenticated user (data isolation per user) — v0.8.3
+- `GET/PATCH /api/v1/preferences/features` — feature config management — v0.8.3
+- `GET/PATCH /api/v1/preferences/widgets` — widget config management — v0.8.3
+- `/settings/modules` and `/settings/dashboard` pages — v0.8.3
+
+---
+
+## [0.8.2] - 2026-05-05
+
+### Google OAuth & Email Templates
+
+Adds Google Sign-In as a second authentication provider and replaces the dev-only
+`LoggerEmailService` with a real HBS-backed email system. The OAuth flow uses native
+`fetch` — no Passport.js. Account linking handles the case where an existing
+magic-link user signs in with Google using the same email.
+
+---
+
+### Added
+
+#### Backend — Application (`user` BC)
+
+- `handleGoogleOAuth` use case — exchanges authorization code at `oauth2.googleapis.com/token`,
+  fetches profile from `googleapis.com/oauth2/v2/userinfo`; three code paths: known
+  `providerSubject` → reuse user; known email, no Google identity → account linking;
+  unknown email → create `User` + `Identity` fresh
+- `GoogleOAuthError` typed error — returned as value, never thrown (ADR-0004)
+- Unit tests covering all paths: token exchange, profile fetch, find-or-create,
+  account linking, session creation, and error cases
+
+#### Backend — API
+
+- `GET /api/v1/auth/google` — builds Google authorization URL and issues 302 redirect
+- `GET /api/v1/auth/google/callback` — receives code, calls use case, sets `refreshToken`
+  httpOnly cookie, redirects to `${WEB_HOST}/auth/callback` with `access_token`, user
+  fields, and `onboarding` flag. Failures redirect to `/auth/sign-in?error=oauth_failed`
+- `EnvironmentService` gains `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
+
+#### Backend — Email
+
+- `EmailServiceImpl` — accepts `templateDir`, `declarations`, and resolved `SmtpConfig`
+  via constructor; eagerly compiles all declared `.hbs` files at startup — throws
+  `MissingTemplateError` on missing file (fail-fast)
+- `UserModule` async factory: real SMTP when `SMTP_HOST` is configured; Ethereal
+  auto-account otherwise — zero config for local dev, preview link logged per send
+- `EAP_EMAIL_DECLARATIONS` — single registration point for templates
+- `magic-link-code.hbs` and `welcome.hbs` — dark identity (slate-950 bg, violet accent)
+- Welcome email sent to new users on first sign-in
+
+#### Frontend
+
+- `OAuthCallbackComponent` — standalone component at `/auth/callback`; reads query
+  params, calls `authStore.setSession()`, navigates to `/onboarding` or `/dashboard`
+- Google button in `EmailStepComponent` promoted from disabled `<button>` to
+  `<a [href]="googleAuthUrl">` with absolute URL — relative href was intercepted by
+  Angular's router (port 4200) before reaching NestJS (port 3000)
+
+---
 
 ## [0.8.1] - 2026-05-01
 
@@ -164,7 +216,7 @@ the page.
 - `LearningResourceService.toggleMentalState` was calling `repository.updateResource`
   instead of the dedicated `repository.toggleMentalState` — fixed
 - `@HostListener('window:scroll', ['$event'])` caused `TS2554: Expected 0 arguments,
-  but got 1` — fixed by removing the `['$event']` argument
+but got 1` — fixed by removing the `['$event']` argument
 
 ---
 
