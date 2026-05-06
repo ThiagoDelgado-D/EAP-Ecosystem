@@ -20,5 +20,5 @@ export const getWidgetConfig = async (
   const user = await userRepository.findById(request.userId);
   if (!user) return new UserNotFoundError();
 
-  return { widgetConfig: user.widgetConfig };
+  return { widgetConfig: user.widgetConfig ?? [] };
 };

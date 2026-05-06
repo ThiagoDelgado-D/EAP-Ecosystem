@@ -20,5 +20,5 @@ export const getFeatureConfig = async (
   const user = await userRepository.findById(request.userId);
   if (!user) return new UserNotFoundError();
 
-  return { featureConfig: user.featureConfig };
+  return { featureConfig: user.featureConfig ?? [] };
 };

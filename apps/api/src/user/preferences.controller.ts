@@ -44,7 +44,7 @@ export class PreferencesController {
       { userRepository: this.userRepository },
       { userId },
     );
-    if (result instanceof BaseError) toHttpException(result);
+    if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
@@ -59,7 +59,7 @@ export class PreferencesController {
       { userRepository: this.userRepository },
       { userId, featureConfig: dto.featureConfig as FeatureKey[] },
     );
-    if (result instanceof BaseError) toHttpException(result);
+    if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
@@ -70,7 +70,7 @@ export class PreferencesController {
       { userRepository: this.userRepository },
       { userId },
     );
-    if (result instanceof BaseError) toHttpException(result);
+    if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
@@ -82,7 +82,7 @@ export class PreferencesController {
       { userRepository: this.userRepository },
       { userId, widgetConfig: dto.widgetConfig as WidgetKey[] },
     );
-    if (result instanceof BaseError) toHttpException(result);
+    if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 }
