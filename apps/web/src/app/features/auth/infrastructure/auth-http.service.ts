@@ -23,23 +23,21 @@ export class AuthHttpService {
     const dto = await firstValueFrom(
       this.http.post<VerifySignInResponseDto>(`${this.base}/verify-sign-in`, { email, code }),
     );
-    return {
-      accessToken: dto.accessToken,
-      user: {
-        id: dto.user.id,
-        firstName: dto.user.firstName,
-        lastName: dto.user.lastName,
-        email: dto.user.email,
-        onboardingCompleted: dto.user.onboardingCompleted,
-        featureConfig: dto.user.featureConfig ?? [],
-      },
-    };
+    return this.mapVerifySignInResult(dto);
   }
 
   async refresh(): Promise<VerifySignInResult> {
     const dto = await firstValueFrom(
       this.http.post<VerifySignInResponseDto>(`${this.base}/refresh`, {}),
     );
+    return this.mapVerifySignInResult(dto);
+  }
+
+  async signOut(): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${this.base}/sign-out`, {}));
+  }
+
+  private mapVerifySignInResult(dto: VerifySignInResponseDto): VerifySignInResult {
     return {
       accessToken: dto.accessToken,
       user: {
@@ -51,9 +49,5 @@ export class AuthHttpService {
         featureConfig: dto.user.featureConfig ?? [],
       },
     };
-  }
-
-  async signOut(): Promise<void> {
-    await firstValueFrom(this.http.post<void>(`${this.base}/sign-out`, {}));
   }
 }
