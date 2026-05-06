@@ -67,6 +67,7 @@
             <button
               type="button"
               (click)="revoke(session)"
+              [attr.aria-label]="'Revoke session for ' + getBrowser(session.userAgent)"
               class="flex-shrink-0 ml-3 text-xs text-slate-500 hover:text-red-400 border border-slate-700 hover:border-red-800 px-2.5 py-1 rounded-lg transition-colors"
             >
               Revoke

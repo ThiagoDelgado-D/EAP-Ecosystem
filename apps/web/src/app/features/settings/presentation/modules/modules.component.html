@@ -50,6 +50,7 @@
             class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:cursor-not-allowed"
             [class]="isOn(module.key) ? 'bg-violet-500' : 'bg-slate-700'"
             [attr.aria-checked]="isOn(module.key)"
+            [attr.aria-label]="module.label"
             role="switch"
           >
             <span
