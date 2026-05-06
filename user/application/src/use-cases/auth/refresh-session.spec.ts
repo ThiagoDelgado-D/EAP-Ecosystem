@@ -206,4 +206,24 @@ describe("refreshSession", () => {
 
     expect(result).toBeInstanceOf(InvalidOrExpiredCodeError);
   });
+
+  test("Should truncate userAgent to 500 characters when it exceeds the limit", async () => {
+    const longUserAgent = "A".repeat(501);
+
+    await refreshSession(deps(), { rawRefreshToken, userAgent: longUserAgent });
+
+    const newSession = sessionRepository.sessions.find((s) => !s.revokedAt);
+    expect(newSession).toBeDefined();
+    expect(newSession!.userAgent).toHaveLength(500);
+  });
+
+  test("Should truncate ipAddress to 45 characters when it exceeds the limit", async () => {
+    const longIpAddress = "1".repeat(46);
+
+    await refreshSession(deps(), { rawRefreshToken, ipAddress: longIpAddress });
+
+    const newSession = sessionRepository.sessions.find((s) => !s.revokedAt);
+    expect(newSession).toBeDefined();
+    expect(newSession!.ipAddress).toHaveLength(45);
+  });
 });
