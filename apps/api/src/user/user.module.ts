@@ -34,6 +34,7 @@ import { EnvironmentService } from "../config/environment.service.js";
   ],
   controllers: [AuthController, PreferencesController],
   providers: [
+    EnvironmentService,
     {
       provide: "IUserRepository",
       useFactory: (r) => new TypeOrmUserRepository(r),
