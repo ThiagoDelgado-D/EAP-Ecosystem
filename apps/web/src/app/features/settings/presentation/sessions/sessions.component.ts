@@ -31,19 +31,19 @@ export class SessionsComponent implements OnInit {
   getBrowser(userAgent: string | null): string {
     if (!userAgent) return 'Unknown device';
     if (/Edg\//.test(userAgent)) return 'Microsoft Edge';
+    if (/OPR\/|Opera\//.test(userAgent)) return 'Opera';
     if (/Chrome\//.test(userAgent) && !/Chromium/.test(userAgent)) return 'Google Chrome';
     if (/Firefox\//.test(userAgent)) return 'Firefox';
     if (/Safari\//.test(userAgent) && !/Chrome/.test(userAgent)) return 'Safari';
-    if (/OPR\/|Opera\//.test(userAgent)) return 'Opera';
     return 'Unknown browser';
   }
 
   getOS(userAgent: string | null): string {
     if (!userAgent) return '';
     if (/Windows NT/.test(userAgent)) return 'Windows';
-    if (/Mac OS X/.test(userAgent)) return 'macOS';
     if (/Android/.test(userAgent)) return 'Android';
     if (/iPhone|iPad/.test(userAgent)) return 'iOS';
+    if (/Mac OS X/.test(userAgent)) return 'macOS';
     if (/Linux/.test(userAgent)) return 'Linux';
     return '';
   }
