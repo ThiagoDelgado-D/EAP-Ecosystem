@@ -24,6 +24,8 @@ export interface VerifySignInDependencies {
 export interface VerifySignInRequestModel {
   email: string;
   code: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }
 
 export interface VerifySignInResponseModel {
@@ -121,6 +123,8 @@ export const verifySignIn = async (
     refreshTokenHash,
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     revokedAt: null,
+    userAgent: request.userAgent ?? null,
+    ipAddress: request.ipAddress ?? null,
     createdAt: new Date(),
   };
   await sessionRepository.save(session);

@@ -24,6 +24,8 @@ export interface GoogleOAuthConfig {
 
 export interface HandleGoogleOAuthRequestModel {
   code: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }
 
 export interface HandleGoogleOAuthResponseModel {
@@ -182,6 +184,8 @@ export const handleGoogleOAuth = async (
     refreshTokenHash,
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     revokedAt: null,
+    userAgent: request.userAgent ?? null,
+    ipAddress: request.ipAddress ?? null,
     createdAt: new Date(),
   };
   await sessionRepository.save(session);

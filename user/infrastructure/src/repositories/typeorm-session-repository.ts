@@ -33,6 +33,21 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     );
   }
 
+  async revokeAllByUserIdExcept(
+    userId: string,
+    excludeSessionId: string,
+  ): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ revokedAt: new Date() })
+      .where(
+        '"userId" = :userId AND "revokedAt" IS NULL AND "id" != :excludeSessionId',
+        { userId, excludeSessionId },
+      )
+      .execute();
+  }
+
   async findActiveByUserId(userId: string): Promise<Session[]> {
     const entities = await this.repository.find({
       where: {
@@ -52,6 +67,7 @@ export class TypeOrmSessionRepository implements ISessionRepository {
       expiresAt: entity.expiresAt,
       revokedAt: entity.revokedAt,
       userAgent: entity.userAgent ?? undefined,
+      ipAddress: entity.ipAddress ?? undefined,
       createdAt: entity.createdAt,
     };
   }
@@ -64,6 +80,7 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     entity.expiresAt = session.expiresAt;
     entity.revokedAt = session.revokedAt ?? null;
     entity.userAgent = session.userAgent ?? null;
+    entity.ipAddress = session.ipAddress ?? null;
     return entity;
   }
 }
