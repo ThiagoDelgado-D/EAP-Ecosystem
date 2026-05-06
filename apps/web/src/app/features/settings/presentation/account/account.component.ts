@@ -52,7 +52,7 @@ import { AuthStore } from '@features/auth/application/auth.store';
             <div class="flex flex-wrap gap-2">
               @for (key of authStore.currentUser()?.featureConfig ?? []; track key) {
                 <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-violet-950/60 border border-violet-800/50 text-xs text-violet-300 capitalize">
-                  {{ key.replace('-', ' ') }}
+                  {{ key.replaceAll('-', ' ') }}
                 </span>
               }
             </div>
