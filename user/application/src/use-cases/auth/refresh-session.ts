@@ -57,8 +57,6 @@ export const refreshSession = async (
   const rawRefreshToken = await cryptoService.generateRandomToken();
   const refreshTokenHash = await cryptoService.hashToken(rawRefreshToken);
 
-  await sessionRepository.revoke(session.id);
-
   const newSession: Session = {
     id: await cryptoService.generateUUID(),
     userId: user.id,
@@ -69,7 +67,7 @@ export const refreshSession = async (
     ipAddress: request.ipAddress ? request.ipAddress.slice(0, 45) : null,
     createdAt: new Date(),
   };
-  await sessionRepository.save(newSession);
+  await sessionRepository.rotate(session.id, newSession);
 
   return {
     accessToken,
