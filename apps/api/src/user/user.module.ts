@@ -12,6 +12,7 @@ import {
   UserEntity,
 } from "@user/infrastructure";
 import { AuthController } from "./auth.controller.js";
+import { PreferencesController } from "./preferences.controller.js";
 import {
   CryptoServiceImpl,
   EmailServiceImpl,
@@ -31,7 +32,7 @@ import { EnvironmentService } from "../config/environment.service.js";
       SessionEntity,
     ]),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, PreferencesController],
   providers: [
     {
       provide: "IUserRepository",

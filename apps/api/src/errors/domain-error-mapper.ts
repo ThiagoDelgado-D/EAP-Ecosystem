@@ -12,6 +12,8 @@ const httpStatusMap: Record<ErrorName, number> = {
   VALIDATION_ERROR: 400,
   INVALID_OR_EXPIRED_CODE_ERROR: 400,
   USER_NOT_FOUND_ERROR: 404,
+  SESSION_NOT_FOUND_ERROR: 404,
+  FORBIDDEN_ERROR: 403,
 };
 
 export function toHttpException(error: AppDomainError): never {
