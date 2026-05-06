@@ -1,7 +1,9 @@
 import { Component, inject, signal, HostListener, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterModule, RouterLinkActive } from '@angular/router';
+import { Router, RouterModule, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '@core/theme/theme.service';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
 
 @Component({
   selector: 'app-shell-layout',
@@ -11,7 +13,13 @@ import { ThemeService } from '@core/theme/theme.service';
 })
 export class ShellLayoutComponent implements OnInit {
   readonly themeService = inject(ThemeService);
+  private readonly authStore = inject(AuthStore);
+  private readonly authHttp = inject(AuthHttpService);
+  private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+
+  readonly userInitials = this.authStore.userInitials;
+  readonly displayName = this.authStore.displayName;
 
   readonly sidebarOpen = signal(true);
   readonly mobileDrawerOpen = signal(false);
@@ -45,5 +53,14 @@ export class ShellLayoutComponent implements OnInit {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  async signOut(): Promise<void> {
+    try {
+      await this.authHttp.signOut();
+    } finally {
+      this.authStore.clearSession();
+      void this.router.navigate(['/auth/sign-in']);
+    }
   }
 }

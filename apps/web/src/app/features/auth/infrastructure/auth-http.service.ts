@@ -35,4 +35,25 @@ export class AuthHttpService {
       },
     };
   }
+
+  async refresh(): Promise<VerifySignInResult> {
+    const dto = await firstValueFrom(
+      this.http.post<VerifySignInResponseDto>(`${this.base}/refresh`, {}),
+    );
+    return {
+      accessToken: dto.accessToken,
+      user: {
+        id: dto.user.id,
+        firstName: dto.user.firstName,
+        lastName: dto.user.lastName,
+        email: dto.user.email,
+        onboardingCompleted: dto.user.onboardingCompleted,
+        featureConfig: dto.user.featureConfig ?? [],
+      },
+    };
+  }
+
+  async signOut(): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${this.base}/sign-out`, {}));
+  }
 }
