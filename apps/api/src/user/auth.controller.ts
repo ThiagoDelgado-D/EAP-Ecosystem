@@ -281,22 +281,24 @@ export class AuthController {
   ): Promise<void> {
     const rawRefreshToken = this.readCookie(req, "refreshToken");
 
-    if (rawRefreshToken) {
-      await signOut(
-        {
-          sessionRepository: this.sessionRepository,
-          cryptoService: this.cryptoService,
-        },
-        { rawRefreshToken },
-      );
+    try {
+      if (rawRefreshToken) {
+        await signOut(
+          {
+            sessionRepository: this.sessionRepository,
+            cryptoService: this.cryptoService,
+          },
+          { rawRefreshToken },
+        );
+      }
+    } finally {
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/api/v1/auth",
+      });
     }
-
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/api/v1/auth",
-    });
   }
 
   @Get("sessions")
