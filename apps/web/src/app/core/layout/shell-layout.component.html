@@ -163,6 +163,25 @@
           </svg>
           Create
         </a>
+        <a
+          routerLink="/settings"
+          routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all whitespace-nowrap"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="flex-shrink-0"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Settings
+        </a>
       </nav>
 
       <div class="p-2 pb-4 w-48">
@@ -184,17 +203,20 @@
           New Entry
         </a>
 
-        <div class="flex items-center gap-2.5 mt-4 px-2">
+        <a
+          routerLink="/settings"
+          class="flex items-center gap-2.5 mt-4 px-2 py-1 rounded-lg hover:bg-slate-800 transition-colors"
+        >
           <div
             class="w-8 h-8 rounded-full bg-slate-800 border border-violet-700 flex items-center justify-center text-xs font-semibold text-violet-400 flex-shrink-0"
           >
-            AC
+            {{ userInitials() }}
           </div>
           <div class="min-w-0">
-            <p class="text-sm font-medium text-slate-200 leading-none truncate">Alex Chen</p>
-            <p class="text-xs text-slate-500 mt-0.5">Pro Plan</p>
+            <p class="text-sm font-medium text-slate-200 leading-none truncate">{{ displayName() }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">My account</p>
           </div>
-        </div>
+        </a>
       </div>
     </aside>
 
@@ -274,6 +296,26 @@
           </svg>
           Create
         </a>
+        <a
+          routerLink="/settings"
+          routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+          (click)="closeMobileDrawer()"
+          class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="flex-shrink-0"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Settings
+        </a>
       </nav>
 
       <div class="px-3 pb-2">
@@ -303,17 +345,21 @@
           </svg>
           New Entry
         </a>
-        <div class="flex items-center gap-2.5 px-1">
+        <a
+          routerLink="/settings"
+          (click)="closeMobileDrawer()"
+          class="flex items-center gap-2.5 px-1 py-1 rounded-lg hover:bg-slate-800 transition-colors"
+        >
           <div
             class="w-9 h-9 rounded-full bg-slate-800 border border-violet-700 flex items-center justify-center text-sm font-semibold text-violet-400 flex-shrink-0"
           >
-            AC
+            {{ userInitials() }}
           </div>
           <div>
-            <p class="text-sm font-medium text-slate-200 leading-none">Alex Chen</p>
-            <p class="text-xs text-slate-500 mt-0.5">Pro Plan</p>
+            <p class="text-sm font-medium text-slate-200 leading-none">{{ displayName() }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">My account</p>
           </div>
-        </div>
+        </a>
       </div>
     </aside>
 

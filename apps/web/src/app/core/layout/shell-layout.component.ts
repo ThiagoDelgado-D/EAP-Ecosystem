@@ -1,7 +1,8 @@
-import { Component, inject, signal, HostListener, PLATFORM_ID, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, HostListener, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterModule, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '@core/theme/theme.service';
+import { AuthStore } from '@features/auth/application/auth.store';
 
 @Component({
   selector: 'app-shell-layout',
@@ -11,7 +12,22 @@ import { ThemeService } from '@core/theme/theme.service';
 })
 export class ShellLayoutComponent implements OnInit {
   readonly themeService = inject(ThemeService);
+  private readonly authStore = inject(AuthStore);
   private readonly platformId = inject(PLATFORM_ID);
+
+  readonly userInitials = computed(() => {
+    const user = this.authStore.currentUser();
+    if (!user) return '?';
+    const f = user.firstName?.[0] ?? '';
+    const l = user.lastName?.[0] ?? '';
+    return (f + l).toUpperCase() || user.email[0].toUpperCase();
+  });
+
+  readonly displayName = computed(() => {
+    const user = this.authStore.currentUser();
+    if (!user) return '';
+    return user.firstName ? `${user.firstName} ${user.lastName}`.trim() : user.email;
+  });
 
   readonly sidebarOpen = signal(true);
   readonly mobileDrawerOpen = signal(false);
