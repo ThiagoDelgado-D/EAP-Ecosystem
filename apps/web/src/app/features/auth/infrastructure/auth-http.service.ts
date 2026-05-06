@@ -23,6 +23,21 @@ export class AuthHttpService {
     const dto = await firstValueFrom(
       this.http.post<VerifySignInResponseDto>(`${this.base}/verify-sign-in`, { email, code }),
     );
+    return this.mapVerifySignInResult(dto);
+  }
+
+  async refresh(): Promise<VerifySignInResult> {
+    const dto = await firstValueFrom(
+      this.http.post<VerifySignInResponseDto>(`${this.base}/refresh`, {}),
+    );
+    return this.mapVerifySignInResult(dto);
+  }
+
+  async signOut(): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${this.base}/sign-out`, {}));
+  }
+
+  private mapVerifySignInResult(dto: VerifySignInResponseDto): VerifySignInResult {
     return {
       accessToken: dto.accessToken,
       user: {

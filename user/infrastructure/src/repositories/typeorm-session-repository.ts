@@ -26,6 +26,13 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     await this.repository.update(id, { revokedAt: new Date() });
   }
 
+  async rotate(oldSessionId: string, newSession: Session): Promise<void> {
+    await this.repository.manager.transaction(async (manager) => {
+      await manager.update(SessionEntity, oldSessionId, { revokedAt: new Date() });
+      await manager.save(SessionEntity, this.toEntity(newSession));
+    });
+  }
+
   async revokeAllByUserId(userId: string): Promise<void> {
     await this.repository.update(
       { userId, revokedAt: IsNull() },
