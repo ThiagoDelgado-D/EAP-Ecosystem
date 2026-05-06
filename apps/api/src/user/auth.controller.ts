@@ -279,12 +279,12 @@ export class AuthController {
     const userId = await this.resolveUserId(req);
 
     const rawRefreshToken = this.readCookie(req, "refreshToken");
-    if (!rawRefreshToken) return;
+    if (!rawRefreshToken) throw new UnauthorizedException();
 
     const currentHash = await this.cryptoService.hashToken(rawRefreshToken);
     const currentSession =
       await this.sessionRepository.findByRefreshTokenHash(currentHash);
-    if (!currentSession) return;
+    if (!currentSession) throw new UnauthorizedException();
 
     await revokeAllOtherSessions(
       { sessionRepository: this.sessionRepository },
@@ -301,9 +301,9 @@ export class AuthController {
     return payload.sub;
   }
 
+  // Requires app.set('trust proxy', 1) in main.ts so Express only honours
+  // X-Forwarded-For from the configured proxy chain.
   private extractIp(req: Request): string | null {
-    const forwarded = req.headers["x-forwarded-for"];
-    if (typeof forwarded === "string") return forwarded.split(",")[0].trim();
     return req.ip ?? null;
   }
 

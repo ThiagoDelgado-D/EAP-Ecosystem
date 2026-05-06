@@ -8,7 +8,7 @@ import {
   Req,
   UnauthorizedException,
 } from "@nestjs/common";
-import type { FeatureKey, IUserRepository, WidgetKey } from "@user/domain";
+import type { IUserRepository } from "@user/domain";
 import {
   getFeatureConfig,
   getWidgetConfig,
@@ -57,7 +57,7 @@ export class PreferencesController {
     const userId = await this.resolveUserId(req);
     const result = await updateFeatureConfig(
       { userRepository: this.userRepository },
-      { userId, featureConfig: dto.featureConfig as FeatureKey[] },
+      { userId, featureConfig: dto.featureConfig },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -80,7 +80,7 @@ export class PreferencesController {
     const userId = await this.resolveUserId(req);
     const result = await updateWidgetConfig(
       { userRepository: this.userRepository },
-      { userId, widgetConfig: dto.widgetConfig as WidgetKey[] },
+      { userId, widgetConfig: dto.widgetConfig },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;

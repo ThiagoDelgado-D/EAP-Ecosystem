@@ -5,6 +5,7 @@ import { GlobalExceptionFilter } from "./filters/http-exception-filter.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.set("trust proxy", 1);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
