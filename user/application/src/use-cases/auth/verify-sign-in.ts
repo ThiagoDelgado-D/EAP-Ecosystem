@@ -42,7 +42,7 @@ export interface VerifySignInResponseModel {
   >;
 }
 
-const verifySignInSchema = createValidationSchema<VerifySignInRequestModel>({
+const verifySignInSchema = createValidationSchema<Pick<VerifySignInRequestModel, "email" | "code">>({
   email: emailField("Email", { required: true }),
   code: stringField("Code", { required: true, minLength: 6, maxLength: 6 }),
 });
