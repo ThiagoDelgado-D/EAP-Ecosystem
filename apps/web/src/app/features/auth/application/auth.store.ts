@@ -7,6 +7,21 @@ export class AuthStore {
   readonly accessToken = signal<string | null>(null);
   readonly isAuthenticated = computed(() => this.accessToken() !== null);
 
+  readonly displayName = computed(() => {
+    const u = this.currentUser();
+    if (!u) return '';
+    const full = `${u.firstName} ${u.lastName}`.trim();
+    return full || u.email;
+  });
+
+  readonly userInitials = computed(() => {
+    const u = this.currentUser();
+    if (!u) return '?';
+    if (u.firstName && u.lastName) return `${u.firstName[0]}${u.lastName[0]}`.toUpperCase();
+    if (u.firstName) return u.firstName[0].toUpperCase();
+    return u.email[0].toUpperCase();
+  });
+
   setSession(user: AuthUser, token: string): void {
     this.currentUser.set(user);
     this.accessToken.set(token || null);

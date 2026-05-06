@@ -32,6 +32,8 @@ import {
   getActiveSessions,
   revokeSession,
   revokeAllOtherSessions,
+  refreshSession,
+  signOut,
 } from "@user/application";
 import { BaseError, type CryptoService, type JwtService } from "domain-lib";
 import { RequestSignInDto } from "./dto/request/request-sign-in.dto.js";
@@ -233,6 +235,70 @@ export class AuthController {
     });
 
     res.redirect(`${this.env.webHost}/auth/callback#${params}`);
+  }
+
+  @Post("refresh")
+  @HttpCode(200)
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const rawRefreshToken = this.readCookie(req, "refreshToken");
+    if (!rawRefreshToken) throw new UnauthorizedException();
+
+    const result = await refreshSession(
+      {
+        sessionRepository: this.sessionRepository,
+        userRepository: this.userRepository,
+        cryptoService: this.cryptoService,
+        jwtService: this.jwtService,
+      },
+      {
+        rawRefreshToken,
+        ipAddress: this.extractIp(req),
+        userAgent: req.headers["user-agent"] ?? null,
+      },
+    );
+
+    if (result instanceof BaseError) throw toHttpException(result);
+
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/v1/auth",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    return { accessToken: result.accessToken, user: result.user };
+  }
+
+  @Post("sign-out")
+  @HttpCode(204)
+  async signOut(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const rawRefreshToken = this.readCookie(req, "refreshToken");
+
+    try {
+      if (rawRefreshToken) {
+        await signOut(
+          {
+            sessionRepository: this.sessionRepository,
+            cryptoService: this.cryptoService,
+          },
+          { rawRefreshToken },
+        );
+      }
+    } finally {
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/api/v1/auth",
+      });
+    }
   }
 
   @Get("sessions")
