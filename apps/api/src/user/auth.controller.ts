@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Inject,
+  Param,
   Patch,
   Post,
   Query,
@@ -27,6 +29,9 @@ import {
   completeOnboarding,
   handleGoogleOAuth,
   GoogleOAuthError,
+  getActiveSessions,
+  revokeSession,
+  revokeAllOtherSessions,
 } from "@user/application";
 import { BaseError, type CryptoService, type JwtService } from "domain-lib";
 import { RequestSignInDto } from "./dto/request/request-sign-in.dto.js";
@@ -72,6 +77,7 @@ export class AuthController {
   @HttpCode(200)
   async verifySignIn(
     @Body() dto: VerifySignInDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await verifySignIn(
@@ -84,7 +90,12 @@ export class AuthController {
         jwtService: this.jwtService,
         emailService: this.emailService,
       },
-      { email: dto.email, code: dto.code },
+      {
+        email: dto.email,
+        code: dto.code,
+        ipAddress: this.extractIp(req),
+        userAgent: req.headers["user-agent"] ?? null,
+      },
     );
     if (result instanceof BaseError) toHttpException(result);
 
@@ -172,7 +183,9 @@ export class AuthController {
     }
 
     if (!state || !expectedState || state !== expectedState) {
-      res.redirect(`${this.env.webHost}/auth/sign-in?error=oauth_state_mismatch`);
+      res.redirect(
+        `${this.env.webHost}/auth/sign-in?error=oauth_state_mismatch`,
+      );
       return;
     }
 
@@ -189,7 +202,11 @@ export class AuthController {
         clientSecret: this.env.googleClientSecret,
         redirectUrl: this.env.googleRedirectUri,
       },
-      { code },
+      {
+        code,
+        ipAddress: this.extractIp(req),
+        userAgent: req.headers["user-agent"] ?? null,
+      },
     );
 
     if (result instanceof GoogleOAuthError) {
@@ -216,6 +233,78 @@ export class AuthController {
     });
 
     res.redirect(`${this.env.webHost}/auth/callback#${params}`);
+  }
+
+  @Get("sessions")
+  async getSessions(@Req() req: Request) {
+    const userId = await this.resolveUserId(req);
+
+    const rawRefreshToken = this.readCookie(req, "refreshToken");
+    const currentHash = rawRefreshToken
+      ? await this.cryptoService.hashToken(rawRefreshToken)
+      : null;
+    const currentSession = currentHash
+      ? await this.sessionRepository.findByRefreshTokenHash(currentHash)
+      : null;
+    const currentSessionId = currentSession?.id ?? null;
+
+    const { sessions } = await getActiveSessions(
+      { sessionRepository: this.sessionRepository },
+      { userId },
+    );
+
+    return sessions.map((s) => ({
+      ...s,
+      isCurrent: s.id === currentSessionId,
+    }));
+  }
+
+  @Delete("sessions/:id")
+  @HttpCode(204)
+  async revokeOne(
+    @Param("id") sessionId: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const userId = await this.resolveUserId(req);
+    const result = await revokeSession(
+      { sessionRepository: this.sessionRepository },
+      { userId, sessionId },
+    );
+    if (result instanceof BaseError) toHttpException(result);
+  }
+
+  @Delete("sessions")
+  @HttpCode(204)
+  async revokeAllOthers(@Req() req: Request): Promise<void> {
+    const userId = await this.resolveUserId(req);
+
+    const rawRefreshToken = this.readCookie(req, "refreshToken");
+    if (!rawRefreshToken) throw new UnauthorizedException();
+
+    const currentHash = await this.cryptoService.hashToken(rawRefreshToken);
+    const currentSession =
+      await this.sessionRepository.findByRefreshTokenHash(currentHash);
+    if (!currentSession) throw new UnauthorizedException();
+
+    await revokeAllOtherSessions(
+      { sessionRepository: this.sessionRepository },
+      { userId, currentSessionId: currentSession.id },
+    );
+  }
+
+  private async resolveUserId(req: Request): Promise<string> {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) throw new UnauthorizedException();
+    const token = authHeader.slice(7);
+    const payload = await this.jwtService.verify(token);
+    if (!payload?.sub) throw new UnauthorizedException();
+    return payload.sub;
+  }
+
+  // Requires app.set('trust proxy', 1) in main.ts so Express only honours
+  // X-Forwarded-For from the configured proxy chain.
+  private extractIp(req: Request): string | null {
+    return req.ip ?? null;
   }
 
   private readCookie(req: Request, name: string): string | null {

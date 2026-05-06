@@ -34,6 +34,9 @@ export class SessionEntity {
   @Column({ type: "varchar", nullable: true })
   userAgent!: string | null;
 
+  @Column({ type: "varchar", nullable: true })
+  ipAddress!: string | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 }

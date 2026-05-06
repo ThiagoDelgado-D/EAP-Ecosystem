@@ -24,6 +24,8 @@ export interface VerifySignInDependencies {
 export interface VerifySignInRequestModel {
   email: string;
   code: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }
 
 export interface VerifySignInResponseModel {
@@ -40,7 +42,7 @@ export interface VerifySignInResponseModel {
   >;
 }
 
-const verifySignInSchema = createValidationSchema<VerifySignInRequestModel>({
+const verifySignInSchema = createValidationSchema<Pick<VerifySignInRequestModel, "email" | "code">>({
   email: emailField("Email", { required: true }),
   code: stringField("Code", { required: true, minLength: 6, maxLength: 6 }),
 });
@@ -121,6 +123,8 @@ export const verifySignIn = async (
     refreshTokenHash,
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     revokedAt: null,
+    userAgent: request.userAgent ? request.userAgent.slice(0, 500) : null,
+    ipAddress: request.ipAddress ? request.ipAddress.slice(0, 45) : null,
     createdAt: new Date(),
   };
   await sessionRepository.save(session);

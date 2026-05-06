@@ -48,6 +48,18 @@ export function mockSessionRepository(
       );
     },
 
+    async revokeAllByUserIdExcept(
+      userId: string,
+      excludeSessionId: string,
+    ): Promise<void> {
+      const now = new Date();
+      this.sessions = this.sessions.map((s) =>
+        s.userId === userId && !s.revokedAt && s.id !== excludeSessionId
+          ? { ...s, revokedAt: now }
+          : s,
+      );
+    },
+
     async findActiveByUserId(userId: string): Promise<Session[]> {
       return this.sessions.filter(
         (s) => s.userId === userId && !s.revokedAt && s.expiresAt > new Date(),

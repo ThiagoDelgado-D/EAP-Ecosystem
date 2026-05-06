@@ -22,6 +22,16 @@ import {
   UserEntity,
 } from "@user/infrastructure";
 import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
+import { EnvironmentService } from "../config/environment.service.js";
+
+const mockEnv = {
+  isProduction: false,
+  isDevelopment: true,
+  webHost: "http://localhost:4200",
+  googleClientId: "test-client-id",
+  googleClientSecret: "test-client-secret",
+  googleRedirectUri: "http://localhost:3000/api/v1/auth/google/callback",
+} as unknown as EnvironmentService;
 
 describe("AuthController (integration)", () => {
   let app: INestApplication;
@@ -59,6 +69,8 @@ describe("AuthController (integration)", () => {
       .useValue(jwtService)
       .overrideProvider("IEmailService")
       .useValue(emailService)
+      .overrideProvider(EnvironmentService)
+      .useValue(mockEnv)
       .compile();
 
     app = module.createNestApplication();

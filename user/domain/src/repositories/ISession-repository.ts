@@ -6,5 +6,6 @@ export interface ISessionRepository {
   findById(id: string): Promise<Session | null>;
   revoke(id: string): Promise<void>;
   revokeAllByUserId(userId: string): Promise<void>;
+  revokeAllByUserIdExcept(userId: string, excludeSessionId: string): Promise<void>;
   findActiveByUserId(userId: string): Promise<Session[]>;
 }

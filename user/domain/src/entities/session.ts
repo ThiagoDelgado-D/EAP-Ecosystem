@@ -7,5 +7,7 @@ export interface Session extends Entity {
   expiresAt: Date;
   revokedAt?: Date | null;
   userAgent?: string | null;
+  /** IPv4 or IPv6 address of the client at sign-in time. */
+  ipAddress?: string | null;
   createdAt: Date;
 }
