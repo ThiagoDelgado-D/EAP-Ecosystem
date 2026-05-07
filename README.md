@@ -14,7 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.8.2-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
+[![Version](https://img.shields.io/badge/version-0.8.3-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
 
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
 [![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
@@ -29,15 +29,16 @@ Managing learning resources is harder than it looks. Bookmarks pile up, courses 
 The long-term goal is a recommendation engine that suggests what to study based on how much time and mental energy you actually have at that moment.
 
 **Right now**, EAP is a full-stack application with a REST API and an Angular 21 frontend.
-Users authenticate via magic link or Google Sign-In, complete a two-step onboarding to select which modules
-to activate, and land on a dashboard with their resource library. Resources can be managed
-with inline metadata editing, filtered by difficulty and energy level, and added via guided
-form, URL import, voice capture, or file import. Recommendations and advanced features are
-coming in upcoming versions.
+Users authenticate via magic link or Google Sign-In, complete a two-step onboarding to select
+which modules to activate, and land on a dashboard with their resource library. Resources can
+be managed with inline metadata editing, filtered by difficulty and energy level, and added via
+guided form, URL import, voice capture, or file import. A Settings section lets users manage
+active sessions, toggle which modules and widgets are visible, and control appearance preferences.
+Recommendations and advanced features are coming in upcoming versions.
 
 ---
 
-## 🎯 Current Status (v0.8.2)
+## 🎯 Current Status (v0.8.3)
 
 | Component                 | Status               | Notes                                                                        |
 | ------------------------- | -------------------- | ---------------------------------------------------------------------------- |
@@ -55,7 +56,7 @@ coming in upcoming versions.
 | **Onboarding**            | ✅ Complete          | Two-step flow: name + module selection, persisted to DB (v0.8.1)             |
 | **OAuth (Google)**        | ✅ Complete          | Google Sign-In, account linking, redirect flow (v0.8.2)                      |
 | **Email Templates**       | ✅ Complete          | HBS templates, Ethereal dev fallback, welcome email (v0.8.2)                 |
-| **User Settings**         | 🔜 Next (v0.8.3)     | Resource association per user, feature/widget preferences                    |
+| **User Settings**         | ✅ Complete          | Settings layout (9 sections), preferences API, session management (v0.8.3)   |
 | **Learning Paths**        | 📅 Planned (v0.9.0)  | Ordered resource sequences with progress tracking                            |
 | **Pomodoro & Sessions**   | 📅 Planned (v0.9.5)  | Focus Pulse and Architect's Pulse wired to real session data                 |
 | **Spaced Repetition**     | 📅 Planned (v0.10.0) | SRS scheduling + recommendation engine                                       |
@@ -151,6 +152,13 @@ Base URL: `http://localhost:3000/api/v1`
 | PATCH  | `/auth/onboarding`                     | Complete onboarding (name + module selection)       |
 | GET    | `/auth/google`                         | Redirect to Google OAuth consent screen             |
 | GET    | `/auth/google/callback`                | OAuth callback, issue JWT + redirect to frontend    |
+| GET    | `/preferences/features`                | Get feature configuration for current user          |
+| PATCH  | `/preferences/features`                | Update feature configuration                        |
+| GET    | `/preferences/widgets`                 | Get widget configuration for current user           |
+| PATCH  | `/preferences/widgets`                 | Update widget configuration                         |
+| GET    | `/auth/sessions`                       | List active sessions for current user               |
+| DELETE | `/auth/sessions/:id`                   | Revoke a specific session                           |
+| DELETE | `/auth/sessions`                       | Revoke all other sessions                           |
 
 ---
 

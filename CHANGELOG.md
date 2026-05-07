@@ -2,10 +2,88 @@
 
 ### Planned
 
-- Learning resources associated to authenticated user (data isolation per user) — v0.8.3
-- `GET/PATCH /api/v1/preferences/features` — feature config management — v0.8.3
-- `GET/PATCH /api/v1/preferences/widgets` — widget config management — v0.8.3
-- `/settings/modules` and `/settings/dashboard` pages — v0.8.3
+- Learning resources associated to authenticated user (data isolation per user) — v0.8.4
+- `LearningPath` entity — ordered resource sequences with phases and progress tracking — v0.9.0
+- `ResourceRelationship` entity — typed directed edges between resources — v0.9.0
+- Atlas View — D3.js force-directed knowledge graph visualization — v0.9.0
+- Pomodoro timer + `LearningSession` records — v0.9.5
+- WebSocket gateway for cross-device session sync — v0.9.5
+
+---
+
+## [0.8.3] - 2026-05-07
+
+### User Settings & Preferences
+
+Introduces the Settings section end-to-end. The backend extends session tracking
+with device context and adds a Preferences API for feature and widget configuration
+plus full session management. The frontend builds `SettingsLayoutComponent` with
+nine sections under `/settings`, wires the shell dynamically to `AuthStore` signals,
+and ships six fully functional sections alongside three "Coming soon" stubs.
+
+---
+
+### Added
+
+#### Backend — Infrastructure
+
+- `userAgent varchar(500)` and `ipAddress varchar(45)` columns added to `SessionEntity`
+  with a TypeORM migration — enables the Active sessions UI to display browser/OS
+  context and IP per session; `varchar(45)` accommodates IPv6
+
+#### Backend — Application (`user` BC)
+
+- `getFeatureConfig(userId)` / `updateFeatureConfig(userId, patch)` — typed against
+  `FeatureConfig` domain type; PATCH semantics merge incoming partial over existing
+  config to prevent accidental full-overwrite from a single-toggle request
+- `getWidgetConfig(userId)` / `updateWidgetConfig(userId, patch)` — same pattern
+  for `widgetConfig`; separate use cases to preserve ADR-0004 typed error surface
+- `getActiveSessions(userId)` — returns `SessionDto[]` with `id`, `userAgent`,
+  `ipAddress`, `createdAt`, `expiresAt`
+- `revokeSession(userId, sessionId)` — validates ownership before deletion; typed
+  error on not-found or cross-user access attempt
+- `revokeAllOtherSessions(userId, currentSessionId)` — deletes all sessions except
+  the active one; Danger zone invokes this without `excludeSessionId`
+- All use cases fully unit-tested
+
+#### Backend — API
+
+- `GET /api/v1/preferences/features` / `PATCH /api/v1/preferences/features` —
+  reads and patches `featureConfig`; body validated via `UpdateFeatureConfigDto`
+- `GET /api/v1/preferences/widgets` / `PATCH /api/v1/preferences/widgets` —
+  same for `widgetConfig`
+- `GET /api/v1/auth/sessions` — returns active sessions for the current user
+- `DELETE /api/v1/auth/sessions/:id` — revokes a single session, returns 204
+- `DELETE /api/v1/auth/sessions` — revokes all sessions except current; accepts
+  optional `{ excludeSessionId }` body
+- All endpoints guarded by `JwtAuthGuard`; wired into existing `UserModule`
+
+#### Frontend — Shell
+
+- `ShellLayoutComponent` wired to `AuthStore.currentUser()` signals: user pill
+  with first name, workspace header (`"${firstName}'s EAP"`), nav items rendered
+  conditionally based on `featureConfig`
+
+#### Frontend — Settings
+
+- `SettingsLayoutComponent` — sidebar nav + `<router-outlet>`, child of `ShellLayout`
+  under `/settings`
+- 9 child routes lazy-loaded: `my-account`, `notifications`, `modules`, `dashboard`,
+  `import-export`, `sessions`, `login-security`, `preferences`, `danger-zone`
+- **Modules** — toggle list wired to `PATCH /preferences/features`; Resource Library
+  locked with CORE badge; PLANNED modules rendered disabled; on save, response updates
+  `AuthStore.setSession()` so shell nav reflects immediately
+- **Dashboard widgets** — toggle list wired to `PATCH /preferences/widgets`; Angular
+  CDK `DragDropModule` for drag-to-reorder with ↑/↓ accessible fallback
+- **Active sessions** — table from `GET /auth/sessions` with userAgent + ipAddress;
+  per-row revocation via `DELETE /auth/sessions/:id`
+- **Login & security** — connected providers from `GET /auth/identities` (email,
+  Google if linked); 2FA and login history rendered as stubs
+- **Danger zone** — three actions with confirmation dialog: reset preferences, delete
+  all sessions, delete account
+- **Preferences** — appearance toggle (Light / Dark / System) wired to `ThemeService`
+- **Stubs with "Coming soon" badge**: My account (name/email read-only visible),
+  Notifications (all flags), Import & export
 
 ---
 
