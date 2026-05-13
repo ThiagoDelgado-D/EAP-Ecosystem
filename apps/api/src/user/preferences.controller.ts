@@ -5,6 +5,7 @@ import {
   HttpCode,
   Inject,
   Patch,
+  Post,
   Req,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -14,6 +15,7 @@ import {
   getWidgetConfig,
   updateFeatureConfig,
   updateWidgetConfig,
+  resetPreferences,
 } from "@user/application";
 import { BaseError, type JwtService } from "domain-lib";
 import { UpdateFeatureConfigDto } from "./dto/request/update-feature-config.dto.js";
@@ -81,6 +83,18 @@ export class PreferencesController {
     const result = await updateWidgetConfig(
       { userRepository: this.userRepository },
       { userId, widgetConfig: dto.widgetConfig },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Post("reset")
+  @HttpCode(200)
+  async resetPreferences(@Req() req: Request) {
+    const userId = await this.resolveUserId(req);
+    const result = await resetPreferences(
+      { userRepository: this.userRepository },
+      { userId },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
