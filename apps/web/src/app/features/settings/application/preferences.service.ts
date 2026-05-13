@@ -72,4 +72,19 @@ export class PreferencesService {
       this.saving.set(false);
     }
   }
+
+  async resetPreferences(): Promise<void> {
+    this.saving.set(true);
+    this.error.set(null);
+    try {
+      await this.repository.resetPreferences();
+      this.featureConfig.set([]);
+      this.widgetConfig.set([]);
+    } catch {
+      this.error.set('Failed to reset preferences');
+      throw new Error('Failed to reset preferences');
+    } finally {
+      this.saving.set(false);
+    }
+  }
 }
