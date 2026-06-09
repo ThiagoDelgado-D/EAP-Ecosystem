@@ -413,28 +413,35 @@
               </h2>
 
               <div class="flex flex-wrap gap-1.5 mt-auto pt-2">
-                <app-enum-badge
-                  [value]="resource.difficulty"
-                  [options]="difficultyOptions"
-                  [loading]="toggleLoadingId() === resource.id + ':difficulty'"
-                  (changed)="onToggle($event, resource, 'difficulty')"
-                />
-                <app-enum-badge
-                  [value]="resource.energyLevel"
-                  [options]="energyOptions"
-                  [loading]="toggleLoadingId() === resource.id + ':energy'"
-                  (changed)="onToggle($event, resource, 'energy')"
-                />
+                <span class="inline-flex items-center gap-1" (click)="$event.stopPropagation()">
+                  <span class="text-[9px] text-slate-500 font-medium uppercase tracking-wide">Diff</span>
+                  <app-enum-badge
+                    [value]="resource.difficulty"
+                    [options]="difficultyOptions"
+                    [loading]="toggleLoadingId() === resource.id + ':difficulty'"
+                    (changed)="onToggle($event, resource, 'difficulty')"
+                  />
+                </span>
+                <span class="inline-flex items-center gap-1" (click)="$event.stopPropagation()">
+                  <span class="text-[9px] text-slate-500 font-medium uppercase tracking-wide">Energy</span>
+                  <app-enum-badge
+                    [value]="resource.energyLevel"
+                    [options]="energyOptions"
+                    [loading]="toggleLoadingId() === resource.id + ':energy'"
+                    (changed)="onToggle($event, resource, 'energy')"
+                  />
+                </span>
                 <span class="text-[10px] text-slate-500 px-1.5 py-0.5 rounded bg-slate-800">
                   {{ resource.estimatedDuration.value }} min
                 </span>
-                <app-enum-badge
-                  [value]="resource.status"
-                  [options]="statusOptions"
-                  [loading]="toggleLoadingId() === resource.id + ':status'"
-                  (changed)="onToggle($event, resource, 'status')"
-                  class="ml-auto"
-                />
+                <span class="ml-auto" (click)="$event.stopPropagation()">
+                  <app-enum-badge
+                    [value]="resource.status"
+                    [options]="statusOptions"
+                    [loading]="toggleLoadingId() === resource.id + ':status'"
+                    (changed)="onToggle($event, resource, 'status')"
+                  />
+                </span>
               </div>
             </div>
           </div>
@@ -488,24 +495,32 @@
             </div>
 
             <div class="flex items-center gap-2 shrink-0">
-              <app-enum-badge
-                [value]="resource.difficulty"
-                [options]="difficultyOptions"
-                [loading]="toggleLoadingId() === resource.id + ':difficulty'"
-                (changed)="onToggle($event, resource, 'difficulty')"
-              />
-              <app-enum-badge
-                [value]="resource.energyLevel"
-                [options]="energyOptions"
-                [loading]="toggleLoadingId() === resource.id + ':energy'"
-                (changed)="onToggle($event, resource, 'energy')"
-              />
-              <app-enum-badge
-                [value]="resource.status"
-                [options]="statusOptions"
-                [loading]="toggleLoadingId() === resource.id + ':status'"
-                (changed)="onToggle($event, resource, 'status')"
-              />
+              <span class="inline-flex items-center gap-1" (click)="$event.stopPropagation()">
+                <span class="text-[9px] text-slate-500 font-medium uppercase tracking-wide">Diff</span>
+                <app-enum-badge
+                  [value]="resource.difficulty"
+                  [options]="difficultyOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':difficulty'"
+                  (changed)="onToggle($event, resource, 'difficulty')"
+                />
+              </span>
+              <span class="inline-flex items-center gap-1" (click)="$event.stopPropagation()">
+                <span class="text-[9px] text-slate-500 font-medium uppercase tracking-wide">Energy</span>
+                <app-enum-badge
+                  [value]="resource.energyLevel"
+                  [options]="energyOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':energy'"
+                  (changed)="onToggle($event, resource, 'energy')"
+                />
+              </span>
+              <span (click)="$event.stopPropagation()">
+                <app-enum-badge
+                  [value]="resource.status"
+                  [options]="statusOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':status'"
+                  (changed)="onToggle($event, resource, 'status')"
+                />
+              </span>
 
               <button
                 (click)="toggleSaved($event, resource.id)"

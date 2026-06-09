@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { ModuleLabelPipe } from '@shared/pipes/module-label.pipe';
 
 @Component({
   selector: 'app-account',
   standalone: true,
+  imports: [ModuleLabelPipe],
   template: `
     <div class="max-w-[680px] mx-auto px-14 py-10">
       <div class="mb-8">
@@ -13,7 +15,9 @@ import { AuthStore } from '@features/auth/application/auth.store';
 
       <!-- Avatar + name row -->
       <div class="flex items-center gap-5 mb-8 pb-8 border-b border-slate-800">
-        <div class="w-16 h-16 rounded-full bg-slate-800 border-2 border-violet-700 flex items-center justify-center text-2xl font-semibold text-violet-400 flex-shrink-0 select-none">
+        <div
+          class="w-16 h-16 rounded-full bg-slate-800 border-2 border-violet-700 flex items-center justify-center text-2xl font-semibold text-violet-400 flex-shrink-0 select-none"
+        >
           {{ authStore.userInitials() }}
         </div>
         <div>
@@ -47,18 +51,37 @@ import { AuthStore } from '@features/auth/application/auth.store';
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1.5">Active modules</label>
-          @if ((authStore.currentUser()?.featureConfig?.length ?? 0) > 0) {
-            <div class="flex flex-wrap gap-2">
-              @for (key of authStore.currentUser()?.featureConfig ?? []; track key) {
-                <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-violet-950/60 border border-violet-800/50 text-xs text-violet-300 capitalize">
-                  {{ key.replaceAll('-', ' ') }}
+          <label class="block text-xs font-medium text-slate-400 mb-1.5">Modules</label>
+
+          <div class="flex flex-col gap-3">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-slate-600 mb-1.5">Always active</p>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-800/60 border border-slate-700 text-xs text-slate-400"
+                >
+                  Resource Library
                 </span>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-slate-600 mb-1.5">Enabled</p>
+              @if ((authStore.currentUser()?.featureConfig?.length ?? 0) > 0) {
+                <div class="flex flex-wrap gap-2">
+                  @for (key of authStore.currentUser()?.featureConfig ?? []; track key) {
+                    <span
+                      class="inline-flex items-center px-2.5 py-1 rounded-md bg-violet-950/60 border border-violet-800/50 text-xs text-violet-300"
+                    >
+                      {{ key | moduleLabel }}
+                    </span>
+                  }
+                </div>
+              } @else {
+                <p class="text-sm text-slate-500">No modules enabled.</p>
               }
             </div>
-          } @else {
-            <p class="text-sm text-slate-500">No modules enabled.</p>
-          }
+          </div>
         </div>
 
         <div>

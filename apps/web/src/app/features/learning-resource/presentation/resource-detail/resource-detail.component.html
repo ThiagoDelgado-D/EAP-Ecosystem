@@ -82,47 +82,37 @@
             <span class="w-px h-4 bg-slate-800 shrink-0"></span>
 
             <!-- Difficulty -->
-            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg pl-2.5 pr-1 py-1">
-              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Difficulty</span>
-              <app-enum-badge
-                [value]="r.difficulty"
-                [options]="difficultyOptions"
+            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
+              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Difficulty</span>
+              <app-enum-badge [value]="r.difficulty" [options]="difficultyOptions"
                 [loading]="toggleLoadingField() === 'difficulty'"
-                (changed)="onToggle($event, 'difficulty')"
-              />
+                (changed)="onToggle($event, 'difficulty')" />
             </span>
 
             <!-- Energy -->
-            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg pl-2.5 pr-1 py-1">
-              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Energy</span>
-              <app-enum-badge
-                [value]="r.energyLevel"
-                [options]="energyOptions"
+            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
+              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Energy</span>
+              <app-enum-badge [value]="r.energyLevel" [options]="energyOptions"
                 [loading]="toggleLoadingField() === 'energy'"
-                (changed)="onToggle($event, 'energy')"
-              />
+                (changed)="onToggle($event, 'energy')" />
             </span>
 
-            <!-- Mental State — interactive; shows "Set..." placeholder when unset -->
-            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg pl-2.5 pr-1 py-1">
-              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Focus</span>
-              <app-enum-badge
-                [value]="r.mentalState ?? null"
-                [options]="mentalStateOptions"
-                [loading]="toggleLoadingField() === 'mentalState'"
-                (changed)="onToggle($event, 'mentalState')"
-              />
-            </span>
+            <!-- Focus / Mental State -->
+            @if (r.mentalState) {
+              <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
+                <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Focus</span>
+                <app-enum-badge [value]="r.mentalState" [options]="mentalStateOptions"
+                  [loading]="toggleLoadingField() === 'mentalState'"
+                  (changed)="onToggle($event, 'mentalState')" />
+              </span>
+            }
 
             <!-- Status -->
-            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg pl-2.5 pr-1 py-1">
-              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Status</span>
-              <app-enum-badge
-                [value]="r.status"
-                [options]="statusOptions"
+            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
+              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Status</span>
+              <app-enum-badge [value]="r.status" [options]="statusOptions"
                 [loading]="toggleLoadingField() === 'status'"
-                (changed)="onToggle($event, 'status')"
-              />
+                (changed)="onToggle($event, 'status')" />
             </span>
 
             <!-- Duration — static, last since its height is shorter than the interactive badges -->
