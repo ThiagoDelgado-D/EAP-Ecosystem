@@ -115,11 +115,11 @@
                 type="button"
                 [disabled]="!isToggleable(module) || saving()"
                 (click)="toggle(module)"
-                class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none disabled:cursor-not-allowed"
+                class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:cursor-not-allowed"
                 [class.bg-slate-700]="!module.alwaysOn && !isOn(module.key)"
                 [style.background-color]="(module.alwaysOn || isOn(module.key)) ? module.accentColor : null"
                 [attr.aria-checked]="module.alwaysOn || isOn(module.key)"
-                [attr.aria-label]="'Toggle ' + module.label"
+                [attr.aria-label]="module.alwaysOn ? ('Status: ' + module.label + ' (always on)') : ('Toggle ' + module.label)"
                 role="switch"
               >
                 <span
