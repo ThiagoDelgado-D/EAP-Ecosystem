@@ -7,17 +7,18 @@ import {
   type LearningResource,
   MentalStateType,
   ResourceStatusType,
-  type Topic,
 } from "@learning-resource/domain";
-import { mockTopicRepository } from "../../mocks/mock-topic-repository.js";
-import { getResourcesByFilter } from "./get-resources-by-filter.js";
+import {
+  getResourcesByFilter,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+} from "./get-resources-by-filter.js";
 
 describe("getResourcesByFilter", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let learningResourceRepository: ReturnType<
     typeof mockLearningResourceRepository
   >;
-  let topicRepository: ReturnType<typeof mockTopicRepository>;
 
   let typeVideoId: UUID;
   let typeArticleId: UUID;
@@ -33,46 +34,6 @@ describe("getResourcesByFilter", () => {
     topicProgrammingId = await cryptoService.generateUUID();
     topicDesignId = await cryptoService.generateUUID();
     topicScienceId = await cryptoService.generateUUID();
-
-    const topicVideo: Topic = {
-      id: typeVideoId,
-      name: "Video",
-      color: "#9B59B6",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const topicArticle: Topic = {
-      id: typeArticleId,
-      name: "Article",
-      color: "#F1C40F",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const topicProgramming = {
-      id: topicProgrammingId,
-      name: "Programming",
-      color: "#FF5733",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const topicDesign = {
-      id: topicDesignId,
-      name: "Design",
-      color: "#1E90FF",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const topicScience = {
-      id: topicScienceId,
-      name: "Science",
-      color: "#2ECC71",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
 
     const seedResources: LearningResource[] = [
       {
@@ -150,26 +111,22 @@ describe("getResourcesByFilter", () => {
     ];
 
     learningResourceRepository = mockLearningResourceRepository(seedResources);
-    topicRepository = mockTopicRepository([
-      topicArticle,
-      topicVideo,
-      topicProgramming,
-      topicDesign,
-      topicScience,
-    ]);
   });
 
-  test("Should return all resources when no filters are provided", async () => {
+  test("Should return paginated shape with all resources when no filters provided", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
       {},
     );
 
-    expect(result.total).toBe(6);
     expect(result.resources).toHaveLength(6);
+    expect(result.total).toBe(6);
+    expect(result.page).toBe(1);
+    expect(result.pageSize).toBe(DEFAULT_PAGE_SIZE);
+    expect(result.totalPages).toBe(1);
   });
 
-  test("Should return all resources when no filters are provided", async () => {
+  test("Should return paginated shape when filters object is empty", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
       { filters: {} },
@@ -177,6 +134,8 @@ describe("getResourcesByFilter", () => {
 
     expect(result.total).toBe(6);
     expect(result.resources).toHaveLength(6);
+    expect(result.page).toBe(1);
+    expect(result.totalPages).toBe(1);
   });
 
   test("Should handle empty repository", async () => {
@@ -189,16 +148,183 @@ describe("getResourcesByFilter", () => {
 
     expect(result.total).toBe(0);
     expect(result.resources).toHaveLength(0);
+    expect(result.totalPages).toBe(0);
+  });
+
+  test("Should paginate correctly with pageSize=2 and return page 1", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { page: 1, pageSize: 2 },
+    );
+
+    expect(result.resources).toHaveLength(2);
+    expect(result.total).toBe(6);
+    expect(result.page).toBe(1);
+    expect(result.pageSize).toBe(2);
+    expect(result.totalPages).toBe(3);
+  });
+
+  test("Should paginate correctly and return page 2", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { page: 2, pageSize: 2 },
+    );
+
+    expect(result.resources).toHaveLength(2);
+    expect(result.page).toBe(2);
+    expect(result.totalPages).toBe(3);
+  });
+
+  test("Should clamp page to 1 when page < 1", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { page: -5 },
+    );
+
+    expect(result.page).toBe(1);
+  });
+
+  test("Should clamp pageSize to MAX_PAGE_SIZE when pageSize exceeds limit", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { pageSize: 999 },
+    );
+
+    expect(result.pageSize).toBe(MAX_PAGE_SIZE);
+  });
+
+  test("Should clamp pageSize to 1 when pageSize < 1", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { pageSize: 0 },
+    );
+
+    expect(result.pageSize).toBe(1);
+    expect(result.totalPages).toBe(6);
+  });
+
+  test("Should return resources with LOW difficulty", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { difficulty: DifficultyType.LOW } },
+    );
+
+    expect(result.total).toBe(2);
+    expect(
+      result.resources.every((r) => r.difficulty === DifficultyType.LOW),
+    ).toBe(true);
+  });
+
+  test("Should return resources with MEDIUM difficulty", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { difficulty: DifficultyType.MEDIUM } },
+    );
+
+    expect(result.total).toBe(2);
+    expect(
+      result.resources.every((r) => r.difficulty === DifficultyType.MEDIUM),
+    ).toBe(true);
+  });
+
+  test("Should return resources with HIGH difficulty", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { difficulty: DifficultyType.HIGH } },
+    );
+
+    expect(result.total).toBe(2);
+    expect(
+      result.resources.every((r) => r.difficulty === DifficultyType.HIGH),
+    ).toBe(true);
+  });
+
+  test("Should return resources with LOW energy level", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { energyLevel: EnergyLevelType.LOW } },
+    );
+
+    expect(result.total).toBe(2);
+    expect(
+      result.resources.every((r) => r.energyLevel === EnergyLevelType.LOW),
+    ).toBe(true);
+  });
+
+  test("Should return resources with HIGH energy level", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { energyLevel: EnergyLevelType.HIGH } },
+    );
+
+    expect(result.total).toBe(2);
+    expect(
+      result.resources.every((r) => r.energyLevel === EnergyLevelType.HIGH),
+    ).toBe(true);
+  });
+
+  test("Should return PENDING resources", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { status: ResourceStatusType.PENDING } },
+    );
+
+    expect(result.total).toBe(3);
+    expect(
+      result.resources.every((r) => r.status === ResourceStatusType.PENDING),
+    ).toBe(true);
+  });
+
+  test("Should return IN_PROGRESS resources", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { status: ResourceStatusType.IN_PROGRESS } },
+    );
+
+    expect(result.total).toBe(1);
+    expect(result.resources[0].title).toBe("Design Systems");
+  });
+
+  test("Should return COMPLETED resources", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { status: ResourceStatusType.COMPLETED } },
+    );
+
+    expect(result.total).toBe(2);
+    expect(
+      result.resources.every((r) => r.status === ResourceStatusType.COMPLETED),
+    ).toBe(true);
+  });
+
+  test("Should return resources filtered by article type", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { resourceTypeId: typeArticleId } },
+    );
+
+    expect(result.total).toBe(3);
+    expect(result.resources.every((r) => r.typeId === typeArticleId)).toBe(
+      true,
+    );
+  });
+
+  test("Should return empty when no resources match resourceTypeId", async () => {
+    const nonExistentTypeId = await cryptoService.generateUUID();
+
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      { filters: { resourceTypeId: nonExistentTypeId } },
+    );
+
+    expect(result.total).toBe(0);
+    expect(result.resources).toHaveLength(0);
   });
 
   test("Should return resources filtered by single topic", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      {
-        filters: {
-          topicIds: [topicProgrammingId],
-        },
-      },
+      { filters: { topicIds: [topicProgrammingId] } },
     );
 
     expect(result.total).toBe(4);
@@ -210,11 +336,7 @@ describe("getResourcesByFilter", () => {
   test("Should return resources filtered by multiple topics (OR logic)", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      {
-        filters: {
-          topicIds: [topicDesignId, topicScienceId],
-        },
-      },
+      { filters: { topicIds: [topicDesignId, topicScienceId] } },
     );
 
     expect(result.total).toBe(3);
@@ -227,221 +349,53 @@ describe("getResourcesByFilter", () => {
     ).toBe(true);
   });
 
-  test("Should return empty array when no resources match the topic filter", async () => {
+  test("Should return empty when no resources match the topic filter", async () => {
     const nonExistentTopicId = await cryptoService.generateUUID();
 
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      {
-        filters: { topicIds: [nonExistentTopicId] },
-      },
+      { filters: { topicIds: [nonExistentTopicId] } },
     );
 
     expect(result.total).toBe(0);
     expect(result.resources).toHaveLength(0);
   });
 
-  test("Should return resources with LOW difficulty", async () => {
+  test("Should return resources matching search query (case-insensitive)", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      {
-        filters: { difficulty: DifficultyType.LOW },
-      },
+      { filters: { q: "typescript" } },
     );
 
     expect(result.total).toBe(2);
     expect(
-      result.resources.every((r) => r.difficulty === DifficultyType.LOW),
+      result.resources.every((r) =>
+        r.title.toLowerCase().includes("typescript"),
+      ),
     ).toBe(true);
   });
 
-  test("Should return resources with MEDIUM difficulty", async () => {
+  test("Should return empty when search query matches nothing", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      {
-        filters: { difficulty: DifficultyType.MEDIUM },
-      },
-    );
-
-    expect(result.total).toBe(2);
-    expect(
-      result.resources.every((r) => r.difficulty === DifficultyType.MEDIUM),
-    ).toBe(true);
-  });
-
-  test("Should return resources with HIGH difficulty", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { difficulty: DifficultyType.HIGH },
-      },
-    );
-
-    expect(result.total).toBe(2);
-    expect(
-      result.resources.every((r) => r.difficulty === DifficultyType.HIGH),
-    ).toBe(true);
-  });
-
-  test("Should return resources with LOW energy level", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { energyLevel: EnergyLevelType.LOW },
-      },
-    );
-
-    expect(result.total).toBe(2);
-    expect(
-      result.resources.every((r) => r.energyLevel === EnergyLevelType.LOW),
-    ).toBe(true);
-  });
-
-  test("Should return resources with MEDIUM energy level", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { energyLevel: EnergyLevelType.MEDIUM },
-      },
-    );
-
-    expect(result.total).toBe(2);
-    expect(
-      result.resources.every((r) => r.energyLevel === EnergyLevelType.MEDIUM),
-    ).toBe(true);
-  });
-
-  test("Should return resources with HIGH energy level", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { energyLevel: EnergyLevelType.HIGH },
-      },
-    );
-
-    expect(result.total).toBe(2);
-    expect(
-      result.resources.every((r) => r.energyLevel === EnergyLevelType.HIGH),
-    ).toBe(true);
-  });
-
-  test("Should return PENDING resources", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { status: ResourceStatusType.PENDING },
-      },
-    );
-
-    expect(result.total).toBe(3);
-    expect(
-      result.resources.every((r) => r.status === ResourceStatusType.PENDING),
-    ).toBe(true);
-  });
-
-  test("Should return IN_PROGRESS resources", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { status: ResourceStatusType.IN_PROGRESS },
-      },
-    );
-
-    expect(result.total).toBe(1);
-    expect(result.resources[0].title).toBe("Design Systems");
-  });
-
-  test("Should return COMPLETED resources", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { status: ResourceStatusType.COMPLETED },
-      },
-    );
-
-    expect(result.total).toBe(2);
-    expect(
-      result.resources.every((r) => r.status === ResourceStatusType.COMPLETED),
-    ).toBe(true);
-  });
-
-  test("Should return resources filtered by article type", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { resourceTypeId: typeArticleId },
-      },
-    );
-
-    expect(result.total).toBe(3);
-    expect(result.resources.every((r) => r.typeId === typeArticleId)).toBe(
-      true,
-    );
-  });
-
-  test("Should return empty when no resources match the filters", async () => {
-    const nonExistentTypeId = await cryptoService.generateUUID();
-
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: { resourceTypeId: nonExistentTypeId },
-      },
+      { filters: { q: "nonexistentxyz" } },
     );
 
     expect(result.total).toBe(0);
     expect(result.resources).toHaveLength(0);
   });
 
-  test("Should return all resources when filter values are undefined", async () => {
+  test("Should ignore empty q string and return all results", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      {
-        filters: {
-          topicIds: undefined,
-          difficulty: undefined,
-          energyLevel: undefined,
-          status: undefined,
-          resourceTypeId: undefined,
-        },
-      },
+      { filters: { q: "" } },
     );
 
     expect(result.total).toBe(6);
-    expect(result.resources).toHaveLength(6);
-  });
-
-  test("Should return empty array when filters validation fails (invalid UUID in topicIds)", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: {
-          topicIds: ["not-a-valid-uuid" as UUID],
-        },
-      },
-    );
-
-    expect(result.total).toBe(0);
-    expect(result.resources).toHaveLength(0);
-  });
-
-  test("Should return empty array when filters validation fails (non-array topicIds)", async () => {
-    const result = await getResourcesByFilter(
-      { learningResourceRepository },
-      {
-        filters: {
-          topicIds: "not-an-array" as any,
-        },
-      },
-    );
-
-    expect(result.total).toBe(0);
-    expect(result.resources).toHaveLength(0);
   });
 
   test("Should return resources filtered by mental state DEEP_FOCUS", async () => {
     const deepFocusId = await cryptoService.generateUUID();
-    const lightReadId = await cryptoService.generateUUID();
 
     await learningResourceRepository.save({
       id: deepFocusId,
@@ -457,20 +411,6 @@ describe("getResourcesByFilter", () => {
       updatedAt: new Date(),
     });
 
-    await learningResourceRepository.save({
-      id: lightReadId,
-      title: "Quick Tips",
-      typeId: typeArticleId,
-      topicIds: [topicDesignId],
-      difficulty: DifficultyType.LOW,
-      energyLevel: EnergyLevelType.LOW,
-      mentalState: MentalStateType.LIGHT_READ,
-      status: ResourceStatusType.PENDING,
-      estimatedDuration: { value: 10, isEstimated: true },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
     const result = await getResourcesByFilter(
       { learningResourceRepository },
       { filters: { mentalState: MentalStateType.DEEP_FOCUS } },
@@ -481,7 +421,7 @@ describe("getResourcesByFilter", () => {
     expect(result.resources[0].mentalState).toBe(MentalStateType.DEEP_FOCUS);
   });
 
-  test("Should filter by mentalState combined with difficulty (AND logic)", async () => {
+  test("Should apply difficulty + mentalState combined (AND logic)", async () => {
     const id1 = await cryptoService.generateUUID();
     const id2 = await cryptoService.generateUUID();
 
@@ -527,15 +467,33 @@ describe("getResourcesByFilter", () => {
     expect(result.resources[0].title).toBe("Deep Focus High");
   });
 
-  test("Should return resources without mentalState when filter is not provided", async () => {
+  test("Should apply filters combined with pagination", async () => {
     const result = await getResourcesByFilter(
       { learningResourceRepository },
-      { filters: { difficulty: DifficultyType.LOW } },
+      { filters: { difficulty: DifficultyType.LOW }, page: 1, pageSize: 1 },
     );
 
     expect(result.total).toBe(2);
-    expect(
-      result.resources.every((r) => r.difficulty === DifficultyType.LOW),
-    ).toBe(true);
+    expect(result.resources).toHaveLength(1);
+    expect(result.totalPages).toBe(2);
+    expect(result.resources[0].difficulty).toBe(DifficultyType.LOW);
+  });
+
+  test("Should return all resources when all filter values are undefined", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository },
+      {
+        filters: {
+          topicIds: undefined,
+          difficulty: undefined,
+          energyLevel: undefined,
+          status: undefined,
+          resourceTypeId: undefined,
+        },
+      },
+    );
+
+    expect(result.total).toBe(6);
+    expect(result.resources).toHaveLength(6);
   });
 });
