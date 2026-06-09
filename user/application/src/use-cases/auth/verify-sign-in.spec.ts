@@ -368,4 +368,39 @@ describe("verifySignIn", () => {
 
     expect(result).toBeInstanceOf(InvalidOrExpiredCodeError);
   });
+
+  test("Should persist userAgent and ipAddress on the session when provided", async () => {
+    const userAgent =
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+    const ipAddress = "203.0.113.42";
+
+    await verifySignIn(deps(), {
+      email: EMAIL,
+      code: VALID_CODE,
+      userAgent,
+      ipAddress,
+    });
+
+    const session = sessionRepository.sessions[0];
+    expect(session.userAgent).toBe(userAgent);
+    expect(session.ipAddress).toBe(ipAddress);
+  });
+
+  test("Should truncate userAgent to 500 characters and ipAddress to 45 characters when they exceed the limit", async () => {
+    const longUserAgent = "A".repeat(600);
+    const longIpAddress = "1".repeat(60);
+
+    await verifySignIn(deps(), {
+      email: EMAIL,
+      code: VALID_CODE,
+      userAgent: longUserAgent,
+      ipAddress: longIpAddress,
+    });
+
+    const session = sessionRepository.sessions[0];
+    expect(session.userAgent).toBe(longUserAgent.slice(0, 500));
+    expect(session.userAgent).toHaveLength(500);
+    expect(session.ipAddress).toBe(longIpAddress.slice(0, 45));
+    expect(session.ipAddress).toHaveLength(45);
+  });
 });

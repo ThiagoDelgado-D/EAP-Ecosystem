@@ -463,4 +463,203 @@ describe("handleGoogleOAuth", () => {
     expect(result).toBeInstanceOf(GoogleOAuthError);
     expect(identityRepository.count()).toBe(0);
   });
+
+  test("Should persist userAgent and ipAddress on the session when provided", async () => {
+    stubGoogleSuccess();
+
+    const userAgent =
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+    const ipAddress = "203.0.113.42";
+
+    await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+      userAgent,
+      ipAddress,
+    });
+
+    const session = sessionRepository.sessions[0];
+    expect(session.userAgent).toBe(userAgent);
+    expect(session.ipAddress).toBe(ipAddress);
+  });
+
+  test("Should truncate userAgent to 500 characters and ipAddress to 45 characters when they exceed the limit", async () => {
+    stubGoogleSuccess();
+
+    const longUserAgent = "A".repeat(600);
+    const longIpAddress = "1".repeat(60);
+
+    await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+      userAgent: longUserAgent,
+      ipAddress: longIpAddress,
+    });
+
+    const session = sessionRepository.sessions[0];
+    expect(session.userAgent).toBe(longUserAgent.slice(0, 500));
+    expect(session.userAgent).toHaveLength(500);
+    expect(session.ipAddress).toBe(longIpAddress.slice(0, 45));
+    expect(session.ipAddress).toHaveLength(45);
+  });
+
+  test("Should recover and sign in when a concurrent process created the User before the save completed", async () => {
+    stubGoogleSuccess();
+
+    const concurrentUser: User = {
+      id: await cryptoService.generateUUID(),
+      email: GOOGLE_PROFILE.email,
+      firstName: GOOGLE_PROFILE.given_name!,
+      lastName: GOOGLE_PROFILE.family_name!,
+      userName: null,
+      enabled: true,
+      onboardingCompleted: false,
+      featureConfig: [],
+      widgetConfig: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    userRepository.users.push(concurrentUser);
+    userRepository.save = async () => {
+      throw new Error("unique constraint violation");
+    };
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
+
+    expect(result).not.toBeInstanceOf(GoogleOAuthError);
+    if (result instanceof GoogleOAuthError) return;
+
+    expect(result.user.email).toBe(GOOGLE_PROFILE.email);
+    expect(result.user.id).toBe(concurrentUser.id);
+    expect(sessionRepository.count()).toBe(1);
+  });
+
+  test("Should return GoogleOAuthError when userRepository.save throws and the user cannot be recovered via findByEmail", async () => {
+    stubGoogleSuccess();
+
+    // Override save to throw; no user pre-seeded, so findByEmail returns null
+    userRepository.save = async () => {
+      throw new Error("unique constraint violation");
+    };
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
+
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+    expect((result as GoogleOAuthError).message).toBe(
+      "Failed to create Google OAuth user",
+    );
+    expect(sessionRepository.count()).toBe(0);
+  });
+
+  test("Should return GoogleOAuthError when identityRepository.save throws and no concurrent Identity exists", async () => {
+    stubGoogleSuccess();
+
+    identityRepository.save = async () => {
+      throw new Error("DB error");
+    };
+    let findByProviderCallCount = 0;
+    identityRepository.findByProvider = async () => {
+      findByProviderCallCount++;
+      return null; // both initial check and catch-block recovery return null
+    };
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
+
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+    expect((result as GoogleOAuthError).message).toBe(
+      "Failed to link Google identity",
+    );
+    expect(userRepository.count()).toBe(1);
+    expect(sessionRepository.count()).toBe(0);
+  });
+
+  test("Should return GoogleOAuthError when the recovered concurrent Identity has no matching User", async () => {
+    stubGoogleSuccess();
+
+    const orphanIdentity: Identity = {
+      id: await cryptoService.generateUUID(),
+      userId: "ghost-user-id",
+      provider: "google",
+      providerSubject: GOOGLE_PROFILE.id,
+      verified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    identityRepository.save = async () => {
+      throw new Error("unique constraint");
+    };
+    let findByProviderCallCount = 0;
+    identityRepository.findByProvider = async () => {
+      findByProviderCallCount++;
+      if (findByProviderCallCount === 1) return null;
+      return orphanIdentity;
+    };
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
+
+    expect(result).toBeInstanceOf(GoogleOAuthError);
+    expect((result as GoogleOAuthError).message).toBe(
+      "User not found for existing identity",
+    );
+    expect(sessionRepository.count()).toBe(0);
+  });
+
+  test("Should recover and sign in when a concurrent process linked the Google Identity before the save completed", async () => {
+    stubGoogleSuccess();
+
+    const concurrentUser: User = {
+      id: await cryptoService.generateUUID(),
+      email: GOOGLE_PROFILE.email,
+      firstName: GOOGLE_PROFILE.given_name!,
+      lastName: GOOGLE_PROFILE.family_name!,
+      userName: null,
+      enabled: true,
+      onboardingCompleted: false,
+      featureConfig: [],
+      widgetConfig: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await userRepository.save(concurrentUser);
+
+    const concurrentIdentity: Identity = {
+      id: await cryptoService.generateUUID(),
+      userId: concurrentUser.id,
+      provider: "google",
+      providerSubject: GOOGLE_PROFILE.id,
+      verified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    identityRepository.save = async () => {
+      throw new Error("unique constraint");
+    };
+    let findByProviderCallCount = 0;
+    identityRepository.findByProvider = async () => {
+      findByProviderCallCount++;
+      if (findByProviderCallCount === 1) return null;
+      return concurrentIdentity;
+    };
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, {
+      code: "auth_code",
+    });
+
+    expect(result).not.toBeInstanceOf(GoogleOAuthError);
+    if (result instanceof GoogleOAuthError) return;
+
+    expect(result.user.id).toBe(concurrentUser.id);
+    expect(result.user.email).toBe(GOOGLE_PROFILE.email);
+    expect(sessionRepository.count()).toBe(1);
+    expect(sessionRepository.sessions[0].userId).toBe(concurrentUser.id);
+  });
 });

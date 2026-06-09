@@ -6,4 +6,5 @@ export abstract class PreferencesRepository {
   abstract updateFeatureConfig(config: FeatureKey[]): Promise<FeatureKey[]>;
   abstract getWidgetConfig(): Promise<WidgetKey[]>;
   abstract updateWidgetConfig(config: WidgetKey[]): Promise<WidgetKey[]>;
+  abstract resetPreferences(): Promise<void>;
 }

@@ -35,4 +35,8 @@ export class PreferencesHttpRepository extends PreferencesRepository {
     );
     return dto.widgetConfig;
   }
+
+  async resetPreferences(): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.base}/reset`, {}));
+  }
 }
