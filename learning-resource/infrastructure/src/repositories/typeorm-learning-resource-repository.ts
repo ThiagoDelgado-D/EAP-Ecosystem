@@ -1,10 +1,9 @@
 import type {
-  DifficultyType,
-  EnergyLevelType,
   ILearningResourceRepository,
   LearningResource,
-  MentalStateType,
-  ResourceStatusType,
+  PaginatedResources,
+  ResourceFilters,
+  ResourcePagination,
 } from "@learning-resource/domain";
 import { In, type Repository } from "typeorm";
 import { LearningResourceEntity } from "../entities/learning-resource.entity.js";
@@ -81,60 +80,51 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
     return this.toDomain(entity);
   }
 
-  async findByTopicIds(topicIds: UUID[]): Promise<LearningResource[]> {
-    const entities = await this.repository
+  async findWithFiltersAndCount(
+    filters: ResourceFilters,
+    pagination: ResourcePagination,
+  ): Promise<PaginatedResources> {
+    const { page, pageSize } = pagination;
+    const skip = (page - 1) * pageSize;
+
+    const qb = this.repository
       .createQueryBuilder("lr")
-      .innerJoin("lr.topics", "topic")
-      .where("topic.id IN (:...topicIds)", { topicIds })
-      .leftJoinAndSelect("lr.topics", "allTopics")
-      .getMany();
-    return entities.map((e) => this.toDomain(e));
-  }
+      .leftJoinAndSelect("lr.topics", "topic");
 
-  async findByDifficulty(
-    difficulty: DifficultyType,
-  ): Promise<LearningResource[]> {
-    const entities = await this.repository.find({
-      where: { difficulty },
-      relations: ["topics"],
-    });
-    return entities.map((e) => this.toDomain(e));
-  }
+    if (filters.q) {
+      qb.andWhere("LOWER(lr.title) LIKE LOWER(:q)", { q: `%${filters.q}%` });
+    }
+    if (filters.difficulty) {
+      qb.andWhere("lr.difficulty = :difficulty", { difficulty: filters.difficulty });
+    }
+    if (filters.energyLevel) {
+      qb.andWhere("lr.energyLevel = :energyLevel", { energyLevel: filters.energyLevel });
+    }
+    if (filters.status) {
+      qb.andWhere("lr.status = :status", { status: filters.status });
+    }
+    if (filters.resourceTypeId) {
+      qb.andWhere("lr.resourceTypeId = :resourceTypeId", { resourceTypeId: filters.resourceTypeId });
+    }
+    if (filters.mentalState) {
+      qb.andWhere("lr.mentalState = :mentalState", { mentalState: filters.mentalState });
+    }
+    if (filters.topicIds?.length) {
+      qb.andWhere("topic.id IN (:...topicIds)", { topicIds: filters.topicIds });
+    }
 
-  async findByEnergyLevel(
-    energyLevel: EnergyLevelType,
-  ): Promise<LearningResource[]> {
-    const entities = await this.repository.find({
-      where: { energyLevel },
-      relations: ["topics"],
-    });
-    return entities.map((e) => this.toDomain(e));
-  }
+    const [entities, total] = await qb
+      .skip(skip)
+      .take(pageSize)
+      .getManyAndCount();
 
-  async findByStatus(status: ResourceStatusType): Promise<LearningResource[]> {
-    const entities = await this.repository.find({
-      where: { status },
-      relations: ["topics"],
-    });
-    return entities.map((e) => this.toDomain(e));
-  }
-
-  async findByResourceTypeId(typeId: UUID): Promise<LearningResource[]> {
-    const entities = await this.repository.find({
-      where: { resourceTypeId: typeId },
-      relations: ["topics"],
-    });
-    return entities.map((e) => this.toDomain(e));
-  }
-
-  async findByMentalState(
-    mentalState: MentalStateType,
-  ): Promise<LearningResource[]> {
-    const entities = await this.repository.find({
-      where: { mentalState },
-      relations: ["topics"],
-    });
-    return entities.map((e) => this.toDomain(e));
+    return {
+      resources: entities.map((e) => this.toDomain(e)),
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
   }
 
   private toDomain(entity: LearningResourceEntity): LearningResource {
@@ -147,7 +137,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
       topicIds: entity.topics.map((t) => t.id as UUID),
       difficulty: entity.difficulty as LearningResource["difficulty"],
       energyLevel: entity.energyLevel as LearningResource["energyLevel"],
-      mentalState: (entity.mentalState as MentalStateType) ?? undefined,
+      mentalState: (entity.mentalState as LearningResource["mentalState"]) ?? undefined,
       status: entity.status as LearningResource["status"],
       estimatedDuration: {
         value: entity.estimatedDurationMinutes ?? 0,
