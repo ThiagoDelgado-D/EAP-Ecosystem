@@ -2,6 +2,7 @@ import type {
   ILearningResourceRepository,
   IResourceTypeRepository,
   ITopicRepository,
+  ResourceFilters,
 } from "@learning-resource/domain";
 import {
   Body,
@@ -17,7 +18,6 @@ import {
 } from "@nestjs/common";
 import {
   AddResourceDto,
-  GetResourcesFilterDto,
   PreviewUrlDto,
   ToggleDifficultyDto,
   ToggleEnergyDto,
@@ -72,20 +72,32 @@ export class LearningResourceController {
     if (result instanceof BaseError) toHttpException(result);
   }
   @Get()
-  async list() {
-    const result = await listFormattedResourcesLearning({
-      learningResourceRepository: this.learningResourceRepository,
-    });
-    return result;
-  }
+  async listResources(
+    @Query("page") page?: string,
+    @Query("pageSize") pageSize?: string,
+    @Query("q") q?: string,
+    @Query("difficulty") difficulty?: string,
+    @Query("energyLevel") energyLevel?: string,
+    @Query("status") status?: string,
+    @Query("mentalState") mentalState?: string,
+    @Query("resourceTypeId") resourceTypeId?: string,
+  ) {
+    const filters: ResourceFilters = {};
+    if (q) filters.q = q;
+    if (difficulty) filters.difficulty = difficulty;
+    if (energyLevel) filters.energyLevel = energyLevel;
+    if (status) filters.status = status;
+    if (mentalState) filters.mentalState = mentalState;
+    if (resourceTypeId) filters.resourceTypeId = resourceTypeId as UUID;
 
-  @Get("filter")
-  async filter(@Query() query: GetResourcesFilterDto) {
-    const result = await getResourcesByFilter(
+    return getResourcesByFilter(
       { learningResourceRepository: this.learningResourceRepository },
-      { filters: query },
+      {
+        filters,
+        page: page ? parseInt(page, 10) : 1,
+        pageSize: pageSize ? parseInt(pageSize, 10) : 20,
+      },
     );
-    return result;
   }
 
   @Get(":id")
