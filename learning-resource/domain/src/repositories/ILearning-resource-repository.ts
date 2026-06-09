@@ -1,11 +1,28 @@
 import type { UUID } from "domain-lib";
-import {
-  DifficultyType,
-  EnergyLevelType,
-  type LearningResource,
-  MentalStateType,
-  ResourceStatusType,
-} from "../entities/learning-resource.js";
+import type { LearningResource } from "../entities/learning-resource.js";
+
+export interface ResourceFilters {
+  topicIds?: UUID[];
+  difficulty?: string;
+  energyLevel?: string;
+  status?: string;
+  resourceTypeId?: UUID;
+  mentalState?: string;
+  q?: string;
+}
+
+export interface ResourcePagination {
+  page: number;
+  pageSize: number;
+}
+
+export interface PaginatedResources {
+  resources: LearningResource[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
 
 export interface ILearningResourceRepository {
   save(resource: LearningResource): Promise<void>;
@@ -13,10 +30,8 @@ export interface ILearningResourceRepository {
   delete(id: UUID): Promise<void>;
   findAll(): Promise<LearningResource[]>;
   findById(id: UUID): Promise<LearningResource | null>;
-  findByTopicIds(topicIds: UUID[]): Promise<LearningResource[]>;
-  findByDifficulty(difficulty: DifficultyType): Promise<LearningResource[]>;
-  findByEnergyLevel(energy: EnergyLevelType): Promise<LearningResource[]>;
-  findByStatus(status: ResourceStatusType): Promise<LearningResource[]>;
-  findByResourceTypeId(typeId: UUID): Promise<LearningResource[]>;
-  findByMentalState(mentalState: MentalStateType): Promise<LearningResource[]>;
+  findWithFiltersAndCount(
+    filters: ResourceFilters,
+    pagination: ResourcePagination,
+  ): Promise<PaginatedResources>;
 }
