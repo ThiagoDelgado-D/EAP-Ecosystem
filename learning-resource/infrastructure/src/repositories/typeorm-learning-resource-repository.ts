@@ -114,6 +114,8 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
     }
 
     const [entities, total] = await qb
+      .orderBy("lr.createdAt", "DESC")
+      .addOrderBy("lr.id", "ASC")
       .skip(skip)
       .take(pageSize)
       .getManyAndCount();
