@@ -110,7 +110,8 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
       qb.andWhere("lr.mentalState = :mentalState", { mentalState: filters.mentalState });
     }
     if (filters.topicIds?.length) {
-      qb.andWhere("topic.id IN (:...topicIds)", { topicIds: filters.topicIds });
+      qb.innerJoin("lr.topics", "filterTopic")
+        .andWhere("filterTopic.id IN (:...topicIds)", { topicIds: filters.topicIds });
     }
 
     const [entities, total] = await qb
