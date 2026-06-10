@@ -9,20 +9,23 @@ import { ResourceTypeHttpRepository } from '../../infrastructure/resource-type-h
 import { ResourceLibraryService } from '../../application/resource-library.service';
 import type {
   LearningResource,
-  LearningResourceFilter,
   DifficultyLevel,
   EnergyLevel,
   MentalStateType,
   ResourceStatus,
+  ResourceQueryParams,
 } from '../../domain/learning-resource.model';
 import type { ResourceType } from '../../domain/resource-type.model';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service.js';
-import { CommonModule } from '@angular/common';
 import { ToastService } from '@core/toast/toast.service';
 import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
 import type { EnumOption } from '@shared/components/enum-badge/enum-badge.types';
+import { PaginatorComponent } from '@shared/components/paginator/paginator.component';
 
 export type TabMode = 'all' | 'saved' | 'recent';
+
+const DEFAULT_PAGE_SIZE = 5;
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
 const TYPE_META: Record<string, { label: string; icon: string; color: string }> = {
   video: { label: 'Video', icon: 'video', color: 'bg-violet-950/70 text-violet-400' },
@@ -51,7 +54,7 @@ const FALLBACK_TYPE_META = {
     { provide: LearningResourceRepository, useClass: LearningResourceHttpRepository },
     { provide: ResourceTypeRepository, useClass: ResourceTypeHttpRepository },
   ],
-  imports: [CommonModule, FormsModule, RouterModule, EnumBadgeComponent],
+  imports: [FormsModule, RouterModule, EnumBadgeComponent, PaginatorComponent],
 })
 export class HomeComponent implements OnInit {
   private readonly service = inject(LearningResourceService);
@@ -63,11 +66,15 @@ export class HomeComponent implements OnInit {
   readonly resourceTypes = this.typeService.resourceTypes;
   readonly loading = this.service.loading;
   readonly error = this.service.error;
+  readonly currentPage = this.service.currentPage;
+  readonly totalPages = this.service.totalPages;
+  readonly total = this.service.total;
   private router = inject(Router);
 
   activeTab = signal<TabMode>('all');
   viewMode = signal<'grid' | 'list'>('grid');
   searchQuery = signal('');
+  pageSize = signal(DEFAULT_PAGE_SIZE);
 
   tabs: { value: TabMode; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -190,11 +197,7 @@ export class HomeComponent implements OnInit {
     }
   });
 
-  readonly displayedResources = computed<LearningResource[]>(() => {
-    const q = this.searchQuery().trim().toLowerCase();
-    if (!q) return this.tabFilteredResources();
-    return this.tabFilteredResources().filter((r) => r.title.toLowerCase().includes(q));
-  });
+  readonly displayedResources = this.tabFilteredResources;
 
   readonly pulseStats = computed(() => {
     const all = this.allResources();
@@ -216,33 +219,52 @@ export class HomeComponent implements OnInit {
   readonly hasActiveFilters = computed(
     () =>
       !!(
-        this.difficultyFilterValue ||
-        this.energyFilterValue ||
-        this.statusFilterValue ||
-        this.mentalStateFilterValue
+        this.difficultyFilterValue() ||
+        this.energyFilterValue() ||
+        this.statusFilterValue() ||
+        this.mentalStateFilterValue() ||
+        this.searchQuery().trim()
       ),
   );
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.service.loadAll(), this.typeService.loadAll()]);
+    const saved = sessionStorage.getItem('eap:resource-list-params');
+    sessionStorage.removeItem('eap:resource-list-params');
+    const { page, pageSize } = saved ? JSON.parse(saved) : { page: 1, pageSize: DEFAULT_PAGE_SIZE };
+    if (pageSize !== DEFAULT_PAGE_SIZE) this.pageSize.set(pageSize);
+    await Promise.all([
+      this.service.load({ page, pageSize }),
+      this.typeService.loadAll(),
+    ]);
   }
 
   setTab(tab: TabMode): void {
     this.activeTab.set(tab);
   }
 
-  async applyFilter(): Promise<void> {
-    const filter: LearningResourceFilter = {};
-    if (this.difficultyFilterValue()) filter.difficulty = this.difficultyFilterValue()!;
-    if (this.energyFilterValue()) filter.energyLevel = this.energyFilterValue()!;
-    if (this.statusFilterValue()) filter.status = this.statusFilterValue()!;
-    if (this.mentalStateFilterValue()) filter.mentalState = this.mentalStateFilterValue()!;
+  private buildCurrentParams(): ResourceQueryParams {
+    const params: ResourceQueryParams = { page: this.service.currentPage(), pageSize: this.pageSize() };
+    if (this.difficultyFilterValue()) params.difficulty = this.difficultyFilterValue()!;
+    if (this.energyFilterValue()) params.energyLevel = this.energyFilterValue()!;
+    if (this.statusFilterValue()) params.status = this.statusFilterValue()!;
+    if (this.mentalStateFilterValue()) params.mentalState = this.mentalStateFilterValue()!;
+    if (this.searchQuery().trim()) params.q = this.searchQuery().trim();
+    return params;
+  }
 
-    if (Object.keys(filter).length > 0) {
-      await this.service.loadByFilter(filter);
-    } else {
-      await this.service.loadAll();
-    }
+  async applyFilter(): Promise<void> {
+    const params: ResourceQueryParams = { page: 1, pageSize: this.pageSize() };
+    if (this.difficultyFilterValue()) params.difficulty = this.difficultyFilterValue()!;
+    if (this.energyFilterValue()) params.energyLevel = this.energyFilterValue()!;
+    if (this.statusFilterValue()) params.status = this.statusFilterValue()!;
+    if (this.mentalStateFilterValue()) params.mentalState = this.mentalStateFilterValue()!;
+    if (this.searchQuery().trim()) params.q = this.searchQuery().trim();
+    await this.service.load(params);
+  }
+
+  async clearSearch(): Promise<void> {
+    this.searchQuery.set('');
+    await this.applyFilter();
   }
 
   async clearFilters(): Promise<void> {
@@ -250,11 +272,26 @@ export class HomeComponent implements OnInit {
     this.energyFilterValue.set(null);
     this.statusFilterValue.set(null);
     this.mentalStateFilterValue.set(null);
-    await this.service.loadAll();
+    this.searchQuery.set('');
+    await this.service.load({ page: 1, pageSize: this.pageSize() });
+  }
+
+  async onPageSizeChange(size: number): Promise<void> {
+    this.pageSize.set(size);
+    await this.service.load({ ...this.buildCurrentParams(), page: 1, pageSize: size });
+  }
+
+  async goToPage(page: number): Promise<void> {
+    const current = this.buildCurrentParams();
+    await this.service.load({ ...current, page });
   }
 
   onCardClick(resource: LearningResource): void {
     this.libraryService.trackRecent(resource.id);
+    sessionStorage.setItem(
+      'eap:resource-list-params',
+      JSON.stringify({ page: this.service.currentPage(), pageSize: this.pageSize() }),
+    );
     this.router.navigate(['/resources', resource.id]);
   }
 
