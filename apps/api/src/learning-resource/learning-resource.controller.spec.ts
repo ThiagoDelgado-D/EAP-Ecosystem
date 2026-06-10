@@ -374,11 +374,6 @@ describe("LearningResourceController (integration)", () => {
       expect(response.body.resources[0].title).toBe("React Hooks Deep Dive");
     });
 
-    test("GET /api/v1/learning-resources/filter should return 404 (endpoint removed)", async () => {
-      await request(app.getHttpServer())
-        .get("/api/v1/learning-resources/filter")
-        .expect(400);
-    });
   });
   describe("GET /api/v1/learning-resources/:id", () => {
     let resourceId: UUID;

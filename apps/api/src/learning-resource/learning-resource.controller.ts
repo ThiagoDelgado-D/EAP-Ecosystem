@@ -30,7 +30,6 @@ import {
   deleteResource,
   GetResourceById,
   getResourcesByFilter,
-  listFormattedResourcesLearning,
   previewUrl,
   toggleResourceDifficulty,
   toggleResourceEnergy,
