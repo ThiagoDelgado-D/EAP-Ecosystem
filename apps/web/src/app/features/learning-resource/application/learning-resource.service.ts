@@ -116,6 +116,17 @@ export class LearningResourceService {
     }
   }
 
+  private patchResourceInCache(id: string, patch: Partial<LearningResource>): void {
+    for (const [key, cached] of this.queryCache.entries()) {
+      if (cached.resources.some((r) => r.id === id)) {
+        this.queryCache.set(key, {
+          ...cached,
+          resources: cached.resources.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+        });
+      }
+    }
+  }
+
   private async optimisticToggle(
     id: string,
     patch: Partial<LearningResource>,
@@ -128,6 +139,7 @@ export class LearningResourceService {
 
     try {
       await apiCall();
+      this.patchResourceInCache(id, patch);
     } catch (err) {
       this.resources.update((rs) => rs.map((r) => (r.id === id ? prev : r)));
       throw err;
