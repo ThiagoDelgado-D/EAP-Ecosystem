@@ -58,3 +58,22 @@ export interface UpdateResourcePayload {
   mentalState?: MentalStateType;
   notes?: string;
 }
+
+export interface PaginatedResourcesResponse {
+  resources: LearningResource[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface ResourceQueryParams {
+  page?: number;
+  pageSize?: number;
+  q?: string;
+  difficulty?: DifficultyLevel;
+  energyLevel?: EnergyLevel;
+  status?: ResourceStatus;
+  mentalState?: MentalStateType;
+  resourceTypeId?: string;
+}

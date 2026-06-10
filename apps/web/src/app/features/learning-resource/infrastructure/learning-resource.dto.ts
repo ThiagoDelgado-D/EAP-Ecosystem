@@ -1,4 +1,3 @@
-// Shape returned by GET /learning-resources (list endpoint)
 export interface LearningResourceDto {
   id: string;
   title: string;
@@ -9,7 +8,6 @@ export interface LearningResourceDto {
   topicIds: string[];
 }
 
-// Shape returned by GET /learning-resources/:id
 export interface LearningResourceByIdDto {
   resourceId: string;
   title: string;
@@ -29,4 +27,12 @@ export interface LearningResourceByIdDto {
 
 export interface LearningResourceListDto {
   resources: LearningResourceDto[];
+}
+
+export interface PaginatedResourcesDto {
+  resources: LearningResourceDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
