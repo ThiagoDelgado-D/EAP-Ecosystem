@@ -30,6 +30,7 @@ import {
   deleteResource,
   GetResourceById,
   getResourcesByFilter,
+  getSuggestions,
   previewUrl,
   toggleResourceDifficulty,
   toggleResourceEnergy,
@@ -100,6 +101,14 @@ export class LearningResourceController {
         page: Number.isNaN(parsedPage) ? 1 : parsedPage,
         pageSize: Number.isNaN(parsedPageSize) ? 20 : parsedPageSize,
       },
+    );
+  }
+
+  @Get("suggestions")
+  async suggestions(@Query("q") q?: string) {
+    return getSuggestions(
+      { learningResourceRepository: this.learningResourceRepository },
+      q ?? "",
     );
   }
 
