@@ -230,7 +230,13 @@ export class HomeComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const saved = sessionStorage.getItem('eap:resource-list-params');
     sessionStorage.removeItem('eap:resource-list-params');
-    const { page, pageSize } = saved ? JSON.parse(saved) : { page: 1, pageSize: DEFAULT_PAGE_SIZE };
+    let page = 1;
+    let pageSize = DEFAULT_PAGE_SIZE;
+    try {
+      if (saved) ({ page, pageSize } = JSON.parse(saved));
+    } catch {
+      // malformed entry — fall back to defaults
+    }
     if (pageSize !== DEFAULT_PAGE_SIZE) this.pageSize.set(pageSize);
     await Promise.all([
       this.service.load({ page, pageSize }),
