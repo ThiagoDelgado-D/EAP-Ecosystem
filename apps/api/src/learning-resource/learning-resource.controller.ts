@@ -40,6 +40,7 @@ import {
 } from "@learning-resource/application";
 import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import { toHttpException } from "../errors/domain-error-mapper.js";
+import { isUUID } from "class-validator";
 
 @Controller("api/v1/learning-resources")
 export class LearningResourceController {
@@ -87,7 +88,7 @@ export class LearningResourceController {
     if (energyLevel) filters.energyLevel = energyLevel;
     if (status) filters.status = status;
     if (mentalState) filters.mentalState = mentalState;
-    if (resourceTypeId) filters.resourceTypeId = resourceTypeId as UUID;
+    if (resourceTypeId && isUUID(resourceTypeId)) filters.resourceTypeId = resourceTypeId as UUID;
 
     const parsedPage = parseInt(page ?? "", 10);
     const parsedPageSize = parseInt(pageSize ?? "", 10);

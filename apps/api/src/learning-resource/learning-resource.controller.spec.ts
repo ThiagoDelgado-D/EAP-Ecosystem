@@ -255,6 +255,16 @@ describe("LearningResourceController (integration)", () => {
       expect(response.body.pageSize).toBe(20);
       expect(Number.isNaN(response.body.pageSize)).toBe(false);
     });
+
+    test("Should ignore resourceTypeId filter when value is not a valid UUID", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ resourceTypeId: "not-a-uuid" })
+        .expect(200);
+
+      expect(response.body.resources).toBeDefined();
+      expect(Number.isNaN(response.body.total)).toBe(false);
+    });
   });
 
   describe("GET /api/v1/learning-resources — filtering", () => {
