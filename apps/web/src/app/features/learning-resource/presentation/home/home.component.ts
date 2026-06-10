@@ -233,7 +233,16 @@ export class HomeComponent implements OnInit {
     let page = 1;
     let pageSize = DEFAULT_PAGE_SIZE;
     try {
-      if (saved) ({ page, pageSize } = JSON.parse(saved));
+      if (saved) {
+        const state = JSON.parse(saved);
+        page = state.page ?? 1;
+        pageSize = state.pageSize ?? DEFAULT_PAGE_SIZE;
+        if (state.difficulty) this.difficultyFilterValue.set(state.difficulty);
+        if (state.energyLevel) this.energyFilterValue.set(state.energyLevel);
+        if (state.status) this.statusFilterValue.set(state.status);
+        if (state.mentalState) this.mentalStateFilterValue.set(state.mentalState);
+        if (state.q) this.searchQuery.set(state.q);
+      }
     } catch {
       // malformed entry — fall back to defaults
     }
@@ -296,7 +305,15 @@ export class HomeComponent implements OnInit {
     this.libraryService.trackRecent(resource.id);
     sessionStorage.setItem(
       'eap:resource-list-params',
-      JSON.stringify({ page: this.service.currentPage(), pageSize: this.pageSize() }),
+      JSON.stringify({
+        page: this.service.currentPage(),
+        pageSize: this.pageSize(),
+        difficulty: this.difficultyFilterValue(),
+        energyLevel: this.energyFilterValue(),
+        status: this.statusFilterValue(),
+        mentalState: this.mentalStateFilterValue(),
+        q: this.searchQuery(),
+      }),
     );
     this.router.navigate(['/resources', resource.id]);
   }
