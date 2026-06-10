@@ -90,12 +90,15 @@ export class LearningResourceController {
     if (mentalState) filters.mentalState = mentalState;
     if (resourceTypeId) filters.resourceTypeId = resourceTypeId as UUID;
 
+    const parsedPage = parseInt(page ?? "", 10);
+    const parsedPageSize = parseInt(pageSize ?? "", 10);
+
     return getResourcesByFilter(
       { learningResourceRepository: this.learningResourceRepository },
       {
         filters,
-        page: page ? parseInt(page, 10) : 1,
-        pageSize: pageSize ? parseInt(pageSize, 10) : 20,
+        page: Number.isNaN(parsedPage) ? 1 : parsedPage,
+        pageSize: Number.isNaN(parsedPageSize) ? 20 : parsedPageSize,
       },
     );
   }

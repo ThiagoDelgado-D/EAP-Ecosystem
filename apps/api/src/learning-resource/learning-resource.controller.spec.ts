@@ -235,6 +235,26 @@ describe("LearningResourceController (integration)", () => {
       expect(response.body.resources).toHaveLength(1);
       expect(response.body.page).toBe(2);
     });
+
+    test("Should fall back to page=1 when page param is non-numeric", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ page: "abc" })
+        .expect(200);
+
+      expect(response.body.page).toBe(1);
+      expect(Number.isNaN(response.body.page)).toBe(false);
+    });
+
+    test("Should fall back to pageSize=20 when pageSize param is non-numeric", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ pageSize: "xyz" })
+        .expect(200);
+
+      expect(response.body.pageSize).toBe(20);
+      expect(Number.isNaN(response.body.pageSize)).toBe(false);
+    });
   });
 
   describe("GET /api/v1/learning-resources — filtering", () => {
