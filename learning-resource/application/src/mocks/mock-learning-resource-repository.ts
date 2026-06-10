@@ -105,6 +105,14 @@ export function mockLearningResourceRepository(
       };
     },
 
+    async findSimilarTitles(q: string, limit = 5): Promise<string[]> {
+      const lower = q.toLowerCase();
+      return this.learningResources
+        .filter((r) => r.title.toLowerCase().includes(lower))
+        .map((r) => r.title)
+        .slice(0, limit);
+    },
+
     reset(): void {
       this.learningResources = [];
     },

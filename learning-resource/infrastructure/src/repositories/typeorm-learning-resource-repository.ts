@@ -130,6 +130,19 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
     };
   }
 
+  async findSimilarTitles(q: string, limit = 5): Promise<string[]> {
+    const results = await this.repository.query(
+      `SELECT title, similarity(lower(title), lower($1)) AS sim
+       FROM learning_resources
+       WHERE similarity(lower(title), lower($1)) > 0.15
+          OR lower(title) LIKE lower($2)
+       ORDER BY sim DESC
+       LIMIT $3`,
+      [q, `%${q}%`, limit],
+    );
+    return results.map((r: { title: string }) => r.title);
+  }
+
   private toDomain(entity: LearningResourceEntity): LearningResource {
     return {
       id: entity.id as UUID,
