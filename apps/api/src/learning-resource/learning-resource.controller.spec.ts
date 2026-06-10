@@ -157,14 +157,19 @@ describe("LearningResourceController (integration)", () => {
     });
   });
   describe("GET /api/v1/learning-resources", () => {
-    test("Should return empty list when no resources exist", async () => {
-      await request(app.getHttpServer())
+    test("Should return paginated shape when no resources exist", async () => {
+      const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
-        .expect(200)
-        .expect({ resources: [] });
+        .expect(200);
+
+      expect(response.body.resources).toEqual([]);
+      expect(response.body.total).toBe(0);
+      expect(response.body.page).toBe(1);
+      expect(response.body.pageSize).toBe(20);
+      expect(response.body.totalPages).toBe(0);
     });
 
-    test("Should return list with existing resources", async () => {
+    test("Should return paginated shape with existing resources", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
         .send({
@@ -180,10 +185,89 @@ describe("LearningResourceController (integration)", () => {
         .expect(200);
 
       expect(response.body.resources).toHaveLength(1);
+      expect(response.body.total).toBe(1);
+      expect(response.body.page).toBe(1);
+      expect(response.body.totalPages).toBe(1);
       expect(response.body.resources[0].title).toBe("TypeScript Advanced");
     });
+
+    test("Should respect pageSize param", async () => {
+      for (let i = 0; i < 3; i++) {
+        await request(app.getHttpServer())
+          .post("/api/v1/learning-resources")
+          .send({
+            title: `Resource ${i}`,
+            resourceTypeId,
+            topicIds: [topicId],
+            difficulty: "low",
+            estimatedDurationMinutes: 10,
+          });
+      }
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ pageSize: 2 })
+        .expect(200);
+
+      expect(response.body.resources).toHaveLength(2);
+      expect(response.body.total).toBe(3);
+      expect(response.body.totalPages).toBe(2);
+    });
+
+    test("Should respect page param", async () => {
+      for (let i = 0; i < 3; i++) {
+        await request(app.getHttpServer())
+          .post("/api/v1/learning-resources")
+          .send({
+            title: `Resource ${i}`,
+            resourceTypeId,
+            topicIds: [topicId],
+            difficulty: "low",
+            estimatedDurationMinutes: 10,
+          });
+      }
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ page: 2, pageSize: 2 })
+        .expect(200);
+
+      expect(response.body.resources).toHaveLength(1);
+      expect(response.body.page).toBe(2);
+    });
+
+    test("Should fall back to page=1 when page param is non-numeric", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ page: "abc" })
+        .expect(200);
+
+      expect(response.body.page).toBe(1);
+      expect(Number.isNaN(response.body.page)).toBe(false);
+    });
+
+    test("Should fall back to pageSize=20 when pageSize param is non-numeric", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ pageSize: "xyz" })
+        .expect(200);
+
+      expect(response.body.pageSize).toBe(20);
+      expect(Number.isNaN(response.body.pageSize)).toBe(false);
+    });
+
+    test("Should ignore resourceTypeId filter when value is not a valid UUID", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ resourceTypeId: "not-a-uuid" })
+        .expect(200);
+
+      expect(response.body.resources).toBeDefined();
+      expect(Number.isNaN(response.body.total)).toBe(false);
+    });
   });
-  describe("GET /api/v1/learning-resources/filter", () => {
+
+  describe("GET /api/v1/learning-resources — filtering", () => {
     beforeEach(async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
@@ -243,46 +327,63 @@ describe("LearningResourceController (integration)", () => {
 
     test("Should return all resources when no filters provided", async () => {
       const response = await request(app.getHttpServer())
-        .get("/api/v1/learning-resources/filter")
+        .get("/api/v1/learning-resources")
         .expect(200);
 
       expect(response.body.total).toBe(5);
+      expect(response.body.resources).toHaveLength(5);
     });
 
     test("Should filter by difficulty", async () => {
       const response = await request(app.getHttpServer())
-        .get("/api/v1/learning-resources/filter")
+        .get("/api/v1/learning-resources")
         .query({ difficulty: "high" })
         .expect(200);
 
       expect(response.body.total).toBe(2);
+      expect(response.body.resources.every((r: { difficulty: string }) => r.difficulty === "high")).toBe(true);
+    });
+
+    test("Should filter by status", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ status: "completed" })
+        .expect(200);
+
+      expect(response.body.total).toBe(2);
+      expect(response.body.resources.every((r: { status: string }) => r.status === "completed")).toBe(true);
+    });
+
+    test("Should filter by q (title search, case-insensitive)", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .query({ q: "typescript" })
+        .expect(200);
+
+      expect(response.body.total).toBe(1);
       expect(response.body.resources[0].title).toBe("TypeScript Advanced");
     });
 
-    test("Should filter by topicIds as array", async () => {
+    test("Should return empty when q matches nothing", async () => {
       const response = await request(app.getHttpServer())
-        .get("/api/v1/learning-resources/filter")
-        .query({ topicIds: [topicId] })
+        .get("/api/v1/learning-resources")
+        .query({ q: "nonexistentxyz" })
         .expect(200);
 
-      expect(response.body.total).toBe(5);
+      expect(response.body.total).toBe(0);
+      expect(response.body.resources).toHaveLength(0);
     });
 
-    test("Should filter by topicIds as single string (coercion)", async () => {
+    test("Should combine filters (difficulty + status)", async () => {
       const response = await request(app.getHttpServer())
-        .get("/api/v1/learning-resources/filter")
-        .query({ topicIds: topicId })
+        .get("/api/v1/learning-resources")
+        .query({ difficulty: "medium", status: "completed" })
         .expect(200);
 
-      expect(response.body.total).toBe(5);
+      expect(response.body.total).toBe(1);
+      expect(response.body.resources[0].title).toBe("React Hooks Deep Dive");
     });
 
-    test("Should return 400 when difficulty is invalid", async () => {
-      await request(app.getHttpServer())
-        .get("/api/v1/learning-resources/filter")
-        .query({ difficulty: "INVALID" })
-        .expect(400);
-    });
   });
   describe("GET /api/v1/learning-resources/:id", () => {
     let resourceId: UUID;

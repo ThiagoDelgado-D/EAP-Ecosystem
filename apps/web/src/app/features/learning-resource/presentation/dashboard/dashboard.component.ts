@@ -75,10 +75,12 @@ export class DashboardComponent implements OnInit {
   }
 
   private async applyFilter(): Promise<void> {
-    await this.resourceService.loadByFilter({
-      energyLevel: this.selectedEnergy(),
-      mentalState: this.selectedMentalState(),
+    await this.resourceService.load({
+      energyLevel: this.selectedEnergy() ?? undefined,
+      mentalState: this.selectedMentalState() ?? undefined,
       status: 'Pending',
+      page: 1,
+      pageSize: 10,
     });
   }
 }

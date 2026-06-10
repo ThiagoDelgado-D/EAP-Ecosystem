@@ -2,10 +2,9 @@ import type { UUID } from "domain-lib";
 import type {
   ILearningResourceRepository,
   LearningResource,
-  MentalStateType,
-  DifficultyType,
-  EnergyLevelType,
-  ResourceStatusType,
+  PaginatedResources,
+  ResourceFilters,
+  ResourcePagination,
 } from "@learning-resource/domain";
 
 export interface MockedLearningResourceRepository extends ILearningResourceRepository {
@@ -61,42 +60,49 @@ export function mockLearningResourceRepository(
       }
     },
 
-    async findByTopicIds(topicIds: UUID[]): Promise<LearningResource[]> {
-      return this.learningResources.filter((r) =>
-        r.topicIds.some((topicId) => topicIds.includes(topicId)),
-      );
-    },
+    async findWithFiltersAndCount(
+      filters: ResourceFilters,
+      pagination: ResourcePagination,
+    ): Promise<PaginatedResources> {
+      const { page, pageSize } = pagination;
+      let results = [...this.learningResources];
 
-    async findByDifficulty(
-      difficulty: DifficultyType,
-    ): Promise<LearningResource[]> {
-      return this.learningResources.filter((r) => r.difficulty === difficulty);
-    },
+      if (filters.q) {
+        const q = filters.q.toLowerCase();
+        results = results.filter((r) => r.title.toLowerCase().includes(q));
+      }
+      if (filters.difficulty) {
+        results = results.filter((r) => r.difficulty === filters.difficulty);
+      }
+      if (filters.energyLevel) {
+        results = results.filter((r) => r.energyLevel === filters.energyLevel);
+      }
+      if (filters.status) {
+        results = results.filter((r) => r.status === filters.status);
+      }
+      if (filters.resourceTypeId) {
+        results = results.filter((r) => r.typeId === filters.resourceTypeId);
+      }
+      if (filters.mentalState) {
+        results = results.filter((r) => r.mentalState === filters.mentalState);
+      }
+      if (filters.topicIds?.length) {
+        results = results.filter((r) =>
+          r.topicIds.some((id) => filters.topicIds!.includes(id as UUID)),
+        );
+      }
 
-    async findByEnergyLevel(
-      energyLevel: EnergyLevelType,
-    ): Promise<LearningResource[]> {
-      return this.learningResources.filter(
-        (r) => r.energyLevel === energyLevel,
-      );
-    },
+      const total = results.length;
+      const skip = (page - 1) * pageSize;
+      const resources = results.slice(skip, skip + pageSize);
 
-    async findByStatus(
-      status: ResourceStatusType,
-    ): Promise<LearningResource[]> {
-      return this.learningResources.filter((r) => r.status === status);
-    },
-
-    async findByResourceTypeId(typeId: UUID): Promise<LearningResource[]> {
-      return this.learningResources.filter((r) => r.typeId === typeId);
-    },
-
-    async findByMentalState(
-      mentalState: MentalStateType,
-    ): Promise<LearningResource[]> {
-      return this.learningResources.filter(
-        (r) => r.mentalState === mentalState,
-      );
+      return {
+        resources,
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      };
     },
 
     reset(): void {
