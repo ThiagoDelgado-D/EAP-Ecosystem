@@ -35,7 +35,7 @@ export class LearningResourceService {
     const sorted = Object.entries(params)
       .filter(([, v]) => v !== undefined && v !== null && v !== '')
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, v]) => `${k}=${v}`)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
       .join('&');
     return sorted || 'default';
   }
