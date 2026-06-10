@@ -26,7 +26,7 @@ import { FormsModule } from '@angular/forms';
             aria-label="Items per page"
           >
             @for (size of pageSizeOptions; track size) {
-              <option [value]="size">{{ size }} per page</option>
+              <option [ngValue]="size">{{ size }} per page</option>
             }
           </select>
         </div>
