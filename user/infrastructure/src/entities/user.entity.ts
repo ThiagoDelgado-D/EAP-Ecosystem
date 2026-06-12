@@ -35,6 +35,21 @@ export class UserEntity {
   @Column({ type: "text", array: true, default: "{}" })
   widgetConfig!: string[];
 
+  @Column({ type: "varchar", length: 10, default: "en" })
+  language!: string;
+
+  @Column({ type: "varchar", length: 50, default: "UTC" })
+  timezone!: string;
+
+  @Column({ type: "varchar", length: 10, default: "monday" })
+  startOfWeek!: string;
+
+  @Column({ default: false })
+  reduceMotion!: boolean;
+
+  @Column({ default: false })
+  compactMode!: boolean;
+
   @Column({ type: "text", nullable: true })
   bio!: string | null;
 
