@@ -108,9 +108,76 @@ describe("getSuggestions", () => {
   });
 
   test("Should respect the default limit of 5", async () => {
-    const result = await getSuggestions({ learningResourceRepository }, "a");
+    const cryptoService = mockCryptoService();
+    const extraResources: LearningResource[] = [
+      {
+        id: await cryptoService.generateUUID(),
+        title: "TypeScript Design Patterns",
+        typeId: await cryptoService.generateUUID(),
+        topicIds: [],
+        difficulty: DifficultyType.HIGH,
+        energyLevel: EnergyLevelType.HIGH,
+        status: ResourceStatusType.PENDING,
+        estimatedDuration: { value: 90, isEstimated: true },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: await cryptoService.generateUUID(),
+        title: "TypeScript with React",
+        typeId: await cryptoService.generateUUID(),
+        topicIds: [],
+        difficulty: DifficultyType.MEDIUM,
+        energyLevel: EnergyLevelType.MEDIUM,
+        status: ResourceStatusType.PENDING,
+        estimatedDuration: { value: 75, isEstimated: true },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: await cryptoService.generateUUID(),
+        title: "TypeScript Compiler Internals",
+        typeId: await cryptoService.generateUUID(),
+        topicIds: [],
+        difficulty: DifficultyType.HIGH,
+        energyLevel: EnergyLevelType.HIGH,
+        status: ResourceStatusType.PENDING,
+        estimatedDuration: { value: 180, isEstimated: true },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: await cryptoService.generateUUID(),
+        title: "Functional Programming in TypeScript",
+        typeId: await cryptoService.generateUUID(),
+        topicIds: [],
+        difficulty: DifficultyType.HIGH,
+        energyLevel: EnergyLevelType.MEDIUM,
+        status: ResourceStatusType.PENDING,
+        estimatedDuration: { value: 120, isEstimated: true },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: await cryptoService.generateUUID(),
+        title: "TypeScript Monorepos with Nx",
+        typeId: await cryptoService.generateUUID(),
+        topicIds: [],
+        difficulty: DifficultyType.MEDIUM,
+        energyLevel: EnergyLevelType.LOW,
+        status: ResourceStatusType.PENDING,
+        estimatedDuration: { value: 60, isEstimated: true },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+    for (const r of extraResources) {
+      await learningResourceRepository.save(r);
+    }
 
-    expect(result.suggestions.length).toBeLessThanOrEqual(5);
+    const result = await getSuggestions({ learningResourceRepository }, "TypeScript");
+
+    expect(result.suggestions).toHaveLength(5);
   });
 
   test("Should trim whitespace from query before searching", async () => {
