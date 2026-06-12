@@ -12,6 +12,6 @@ export class EnablePgTrgm1778600000000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX IF EXISTS idx_lr_title_trgm ON learning_resources`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_lr_title_trgm`);
   }
 }
