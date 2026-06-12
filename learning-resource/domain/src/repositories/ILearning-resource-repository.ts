@@ -34,4 +34,5 @@ export interface ILearningResourceRepository {
     filters: ResourceFilters,
     pagination: ResourcePagination,
   ): Promise<PaginatedResources>;
+  findSimilarTitles(q: string, limit?: number): Promise<string[]>;
 }

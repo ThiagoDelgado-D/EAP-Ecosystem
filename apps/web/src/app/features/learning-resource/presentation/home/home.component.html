@@ -573,6 +573,25 @@
     }
   }
 
+  @if (!loading() && !error() && total() === 0 && suggestions().length > 0) {
+    <div class="flex flex-col items-center gap-3 py-4">
+      <p class="text-xs text-slate-500">
+        ¿Quisiste decir…?
+      </p>
+      <div class="flex flex-wrap justify-center gap-2">
+        @for (suggestion of suggestions(); track suggestion) {
+          <button
+            type="button"
+            class="text-xs px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-violet-400 hover:border-violet-500 hover:bg-slate-700 transition-colors"
+            (click)="applySuggestion(suggestion)"
+          >
+            {{ suggestion }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
   @if (!loading() && !error() && total() > 0) {
     <app-paginator
       [currentPage]="currentPage()"

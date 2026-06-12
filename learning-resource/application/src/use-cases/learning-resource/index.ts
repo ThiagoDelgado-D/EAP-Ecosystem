@@ -5,3 +5,4 @@ export * from "./get-resource-by-id.js";
 export * from "./get-resources-by-filter.js";
 export * from "./edit-resource.js";
 export * from "./preview-url.js";
+export * from "./get-suggestions.js";

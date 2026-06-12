@@ -1,6 +1,9 @@
 import { Component, inject, OnInit, computed, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { API_CONFIG } from '@core/config/api.config';
 import { LearningResourceService } from '../../application/learning-resource.service';
 import { LearningResourceRepository } from '../../domain/learning-resource.repository';
 import { ResourceTypeRepository } from '../../domain/resource-type.repository';
@@ -60,6 +63,7 @@ export class HomeComponent implements OnInit {
   private readonly service = inject(LearningResourceService);
   private readonly typeService = inject(ResourceTypeService);
   private readonly toastService = inject(ToastService);
+  private readonly http = inject(HttpClient);
   readonly libraryService = inject(ResourceLibraryService);
 
   readonly allResources = this.service.resources;
@@ -75,6 +79,7 @@ export class HomeComponent implements OnInit {
   viewMode = signal<'grid' | 'list'>('grid');
   searchQuery = signal('');
   pageSize = signal(DEFAULT_PAGE_SIZE);
+  readonly suggestions = signal<string[]>([]);
 
   tabs: { value: TabMode; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -99,6 +104,7 @@ export class HomeComponent implements OnInit {
   ];
 
   readonly toggleLoadingId = signal<string | null>(null);
+  private suggestionsSeq = 0;
 
   readonly difficultyOptions: EnumOption<DifficultyLevel>[] = [
     {
@@ -275,10 +281,38 @@ export class HomeComponent implements OnInit {
     if (this.mentalStateFilterValue()) params.mentalState = this.mentalStateFilterValue()!;
     if (this.searchQuery().trim()) params.q = this.searchQuery().trim();
     await this.service.load(params);
+
+    if (this.service.total() === 0 && params.q) {
+      const seq = ++this.suggestionsSeq;
+      try {
+        const result = await firstValueFrom(
+          this.http.get<{ suggestions: string[] }>(
+            `${API_CONFIG.baseUrl}/learning-resources/suggestions`,
+            { params: { q: params.q } },
+          ),
+        );
+        if (seq === this.suggestionsSeq) {
+          this.suggestions.set(result.suggestions);
+        }
+      } catch {
+        if (seq === this.suggestionsSeq) {
+          this.suggestions.set([]);
+        }
+      }
+    } else {
+      this.suggestions.set([]);
+    }
+  }
+
+  async applySuggestion(suggestion: string): Promise<void> {
+    this.searchQuery.set(suggestion);
+    this.suggestions.set([]);
+    await this.applyFilter();
   }
 
   async clearSearch(): Promise<void> {
     this.searchQuery.set('');
+    this.suggestions.set([]);
     await this.applyFilter();
   }
 
@@ -288,6 +322,7 @@ export class HomeComponent implements OnInit {
     this.statusFilterValue.set(null);
     this.mentalStateFilterValue.set(null);
     this.searchQuery.set('');
+    this.suggestions.set([]);
     await this.service.load({ page: 1, pageSize: this.pageSize() });
   }
 
