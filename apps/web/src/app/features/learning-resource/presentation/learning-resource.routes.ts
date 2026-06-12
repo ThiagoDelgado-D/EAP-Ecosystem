@@ -6,7 +6,7 @@ export const learningResourceRoutes: Routes = [
     path: '',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('../../../core/layout/shell-layout.component').then((m) => m.ShellLayoutComponent),
+      import('@core/layout/shell-layout.component.js').then((m) => m.ShellLayoutComponent),
     children: [
       {
         path: '',
@@ -70,9 +70,7 @@ export const learningResourceRoutes: Routes = [
       {
         path: 'settings',
         loadChildren: () =>
-          import('@features/settings/presentation/settings.routes').then(
-            (m) => m.settingsRoutes,
-          ),
+          import('@features/settings/presentation/settings.routes').then((m) => m.settingsRoutes),
       },
     ],
   },
