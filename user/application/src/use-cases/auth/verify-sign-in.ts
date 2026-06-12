@@ -7,6 +7,7 @@ import type {
   Session,
   User,
 } from "@user/domain";
+import { DEFAULT_APPEARANCE } from "@user/domain";
 import type { CryptoService, EmailService, JwtService } from "domain-lib";
 import { createValidationSchema, emailField, stringField } from "domain-lib";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
@@ -96,6 +97,7 @@ export const verifySignIn = async (
       onboardingCompleted: false,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
