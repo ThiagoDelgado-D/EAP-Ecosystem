@@ -5,6 +5,7 @@ import { mockIdentityRepository } from "../../mocks/mock-identity-repository.js"
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { handleGoogleOAuth, GoogleOAuthError } from "./handle-google-oauth.js";
 import type { Identity, User } from "@user/domain";
+import { DEFAULT_APPEARANCE } from "@user/domain";
 
 const GOOGLE_PROFILE = {
   id: "google_sub_123",
@@ -120,6 +121,7 @@ describe("handleGoogleOAuth", () => {
       onboardingCompleted: true,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -155,6 +157,7 @@ describe("handleGoogleOAuth", () => {
       onboardingCompleted: true,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -195,6 +198,7 @@ describe("handleGoogleOAuth", () => {
       onboardingCompleted: true,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -236,6 +240,7 @@ describe("handleGoogleOAuth", () => {
       onboardingCompleted: true,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -514,6 +519,7 @@ describe("handleGoogleOAuth", () => {
       onboardingCompleted: false,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -612,6 +618,15 @@ describe("handleGoogleOAuth", () => {
     expect(sessionRepository.count()).toBe(0);
   });
 
+  test("Should create a new user with DEFAULT_APPEARANCE when no account exists", async () => {
+    stubGoogleSuccess();
+
+    await handleGoogleOAuth(deps(), GOOGLE_CONFIG, { code: "auth_code" });
+
+    const user = userRepository.users[0];
+    expect(user.appearance).toEqual(DEFAULT_APPEARANCE);
+  });
+
   test("Should recover and sign in when a concurrent process linked the Google Identity before the save completed", async () => {
     stubGoogleSuccess();
 
@@ -625,6 +640,7 @@ describe("handleGoogleOAuth", () => {
       onboardingCompleted: false,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
