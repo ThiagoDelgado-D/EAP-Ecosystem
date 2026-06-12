@@ -104,6 +104,7 @@ export class HomeComponent implements OnInit {
   ];
 
   readonly toggleLoadingId = signal<string | null>(null);
+  private suggestionsSeq = 0;
 
   readonly difficultyOptions: EnumOption<DifficultyLevel>[] = [
     {
@@ -282,6 +283,7 @@ export class HomeComponent implements OnInit {
     await this.service.load(params);
 
     if (this.service.total() === 0 && params.q) {
+      const seq = ++this.suggestionsSeq;
       try {
         const result = await firstValueFrom(
           this.http.get<{ suggestions: string[] }>(
@@ -289,9 +291,13 @@ export class HomeComponent implements OnInit {
             { params: { q: params.q } },
           ),
         );
-        this.suggestions.set(result.suggestions);
+        if (seq === this.suggestionsSeq) {
+          this.suggestions.set(result.suggestions);
+        }
       } catch {
-        this.suggestions.set([]);
+        if (seq === this.suggestionsSeq) {
+          this.suggestions.set([]);
+        }
       }
     } else {
       this.suggestions.set([]);
