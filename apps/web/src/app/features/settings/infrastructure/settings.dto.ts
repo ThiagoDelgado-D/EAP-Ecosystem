@@ -9,6 +9,16 @@ export interface WidgetConfigDto {
   widgetConfig: WidgetKey[];
 }
 
+export interface AppearanceDto {
+  appearance: {
+    language: string;
+    timezone: string;
+    startOfWeek: string;
+    reduceMotion: boolean;
+    compactMode: boolean;
+  };
+}
+
 export interface SessionDto {
   id: string;
   userAgent: string | null;
