@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import type { FeatureKey } from '@features/auth/domain/auth.model';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
-import type { WidgetKey } from '@features/settings/domain/settings.model';
+import type { UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
 
 @Injectable()
 export class PreferencesService {
@@ -9,9 +9,13 @@ export class PreferencesService {
 
   readonly featureConfig = signal<FeatureKey[]>([]);
   readonly widgetConfig = signal<WidgetKey[]>([]);
+  readonly appearance = signal<UserAppearance | null>(null);
   private readonly _loadingFeature = signal(false);
   private readonly _loadingWidget = signal(false);
-  readonly loading = computed(() => this._loadingFeature() || this._loadingWidget());
+  private readonly _loadingAppearance = signal(false);
+  readonly loading = computed(
+    () => this._loadingFeature() || this._loadingWidget() || this._loadingAppearance(),
+  );
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -68,6 +72,35 @@ export class PreferencesService {
     } catch {
       this.widgetConfig.set(prev);
       this.error.set('Failed to save widget configuration');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async loadAppearance(): Promise<void> {
+    this._loadingAppearance.set(true);
+    this.error.set(null);
+    try {
+      const appearance = await this.repository.getAppearance();
+      this.appearance.set(appearance);
+    } catch {
+      this.error.set('Failed to load appearance preferences');
+    } finally {
+      this._loadingAppearance.set(false);
+    }
+  }
+
+  async updateAppearance(patch: Partial<UserAppearance>): Promise<void> {
+    this.saving.set(true);
+    this.error.set(null);
+    const prev = this.appearance();
+    this.appearance.set(prev ? { ...prev, ...patch } : null);
+    try {
+      const updated = await this.repository.updateAppearance(patch);
+      this.appearance.set(updated);
+    } catch {
+      this.appearance.set(prev);
+      this.error.set('Failed to save appearance preferences');
     } finally {
       this.saving.set(false);
     }
