@@ -33,18 +33,14 @@ export class PreferencesService {
   }
 
   async updateFeatureConfig(config: FeatureKey[]): Promise<void> {
-    this.saving.set(true);
-    this.error.set(null);
     const prev = this.featureConfig();
+    this.error.set(null);
     this.featureConfig.set(config);
     try {
-      const updated = await this.repository.updateFeatureConfig(config);
-      this.featureConfig.set(updated);
+      await this.repository.updateFeatureConfig(config);
     } catch {
       this.featureConfig.set(prev);
       this.error.set('Failed to save feature configuration');
-    } finally {
-      this.saving.set(false);
     }
   }
 
@@ -62,18 +58,14 @@ export class PreferencesService {
   }
 
   async updateWidgetConfig(config: WidgetKey[]): Promise<void> {
-    this.saving.set(true);
-    this.error.set(null);
     const prev = this.widgetConfig();
+    this.error.set(null);
     this.widgetConfig.set(config);
     try {
-      const updated = await this.repository.updateWidgetConfig(config);
-      this.widgetConfig.set(updated);
+      await this.repository.updateWidgetConfig(config);
     } catch {
       this.widgetConfig.set(prev);
       this.error.set('Failed to save widget configuration');
-    } finally {
-      this.saving.set(false);
     }
   }
 

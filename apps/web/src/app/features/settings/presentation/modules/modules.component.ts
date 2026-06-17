@@ -13,7 +13,6 @@ export class ModulesComponent implements OnInit {
 
   readonly catalog = MODULE_CATALOG;
   readonly loading = this.preferencesService.loading;
-  readonly saving = this.preferencesService.saving;
   readonly error = this.preferencesService.error;
 
   readonly enabledKeys = computed(() => new Set(this.preferencesService.featureConfig()));
@@ -43,7 +42,7 @@ export class ModulesComponent implements OnInit {
   }
 
   async toggle(module: ModuleDefinition): Promise<void> {
-    if (!this.isToggleable(module) || this.saving()) return;
+    if (!this.isToggleable(module)) return;
     const current = new Set(this.enabledKeys());
     const key = module.key as FeatureKey;
     current.has(key) ? current.delete(key) : current.add(key);
