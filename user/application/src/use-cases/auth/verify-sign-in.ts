@@ -97,7 +97,7 @@ export const verifySignIn = async (
       onboardingCompleted: false,
       featureConfig: [],
       widgetConfig: [],
-      appearance: DEFAULT_APPEARANCE,
+      appearance: { ...DEFAULT_APPEARANCE },
       createdAt: new Date(),
       updatedAt: new Date(),
     };

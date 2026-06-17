@@ -69,7 +69,7 @@ export const TIMEZONES: TimezoneOption[] = [
   { value: "UTC",                               label: "(+00:00) UTC" },
   { value: "Europe/London",                     label: "(+00:00) London" },
   { value: "Europe/Dublin",                     label: "(+00:00) Dublin" },
-  { value: "Atlantic/Lisbon",                   label: "(+00:00) Lisbon" },
+  { value: "Europe/Lisbon",                     label: "(+00:00) Lisbon" },
   { value: "Europe/Amsterdam",                  label: "(+01:00) Amsterdam" },
   { value: "Europe/Berlin",                     label: "(+01:00) Berlin" },
   { value: "Europe/Brussels",                   label: "(+01:00) Brussels" },

@@ -101,7 +101,10 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
               </div>
               <button
                 type="button"
-                class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0"
+                role="switch"
+                [attr.aria-checked]="appearance()!.reduceMotion"
+                aria-label="Reduce motion"
+                class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 flex-shrink-0"
                 [class.bg-violet-600]="appearance()!.reduceMotion"
                 [class.bg-slate-700]="!appearance()!.reduceMotion"
                 (click)="save({ reduceMotion: !appearance()!.reduceMotion })"
@@ -120,7 +123,10 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
               </div>
               <button
                 type="button"
-                class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0"
+                role="switch"
+                [attr.aria-checked]="appearance()!.compactMode"
+                aria-label="Compact mode"
+                class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 flex-shrink-0"
                 [class.bg-violet-600]="appearance()!.compactMode"
                 [class.bg-slate-700]="!appearance()!.compactMode"
                 (click)="save({ compactMode: !appearance()!.compactMode })"
