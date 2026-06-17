@@ -7,6 +7,7 @@ import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { verifySignIn } from "./verify-sign-in.js";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
 import type { Identity, SignInChallenge, User } from "@user/domain";
+import { DEFAULT_APPEARANCE } from "@user/domain";
 import { MockedEmailService } from "../../mocks/mock-email-service.js";
 import type { TemplateSendEmailOptions } from "domain-lib";
 
@@ -106,6 +107,7 @@ describe("verifySignIn", () => {
       onboardingCompleted: true,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -139,6 +141,7 @@ describe("verifySignIn", () => {
       onboardingCompleted: true,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -177,6 +180,7 @@ describe("verifySignIn", () => {
       onboardingCompleted: true,
       featureConfig: [],
       widgetConfig: [],
+      appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -402,5 +406,12 @@ describe("verifySignIn", () => {
     expect(session.userAgent).toHaveLength(500);
     expect(session.ipAddress).toBe(longIpAddress.slice(0, 45));
     expect(session.ipAddress).toHaveLength(45);
+  });
+
+  test("Should create a new user with DEFAULT_APPEARANCE when no account exists", async () => {
+    await verifySignIn(deps(), { email: EMAIL, code: VALID_CODE });
+
+    const user = userRepository.users[0];
+    expect(user.appearance).toEqual(DEFAULT_APPEARANCE);
   });
 });

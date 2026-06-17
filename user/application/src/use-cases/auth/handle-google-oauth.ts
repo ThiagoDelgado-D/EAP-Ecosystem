@@ -6,6 +6,7 @@ import type {
   User,
   Session,
 } from "@user/domain";
+import { DEFAULT_APPEARANCE } from "@user/domain";
 import type { CryptoService, JwtService } from "domain-lib";
 
 export interface HandleGoogleOAuthDependencies {
@@ -127,6 +128,7 @@ export const handleGoogleOAuth = async (
         onboardingCompleted: false,
         featureConfig: [],
         widgetConfig: [],
+        appearance: { ...DEFAULT_APPEARANCE },
         createdAt: new Date(),
         updatedAt: new Date(),
       };

@@ -4,8 +4,8 @@ import { firstValueFrom } from 'rxjs';
 import { API_CONFIG } from '@core/config/api.config';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import type { FeatureKey } from '@features/auth/domain/auth.model';
-import type { WidgetKey } from '@features/settings/domain/settings.model';
-import type { FeatureConfigDto, WidgetConfigDto } from './settings.dto';
+import type { UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
+import type { AppearanceDto, FeatureConfigDto, WidgetConfigDto } from './settings.dto';
 
 @Injectable()
 export class PreferencesHttpRepository extends PreferencesRepository {
@@ -34,6 +34,18 @@ export class PreferencesHttpRepository extends PreferencesRepository {
       this.http.patch<WidgetConfigDto>(`${this.base}/widgets`, { widgetConfig: config }),
     );
     return dto.widgetConfig;
+  }
+
+  async getAppearance(): Promise<UserAppearance> {
+    const dto = await firstValueFrom(this.http.get<AppearanceDto>(`${this.base}/appearance`));
+    return dto.appearance as UserAppearance;
+  }
+
+  async updateAppearance(appearance: Partial<UserAppearance>): Promise<UserAppearance> {
+    const dto = await firstValueFrom(
+      this.http.patch<AppearanceDto>(`${this.base}/appearance`, appearance),
+    );
+    return dto.appearance as UserAppearance;
   }
 
   async resetPreferences(): Promise<void> {

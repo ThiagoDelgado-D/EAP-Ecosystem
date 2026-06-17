@@ -48,6 +48,8 @@ const WIDGETS: WidgetCard[] = [
   },
 ];
 
+const WIDGET_BY_KEY = new Map(WIDGETS.map((w) => [w.key, w]));
+
 @Component({
   selector: 'app-widgets',
   standalone: true,
@@ -56,25 +58,45 @@ const WIDGETS: WidgetCard[] = [
 export class WidgetsComponent implements OnInit {
   private readonly preferencesService = inject(PreferencesService);
 
-  readonly widgets = WIDGETS;
   readonly loading = this.preferencesService.loading;
-  readonly saving = this.preferencesService.saving;
   readonly error = this.preferencesService.error;
 
-  readonly enabledKeys = computed(() => new Set(this.preferencesService.widgetConfig()));
+  readonly activeWidgets = computed(() =>
+    this.preferencesService
+      .widgetConfig()
+      .map((key) => WIDGET_BY_KEY.get(key))
+      .filter((w): w is WidgetCard => w !== undefined),
+  );
+
+  readonly inactiveWidgets = computed(() => {
+    const active = new Set(this.preferencesService.widgetConfig());
+    return WIDGETS.filter((w) => !active.has(w.key));
+  });
 
   async ngOnInit(): Promise<void> {
     await this.preferencesService.loadWidgetConfig();
   }
 
-  isOn(key: WidgetKey): boolean {
-    return this.enabledKeys().has(key);
+  async toggle(widget: WidgetCard): Promise<void> {
+    const current = this.preferencesService.widgetConfig();
+    const next = current.includes(widget.key)
+      ? current.filter((k) => k !== widget.key)
+      : [...current, widget.key];
+    await this.preferencesService.updateWidgetConfig(next);
   }
 
-  async toggle(widget: WidgetCard): Promise<void> {
-    if (this.saving()) return;
-    const current = new Set(this.enabledKeys());
-    current.has(widget.key) ? current.delete(widget.key) : current.add(widget.key);
-    await this.preferencesService.updateWidgetConfig([...current]);
+  async moveUp(index: number): Promise<void> {
+    if (index === 0) return;
+    const next = [...this.preferencesService.widgetConfig()];
+    [next[index - 1], next[index]] = [next[index], next[index - 1]];
+    await this.preferencesService.updateWidgetConfig(next);
+  }
+
+  async moveDown(index: number): Promise<void> {
+    const config = this.preferencesService.widgetConfig();
+    if (index === config.length - 1) return;
+    const next = [...config];
+    [next[index], next[index + 1]] = [next[index + 1], next[index]];
+    await this.preferencesService.updateWidgetConfig(next);
   }
 }

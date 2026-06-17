@@ -9,17 +9,20 @@ import {
   Req,
   UnauthorizedException,
 } from "@nestjs/common";
-import type { IUserRepository } from "@user/domain";
+import type { IUserRepository, UserAppearancePreferences } from "@user/domain";
 import {
   getFeatureConfig,
   getWidgetConfig,
+  getUserAppearance,
   updateFeatureConfig,
   updateWidgetConfig,
+  updateUserAppearance,
   resetPreferences,
 } from "@user/application";
 import { BaseError, type JwtService } from "domain-lib";
 import { UpdateFeatureConfigDto } from "./dto/request/update-feature-config.dto.js";
 import { UpdateWidgetConfigDto } from "./dto/request/update-widget-config.dto.js";
+import { UpdateUserAppearanceDto } from "./dto/request/update-user-appearance.dto.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import type { Request } from "express";
 
@@ -83,6 +86,32 @@ export class PreferencesController {
     const result = await updateWidgetConfig(
       { userRepository: this.userRepository },
       { userId, widgetConfig: dto.widgetConfig },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Get("appearance")
+  async getAppearance(@Req() req: Request) {
+    const userId = await this.resolveUserId(req);
+    const result = await getUserAppearance(
+      { userRepository: this.userRepository },
+      { userId },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Patch("appearance")
+  @HttpCode(200)
+  async updateAppearance(
+    @Body() dto: UpdateUserAppearanceDto,
+    @Req() req: Request,
+  ) {
+    const userId = await this.resolveUserId(req);
+    const result = await updateUserAppearance(
+      { userRepository: this.userRepository },
+      { userId, appearance: dto as Partial<UserAppearancePreferences> },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
