@@ -14,8 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.8.6-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
-
+[![Version](https://img.shields.io/badge/version-0.8.7-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
 [![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
 [![Last Commit](https://img.shields.io/github/last-commit/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/commits/main)
@@ -32,13 +31,11 @@ The long-term goal is a recommendation engine that suggests what to study based 
 Users authenticate via magic link or Google Sign-In, complete a two-step onboarding to select
 which modules to activate, and land on a dashboard with their resource library. Resources can
 be managed with inline metadata editing, filtered by difficulty and energy level, and added via
-guided form, URL import, voice capture, or file import. A Settings section lets users manage
-active sessions, toggle which modules and widgets are visible, and control appearance preferences.
-Recommendations and advanced features are coming in upcoming versions.
+guided form, URL import, voice capture, or file import. A Settings section lets users manage active sessions, toggle which modules and widgets are visible, and configure appearance preferences (timezone, date format, time format, language, density) — persisted to the backend and restored on every sign-in.
 
 ---
 
-## 🎯 Current Status (v0.8.6)
+## 🎯 Current Status (v0.8.7)
 
 | Component                  | Status               | Notes                                                                             |
 | -------------------------- | -------------------- | --------------------------------------------------------------------------------- |
@@ -62,6 +59,7 @@ Recommendations and advanced features are coming in upcoming versions.
 | **Danger Zone**            | ✅ Complete          | Reset preferences endpoint + Settings panel, full use case test coverage (v0.8.5) |
 | **Pagination & Filtering** | ✅ Complete          | Server-side filtering + PaginatorComponent + sessionStorage nav state (v0.8.6)    |
 | **Soft-match Search**      | ✅ Complete          | pg_trgm + GIN index, getSuggestions use case, empty-state suggestions UI (v0.8.6) |
+| **Appearance Preferences** | ✅ Complete          | Timezone, date/time format, language, density persisted to DB (v0.8.7)            |
 | **Learning Paths**         | 📅 Planned (v0.9.0)  | Ordered resource sequences with progress tracking                                 |
 | **Pomodoro & Sessions**    | 📅 Planned (v0.9.5)  | Focus Pulse and Architect's Pulse wired to real session data                      |
 | **Spaced Repetition**      | 📅 Planned (v0.10.0) | SRS scheduling + recommendation engine                                            |
@@ -139,7 +137,7 @@ yarn build
 Base URL: `http://localhost:3000/api/v1`
 
 | Method | Endpoint                               | Description                                                                                                      |
-| ------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| ------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | --- |
 | POST   | `/learning-resources`                  | Create a resource                                                                                                |
 | GET    | `/learning-resources`                  | List all resources                                                                                               |
 | GET    | `/learning-resources/filter`           | Filter by difficulty, status, topicIds, energyLevel                                                              |
@@ -168,6 +166,8 @@ Base URL: `http://localhost:3000/api/v1`
 | DELETE | `/auth/sessions/:id`                   | Revoke a specific session                                                                                        |
 | DELETE | `/auth/sessions`                       | Revoke all other sessions                                                                                        |
 | POST   | `/preferences/reset`                   | Reset all preferences to defaults                                                                                |
+| GET    | `/preferences/appearance`              | Get appearance preferences for current user                                                                      |
+| PATCH  | `/preferences/appearance`              | Update appearance preferences                                                                                    |     |
 
 ---
 

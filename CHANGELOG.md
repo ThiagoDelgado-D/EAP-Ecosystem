@@ -1,13 +1,89 @@
-## [Unreleased]
+## [Unreleased][Unreleased]
 
 ### Planned
 
-- Learning resources associated to authenticated user (data isolation per user) — v0.8.4
-- `LearningPath` entity — ordered resource sequences with phases and progress tracking — v0.9.0
-- `ResourceRelationship` entity — typed directed edges between resources — v0.9.0
-- Atlas View — D3.js force-directed knowledge graph visualization — v0.9.0
-- Pomodoro timer + `LearningSession` records — v0.9.5
-- WebSocket gateway for cross-device session sync — v0.9.5
+- Learning resources associated to authenticated user (data isolation per user) — v0.8.4earning resources associated to authenticated user (data isolation per user) — v0.8.4
+- `LearningPath` entity — graph + sequential modes, stub nodes, roadmap.sh import (ADR-0021) — v0.9.0LearningPath` entity — ordered resource sequences with phases and progress tracking — v0.9.0
+- `ResourceRelationship` entity — typed directed edges between resources — v0.9.0ResourceRelationship` entity — typed directed edges between resources — v0.9.0
+- Atlas View — `@swimlane/ngx-graph` force-directed knowledge graph visualization — v0.9.0tlas View — D3.js force-directed knowledge graph visualization — v0.9.0
+- Pomodoro timer + `LearningSession` records — v0.9.5omodoro timer + `LearningSession` records — v0.9.5
+- WebSocket gateway for cross-device session sync — v0.9.5ebSocket gateway for cross-device session sync — v0.9.5
+
+---
+
+## [0.8.7] - 2026-06-17
+
+### Appearance Preferences Persistence
+
+Completes the Settings section with fully persisted appearance preferences.
+Users can now configure timezone, date format, time format, language, and density
+from the Settings > Appearance panel — choices are saved to the backend and
+restored on every sign-in. The panel is wired to new `GET/PATCH /preferences/appearance`
+endpoints backed by `UserAppearancePreferences` in the `user` domain. A reusable
+`SearchableSelectComponent` powers the timezone picker with filter-as-you-type support.
+
+The Dashboard Widgets section is also redesigned: widgets now split into Active
+and Inactive groups with per-widget accent toggles, ↑/↓ reorder controls, and an
+optimistic fire-and-forget update pattern that eliminates the double re-render
+that previously occurred on toggle.
+
+---
+
+### Added
+
+#### Backend — Domain
+
+- `UserAppearancePreferences` value object on the `User` entity —
+  `timezone` (IANA string), `dateFormat`, `timeFormat`, `language`, `density`
+- `DEFAULT_APPEARANCE` constant extracted as a shared reference — prevents
+  accidental mutation of the default object across user creation paths
+
+#### Backend — Application
+
+- `getAppearance(userId)` use case — returns the user's current appearance config
+- `updateAppearance(userId, patch)` use case — merges partial input over existing
+  config; rejects null fields; enforces `timezone` max length (50) at DTO level
+- Full unit-test suite for both use cases
+
+#### Backend — API
+
+- `GET /api/v1/preferences/appearance` — returns `UserAppearancePreferences` for
+  the authenticated user; guarded by `JwtAuthGuard`
+- `PATCH /api/v1/preferences/appearance` — accepts a partial `UpdateUserAppearanceDto`;
+  null fields rejected (422); timezone validated as IANA string with max length 50
+
+#### Frontend — Shared
+
+- `SearchableSelectComponent` — standalone Angular component with filter-as-you-type;
+  used by the timezone selector in the Appearance panel; fully accessible
+  (`aria-expanded`, `aria-activedescendant`, keyboard navigation)
+
+#### Frontend — Settings
+
+- Appearance panel wired end-to-end: `PreferencesHttpRepository`, `PreferencesService`,
+  and `PreferencesComponent` updated with `getAppearance()` / `updateAppearance()` methods
+- UI states: loading skeleton, idle, saving (optimistic), success toast, error fallback
+- Timezone picker uses `SearchableSelectComponent` with IANA timezone list
+- Date format, time format, language, and density exposed as labeled selects
+- Dashboard Widgets redesigned with Active / Inactive split sections, per-widget
+  accent color toggles, and ↑/↓ accessible reorder controls
+
+### Fixed
+
+- `UpdateUserAppearanceDto` — null fields now rejected at DTO validation level;
+  timezone capped at 50 chars (IANA ID constraint)
+- Feature and widget config toggles apply fire-and-forget optimistic update —
+  eliminates double re-render that occurred when a toggle triggered two sequential
+  signal writes
+- Appearance a11y: timezone IANA ID used as option value; widget reorder buttons
+  expose `aria-label`; `DEFAULT_APPEARANCE` shared reference prevents mutation
+  in parallel user-creation paths
+
+### Docs
+
+- ADR-0021 added: Learning Paths — domain model, sequential/graph modes, stub node
+  pattern, `@swimlane/ngx-graph` adoption for graph mode and Atlas View,
+  roadmap.sh import flow
 
 ---
 
