@@ -11,6 +11,148 @@
 
 ---
 
+## [0.8.6] - 2026-06-15
+
+### Server-side Pagination, Filtering & Soft-match Search
+
+Replaces the client-side filter endpoint with a unified, server-driven resource list.
+The backend implements `findWithFiltersAndCount` via TypeORM QueryBuilder with a stable
+`createdAt DESC, id ASC` sort order, and adds a `pg_trgm` GIN index that powers fuzzy
+title matching. The Angular client is rewritten around a query-key cache, a new
+`PaginatorComponent`, and `sessionStorage`-backed navigation state so filters survive
+the back button. When a search returns zero results, the app now surfaces similar
+resources as suggestions instead of an empty screen.
+
+---
+
+### Added
+
+#### Backend — Infrastructure
+
+- `pg_trgm` extension enabled and GIN index created on `learning_resources.title` —
+  powers trigram similarity queries without sequential scan
+- `findSimilarTitles(title, limit)` added to `ILearningResourceRepository` and
+  implemented with a `pg_trgm` similarity query; result set capped at 5, ordered by
+  similarity score descending
+- `findWithFiltersAndCount` implemented via TypeORM QueryBuilder — accepts
+  `resourceTypeId`, `topicIds`, `status`, `difficulty`, `energyLevel` as optional
+  filters; separates topic-filter join from hydration join to prevent row inflation
+
+#### Backend — Application
+
+- `getResourcesByFilter` refactored: now accepts `page`/`pageSize` and returns
+  `{ resources, total, page, pageSize }` — consumers get pagination metadata without
+  coupling to the DB layer
+- `getSuggestions(title)` use case added: delegates to `findSimilarTitles`, returns
+  up to 5 `ResourceSuggestion` objects; fully unit-tested including the empty-result path
+
+#### Backend — API
+
+- `GET /api/v1/learning-resources` unified: accepts `page`, `pageSize`, `resourceTypeId`,
+  `topicIds`, `status`, `difficulty`, `energyLevel` as optional query params;
+  removes the stale `/filter` endpoint
+- `GET /api/v1/learning-resources/suggestions?q=...` — returns fuzzy title matches;
+  UUID guard on `resourceTypeId` prevents filter bypass on invalid input
+
+#### Frontend — Domain & Application
+
+- `PaginatedResourcesResponse` and `ResourceQueryParams` interfaces added
+- `LearningResourceService` rewritten around a query-key cache keyed on filter params;
+  optimistic toggle patches the correct cache entry to prevent stale-data flip after
+  inline edits
+- Full filter state serialized to `sessionStorage` and restored on `ngOnInit`
+  after browser back — including page number, selected filters, and search term
+
+#### Frontend — Presentation
+
+- `PaginatorComponent` added — per-page dropdown (10/25/50), page-number display,
+  prev/next controls; `[ngValue]` preserves numeric type on emit
+- Empty search state shows a "Similar resources" section powered by `/suggestions`;
+  a sequence counter guards against stale async responses
+
+### Fixed
+
+- `resourceTypeId` filter now ignored when value is not a valid UUID
+- Topic filter join separated from hydration join — previously inflated rows when a
+  resource had multiple topics
+- `orderBy createdAt DESC, id ASC` added to guarantee stable page boundaries
+- `page` and `pageSize` params guarded against `NaN` on non-numeric input
+- `sessionStorage` JSON.parse wrapped in try/catch in `ngOnInit`
+- Query cache keys encode special characters to prevent collisions on `+`, `&`, etc.
+
+---
+
+## [0.8.5] - 2026-05-13
+
+### Danger Zone
+
+Adds the Danger Zone panel to the Settings UI and wires the backend reset endpoint.
+Users can reset all preferences to defaults or revoke all active sessions without
+direct DB access. The preferences use cases gain full unit-test coverage, including
+concurrent-write branch paths for session metadata.
+
+---
+
+### Added
+
+#### Backend — Application
+
+- `resetPreferences(userId)` use case: restores `featureConfig` and `widgetConfig`
+  to their default values; exposed through the preferences NestJS service
+- Full unit-test suite for all preferences use cases including `resetPreferences`
+- Branch coverage added for session metadata writes and concurrent-access paths
+
+#### Backend — API
+
+- `POST /api/v1/preferences/reset` — resets all preferences to defaults for the
+  authenticated user; returns 204 No Content; guarded by `JwtAuthGuard`
+
+#### Frontend
+
+- Danger Zone panel in Settings UI — "Reset preferences" and "Revoke all other
+  sessions" actions, both with a confirmation step before firing
+
+---
+
+## [0.8.4] - 2026-05-13
+
+### Settings Enhancement & Module Catalog
+
+Overhauls the Modules section of Settings with a three-column grid, per-module
+accent color toggles, and a typed `FeatureModuleCatalog` that centralises module
+metadata. Introduces `StatusBadgeComponent` as a standalone display primitive.
+Removes the legacy `ThemeService` and dark mode toggle from the shell layout.
+
+---
+
+### Added
+
+#### Frontend — Components & Pipes
+
+- `FeatureModuleCatalog`: typed array of module descriptors with `key`, `label`,
+  `description`, and `accentColor` — single source of truth for the modules grid
+- `ModuleLabelPipe`: maps a `FeatureKey` to its human-readable label; standalone, pure
+- `StatusBadgeComponent`: standalone component for rendering `ResourceStatusType` as
+  a styled chip; replaces ad-hoc inline badge markup
+- Interactive `EnumBadge` restored in resource detail — clicks cycle through enum values
+
+#### Frontend — Settings
+
+- Modules settings page rewritten: three-column grid, each card shows name, description,
+  and accent-coloured toggle; always-on modules render without a toggle
+- Account component updated to display always-active vs user-enabled modules separately
+
+### Removed
+
+- `ThemeService` and dark mode toggle removed from shell layout — non-functional feature
+
+### Dependencies
+
+- `hono` 4.12.14 → 4.12.18 (#79), `uuid` 11.1.0 → 11.1.1 (#75),
+  `fast-uri` 3.1.0 → 3.1.2 (#80)
+
+---
+
 ## [0.8.3] - 2026-05-07
 
 ### User Settings & Preferences
