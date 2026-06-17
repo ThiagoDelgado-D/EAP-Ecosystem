@@ -91,18 +91,15 @@ export class PreferencesService {
   }
 
   async updateAppearance(patch: Partial<UserAppearance>): Promise<void> {
-    this.saving.set(true);
-    this.error.set(null);
     const prev = this.appearance();
-    this.appearance.set(prev ? { ...prev, ...patch } : null);
+    if (!prev) return;
+    this.error.set(null);
+    this.appearance.set({ ...prev, ...patch });
     try {
-      const updated = await this.repository.updateAppearance(patch);
-      this.appearance.set(updated);
+      await this.repository.updateAppearance(patch);
     } catch {
       this.appearance.set(prev);
       this.error.set('Failed to save appearance preferences');
-    } finally {
-      this.saving.set(false);
     }
   }
 
