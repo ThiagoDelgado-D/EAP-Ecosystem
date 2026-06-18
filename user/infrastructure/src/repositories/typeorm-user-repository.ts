@@ -1,5 +1,5 @@
 import type { IUserRepository, User } from "@user/domain";
-import { FeatureKey, WidgetKey } from "@user/domain";
+import { DEFAULT_APPEARANCE, FeatureKey, LanguageCode, StartOfWeek, WidgetKey } from "@user/domain";
 import type { UUID } from "domain-lib";
 import type { Repository } from "typeorm";
 import { UserEntity } from "../entities/user.entity.js";
@@ -40,6 +40,17 @@ export class TypeOrmUserRepository implements IUserRepository {
       widgetConfig: entity.widgetConfig.filter((k): k is WidgetKey =>
         (Object.values(WidgetKey) as string[]).includes(k),
       ),
+      appearance: {
+        language: (Object.values(LanguageCode) as string[]).includes(entity.language)
+          ? (entity.language as LanguageCode)
+          : DEFAULT_APPEARANCE.language,
+        timezone: entity.timezone ?? DEFAULT_APPEARANCE.timezone,
+        startOfWeek: (Object.values(StartOfWeek) as string[]).includes(entity.startOfWeek)
+          ? (entity.startOfWeek as StartOfWeek)
+          : DEFAULT_APPEARANCE.startOfWeek,
+        reduceMotion: entity.reduceMotion ?? DEFAULT_APPEARANCE.reduceMotion,
+        compactMode: entity.compactMode ?? DEFAULT_APPEARANCE.compactMode,
+      },
       bio: entity.bio ?? undefined,
       avatar: (entity.avatar as UUID) ?? undefined,
       createdAt: entity.createdAt,
@@ -58,6 +69,11 @@ export class TypeOrmUserRepository implements IUserRepository {
     entity.onboardingCompleted = user.onboardingCompleted;
     entity.featureConfig = user.featureConfig;
     entity.widgetConfig = user.widgetConfig;
+    entity.language = user.appearance.language;
+    entity.timezone = user.appearance.timezone;
+    entity.startOfWeek = user.appearance.startOfWeek;
+    entity.reduceMotion = user.appearance.reduceMotion;
+    entity.compactMode = user.appearance.compactMode;
     entity.bio = user.bio ?? null;
     entity.avatar = user.avatar ?? null;
     return entity;

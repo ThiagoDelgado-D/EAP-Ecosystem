@@ -1,13 +1,231 @@
-## [Unreleased]
+## [Unreleased][Unreleased]
 
 ### Planned
 
-- Learning resources associated to authenticated user (data isolation per user) — v0.8.4
-- `LearningPath` entity — ordered resource sequences with phases and progress tracking — v0.9.0
-- `ResourceRelationship` entity — typed directed edges between resources — v0.9.0
-- Atlas View — D3.js force-directed knowledge graph visualization — v0.9.0
-- Pomodoro timer + `LearningSession` records — v0.9.5
-- WebSocket gateway for cross-device session sync — v0.9.5
+- Learning resources associated to authenticated user (data isolation per user) — v0.8.4earning resources associated to authenticated user (data isolation per user) — v0.8.4
+- `LearningPath` entity — graph + sequential modes, stub nodes, roadmap.sh import (ADR-0021) — v0.9.0LearningPath` entity — ordered resource sequences with phases and progress tracking — v0.9.0
+- `ResourceRelationship` entity — typed directed edges between resources — v0.9.0ResourceRelationship` entity — typed directed edges between resources — v0.9.0
+- Atlas View — `@swimlane/ngx-graph` force-directed knowledge graph visualization — v0.9.0tlas View — D3.js force-directed knowledge graph visualization — v0.9.0
+- Pomodoro timer + `LearningSession` records — v0.9.5omodoro timer + `LearningSession` records — v0.9.5
+- WebSocket gateway for cross-device session sync — v0.9.5ebSocket gateway for cross-device session sync — v0.9.5
+
+---
+
+## [0.8.7] - 2026-06-17
+
+### Appearance Preferences Persistence
+
+Completes the Settings section with fully persisted appearance preferences.
+Users can now configure timezone, date format, time format, language, and density
+from the Settings > Appearance panel — choices are saved to the backend and
+restored on every sign-in. The panel is wired to new `GET/PATCH /preferences/appearance`
+endpoints backed by `UserAppearancePreferences` in the `user` domain. A reusable
+`SearchableSelectComponent` powers the timezone picker with filter-as-you-type support.
+
+The Dashboard Widgets section is also redesigned: widgets now split into Active
+and Inactive groups with per-widget accent toggles, ↑/↓ reorder controls, and an
+optimistic fire-and-forget update pattern that eliminates the double re-render
+that previously occurred on toggle.
+
+---
+
+### Added
+
+#### Backend — Domain
+
+- `UserAppearancePreferences` value object on the `User` entity —
+  `timezone` (IANA string), `dateFormat`, `timeFormat`, `language`, `density`
+- `DEFAULT_APPEARANCE` constant extracted as a shared reference — prevents
+  accidental mutation of the default object across user creation paths
+
+#### Backend — Application
+
+- `getAppearance(userId)` use case — returns the user's current appearance config
+- `updateAppearance(userId, patch)` use case — merges partial input over existing
+  config; rejects null fields; enforces `timezone` max length (50) at DTO level
+- Full unit-test suite for both use cases
+
+#### Backend — API
+
+- `GET /api/v1/preferences/appearance` — returns `UserAppearancePreferences` for
+  the authenticated user; guarded by `JwtAuthGuard`
+- `PATCH /api/v1/preferences/appearance` — accepts a partial `UpdateUserAppearanceDto`;
+  null fields rejected (422); timezone validated as IANA string with max length 50
+
+#### Frontend — Shared
+
+- `SearchableSelectComponent` — standalone Angular component with filter-as-you-type;
+  used by the timezone selector in the Appearance panel; fully accessible
+  (`aria-expanded`, `aria-activedescendant`, keyboard navigation)
+
+#### Frontend — Settings
+
+- Appearance panel wired end-to-end: `PreferencesHttpRepository`, `PreferencesService`,
+  and `PreferencesComponent` updated with `getAppearance()` / `updateAppearance()` methods
+- UI states: loading skeleton, idle, saving (optimistic), success toast, error fallback
+- Timezone picker uses `SearchableSelectComponent` with IANA timezone list
+- Date format, time format, language, and density exposed as labeled selects
+- Dashboard Widgets redesigned with Active / Inactive split sections, per-widget
+  accent color toggles, and ↑/↓ accessible reorder controls
+
+### Fixed
+
+- `UpdateUserAppearanceDto` — null fields now rejected at DTO validation level;
+  timezone capped at 50 chars (IANA ID constraint)
+- Feature and widget config toggles apply fire-and-forget optimistic update —
+  eliminates double re-render that occurred when a toggle triggered two sequential
+  signal writes
+- Appearance a11y: timezone IANA ID used as option value; widget reorder buttons
+  expose `aria-label`; `DEFAULT_APPEARANCE` shared reference prevents mutation
+  in parallel user-creation paths
+
+### Docs
+
+- ADR-0021 added: Learning Paths — domain model, sequential/graph modes, stub node
+  pattern, `@swimlane/ngx-graph` adoption for graph mode and Atlas View,
+  roadmap.sh import flow
+
+---
+
+## [0.8.6] - 2026-06-15
+
+### Server-side Pagination, Filtering & Soft-match Search
+
+Replaces the client-side filter endpoint with a unified, server-driven resource list.
+The backend implements `findWithFiltersAndCount` via TypeORM QueryBuilder with a stable
+`createdAt DESC, id ASC` sort order, and adds a `pg_trgm` GIN index that powers fuzzy
+title matching. The Angular client is rewritten around a query-key cache, a new
+`PaginatorComponent`, and `sessionStorage`-backed navigation state so filters survive
+the back button. When a search returns zero results, the app now surfaces similar
+resources as suggestions instead of an empty screen.
+
+---
+
+### Added
+
+#### Backend — Infrastructure
+
+- `pg_trgm` extension enabled and GIN index created on `learning_resources.title` —
+  powers trigram similarity queries without sequential scan
+- `findSimilarTitles(title, limit)` added to `ILearningResourceRepository` and
+  implemented with a `pg_trgm` similarity query; result set capped at 5, ordered by
+  similarity score descending
+- `findWithFiltersAndCount` implemented via TypeORM QueryBuilder — accepts
+  `resourceTypeId`, `topicIds`, `status`, `difficulty`, `energyLevel` as optional
+  filters; separates topic-filter join from hydration join to prevent row inflation
+
+#### Backend — Application
+
+- `getResourcesByFilter` refactored: now accepts `page`/`pageSize` and returns
+  `{ resources, total, page, pageSize }` — consumers get pagination metadata without
+  coupling to the DB layer
+- `getSuggestions(title)` use case added: delegates to `findSimilarTitles`, returns
+  up to 5 `ResourceSuggestion` objects; fully unit-tested including the empty-result path
+
+#### Backend — API
+
+- `GET /api/v1/learning-resources` unified: accepts `page`, `pageSize`, `resourceTypeId`,
+  `topicIds`, `status`, `difficulty`, `energyLevel` as optional query params;
+  removes the stale `/filter` endpoint
+- `GET /api/v1/learning-resources/suggestions?q=...` — returns fuzzy title matches;
+  UUID guard on `resourceTypeId` prevents filter bypass on invalid input
+
+#### Frontend — Domain & Application
+
+- `PaginatedResourcesResponse` and `ResourceQueryParams` interfaces added
+- `LearningResourceService` rewritten around a query-key cache keyed on filter params;
+  optimistic toggle patches the correct cache entry to prevent stale-data flip after
+  inline edits
+- Full filter state serialized to `sessionStorage` and restored on `ngOnInit`
+  after browser back — including page number, selected filters, and search term
+
+#### Frontend — Presentation
+
+- `PaginatorComponent` added — per-page dropdown (10/25/50), page-number display,
+  prev/next controls; `[ngValue]` preserves numeric type on emit
+- Empty search state shows a "Similar resources" section powered by `/suggestions`;
+  a sequence counter guards against stale async responses
+
+### Fixed
+
+- `resourceTypeId` filter now ignored when value is not a valid UUID
+- Topic filter join separated from hydration join — previously inflated rows when a
+  resource had multiple topics
+- `orderBy createdAt DESC, id ASC` added to guarantee stable page boundaries
+- `page` and `pageSize` params guarded against `NaN` on non-numeric input
+- `sessionStorage` JSON.parse wrapped in try/catch in `ngOnInit`
+- Query cache keys encode special characters to prevent collisions on `+`, `&`, etc.
+
+---
+
+## [0.8.5] - 2026-05-13
+
+### Danger Zone
+
+Adds the Danger Zone panel to the Settings UI and wires the backend reset endpoint.
+Users can reset all preferences to defaults or revoke all active sessions without
+direct DB access. The preferences use cases gain full unit-test coverage, including
+concurrent-write branch paths for session metadata.
+
+---
+
+### Added
+
+#### Backend — Application
+
+- `resetPreferences(userId)` use case: restores `featureConfig` and `widgetConfig`
+  to their default values; exposed through the preferences NestJS service
+- Full unit-test suite for all preferences use cases including `resetPreferences`
+- Branch coverage added for session metadata writes and concurrent-access paths
+
+#### Backend — API
+
+- `POST /api/v1/preferences/reset` — resets all preferences to defaults for the
+  authenticated user; returns 204 No Content; guarded by `JwtAuthGuard`
+
+#### Frontend
+
+- Danger Zone panel in Settings UI — "Reset preferences" and "Revoke all other
+  sessions" actions, both with a confirmation step before firing
+
+---
+
+## [0.8.4] - 2026-05-13
+
+### Settings Enhancement & Module Catalog
+
+Overhauls the Modules section of Settings with a three-column grid, per-module
+accent color toggles, and a typed `FeatureModuleCatalog` that centralises module
+metadata. Introduces `StatusBadgeComponent` as a standalone display primitive.
+Removes the legacy `ThemeService` and dark mode toggle from the shell layout.
+
+---
+
+### Added
+
+#### Frontend — Components & Pipes
+
+- `FeatureModuleCatalog`: typed array of module descriptors with `key`, `label`,
+  `description`, and `accentColor` — single source of truth for the modules grid
+- `ModuleLabelPipe`: maps a `FeatureKey` to its human-readable label; standalone, pure
+- `StatusBadgeComponent`: standalone component for rendering `ResourceStatusType` as
+  a styled chip; replaces ad-hoc inline badge markup
+- Interactive `EnumBadge` restored in resource detail — clicks cycle through enum values
+
+#### Frontend — Settings
+
+- Modules settings page rewritten: three-column grid, each card shows name, description,
+  and accent-coloured toggle; always-on modules render without a toggle
+- Account component updated to display always-active vs user-enabled modules separately
+
+### Removed
+
+- `ThemeService` and dark mode toggle removed from shell layout — non-functional feature
+
+### Dependencies
+
+- `hono` 4.12.14 → 4.12.18 (#79), `uuid` 11.1.0 → 11.1.1 (#75),
+  `fast-uri` 3.1.0 → 3.1.2 (#80)
 
 ---
 
