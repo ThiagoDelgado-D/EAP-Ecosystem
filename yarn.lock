@@ -12133,7 +12133,7 @@ __metadata:
     "@angular/build": "npm:^21.1.4"
     "@angular/cdk": "npm:^21.2.6"
     "@angular/cli": "npm:^21.1.4"
-    "@angular/common": "npm:^21.1.0"
+    "@angular/common": "npm:^21.2.17"
     "@angular/compiler": "npm:^21.2.17"
     "@angular/compiler-cli": "npm:^21.1.0"
     "@angular/core": "npm:^21.2.17"
