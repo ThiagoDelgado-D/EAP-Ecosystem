@@ -137,7 +137,7 @@ yarn build
 Base URL: `http://localhost:3000/api/v1`
 
 | Method | Endpoint                               | Description                                                                                                      |
-| ------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | --- |
+| ------ | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | POST   | `/learning-resources`                  | Create a resource                                                                                                |
 | GET    | `/learning-resources`                  | List all resources                                                                                               |
 | GET    | `/learning-resources/filter`           | Filter by difficulty, status, topicIds, energyLevel                                                              |
@@ -167,7 +167,7 @@ Base URL: `http://localhost:3000/api/v1`
 | DELETE | `/auth/sessions`                       | Revoke all other sessions                                                                                        |
 | POST   | `/preferences/reset`                   | Reset all preferences to defaults                                                                                |
 | GET    | `/preferences/appearance`              | Get appearance preferences for current user                                                                      |
-| PATCH  | `/preferences/appearance`              | Update appearance preferences                                                                                    |     |
+| PATCH  | `/preferences/appearance`              | Update appearance preferences                                                                                    |
 
 ---
 
