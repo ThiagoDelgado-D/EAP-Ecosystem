@@ -6,6 +6,7 @@ export * from "./entities/topic.js";
 export * from "./entities/learning-path.js";
 export * from "./entities/learning-path-node.js";
 export * from "./entities/learning-path-edge.js";
+export * from "./entities/resource-relation.js";
 
 // ============= REPOSITORIES =============
 
