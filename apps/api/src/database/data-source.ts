@@ -6,6 +6,7 @@ import {
   LearningPathEntity,
   LearningPathNodeEntity,
   LearningPathEdgeEntity,
+  ResourceRelationEntity,
   ResourceTypeEntity,
   TopicEntity,
 } from "@learning-resource/infrastructure";
@@ -30,6 +31,7 @@ export const AppDataSource = new DataSource({
     LearningPathEntity,
     LearningPathNodeEntity,
     LearningPathEdgeEntity,
+    ResourceRelationEntity,
     ResourceTypeEntity,
     TopicEntity,
     UserEntity,
