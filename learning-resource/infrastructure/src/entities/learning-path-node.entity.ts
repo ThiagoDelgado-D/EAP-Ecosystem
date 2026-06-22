@@ -2,12 +2,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
   PrimaryColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { LearningPathEntity } from "./learning-path.entity.js";
 
 @Entity("learning_path_nodes")
 export class LearningPathNodeEntity {
@@ -16,12 +13,6 @@ export class LearningPathNodeEntity {
 
   @Column("uuid")
   pathId!: string;
-
-  @ManyToOne(() => LearningPathEntity, (path) => path.nodes, {
-    onDelete: "CASCADE",
-  })
-  @JoinColumn({ name: "pathId" })
-  path!: LearningPathEntity;
 
   @Column({ length: 500 })
   title!: string;

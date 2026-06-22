@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryColumn,
-} from "typeorm";
-import { LearningPathNodeEntity } from "./learning-path-node.entity.js";
+import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity("learning_path_edges")
 export class LearningPathEdgeEntity {
@@ -20,12 +13,4 @@ export class LearningPathEdgeEntity {
 
   @Column("uuid")
   targetNodeId!: string;
-
-  @ManyToOne(() => LearningPathNodeEntity, { onDelete: "CASCADE" })
-  @JoinColumn({ name: "sourceNodeId" })
-  sourceNode!: LearningPathNodeEntity;
-
-  @ManyToOne(() => LearningPathNodeEntity, { onDelete: "CASCADE" })
-  @JoinColumn({ name: "targetNodeId" })
-  targetNode!: LearningPathNodeEntity;
 }

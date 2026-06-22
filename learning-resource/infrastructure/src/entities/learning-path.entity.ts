@@ -2,11 +2,9 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToMany,
   PrimaryColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { LearningPathNodeEntity } from "./learning-path-node.entity.js";
 
 @Entity("learning_paths")
 export class LearningPathEntity {
@@ -30,11 +28,6 @@ export class LearningPathEntity {
 
   @Column({ type: "varchar", length: 200, nullable: true })
   sourceSlug!: string | null;
-
-  @OneToMany(() => LearningPathNodeEntity, (node) => node.path, {
-    cascade: true,
-  })
-  nodes!: LearningPathNodeEntity[];
 
   @CreateDateColumn()
   createdAt!: Date;
