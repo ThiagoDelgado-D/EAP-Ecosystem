@@ -1,11 +1,13 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { AuthUser } from '@features/auth/domain/auth.model';
+import { AuthUser, type FeatureKey } from '@features/auth/domain/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
   readonly currentUser = signal<AuthUser | null>(null);
   readonly accessToken = signal<string | null>(null);
   readonly isAuthenticated = computed(() => this.accessToken() !== null);
+
+  readonly featureSet = computed(() => new Set(this.currentUser()?.featureConfig ?? []));
 
   readonly displayName = computed(() => {
     const u = this.currentUser();
@@ -25,6 +27,12 @@ export class AuthStore {
   setSession(user: AuthUser, token: string): void {
     this.currentUser.set(user);
     this.accessToken.set(token || null);
+  }
+
+  updateFeatureConfig(config: FeatureKey[]): void {
+    const u = this.currentUser();
+    if (!u) return;
+    this.currentUser.set({ ...u, featureConfig: config });
   }
 
   clearSession(): void {
