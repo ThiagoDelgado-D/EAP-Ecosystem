@@ -3,6 +3,9 @@ import { config } from "dotenv";
 import { DataSource } from "typeorm";
 import {
   LearningResourceEntity,
+  LearningPathEntity,
+  LearningPathNodeEntity,
+  LearningPathEdgeEntity,
   ResourceTypeEntity,
   TopicEntity,
 } from "@learning-resource/infrastructure";
@@ -24,6 +27,9 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   entities: [
     LearningResourceEntity,
+    LearningPathEntity,
+    LearningPathNodeEntity,
+    LearningPathEdgeEntity,
     ResourceTypeEntity,
     TopicEntity,
     UserEntity,
