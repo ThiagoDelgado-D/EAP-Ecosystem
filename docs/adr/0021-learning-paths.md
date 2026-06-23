@@ -91,20 +91,13 @@ export interface LearningPathEdge {
 Only created and edited in `graph` mode. In `sequential` mode, edges are derived from
 `order` and are not persisted as rows.
 
-#### `LearningPathNodeProgress`
+#### Node progress
 
-```typescript
-export interface LearningPathNodeProgress {
-  id: UUID;
-  userId: UUID;
-  nodeId: UUID;
-  status: "pending" | "in_progress" | "done";
-  completedAt?: Date;
-}
-```
+Progress is stored as a `progress` column directly on `LearningPathNode` (`pending | in_progress | done`). There is no separate `LearningPathNodeProgress` entity.
 
-Progress lives on the node, not on the path. Overall path progress is derived:
-`Math.floor((nodesDone / totalNodes) * 100)`.
+**Rationale:** the app is designed for single-user use. Each path belongs to exactly one user (`userId` on `LearningPath`), so a separate progress table would always contain exactly one row per node — pure overhead with no benefit. Overall path progress is derived: `Math.floor((nodesDone / totalNodes) * 100)`.
+
+**Future migration path (if path sharing is ever needed):** create a `learning_path_node_progress` table with `(userId, nodeId, status, completedAt)` and `UNIQUE(userId, nodeId)`, backfill from the existing `progress` column using the path's `userId`, then drop the column. The migration is mechanical and localized to the repository and use case layer.
 
 ---
 
@@ -158,15 +151,8 @@ CREATE TABLE learning_path_edges (
   CONSTRAINT no_self_loop CHECK (from_node_id <> to_node_id)
 );
 
-CREATE TABLE learning_path_node_progress (
-  id           uuid PRIMARY KEY,
-  user_id      uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  node_id      uuid NOT NULL REFERENCES learning_path_nodes(id) ON DELETE CASCADE,
-  status       varchar(20) NOT NULL DEFAULT 'pending'
-               CHECK (status IN ('pending', 'in_progress', 'done')),
-  completed_at timestamptz,
-  UNIQUE (user_id, node_id)
-);
+-- No learning_path_node_progress table. Progress lives as a column on
+-- learning_path_nodes. See "Node progress" section in the domain model.
 ```
 
 `ON DELETE SET NULL` on `learning_resource_id`: deleting a catalog resource downgrades
@@ -215,6 +201,28 @@ resources or promotes stubs to full resources from within the path view.
 **External dependency:** the JSON is accessible via GitHub raw without authentication.
 No official API exists (issue #8118 in the repo). If the JSON schema changes, the import
 may break — mitigated by schema validation before processing.
+
+---
+
+### Error model
+
+Use cases return errors as typed values (never throw). Domain-specific errors live in `learning-resource/domain/src/errors/` — they are scoped to this bounded context and have no reason to exist in `domain-lib`. Errors in `domain-lib` (`NotFoundError`, `InvalidDataError`) are justified there because they are reused across multiple bounded contexts; LP-specific errors are not.
+
+| Error | Extends | Returned by |
+|---|---|---|
+| `LearningPathNotFound` | `NotFoundError` | `getLearningPath`, `updateLearningPath`, `deleteLearningPath`, `addLearningPathNode` |
+| `LearningPathForbidden` | `ForbiddenError` | any use case where path exists but belongs to a different user |
+| `LearningPathNodeNotFound` | `NotFoundError` | `updateLearningPathNode`, `deleteLearningPathNode`, `updateLearningPathNodeProgress` |
+| `LearningPathEdgeNotFound` | `NotFoundError` | `deleteLearningPathEdge` |
+| `DuplicateLearningPathEdge` | `InvalidDataError` | `addLearningPathEdge` |
+| `LearningPathCreationError` | `InvalidDataError` | `createLearningPath` |
+
+**Authorization:** "path not found" and "path belongs to another user" are distinct errors internally — they carry different semantics and are useful for logging, metrics, and auditing. The HTTP layer maps each to its correct status code:
+
+- `LearningPathNotFound` → `404`
+- `LearningPathForbidden` → `403`
+
+What must never reach the client: stack traces, TypeORM error messages, table or column names, raw query output, or any other internal system detail. The error mapper (`toHttpException`) produces clean, generic response bodies.
 
 ---
 
