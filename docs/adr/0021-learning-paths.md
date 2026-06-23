@@ -206,16 +206,16 @@ may break — mitigated by schema validation before processing.
 
 ### Error model
 
-Use cases return errors as typed values (never throw). Domain-specific errors live in `learning-resource/domain/src/errors/` — they are scoped to this bounded context and have no reason to exist in `domain-lib`. Errors in `domain-lib` (`NotFoundError`, `InvalidDataError`) are justified there because they are reused across multiple bounded contexts; LP-specific errors are not.
+Use cases return errors as typed values (never throw). LP-specific errors live in `learning-resource/application/src/errors/` — consistent with the codebase convention where all bounded-context errors are application-layer concerns (they are created and returned by use cases, not by domain entities). Errors in `domain-lib` (`ForbiddenError`, `NotFoundError`, `InvalidDataError`) are justified there because they are reused across multiple bounded contexts; LP-specific errors are not.
 
 | Error | Extends | Returned by |
 |---|---|---|
-| `LearningPathNotFound` | `NotFoundError` | `getLearningPath`, `updateLearningPath`, `deleteLearningPath`, `addLearningPathNode` |
-| `LearningPathForbidden` | `ForbiddenError` | any use case where path exists but belongs to a different user |
-| `LearningPathNodeNotFound` | `NotFoundError` | `updateLearningPathNode`, `deleteLearningPathNode`, `updateLearningPathNodeProgress` |
-| `LearningPathEdgeNotFound` | `NotFoundError` | `deleteLearningPathEdge` |
-| `DuplicateLearningPathEdge` | `InvalidDataError` | `addLearningPathEdge` |
-| `LearningPathCreationError` | `InvalidDataError` | `createLearningPath` |
+| `LearningPathNotFoundError` | `BaseError` (404) | `getLearningPath`, `updateLearningPath`, `deleteLearningPath`, `addLearningPathNode` |
+| `LearningPathForbiddenError` | `BaseError` (403) | any use case where path exists but belongs to a different user |
+| `LearningPathNodeNotFoundError` | `BaseError` (404) | `updateLearningPathNode`, `deleteLearningPathNode`, `updateLearningPathNodeProgress` |
+| `LearningPathEdgeNotFoundError` | `BaseError` (404) | `deleteLearningPathEdge` |
+| `DuplicateLearningPathEdgeError` | `BaseError` (409) | `addLearningPathEdge` |
+| `LearningPathCreationError` | `BaseError` (422) | `createLearningPath` |
 
 **Authorization:** "path not found" and "path belongs to another user" are distinct errors internally — they carry different semantics and are useful for logging, metrics, and auditing. The HTTP layer maps each to its correct status code:
 
