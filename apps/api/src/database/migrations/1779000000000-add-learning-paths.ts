@@ -13,7 +13,9 @@ export class AddLearningPaths1779000000000 implements MigrationInterface {
         "sourceSlug"  VARCHAR(200),
         "createdAt"   TIMESTAMP     NOT NULL DEFAULT now(),
         "updatedAt"   TIMESTAMP     NOT NULL DEFAULT now(),
-        CONSTRAINT pk_learning_paths PRIMARY KEY (id)
+        CONSTRAINT pk_learning_paths PRIMARY KEY (id),
+        CONSTRAINT chk_learning_paths_mode   CHECK (mode   IN ('sequential', 'graph')),
+        CONSTRAINT chk_learning_paths_source CHECK (source IN ('manual', 'roadmap.sh'))
       )
     `);
 
@@ -35,12 +37,14 @@ export class AddLearningPaths1779000000000 implements MigrationInterface {
         "createdAt"          TIMESTAMP     NOT NULL DEFAULT now(),
         "updatedAt"          TIMESTAMP     NOT NULL DEFAULT now(),
         CONSTRAINT pk_learning_path_nodes PRIMARY KEY (id),
-        CONSTRAINT uq_learning_path_nodes_path UNIQUE ("pathId", id)
+        CONSTRAINT uq_learning_path_nodes_path UNIQUE ("pathId", id),
+        CONSTRAINT chk_learning_path_nodes_stub_scope CHECK ("stubScope" IN ('path-local', 'catalog')),
+        CONSTRAINT chk_learning_path_nodes_progress   CHECK (progress   IN ('pending', 'in_progress', 'done'))
       )
     `);
 
     await queryRunner.query(`
-      CREATE INDEX idx_learning_path_nodes_path_id ON learning_path_nodes ("pathId")
+      CREATE INDEX idx_learning_path_nodes_path_id     ON learning_path_nodes ("pathId")
     `);
 
     await queryRunner.query(`
@@ -53,8 +57,9 @@ export class AddLearningPaths1779000000000 implements MigrationInterface {
         "pathId"       UUID NOT NULL REFERENCES learning_paths(id) ON DELETE CASCADE,
         "sourceNodeId" UUID NOT NULL,
         "targetNodeId" UUID NOT NULL,
-        CONSTRAINT pk_learning_path_edges PRIMARY KEY (id),
-        CONSTRAINT uq_learning_path_edges UNIQUE ("pathId", "sourceNodeId", "targetNodeId"),
+        CONSTRAINT pk_learning_path_edges   PRIMARY KEY (id),
+        CONSTRAINT uq_learning_path_edges   UNIQUE ("pathId", "sourceNodeId", "targetNodeId"),
+        CONSTRAINT chk_learning_path_no_self_loop CHECK ("sourceNodeId" <> "targetNodeId"),
         CONSTRAINT fk_edge_source FOREIGN KEY ("pathId", "sourceNodeId")
           REFERENCES learning_path_nodes ("pathId", id) ON DELETE CASCADE,
         CONSTRAINT fk_edge_target FOREIGN KEY ("pathId", "targetNodeId")
@@ -63,7 +68,7 @@ export class AddLearningPaths1779000000000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE INDEX idx_learning_path_edges_path_id ON learning_path_edges ("pathId")
+      CREATE INDEX idx_learning_path_edges_path_id     ON learning_path_edges ("pathId")
     `);
 
     await queryRunner.query(`
