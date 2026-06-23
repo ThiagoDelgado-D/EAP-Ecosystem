@@ -1,5 +1,5 @@
 import type { ISessionRepository } from "@user/domain";
-import { ForbiddenError } from "../../errors/forbidden.js";
+import { ForbiddenError } from "domain-lib";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
 
 export interface RevokeSessionDependencies {
