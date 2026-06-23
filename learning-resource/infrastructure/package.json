@@ -9,7 +9,7 @@
     "@learning-resource/domain": "workspace:^",
     "cheerio": "^1.2.0",
     "infrastructure-lib": "workspace:^",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.29"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.13",
