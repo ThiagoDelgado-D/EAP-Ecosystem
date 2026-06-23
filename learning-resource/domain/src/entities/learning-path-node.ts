@@ -17,16 +17,26 @@ export const StubScope = {
 
 export type StubScope = (typeof StubScope)[keyof typeof StubScope];
 
-export interface LearningPathNode extends Entity, TimestampedEntity {
+interface BaseNode extends Entity, TimestampedEntity {
   pathId: UUID;
   title: string;
   description?: string;
   externalUrl?: string;
-  learningResourceId?: UUID;
-  stubScope?: StubScope;
   order?: number;
   progress: NodeProgress;
 }
+
+export interface LinkedLearningPathNode extends BaseNode {
+  learningResourceId: UUID;
+  stubScope?: never;
+}
+
+export interface StubLearningPathNode extends BaseNode {
+  learningResourceId?: never;
+  stubScope: StubScope;
+}
+
+export type LearningPathNode = LinkedLearningPathNode | StubLearningPathNode;
 
 export interface LearningPathWithNodes {
   path: LearningPath;
