@@ -106,6 +106,7 @@ export class PreferencesService {
       await this.repository.resetPreferences();
       this.featureConfig.set([]);
       this.widgetConfig.set([]);
+      this.authStore.updateFeatureConfig([]);
     } catch {
       this.error.set('Failed to reset preferences');
       throw new Error('Failed to reset preferences');
