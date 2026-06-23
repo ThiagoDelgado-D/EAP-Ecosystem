@@ -1,6 +1,8 @@
 # ADR-0021: Learning Paths — Structure, Creation Modes, and Import
 
-**Date:** 2026-06-17 · **Status:** Proposed
+**Date:** 2026-06-17
+**Status:** Accepted  
+**Amended:** 2026-06-23 — composite FK on edges to prevent cross-path edges (see Database section)
 
 ## Context
 
@@ -133,14 +135,25 @@ CREATE TABLE learning_path_nodes (
                        CHECK (stub_scope IN ('path-local', 'catalog')),
   "order"              integer,
   source_node_id       varchar(255),
-  created_at           timestamptz NOT NULL DEFAULT now()
+  created_at           timestamptz NOT NULL DEFAULT now(),
+  -- Required for the composite FK referenced by learning_path_edges.
+  -- id is already globally unique via PRIMARY KEY, but the composite
+  -- (learning_path_id, id) must be declared explicitly to serve as an FK target.
+  CONSTRAINT uq_learning_path_nodes_path UNIQUE (learning_path_id, id)
 );
 
 CREATE TABLE learning_path_edges (
   id               uuid PRIMARY KEY,
   learning_path_id uuid NOT NULL REFERENCES learning_paths(id) ON DELETE CASCADE,
-  from_node_id     uuid NOT NULL REFERENCES learning_path_nodes(id) ON DELETE CASCADE,
-  to_node_id       uuid NOT NULL REFERENCES learning_path_nodes(id) ON DELETE CASCADE,
+  -- Composite FKs enforce that both nodes belong to the same path as the edge.
+  -- A simple FK on from_node_id alone would allow edges connecting nodes from
+  -- different paths, silently corrupting path-scoped graph reads.
+  CONSTRAINT fk_edge_source FOREIGN KEY (learning_path_id, from_node_id)
+    REFERENCES learning_path_nodes(learning_path_id, id) ON DELETE CASCADE,
+  CONSTRAINT fk_edge_target FOREIGN KEY (learning_path_id, to_node_id)
+    REFERENCES learning_path_nodes(learning_path_id, id) ON DELETE CASCADE,
+  from_node_id     uuid NOT NULL,
+  to_node_id       uuid NOT NULL,
   UNIQUE (from_node_id, to_node_id),
   CONSTRAINT no_self_loop CHECK (from_node_id <> to_node_id)
 );
@@ -158,6 +171,11 @@ CREATE TABLE learning_path_node_progress (
 
 `ON DELETE SET NULL` on `learning_resource_id`: deleting a catalog resource downgrades
 the node to a stub rather than cascading the deletion to the path structure.
+
+**Cross-path edge prevention (amendment 2026-06-23):**
+`learning_path_edges` uses composite FKs — `(learning_path_id, from_node_id)` and `(learning_path_id, to_node_id)`— both referencing `learning_path_nodes(learning_path_id, id)`. PostgreSQL verifies that the `learning_path_id` in the edge matches the `learning_path_id` of each referenced node, making it impossible to insert an edge that connects nodes belonging to different paths.
+Simple FKs on the node IDs alone would allow that scenario and silently corrupt `findEdgesByPathId` results. Enforcement is also duplicated in the `addLearningPathEdge`
+use case (defense in depth: DB constraint + application-layer validation).
 
 ---
 
