@@ -37,18 +37,18 @@ export const MODULE_CATALOG: ModuleDefinition[] = [
     key: 'learning-paths',
     label: 'Learning Paths',
     description:
-      'Create curated sequences of resources organized by phases and milestones. Visualize as linear list, kanban, or graph.',
+      'Curated sequences and maps of nodes — link resources from your library, or leave stubs to fill in later. Sequential or graph mode.',
     iconPath: 'M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6zM12 12v9M12 6V3',
-    accentColor: '#818cf8',
+    accentColor: '#a78bfa',
     badge: 'v0.9',
   },
   {
     key: 'knowledge-graph',
     label: 'Atlas (Knowledge Graph)',
     description:
-      'Force-directed D3 graph of your resources. See prerequisites, related content, and knowledge gaps at a glance.',
-    iconPath: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 0v20M2 12h20',
-    accentColor: '#38bdf8',
+      'Interactive graph of your resources. See prerequisites, builds-on, and alternative paths at a glance.',
+    iconPath: 'M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
+    accentColor: '#34d399',
     badge: 'v0.9',
   },
   {

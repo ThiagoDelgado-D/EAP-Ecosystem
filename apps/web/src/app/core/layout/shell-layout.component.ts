@@ -1,4 +1,4 @@
-import { Component, inject, signal, HostListener, PLATFORM_ID, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, HostListener, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
@@ -18,6 +18,8 @@ export class ShellLayoutComponent implements OnInit {
 
   readonly userInitials = this.authStore.userInitials;
   readonly displayName = this.authStore.displayName;
+  readonly showPaths = computed(() => this.authStore.featureSet().has('learning-paths'));
+  readonly showAtlas = computed(() => this.authStore.featureSet().has('knowledge-graph'));
 
   readonly sidebarOpen = signal(true);
   readonly mobileDrawerOpen = signal(false);

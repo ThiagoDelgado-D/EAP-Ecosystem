@@ -129,6 +129,33 @@
           </svg>
           Create
         </a>
+        @if (showPaths()) {
+          <a
+            routerLink="/paths"
+            routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all whitespace-nowrap"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+              <path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6z"/>
+              <path d="M12 12v9M12 6V3"/>
+            </svg>
+            Paths
+          </a>
+        }
+        @if (showAtlas()) {
+          <a
+            routerLink="/atlas"
+            routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all whitespace-nowrap"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            Atlas
+          </a>
+        }
         <a
           routerLink="/settings"
           routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
@@ -274,6 +301,35 @@
           </svg>
           Create
         </a>
+        @if (showPaths()) {
+          <a
+            routerLink="/paths"
+            routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+            (click)="closeMobileDrawer()"
+            class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+              <path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6z"/>
+              <path d="M12 12v9M12 6V3"/>
+            </svg>
+            Paths
+          </a>
+        }
+        @if (showAtlas()) {
+          <a
+            routerLink="/atlas"
+            routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"
+            (click)="closeMobileDrawer()"
+            class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            Atlas
+          </a>
+        }
         <a
           routerLink="/settings"
           routerLinkActive="bg-slate-800 !text-violet-400 border border-slate-700"

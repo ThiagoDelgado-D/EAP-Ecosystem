@@ -1,11 +1,13 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import type { FeatureKey } from '@features/auth/domain/auth.model';
+import { AuthStore } from '@features/auth/application/auth.store';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import type { UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
 
 @Injectable()
 export class PreferencesService {
   private readonly repository = inject(PreferencesRepository);
+  private readonly authStore = inject(AuthStore);
 
   readonly featureConfig = signal<FeatureKey[]>([]);
   readonly widgetConfig = signal<WidgetKey[]>([]);
@@ -36,10 +38,12 @@ export class PreferencesService {
     const prev = this.featureConfig();
     this.error.set(null);
     this.featureConfig.set(config);
+    this.authStore.updateFeatureConfig(config);
     try {
       await this.repository.updateFeatureConfig(config);
     } catch {
       this.featureConfig.set(prev);
+      this.authStore.updateFeatureConfig(prev);
       this.error.set('Failed to save feature configuration');
     }
   }
@@ -102,6 +106,7 @@ export class PreferencesService {
       await this.repository.resetPreferences();
       this.featureConfig.set([]);
       this.widgetConfig.set([]);
+      this.authStore.updateFeatureConfig([]);
     } catch {
       this.error.set('Failed to reset preferences');
       throw new Error('Failed to reset preferences');
