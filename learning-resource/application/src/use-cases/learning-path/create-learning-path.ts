@@ -16,8 +16,6 @@ import {
   type ILearningPathRepository,
   type LearningPath,
 } from "@learning-resource/domain";
-import { LearningPathCreationError } from "../../errors/learning-path-errors.js";
-
 export interface CreateLearningPathDependencies {
   learningPathRepository: ILearningPathRepository;
   cryptoService: CryptoService;
@@ -44,7 +42,7 @@ const createLearningPathSchema = createValidationSchema<CreateLearningPathReques
 export const createLearningPath = async (
   { learningPathRepository, cryptoService }: CreateLearningPathDependencies,
   request: CreateLearningPathRequest,
-): Promise<LearningPath | LearningPathCreationError | InvalidDataError> => {
+): Promise<LearningPath | InvalidDataError> => {
   const validationResult = await createLearningPathSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
