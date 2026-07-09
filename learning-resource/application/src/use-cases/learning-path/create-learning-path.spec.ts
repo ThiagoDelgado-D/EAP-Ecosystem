@@ -18,13 +18,13 @@ describe("createLearningPath", () => {
 
     const result = await createLearningPath(
       { learningPathRepository, cryptoService: crypto },
-      { userId, title: "My Path", mode: PathMode.SEQUENTIAL },
+      { userId, title: "TypeScript Advanced Patterns", mode: PathMode.SEQUENTIAL },
     );
 
     if (result instanceof InvalidDataError) throw result;
 
     expect(result.userId).toBe(userId);
-    expect(result.title).toBe("My Path");
+    expect(result.title).toBe("TypeScript Advanced Patterns");
     expect(result.mode).toBe(PathMode.SEQUENTIAL);
     expect(result.source).toBe(PathSource.MANUAL);
     expect(result.id).toBeDefined();
@@ -36,11 +36,11 @@ describe("createLearningPath", () => {
 
     await createLearningPath(
       { learningPathRepository, cryptoService: crypto },
-      { userId, title: "Persisted Path", mode: PathMode.GRAPH },
+      { userId, title: "Docker and Kubernetes Fundamentals", mode: PathMode.GRAPH },
     );
 
     expect(learningPathRepository.paths).toHaveLength(1);
-    expect(learningPathRepository.paths[0]!.title).toBe("Persisted Path");
+    expect(learningPathRepository.paths[0]!.title).toBe("Docker and Kubernetes Fundamentals");
   });
 
   test("should default source to MANUAL when not provided", async () => {
@@ -48,7 +48,7 @@ describe("createLearningPath", () => {
 
     const result = await createLearningPath(
       { learningPathRepository, cryptoService: crypto },
-      { userId, title: "No Source", mode: PathMode.SEQUENTIAL },
+      { userId, title: "Clean Architecture with Node.js", mode: PathMode.SEQUENTIAL },
     );
 
     if (result instanceof InvalidDataError) throw result;
@@ -63,25 +63,25 @@ describe("createLearningPath", () => {
       { learningPathRepository, cryptoService: crypto },
       {
         userId,
-        title: "Roadmap Path",
-        description: "A path imported from roadmap.sh",
+        title: "Backend Developer Roadmap",
+        description: "A structured path covering APIs, databases, caching, and system design",
         mode: PathMode.GRAPH,
         source: PathSource.ROADMAP_SH,
-        sourceSlug: "devops",
+        sourceSlug: "backend",
       },
     );
 
     if (result instanceof InvalidDataError) throw result;
 
-    expect(result.description).toBe("A path imported from roadmap.sh");
+    expect(result.description).toBe("A structured path covering APIs, databases, caching, and system design");
     expect(result.source).toBe(PathSource.ROADMAP_SH);
-    expect(result.sourceSlug).toBe("devops");
+    expect(result.sourceSlug).toBe("backend");
   });
 
   test("should return InvalidDataError when userId is not a valid UUID", async () => {
     const result = await createLearningPath(
       { learningPathRepository, cryptoService: crypto },
-      { userId: "not-a-uuid" as any, title: "My Path", mode: PathMode.SEQUENTIAL },
+      { userId: "not-a-uuid" as any, title: "TypeScript Advanced Patterns", mode: PathMode.SEQUENTIAL },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
@@ -103,7 +103,7 @@ describe("createLearningPath", () => {
 
     const result = await createLearningPath(
       { learningPathRepository, cryptoService: crypto },
-      { userId, title: "My Path", mode: "invalid" as any },
+      { userId, title: "TypeScript Advanced Patterns", mode: "invalid" as any },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);

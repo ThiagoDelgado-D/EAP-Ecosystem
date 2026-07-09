@@ -25,7 +25,8 @@ describe("deleteLearningPath", () => {
     const path: LearningPath = {
       id: await crypto.generateUUID(),
       userId,
-      title: "Path to Delete",
+      title: "PostgreSQL Performance Tuning",
+      description: "Indexing strategies, query optimization, and EXPLAIN ANALYZE",
       mode: PathMode.SEQUENTIAL,
       source: PathSource.MANUAL,
       createdAt: new Date(),
@@ -81,7 +82,7 @@ describe("deleteLearningPath", () => {
     learningPathRepository.nodes.push({
       id: nodeId,
       pathId: path.id,
-      title: "Node",
+      title: "Understanding EXPLAIN ANALYZE output",
       progress: "pending",
       stubScope: "path-local",
       createdAt: new Date(),

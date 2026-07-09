@@ -32,7 +32,7 @@ describe("listLearningPaths", () => {
     const userPath: LearningPath = {
       id: await crypto.generateUUID(),
       userId,
-      title: "My Path",
+      title: "React and the Ecosystem",
       mode: PathMode.SEQUENTIAL,
       source: PathSource.MANUAL,
       createdAt: new Date(),
@@ -42,9 +42,10 @@ describe("listLearningPaths", () => {
     const otherPath: LearningPath = {
       id: await crypto.generateUUID(),
       userId: otherUserId,
-      title: "Other Path",
-      mode: PathMode.SEQUENTIAL,
-      source: PathSource.MANUAL,
+      title: "DevOps Roadmap",
+      mode: PathMode.GRAPH,
+      source: PathSource.ROADMAP_SH,
+      sourceSlug: "devops",
       createdAt: new Date(),
       updatedAt: new Date(),
     };

@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
-import { PathMode, PathSource, type LearningPath } from "@learning-resource/domain";
+import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import {
+  PathMode,
+  PathSource,
+  type LearningPath,
+} from "@learning-resource/domain";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { updateLearningPath } from "./update-learning-path.js";
 import {
@@ -17,12 +21,12 @@ describe("updateLearningPath", () => {
     learningPathRepository = mockLearningPathRepository();
   });
 
-  async function seedPath(userId: string): Promise<LearningPath> {
+  async function seedPath(userId: UUID): Promise<LearningPath> {
     const path: LearningPath = {
       id: await crypto.generateUUID(),
       userId,
-      title: "Original Title",
-      description: "Original description",
+      title: "Rust Programming Language",
+      description: "From ownership and borrowing to async Rust and WebAssembly",
       mode: PathMode.SEQUENTIAL,
       source: PathSource.MANUAL,
       createdAt: new Date(),
@@ -38,7 +42,7 @@ describe("updateLearningPath", () => {
 
     const result = await updateLearningPath(
       { learningPathRepository },
-      { userId, pathId, title: "New Title" },
+      { userId, pathId, title: "Go Programming Language" },
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
@@ -51,7 +55,7 @@ describe("updateLearningPath", () => {
 
     const result = await updateLearningPath(
       { learningPathRepository },
-      { userId, pathId: path.id, title: "Hijacked" },
+      { userId, pathId: path.id, title: "Go Programming Language" },
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
@@ -63,14 +67,14 @@ describe("updateLearningPath", () => {
 
     const result = await updateLearningPath(
       { learningPathRepository },
-      { userId, pathId: path.id, title: "Updated Title" },
+      { userId, pathId: path.id, title: "Rust for Systems Programming" },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
     if (result instanceof LearningPathForbiddenError) throw result;
     if (result instanceof InvalidDataError) throw result;
 
-    expect(result.title).toBe("Updated Title");
+    expect(result.title).toBe("Rust for Systems Programming");
     expect(result.id).toBe(path.id);
   });
 
@@ -80,14 +84,20 @@ describe("updateLearningPath", () => {
 
     const result = await updateLearningPath(
       { learningPathRepository },
-      { userId, pathId: path.id, description: "New description" },
+      {
+        userId,
+        pathId: path.id,
+        description: "Advanced Rust: async runtimes, macros, and unsafe code",
+      },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
     if (result instanceof LearningPathForbiddenError) throw result;
     if (result instanceof InvalidDataError) throw result;
 
-    expect(result.description).toBe("New description");
+    expect(result.description).toBe(
+      "Advanced Rust: async runtimes, macros, and unsafe code",
+    );
   });
 
   test("should return InvalidDataError when pathId is not a valid UUID", async () => {
@@ -95,7 +105,11 @@ describe("updateLearningPath", () => {
 
     const result = await updateLearningPath(
       { learningPathRepository },
-      { userId, pathId: "not-a-uuid" as any, title: "X" },
+      {
+        userId,
+        pathId: "not-a-uuid" as any,
+        title: "Rust for Systems Programming",
+      },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);

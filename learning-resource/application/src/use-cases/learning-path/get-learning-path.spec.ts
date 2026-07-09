@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
-import { PathMode, PathSource, type LearningPath } from "@learning-resource/domain";
+import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import {
+  PathMode,
+  PathSource,
+  type LearningPath,
+} from "@learning-resource/domain";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { getLearningPath } from "./get-learning-path.js";
 import {
@@ -17,12 +21,14 @@ describe("getLearningPath", () => {
     learningPathRepository = mockLearningPathRepository();
   });
 
-  async function seedPath(userId: string): Promise<LearningPath> {
+  async function seedPath(userId: UUID): Promise<LearningPath> {
     const path: LearningPath = {
       id: await crypto.generateUUID(),
       userId,
-      title: "Test Path",
-      mode: PathMode.SEQUENTIAL,
+      title: "System Design Fundamentals",
+      description:
+        "Covers distributed systems, CAP theorem, and scalability patterns",
+      mode: PathMode.GRAPH,
       source: PathSource.MANUAL,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -70,6 +76,7 @@ describe("getLearningPath", () => {
     if (result instanceof InvalidDataError) throw result;
 
     expect(result.path.id).toBe(path.id);
+    expect(result.path.title).toBe("System Design Fundamentals");
     expect(result.nodes).toEqual([]);
     expect(result.edges).toEqual([]);
   });
