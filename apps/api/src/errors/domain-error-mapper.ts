@@ -1,8 +1,14 @@
 import { HttpException } from "@nestjs/common";
-import type { LearningResourceDomainError } from "@learning-resource/application";
+import type {
+  LearningResourceDomainError,
+  LearningPathDomainError,
+} from "@learning-resource/application";
 import type { UserDomainError } from "@user/application";
 
-type AppDomainError = LearningResourceDomainError | UserDomainError;
+type AppDomainError =
+  | LearningResourceDomainError
+  | UserDomainError
+  | LearningPathDomainError;
 type ErrorName = AppDomainError["name"];
 
 const httpStatusMap: Record<ErrorName, number> = {
@@ -14,6 +20,8 @@ const httpStatusMap: Record<ErrorName, number> = {
   USER_NOT_FOUND_ERROR: 404,
   SESSION_NOT_FOUND_ERROR: 404,
   FORBIDDEN_ERROR: 403,
+  LEARNING_PATH_NOT_FOUND_ERROR: 404,
+  LEARNING_PATH_FORBIDDEN_ERROR: 403,
 };
 
 export function toHttpException(error: AppDomainError): never {
