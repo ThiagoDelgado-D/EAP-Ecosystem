@@ -9,6 +9,11 @@ import { toggleResourceDifficulty } from "./use-cases/toggles/toggle-resource-di
 import { toggleResourceEnergy } from "./use-cases/toggles/toggle-resource-energy.js";
 import { toggleStatus } from "./use-cases/toggles/toggle-resource-status.js";
 import { toggleMentalState } from "./use-cases/toggles/toggle-mental-state.js";
+import { createLearningPath } from "./use-cases/learning-path/create-learning-path.js";
+import { listLearningPaths } from "./use-cases/learning-path/list-learning-paths.js";
+import { getLearningPath } from "./use-cases/learning-path/get-learning-path.js";
+import { updateLearningPath } from "./use-cases/learning-path/update-learning-path.js";
+import { deleteLearningPath } from "./use-cases/learning-path/delete-learning-path.js";
 
 export const learningResourceUseCaseMap = {
   addResource,
@@ -27,3 +32,15 @@ export type LearningResourceUseCaseMap = typeof learningResourceUseCaseMap;
 
 export type LearningResourceDomainError =
   UseCaseErrors<LearningResourceUseCaseMap>;
+
+export const learningPathUseCaseMap = {
+  createLearningPath,
+  listLearningPaths,
+  getLearningPath,
+  updateLearningPath,
+  deleteLearningPath,
+} as const;
+
+export type LearningPathUseCaseMap = typeof learningPathUseCaseMap;
+
+export type LearningPathDomainError = UseCaseErrors<LearningPathUseCaseMap>;
