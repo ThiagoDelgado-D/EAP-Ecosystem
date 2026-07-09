@@ -78,7 +78,7 @@ describe("updateLearningPath", () => {
     expect(result.id).toBe(path.id);
   });
 
-  test("should update description", async () => {
+  test("should update description without erasing title", async () => {
     const userId = await crypto.generateUUID();
     const path = await seedPath(userId);
 
@@ -98,6 +98,24 @@ describe("updateLearningPath", () => {
     expect(result.description).toBe(
       "Advanced Rust: async runtimes, macros, and unsafe code",
     );
+    expect(result.title).toBe(path.title);
+  });
+
+  test("should update title without erasing description", async () => {
+    const userId = await crypto.generateUUID();
+    const path = await seedPath(userId);
+
+    const result = await updateLearningPath(
+      { learningPathRepository },
+      { userId, pathId: path.id, title: "Rust for Systems Programming" },
+    );
+
+    if (result instanceof LearningPathNotFoundError) throw result;
+    if (result instanceof LearningPathForbiddenError) throw result;
+    if (result instanceof InvalidDataError) throw result;
+
+    expect(result.title).toBe("Rust for Systems Programming");
+    expect(result.description).toBe(path.description);
   });
 
   test("should return InvalidDataError when pathId is not a valid UUID", async () => {

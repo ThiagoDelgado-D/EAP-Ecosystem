@@ -50,5 +50,8 @@ export const updateLearningPath = async (
   if (!existing) return new LearningPathNotFoundError();
   if (existing.userId !== userId) return new LearningPathForbiddenError();
 
-  return learningPathRepository.update(pathId, { title, description });
+  return learningPathRepository.update(pathId, {
+    ...(title !== undefined && { title }),
+    ...(description !== undefined && { description }),
+  });
 };
