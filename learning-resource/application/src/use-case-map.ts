@@ -14,6 +14,10 @@ import { listLearningPaths } from "./use-cases/learning-path/list-learning-paths
 import { getLearningPath } from "./use-cases/learning-path/get-learning-path.js";
 import { updateLearningPath } from "./use-cases/learning-path/update-learning-path.js";
 import { deleteLearningPath } from "./use-cases/learning-path/delete-learning-path.js";
+import { addLearningPathNode } from "./use-cases/learning-path/add-learning-path-node.js";
+import { deleteLearningPathNode } from "./use-cases/learning-path/delete-learning-path-node.js";
+import { updateLearningPathNode } from "./use-cases/learning-path/update-learning-path-node.js";
+import { updateLearningPathNodeProgress } from "./use-cases/learning-path/update-learning-path-node-progress.js";
 
 export const learningResourceUseCaseMap = {
   addResource,
@@ -44,3 +48,15 @@ export const learningPathUseCaseMap = {
 export type LearningPathUseCaseMap = typeof learningPathUseCaseMap;
 
 export type LearningPathDomainError = UseCaseErrors<LearningPathUseCaseMap>;
+
+export const learningPathNodeUseCaseMap = {
+  addLearningPathNode,
+  deleteLearningPathNode,
+  updateLearningPathNode,
+  updateLearningPathNodeProgress,
+} as const;
+
+export type LearningPathNodeUseCaseMap = typeof learningPathNodeUseCaseMap;
+
+export type LearningPathNodeDomainError =
+  UseCaseErrors<LearningPathNodeUseCaseMap>;
