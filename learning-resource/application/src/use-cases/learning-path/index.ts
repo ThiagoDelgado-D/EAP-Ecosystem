@@ -3,3 +3,7 @@ export * from "./list-learning-paths.js";
 export * from "./get-learning-path.js";
 export * from "./update-learning-path.js";
 export * from "./delete-learning-path.js";
+export * from "./add-learning-path-node.js";
+export * from "./update-learning-path-node.js";
+export * from "./delete-learning-path-node.js";
+export * from "./update-learning-path-node-progress.js";

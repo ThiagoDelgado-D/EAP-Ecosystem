@@ -4,6 +4,7 @@ import type {
   LearningPathNode,
   LearningPathWithNodes,
   NodeProgress,
+  StubScope,
 } from "../entities/learning-path-node.js";
 import type { LearningPathEdge } from "../entities/learning-path-edge.js";
 
@@ -11,7 +12,7 @@ export type LearningPathPatch = Partial<Pick<LearningPath, "title" | "descriptio
 
 export type LearningPathNodePatch = Partial<
   Pick<LearningPathNode & { stubScope: never }, "title" | "description" | "externalUrl" | "order" | "progress">
-> & { learningResourceId?: UUID | null };
+> & { learningResourceId?: UUID | null; stubScope?: StubScope | null };
 
 export interface ILearningPathRepository {
   findAllByUserId(userId: UUID): Promise<LearningPath[]>;
