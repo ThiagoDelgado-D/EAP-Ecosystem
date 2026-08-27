@@ -176,6 +176,40 @@ describe("updateLearningPathNode", () => {
     if (result instanceof InvalidDataError) throw result;
 
     expect(result.learningResourceId).toBeNull();
+    expect(result.stubScope).toBe(StubScope.PATH_LOCAL);
+  });
+
+  test("should clear stubScope when linking a stub node to a resource", async () => {
+    const userId = await crypto.generateUUID();
+    const path = await seedPath(userId);
+    const node = await seedNode(path.id);
+    const learningResourceId = await crypto.generateUUID();
+
+    const result = await updateLearningPathNode(
+      { learningPathRepository },
+      { userId, pathId: path.id, nodeId: node.id, learningResourceId },
+    );
+
+    if (result instanceof LearningPathNotFoundError) throw result;
+    if (result instanceof LearningPathForbiddenError) throw result;
+    if (result instanceof LearningPathNodeNotFoundError) throw result;
+    if (result instanceof InvalidDataError) throw result;
+
+    expect(result.learningResourceId).toBe(learningResourceId);
+    expect(result.stubScope).toBeNull();
+  });
+
+  test("should return InvalidDataError when learningResourceId is not a valid UUID", async () => {
+    const userId = await crypto.generateUUID();
+    const path = await seedPath(userId);
+    const node = await seedNode(path.id);
+
+    const result = await updateLearningPathNode(
+      { learningPathRepository },
+      { userId, pathId: path.id, nodeId: node.id, learningResourceId: "not-a-uuid" as any },
+    );
+
+    expect(result).toBeInstanceOf(InvalidDataError);
   });
 
   test("should return InvalidDataError when nodeId is not a valid UUID", async () => {

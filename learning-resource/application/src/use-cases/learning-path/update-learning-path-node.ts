@@ -11,6 +11,7 @@ import {
 } from "domain-lib";
 import {
   NodeProgress,
+  StubScope,
   type ILearningPathRepository,
   type LearningPathNode,
   type LearningPathNodePatch,
@@ -65,11 +66,17 @@ export const updateLearningPathNode = async (
     return new InvalidDataError(validationResult.errors);
   }
 
-  if (
-    request.learningResourceId !== undefined &&
-    request.learningResourceId !== null &&
-    typeof request.learningResourceId !== "string"
-  ) {
+  let learningResourceIdPatch: Pick<LearningPathNodePatch, "learningResourceId" | "stubScope"> | undefined;
+
+  if (typeof request.learningResourceId === "string") {
+    const result = uuidField("LearningResourceId", { required: true })(request.learningResourceId);
+    if (!result.isValid) {
+      return new InvalidDataError({ learningResourceId: result.error });
+    }
+    learningResourceIdPatch = { learningResourceId: result.value, stubScope: null };
+  } else if (request.learningResourceId === null) {
+    learningResourceIdPatch = { learningResourceId: null, stubScope: StubScope.PATH_LOCAL };
+  } else if (request.learningResourceId !== undefined) {
     return new InvalidDataError({ learningResourceId: "Must be a valid UUID or null" });
   }
 
@@ -88,7 +95,7 @@ export const updateLearningPathNode = async (
     ...(externalUrl !== undefined && { externalUrl }),
     ...(order !== undefined && { order }),
     ...(progress !== undefined && { progress }),
-    ...(request.learningResourceId !== undefined && { learningResourceId: request.learningResourceId }),
+    ...(learningResourceIdPatch ?? {}),
   };
 
   return learningPathRepository.updateNode(nodeId, patch);
