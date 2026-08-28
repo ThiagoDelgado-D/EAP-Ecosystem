@@ -133,15 +133,17 @@ export class LearningResourceService {
     apiCall: () => Promise<void>,
   ): Promise<void> {
     const prev = this.resources().find((r) => r.id === id);
-    if (!prev) return;
-
-    this.resources.update((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    if (prev) {
+      this.resources.update((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    }
 
     try {
       await apiCall();
       this.patchResourceInCache(id, patch);
     } catch (err) {
-      this.resources.update((rs) => rs.map((r) => (r.id === id ? prev : r)));
+      if (prev) {
+        this.resources.update((rs) => rs.map((r) => (r.id === id ? prev : r)));
+      }
       throw err;
     }
   }
