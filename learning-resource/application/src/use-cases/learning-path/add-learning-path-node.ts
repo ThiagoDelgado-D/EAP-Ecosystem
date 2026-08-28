@@ -2,6 +2,7 @@ import {
   createValidationSchema,
   type CryptoService,
   InvalidDataError,
+  isErrorResult,
   optionalEnum,
   optionalString,
   optionalNumber,
@@ -21,6 +22,7 @@ import {
   LearningPathForbiddenError,
   LearningPathNotFoundError,
 } from "../../errors/learning-path-errors.js";
+import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js";
 
 export interface AddLearningPathNodeDependencies {
   learningPathRepository: ILearningPathRepository;
@@ -64,9 +66,8 @@ export const addLearningPathNode = async (
 
   const { userId, pathId, title, description, externalUrl, learningResourceId, stubScope, order, progress } = validationResult;
 
-  const path = await learningPathRepository.findById(pathId);
-  if (!path) return new LearningPathNotFoundError();
-  if (path.userId !== userId) return new LearningPathForbiddenError();
+  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  if (isErrorResult(path)) return path;
 
   const id = await cryptoService.generateUUID();
   const now = new Date();

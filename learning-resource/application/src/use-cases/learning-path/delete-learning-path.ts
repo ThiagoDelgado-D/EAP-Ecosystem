@@ -1,6 +1,7 @@
 import {
   createValidationSchema,
   InvalidDataError,
+  isErrorResult,
   uuidField,
   ValidationError,
   type UUID,
@@ -10,6 +11,7 @@ import {
   LearningPathForbiddenError,
   LearningPathNotFoundError,
 } from "../../errors/learning-path-errors.js";
+import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js";
 
 export interface DeleteLearningPathDependencies {
   learningPathRepository: ILearningPathRepository;
@@ -42,9 +44,8 @@ export const deleteLearningPath = async (
 
   const { userId, pathId } = validationResult;
 
-  const existing = await learningPathRepository.findById(pathId);
-  if (!existing) return new LearningPathNotFoundError();
-  if (existing.userId !== userId) return new LearningPathForbiddenError();
+  const existing = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  if (isErrorResult(existing)) return existing;
 
   await learningPathRepository.delete(pathId);
 };

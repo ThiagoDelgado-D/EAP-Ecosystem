@@ -1,6 +1,7 @@
 import {
   createValidationSchema,
   InvalidDataError,
+  isErrorResult,
   uuidField,
   ValidationError,
   type UUID,
@@ -11,6 +12,7 @@ import {
   LearningPathForbiddenError,
   LearningPathNotFoundError,
 } from "../../errors/learning-path-errors.js";
+import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js";
 
 export interface DeleteLearningPathEdgeDependencies {
   learningPathRepository: ILearningPathRepository;
@@ -45,9 +47,8 @@ export const deleteLearningPathEdge = async (
 
   const { userId, pathId, edgeId } = validationResult;
 
-  const path = await learningPathRepository.findById(pathId);
-  if (!path) return new LearningPathNotFoundError();
-  if (path.userId !== userId) return new LearningPathForbiddenError();
+  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  if (isErrorResult(path)) return path;
 
   const edges = await learningPathRepository.findEdgesByPathId(pathId);
   const edgeExists = edges.some((e) => e.id === edgeId);
