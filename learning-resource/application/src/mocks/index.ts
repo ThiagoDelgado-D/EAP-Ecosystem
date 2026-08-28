@@ -3,3 +3,4 @@ export * from "./mock-resource-type-repository.js";
 export * from "./mock-topic-repository.js";
 export * from "./mock-preview-url.js";
 export * from "./mock-learning-path-repository.js";
+export * from "./factories.js";
