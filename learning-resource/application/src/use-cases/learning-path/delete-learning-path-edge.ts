@@ -50,8 +50,8 @@ export const deleteLearningPathEdge = async (
   if (path.userId !== userId) return new LearningPathForbiddenError();
 
   const edges = await learningPathRepository.findEdgesByPathId(pathId);
-  const edge = edges.find((e) => e.id === edgeId);
-  if (!edge) return new LearningPathEdgeNotFoundError();
+  const edgeExists = edges.some((e) => e.id === edgeId);
+  if (!edgeExists) return new LearningPathEdgeNotFoundError();
 
   await learningPathRepository.deleteEdge(edgeId);
 };

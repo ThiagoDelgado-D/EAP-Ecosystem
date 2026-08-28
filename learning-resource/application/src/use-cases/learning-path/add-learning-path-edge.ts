@@ -63,10 +63,10 @@ export const addLearningPathEdge = async (
   if (path.userId !== userId) return new LearningPathForbiddenError();
 
   const sourceNode = await learningPathRepository.findNodeById(sourceNodeId);
-  if (!sourceNode || sourceNode.pathId !== pathId) return new LearningPathNodeNotFoundError();
+  if (sourceNode?.pathId !== pathId) return new LearningPathNodeNotFoundError();
 
   const targetNode = await learningPathRepository.findNodeById(targetNodeId);
-  if (!targetNode || targetNode.pathId !== pathId) return new LearningPathNodeNotFoundError();
+  if (targetNode?.pathId !== pathId) return new LearningPathNodeNotFoundError();
 
   const existingEdges = await learningPathRepository.findEdgesByPathId(pathId);
   const isDuplicate = existingEdges.some(
