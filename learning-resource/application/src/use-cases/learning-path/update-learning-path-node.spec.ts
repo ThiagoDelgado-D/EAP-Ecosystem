@@ -1,13 +1,7 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
-import {
-  NodeProgress,
-  PathMode,
-  PathSource,
-  StubScope,
-  type LearningPath,
-  type LearningPathNode,
-} from "@learning-resource/domain";
+import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { StubScope } from "@learning-resource/domain";
+import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { updateLearningPathNode } from "./update-learning-path-node.js";
 import {
@@ -25,37 +19,6 @@ describe("updateLearningPathNode", () => {
     learningPathRepository = mockLearningPathRepository();
   });
 
-  async function seedPath(userId: UUID): Promise<LearningPath> {
-    const path: LearningPath = {
-      id: await crypto.generateUUID(),
-      userId,
-      title: "Docker and Kubernetes Fundamentals",
-      description: "From containers to production-grade orchestration with Kubernetes",
-      mode: PathMode.SEQUENTIAL,
-      source: PathSource.MANUAL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    learningPathRepository.paths.push(path);
-    return path;
-  }
-
-  async function seedNode(pathId: UUID): Promise<LearningPathNode> {
-    const node: LearningPathNode = {
-      id: await crypto.generateUUID(),
-      pathId,
-      title: "Introduction to Docker",
-      description: "Images, containers, and the Docker daemon",
-      stubScope: StubScope.PATH_LOCAL,
-      order: 1,
-      progress: NodeProgress.PENDING,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    learningPathRepository.nodes.push(node);
-    return node;
-  }
-
   test("should return LearningPathNotFoundError when path does not exist", async () => {
     const userId = await crypto.generateUUID();
     const pathId = await crypto.generateUUID();
@@ -72,8 +35,8 @@ describe("updateLearningPathNode", () => {
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
     const userId = await crypto.generateUUID();
     const otherUserId = await crypto.generateUUID();
-    const path = await seedPath(otherUserId);
-    const node = await seedNode(path.id);
+    const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNode(
       { learningPathRepository },
@@ -85,7 +48,7 @@ describe("updateLearningPathNode", () => {
 
   test("should return LearningPathNodeNotFoundError when node does not exist", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
     const nodeId = await crypto.generateUUID();
 
     const result = await updateLearningPathNode(
@@ -98,9 +61,9 @@ describe("updateLearningPathNode", () => {
 
   test("should return LearningPathNodeNotFoundError when node belongs to a different path", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const otherPath = await seedPath(userId);
-    const nodeFromOtherPath = await seedNode(otherPath.id);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const otherPath = seedLearningPath(learningPathRepository, { userId });
+    const nodeFromOtherPath = seedLearningPathNode(learningPathRepository, { pathId: otherPath.id });
 
     const result = await updateLearningPathNode(
       { learningPathRepository },
@@ -112,8 +75,8 @@ describe("updateLearningPathNode", () => {
 
   test("should update title without erasing other fields", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const node = await seedNode(path.id);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNode(
       { learningPathRepository },
@@ -132,8 +95,8 @@ describe("updateLearningPathNode", () => {
 
   test("should link a resource by setting learningResourceId", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const node = await seedNode(path.id);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const learningResourceId = await crypto.generateUUID();
 
     const result = await updateLearningPathNode(
@@ -151,19 +114,12 @@ describe("updateLearningPathNode", () => {
 
   test("should unlink a resource when learningResourceId is null", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
     const learningResourceId = await crypto.generateUUID();
-    const linkedNode: LearningPathNode = {
-      id: await crypto.generateUUID(),
+    const linkedNode = seedLearningPathNode(learningPathRepository, {
       pathId: path.id,
-      title: "Writing Dockerfiles",
       learningResourceId,
-      order: 2,
-      progress: NodeProgress.PENDING,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    learningPathRepository.nodes.push(linkedNode);
+    });
 
     const result = await updateLearningPathNode(
       { learningPathRepository },
@@ -181,8 +137,8 @@ describe("updateLearningPathNode", () => {
 
   test("should clear stubScope when linking a stub node to a resource", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const node = await seedNode(path.id);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const learningResourceId = await crypto.generateUUID();
 
     const result = await updateLearningPathNode(
@@ -201,8 +157,8 @@ describe("updateLearningPathNode", () => {
 
   test("should return InvalidDataError when learningResourceId is not a valid UUID", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const node = await seedNode(path.id);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNode(
       { learningPathRepository },
