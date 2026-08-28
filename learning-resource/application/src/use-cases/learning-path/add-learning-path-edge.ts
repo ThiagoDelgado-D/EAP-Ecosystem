@@ -47,7 +47,7 @@ export const addLearningPathEdge = async (
   | DuplicateLearningPathEdgeError
   | InvalidDataError
 > => {
-  const validationResult = await addLearningPathEdgeSchema(request);
+  const validationResult = addLearningPathEdgeSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
   }

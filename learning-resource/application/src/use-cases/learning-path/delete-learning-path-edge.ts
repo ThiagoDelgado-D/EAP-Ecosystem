@@ -38,7 +38,7 @@ export const deleteLearningPathEdge = async (
   | LearningPathEdgeNotFoundError
   | InvalidDataError
 > => {
-  const validationResult = await deleteLearningPathEdgeSchema(request);
+  const validationResult = deleteLearningPathEdgeSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
   }
