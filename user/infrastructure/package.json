@@ -6,7 +6,7 @@
   "dependencies": {
     "@user/domain": "workspace:^",
     "domain-lib": "workspace:^",
-    "typeorm": "^0.3.29"
+    "typeorm": "^0.3.31"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.0.13",

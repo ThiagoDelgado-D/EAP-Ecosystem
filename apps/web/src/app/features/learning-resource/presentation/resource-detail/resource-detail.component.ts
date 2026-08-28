@@ -161,6 +161,8 @@ export class ResourceDetailComponent implements OnInit {
         await this.resourceService.toggleEnergy(this.resourceId, value as EnergyLevel);
       } else if (field === 'status') {
         await this.resourceService.toggleStatus(this.resourceId, value as ResourceStatus);
+      } else if (field === 'mentalState') {
+        await this.resourceService.toggleMentalState(this.resourceId, value as MentalStateType);
       }
       const updated = await this.resourceService.getById(this.resourceId);
       this.resource.set(updated);
