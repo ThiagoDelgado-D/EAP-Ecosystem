@@ -15,21 +15,21 @@ import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
 
 describe("LearningPathController (integration)", () => {
   let app: INestApplication;
-  let pathRepo: ReturnType<typeof mockLearningPathRepository>;
+  let pathRepository: ReturnType<typeof mockLearningPathRepository>;
   let cryptoService: CryptoServiceImpl;
   let jwtService: MockedJwtService;
 
-  let userId: UUID;
-  let otherUserId: UUID;
-  let token: string;
-  let otherToken: string;
+  let ownerId: UUID;
+  let intruderId: UUID;
+  let ownerToken: string;
+  let intruderToken: string;
 
   beforeAll(async () => {
     cryptoService = new CryptoServiceImpl();
-    userId = await cryptoService.generateUUID();
-    otherUserId = await cryptoService.generateUUID();
+    ownerId = await cryptoService.generateUUID();
+    intruderId = await cryptoService.generateUUID();
 
-    pathRepo = mockLearningPathRepository();
+    pathRepository = mockLearningPathRepository();
     jwtService = mockJwtService();
 
     const module = await Test.createTestingModule({
@@ -42,7 +42,7 @@ describe("LearningPathController (integration)", () => {
       .overrideProvider(getRepositoryToken(LearningPathEdgeEntity))
       .useValue({})
       .overrideProvider("ILearningPathRepository")
-      .useValue(pathRepo)
+      .useValue(pathRepository)
       .overrideProvider("ICryptoService")
       .useValue(cryptoService)
       .overrideProvider("IJwtService")
@@ -56,15 +56,17 @@ describe("LearningPathController (integration)", () => {
     app.useGlobalFilters(new GlobalExceptionFilter());
     await app.init();
 
-    token = await jwtService.sign({ sub: userId });
-    otherToken = await jwtService.sign({ sub: otherUserId });
+    ownerToken = await jwtService.sign({ sub: ownerId });
+    intruderToken = await jwtService.sign({ sub: intruderId });
   });
 
   afterAll(async () => await app.close());
 
-  afterEach(() => pathRepo.reset());
+  afterEach(() => pathRepository.reset());
 
-  const auth = (t: string = token) => ({ Authorization: `Bearer ${t}` });
+  const authHeader = (bearerToken: string = ownerToken) => ({
+    Authorization: `Bearer ${bearerToken}`,
+  });
 
   describe("Unauthenticated access", () => {
     test("Should return 401 without a bearer token", async () => {
@@ -74,107 +76,113 @@ describe("LearningPathController (integration)", () => {
 
   describe("Full path -> node -> edge lifecycle", () => {
     test("creates a path, adds two nodes, links them with an edge, and reads it back", async () => {
-      const createRes = await request(app.getHttpServer())
+      const createPathResponse = await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
-        .set(auth())
+        .set(authHeader())
         .send({ title: "Angular from scratch", mode: "graph" })
         .expect(201);
 
-      const pathId = createRes.body.id;
-      expect(createRes.body.title).toBe("Angular from scratch");
-      expect(createRes.body.mode).toBe("graph");
+      const pathId = createPathResponse.body.id;
+      expect(createPathResponse.body.title).toBe("Angular from scratch");
+      expect(createPathResponse.body.mode).toBe("graph");
 
-      const nodeARes = await request(app.getHttpServer())
+      const componentsNodeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/nodes`)
-        .set(auth())
+        .set(authHeader())
         .send({ title: "Components", stubScope: "path-local" })
         .expect(201);
 
-      const nodeBRes = await request(app.getHttpServer())
+      const servicesNodeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/nodes`)
-        .set(auth())
+        .set(authHeader())
         .send({ title: "Services", stubScope: "path-local" })
         .expect(201);
 
-      const nodeAId = nodeARes.body.id;
-      const nodeBId = nodeBRes.body.id;
+      const componentsNodeId = componentsNodeResponse.body.id;
+      const servicesNodeId = servicesNodeResponse.body.id;
 
       await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/edges`)
-        .set(auth())
-        .send({ sourceNodeId: nodeAId, targetNodeId: nodeBId })
+        .set(authHeader())
+        .send({ sourceNodeId: componentsNodeId, targetNodeId: servicesNodeId })
         .expect(201);
 
-      const getRes = await request(app.getHttpServer())
+      const pathDetailResponse = await request(app.getHttpServer())
         .get(`/api/v1/learning-paths/${pathId}`)
-        .set(auth())
+        .set(authHeader())
         .expect(200);
 
-      expect(getRes.body.path.id).toBe(pathId);
-      expect(getRes.body.nodes).toHaveLength(2);
-      expect(getRes.body.edges).toHaveLength(1);
-      expect(getRes.body.edges[0]).toMatchObject({ sourceNodeId: nodeAId, targetNodeId: nodeBId });
+      expect(pathDetailResponse.body.path.id).toBe(pathId);
+      expect(pathDetailResponse.body.nodes).toHaveLength(2);
+      expect(pathDetailResponse.body.edges).toHaveLength(1);
+      expect(pathDetailResponse.body.edges[0]).toMatchObject({
+        sourceNodeId: componentsNodeId,
+        targetNodeId: servicesNodeId,
+      });
     });
 
     test("updates node progress", async () => {
-      const createRes = await request(app.getHttpServer())
+      const createPathResponse = await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
-        .set(auth())
-        .send({ title: "Path", mode: "sequential" })
+        .set(authHeader())
+        .send({ title: "TypeScript, Step by Step", mode: "sequential" })
         .expect(201);
-      const pathId = createRes.body.id;
+      const pathId = createPathResponse.body.id;
 
-      const nodeRes = await request(app.getHttpServer())
+      const handbookNodeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/nodes`)
-        .set(auth())
-        .send({ title: "Step 1" })
+        .set(authHeader())
+        .send({ title: "TypeScript Handbook" })
         .expect(201);
-      const nodeId = nodeRes.body.id;
+      const handbookNodeId = handbookNodeResponse.body.id;
 
-      const progressRes = await request(app.getHttpServer())
-        .patch(`/api/v1/learning-paths/${pathId}/nodes/${nodeId}/progress`)
-        .set(auth())
+      const updateProgressResponse = await request(app.getHttpServer())
+        .patch(`/api/v1/learning-paths/${pathId}/nodes/${handbookNodeId}/progress`)
+        .set(authHeader())
         .send({ progress: "done" })
         .expect(200);
 
-      expect(progressRes.body.progress).toBe("done");
+      expect(updateProgressResponse.body.progress).toBe("done");
     });
 
     test("deletes an edge", async () => {
-      const createRes = await request(app.getHttpServer())
+      const createPathResponse = await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
-        .set(auth())
-        .send({ title: "Path", mode: "graph" })
+        .set(authHeader())
+        .send({ title: "Frontend Architecture Map", mode: "graph" })
         .expect(201);
-      const pathId = createRes.body.id;
+      const pathId = createPathResponse.body.id;
 
-      const nodeARes = await request(app.getHttpServer())
+      const cleanArchitectureNodeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/nodes`)
-        .set(auth())
-        .send({ title: "A" })
+        .set(authHeader())
+        .send({ title: "Clean Architecture" })
         .expect(201);
-      const nodeBRes = await request(app.getHttpServer())
+      const hexagonalArchitectureNodeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/nodes`)
-        .set(auth())
-        .send({ title: "B" })
+        .set(authHeader())
+        .send({ title: "Hexagonal Architecture" })
         .expect(201);
 
-      const edgeRes = await request(app.getHttpServer())
+      const createEdgeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/edges`)
-        .set(auth())
-        .send({ sourceNodeId: nodeARes.body.id, targetNodeId: nodeBRes.body.id })
+        .set(authHeader())
+        .send({
+          sourceNodeId: cleanArchitectureNodeResponse.body.id,
+          targetNodeId: hexagonalArchitectureNodeResponse.body.id,
+        })
         .expect(201);
 
       await request(app.getHttpServer())
-        .delete(`/api/v1/learning-paths/${pathId}/edges/${edgeRes.body.id}`)
-        .set(auth())
+        .delete(`/api/v1/learning-paths/${pathId}/edges/${createEdgeResponse.body.id}`)
+        .set(authHeader())
         .expect(200);
 
-      const getRes = await request(app.getHttpServer())
+      const pathDetailResponse = await request(app.getHttpServer())
         .get(`/api/v1/learning-paths/${pathId}`)
-        .set(auth())
+        .set(authHeader())
         .expect(200);
-      expect(getRes.body.edges).toHaveLength(0);
+      expect(pathDetailResponse.body.edges).toHaveLength(0);
     });
   });
 
@@ -182,82 +190,91 @@ describe("LearningPathController (integration)", () => {
     test("Should return 400 when required fields are missing on create", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
-        .set(auth())
-        .send({ title: "No mode" })
+        .set(authHeader())
+        .send({ title: "Missing the required mode field" })
         .expect(400);
     });
 
     test("Should return 404 when getting a path that does not exist", async () => {
-      const nonExistentId = await cryptoService.generateUUID();
+      const nonExistentPathId = await cryptoService.generateUUID();
       await request(app.getHttpServer())
-        .get(`/api/v1/learning-paths/${nonExistentId}`)
-        .set(auth())
+        .get(`/api/v1/learning-paths/${nonExistentPathId}`)
+        .set(authHeader())
         .expect(404);
     });
 
     test("Should return 403 when a different user requests the path", async () => {
-      const createRes = await request(app.getHttpServer())
+      const createPathResponse = await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
-        .set(auth())
-        .send({ title: "Private path", mode: "sequential" })
+        .set(authHeader())
+        .send({ title: "DevOps Fundamentals", mode: "sequential" })
         .expect(201);
 
       await request(app.getHttpServer())
-        .get(`/api/v1/learning-paths/${createRes.body.id}`)
-        .set(auth(otherToken))
+        .get(`/api/v1/learning-paths/${createPathResponse.body.id}`)
+        .set(authHeader(intruderToken))
         .expect(403);
     });
 
     test("Should return 409 when adding a duplicate edge", async () => {
-      const createRes = await request(app.getHttpServer())
+      const createPathResponse = await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
-        .set(auth())
-        .send({ title: "Path", mode: "graph" })
+        .set(authHeader())
+        .send({ title: "System Design Map", mode: "graph" })
         .expect(201);
-      const pathId = createRes.body.id;
+      const pathId = createPathResponse.body.id;
 
-      const nodeARes = await request(app.getHttpServer())
+      const messageQueuesNodeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/nodes`)
-        .set(auth())
-        .send({ title: "A" })
+        .set(authHeader())
+        .send({ title: "Message Queues" })
         .expect(201);
-      const nodeBRes = await request(app.getHttpServer())
+      const eventSourcingNodeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/nodes`)
-        .set(auth())
-        .send({ title: "B" })
+        .set(authHeader())
+        .send({ title: "Event Sourcing" })
         .expect(201);
 
       await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/edges`)
-        .set(auth())
-        .send({ sourceNodeId: nodeARes.body.id, targetNodeId: nodeBRes.body.id })
+        .set(authHeader())
+        .send({
+          sourceNodeId: messageQueuesNodeResponse.body.id,
+          targetNodeId: eventSourcingNodeResponse.body.id,
+        })
         .expect(201);
 
       await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/edges`)
-        .set(auth())
-        .send({ sourceNodeId: nodeARes.body.id, targetNodeId: nodeBRes.body.id })
+        .set(authHeader())
+        .send({
+          sourceNodeId: messageQueuesNodeResponse.body.id,
+          targetNodeId: eventSourcingNodeResponse.body.id,
+        })
         .expect(409);
     });
 
     test("Should return 400 when an edge is self-looping", async () => {
-      const createRes = await request(app.getHttpServer())
+      const createPathResponse = await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
-        .set(auth())
-        .send({ title: "Path", mode: "graph" })
+        .set(authHeader())
+        .send({ title: "Algorithms Practice", mode: "graph" })
         .expect(201);
-      const pathId = createRes.body.id;
+      const pathId = createPathResponse.body.id;
 
-      const nodeRes = await request(app.getHttpServer())
+      const bigONotationNodeResponse = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/nodes`)
-        .set(auth())
-        .send({ title: "A" })
+        .set(authHeader())
+        .send({ title: "Big-O Notation" })
         .expect(201);
 
       await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/edges`)
-        .set(auth())
-        .send({ sourceNodeId: nodeRes.body.id, targetNodeId: nodeRes.body.id })
+        .set(authHeader())
+        .send({
+          sourceNodeId: bigONotationNodeResponse.body.id,
+          targetNodeId: bigONotationNodeResponse.body.id,
+        })
         .expect(400);
     });
   });
