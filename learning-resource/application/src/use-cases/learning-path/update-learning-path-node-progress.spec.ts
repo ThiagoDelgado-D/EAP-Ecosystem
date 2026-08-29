@@ -1,13 +1,7 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
-import {
-  NodeProgress,
-  PathMode,
-  PathSource,
-  StubScope,
-  type LearningPath,
-  type LearningPathNode,
-} from "@learning-resource/domain";
+import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { NodeProgress } from "@learning-resource/domain";
+import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { updateLearningPathNodeProgress } from "./update-learning-path-node-progress.js";
 import {
@@ -25,36 +19,6 @@ describe("updateLearningPathNodeProgress", () => {
     learningPathRepository = mockLearningPathRepository();
   });
 
-  async function seedPath(userId: UUID): Promise<LearningPath> {
-    const path: LearningPath = {
-      id: await crypto.generateUUID(),
-      userId,
-      title: "System Design Fundamentals",
-      description: "Distributed systems, scalability, and production architecture patterns",
-      mode: PathMode.SEQUENTIAL,
-      source: PathSource.MANUAL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    learningPathRepository.paths.push(path);
-    return path;
-  }
-
-  async function seedNode(pathId: UUID, progress = NodeProgress.PENDING): Promise<LearningPathNode> {
-    const node: LearningPathNode = {
-      id: await crypto.generateUUID(),
-      pathId,
-      title: "CAP Theorem and Distributed Consistency",
-      stubScope: StubScope.PATH_LOCAL,
-      order: 1,
-      progress,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    learningPathRepository.nodes.push(node);
-    return node;
-  }
-
   test("should return LearningPathNotFoundError when path does not exist", async () => {
     const userId = await crypto.generateUUID();
     const pathId = await crypto.generateUUID();
@@ -71,8 +35,8 @@ describe("updateLearningPathNodeProgress", () => {
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
     const userId = await crypto.generateUUID();
     const otherUserId = await crypto.generateUUID();
-    const path = await seedPath(otherUserId);
-    const node = await seedNode(path.id);
+    const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNodeProgress(
       { learningPathRepository },
@@ -84,7 +48,7 @@ describe("updateLearningPathNodeProgress", () => {
 
   test("should return LearningPathNodeNotFoundError when node does not exist", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
     const nodeId = await crypto.generateUUID();
 
     const result = await updateLearningPathNodeProgress(
@@ -97,9 +61,9 @@ describe("updateLearningPathNodeProgress", () => {
 
   test("should return LearningPathNodeNotFoundError when node belongs to a different path", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const otherPath = await seedPath(userId);
-    const nodeFromOtherPath = await seedNode(otherPath.id);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const otherPath = seedLearningPath(learningPathRepository, { userId });
+    const nodeFromOtherPath = seedLearningPathNode(learningPathRepository, { pathId: otherPath.id });
 
     const result = await updateLearningPathNodeProgress(
       { learningPathRepository },
@@ -111,8 +75,11 @@ describe("updateLearningPathNodeProgress", () => {
 
   test("should transition progress from pending to in_progress", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const node = await seedNode(path.id, NodeProgress.PENDING);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const node = seedLearningPathNode(learningPathRepository, {
+      pathId: path.id,
+      progress: NodeProgress.PENDING,
+    });
 
     const result = await updateLearningPathNodeProgress(
       { learningPathRepository },
@@ -129,8 +96,11 @@ describe("updateLearningPathNodeProgress", () => {
 
   test("should transition progress from in_progress to done", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const node = await seedNode(path.id, NodeProgress.IN_PROGRESS);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const node = seedLearningPathNode(learningPathRepository, {
+      pathId: path.id,
+      progress: NodeProgress.IN_PROGRESS,
+    });
 
     const result = await updateLearningPathNodeProgress(
       { learningPathRepository },
@@ -147,8 +117,8 @@ describe("updateLearningPathNodeProgress", () => {
 
   test("should not modify other node fields when updating progress", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const node = await seedNode(path.id);
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNodeProgress(
       { learningPathRepository },

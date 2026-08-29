@@ -1,6 +1,7 @@
 import {
   createValidationSchema,
   InvalidDataError,
+  isErrorResult,
   optionalEnum,
   optionalString,
   optionalNumber,
@@ -21,6 +22,7 @@ import {
   LearningPathNodeNotFoundError,
   LearningPathNotFoundError,
 } from "../../errors/learning-path-errors.js";
+import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js";
 
 export interface UpdateLearningPathNodeDependencies {
   learningPathRepository: ILearningPathRepository;
@@ -82,9 +84,8 @@ export const updateLearningPathNode = async (
 
   const { userId, pathId, nodeId, title, description, externalUrl, order, progress } = validationResult;
 
-  const path = await learningPathRepository.findById(pathId);
-  if (!path) return new LearningPathNotFoundError();
-  if (path.userId !== userId) return new LearningPathForbiddenError();
+  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  if (isErrorResult(path)) return path;
 
   const node = await learningPathRepository.findNodeById(nodeId);
   if (!node || node.pathId !== pathId) return new LearningPathNodeNotFoundError();

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService } from "domain-lib";
 import {
-  PathMode,
-  PathSource,
-  type LearningPath,
-} from "@learning-resource/domain";
+  seedLearningPath,
+  seedLearningPathEdge,
+  seedLearningPathNode,
+} from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { deleteLearningPath } from "./delete-learning-path.js";
 import {
@@ -21,21 +21,6 @@ describe("deleteLearningPath", () => {
     learningPathRepository = mockLearningPathRepository();
   });
 
-  async function seedPath(userId: UUID): Promise<LearningPath> {
-    const path: LearningPath = {
-      id: await crypto.generateUUID(),
-      userId,
-      title: "PostgreSQL Performance Tuning",
-      description: "Indexing strategies, query optimization, and EXPLAIN ANALYZE",
-      mode: PathMode.SEQUENTIAL,
-      source: PathSource.MANUAL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    learningPathRepository.paths.push(path);
-    return path;
-  }
-
   test("should return LearningPathNotFoundError when path does not exist", async () => {
     const userId = await crypto.generateUUID();
     const pathId = await crypto.generateUUID();
@@ -51,7 +36,7 @@ describe("deleteLearningPath", () => {
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
     const userId = await crypto.generateUUID();
     const otherUserId = await crypto.generateUUID();
-    const path = await seedPath(otherUserId);
+    const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
 
     const result = await deleteLearningPath(
       { learningPathRepository },
@@ -63,7 +48,7 @@ describe("deleteLearningPath", () => {
 
   test("should delete the path and return void", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
 
     const result = await deleteLearningPath(
       { learningPathRepository },
@@ -76,23 +61,11 @@ describe("deleteLearningPath", () => {
 
   test("should also remove associated nodes and edges on delete", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
-    const nodeId = await crypto.generateUUID();
-
-    learningPathRepository.nodes.push({
-      id: nodeId,
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
+    seedLearningPathEdge(learningPathRepository, {
       pathId: path.id,
-      title: "Understanding EXPLAIN ANALYZE output",
-      progress: "pending",
-      stubScope: "path-local",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    learningPathRepository.edges.push({
-      id: await crypto.generateUUID(),
-      pathId: path.id,
-      sourceNodeId: nodeId,
-      targetNodeId: await crypto.generateUUID(),
+      sourceNodeId: node.id,
     });
 
     const result = await deleteLearningPath(

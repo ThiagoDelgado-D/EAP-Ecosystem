@@ -1,6 +1,7 @@
 import {
   createValidationSchema,
   InvalidDataError,
+  isErrorResult,
   optionalString,
   uuidField,
   ValidationError,
@@ -14,6 +15,7 @@ import {
   LearningPathForbiddenError,
   LearningPathNotFoundError,
 } from "../../errors/learning-path-errors.js";
+import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js";
 
 export interface UpdateLearningPathDependencies {
   learningPathRepository: ILearningPathRepository;
@@ -46,9 +48,8 @@ export const updateLearningPath = async (
 
   const { userId, pathId, title, description } = validationResult;
 
-  const existing = await learningPathRepository.findById(pathId);
-  if (!existing) return new LearningPathNotFoundError();
-  if (existing.userId !== userId) return new LearningPathForbiddenError();
+  const existing = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  if (isErrorResult(existing)) return existing;
 
   return learningPathRepository.update(pathId, {
     ...(title !== undefined && { title }),

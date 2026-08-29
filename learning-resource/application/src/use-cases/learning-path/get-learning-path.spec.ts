@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
-import {
-  PathMode,
-  PathSource,
-  type LearningPath,
-} from "@learning-resource/domain";
+import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { seedLearningPath } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { getLearningPath } from "./get-learning-path.js";
 import {
@@ -21,22 +17,6 @@ describe("getLearningPath", () => {
     learningPathRepository = mockLearningPathRepository();
   });
 
-  async function seedPath(userId: UUID): Promise<LearningPath> {
-    const path: LearningPath = {
-      id: await crypto.generateUUID(),
-      userId,
-      title: "System Design Fundamentals",
-      description:
-        "Covers distributed systems, CAP theorem, and scalability patterns",
-      mode: PathMode.GRAPH,
-      source: PathSource.MANUAL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    learningPathRepository.paths.push(path);
-    return path;
-  }
-
   test("should return LearningPathNotFoundError when path does not exist", async () => {
     const userId = await crypto.generateUUID();
     const pathId = await crypto.generateUUID();
@@ -52,7 +32,7 @@ describe("getLearningPath", () => {
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
     const userId = await crypto.generateUUID();
     const otherUserId = await crypto.generateUUID();
-    const path = await seedPath(otherUserId);
+    const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
 
     const result = await getLearningPath(
       { learningPathRepository },
@@ -64,7 +44,7 @@ describe("getLearningPath", () => {
 
   test("should return path with nodes and edges when user owns it", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
 
     const result = await getLearningPath(
       { learningPathRepository },
@@ -76,7 +56,7 @@ describe("getLearningPath", () => {
     if (result instanceof InvalidDataError) throw result;
 
     expect(result.path.id).toBe(path.id);
-    expect(result.path.title).toBe("System Design Fundamentals");
+    expect(result.path.title).toBe(path.title);
     expect(result.nodes).toEqual([]);
     expect(result.edges).toEqual([]);
   });
