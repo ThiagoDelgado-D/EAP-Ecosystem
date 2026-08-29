@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
-import { StubScope } from "@learning-resource/domain";
+import { InvalidDataError, isErrorResult, mockCryptoService, type UUID } from "domain-lib";
+import { StubScope, type LearningPath, type LearningPathNode } from "@learning-resource/domain";
 import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { updateLearningPathNode } from "./update-learning-path-node.js";
@@ -18,6 +18,23 @@ describe("updateLearningPathNode", () => {
     crypto = mockCryptoService();
     learningPathRepository = mockLearningPathRepository();
   });
+
+  async function linkStubNodeToResource(
+    userId: UUID,
+    path: LearningPath,
+  ): Promise<{ result: LearningPathNode; learningResourceId: UUID }> {
+    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
+    const learningResourceId = await crypto.generateUUID();
+
+    const result = await updateLearningPathNode(
+      { learningPathRepository },
+      { userId, pathId: path.id, nodeId: node.id, learningResourceId },
+    );
+
+    if (isErrorResult(result)) throw result;
+
+    return { result, learningResourceId };
+  }
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
     const userId = await crypto.generateUUID();
@@ -96,18 +113,7 @@ describe("updateLearningPathNode", () => {
   test("should link a resource by setting learningResourceId", async () => {
     const userId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId });
-    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
-    const learningResourceId = await crypto.generateUUID();
-
-    const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, learningResourceId },
-    );
-
-    if (result instanceof LearningPathNotFoundError) throw result;
-    if (result instanceof LearningPathForbiddenError) throw result;
-    if (result instanceof LearningPathNodeNotFoundError) throw result;
-    if (result instanceof InvalidDataError) throw result;
+    const { result, learningResourceId } = await linkStubNodeToResource(userId, path);
 
     expect(result.learningResourceId).toBe(learningResourceId);
   });
@@ -138,18 +144,7 @@ describe("updateLearningPathNode", () => {
   test("should clear stubScope when linking a stub node to a resource", async () => {
     const userId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId });
-    const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
-    const learningResourceId = await crypto.generateUUID();
-
-    const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, learningResourceId },
-    );
-
-    if (result instanceof LearningPathNotFoundError) throw result;
-    if (result instanceof LearningPathForbiddenError) throw result;
-    if (result instanceof LearningPathNodeNotFoundError) throw result;
-    if (result instanceof InvalidDataError) throw result;
+    const { result, learningResourceId } = await linkStubNodeToResource(userId, path);
 
     expect(result.learningResourceId).toBe(learningResourceId);
     expect(result.stubScope).toBeNull();

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import type { LearningPath, LearningPathNode } from "@learning-resource/domain";
 import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { addLearningPathEdge } from "./add-learning-path-edge.js";
@@ -18,6 +19,19 @@ describe("addLearningPathEdge", () => {
     crypto = mockCryptoService();
     learningPathRepository = mockLearningPathRepository();
   });
+
+  async function seedPathWithConnectedNodes(
+    userId: UUID,
+  ): Promise<{ path: LearningPath; nodeA: LearningPathNode; nodeB: LearningPathNode }> {
+    const path = seedLearningPath(learningPathRepository, { userId });
+    const nodeA = seedLearningPathNode(learningPathRepository, { pathId: path.id });
+    const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
+    await addLearningPathEdge(
+      { learningPathRepository, cryptoService: crypto },
+      { userId, pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
+    );
+    return { path, nodeA, nodeB };
+  }
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
     const userId = await crypto.generateUUID();
@@ -93,14 +107,7 @@ describe("addLearningPathEdge", () => {
 
   test("should return DuplicateLearningPathEdgeError when edge already exists", async () => {
     const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
-    const nodeA = seedLearningPathNode(learningPathRepository, { pathId: path.id });
-    const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
-
-    await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
-    );
+    const { path, nodeA, nodeB } = await seedPathWithConnectedNodes(userId);
 
     const result = await addLearningPathEdge(
       { learningPathRepository, cryptoService: crypto },
@@ -148,14 +155,7 @@ describe("addLearningPathEdge", () => {
 
   test("should allow reverse direction edge between the same two nodes", async () => {
     const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
-    const nodeA = seedLearningPathNode(learningPathRepository, { pathId: path.id });
-    const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
-
-    await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
-    );
+    const { path, nodeA, nodeB } = await seedPathWithConnectedNodes(userId);
 
     const result = await addLearningPathEdge(
       { learningPathRepository, cryptoService: crypto },
