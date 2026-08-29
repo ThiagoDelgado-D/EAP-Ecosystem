@@ -188,19 +188,25 @@ describe("LearningPathController (integration)", () => {
 
   describe("Error cases", () => {
     test("Should return 400 when required fields are missing on create", async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
         .set(authHeader())
         .send({ title: "Missing the required mode field" })
         .expect(400);
+
+      expect(response.body.message).toEqual(
+        expect.arrayContaining([expect.stringContaining("mode")]),
+      );
     });
 
     test("Should return 404 when getting a path that does not exist", async () => {
       const nonExistentPathId = await cryptoService.generateUUID();
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(`/api/v1/learning-paths/${nonExistentPathId}`)
         .set(authHeader())
         .expect(404);
+
+      expect(response.body).toEqual({});
     });
 
     test("Should return 403 when a different user requests the path", async () => {
@@ -210,10 +216,12 @@ describe("LearningPathController (integration)", () => {
         .send({ title: "DevOps Fundamentals", mode: "sequential" })
         .expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(`/api/v1/learning-paths/${createPathResponse.body.id}`)
         .set(authHeader(intruderToken))
         .expect(403);
+
+      expect(response.body).toEqual({});
     });
 
     test("Should return 409 when adding a duplicate edge", async () => {
@@ -244,7 +252,7 @@ describe("LearningPathController (integration)", () => {
         })
         .expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/edges`)
         .set(authHeader())
         .send({
@@ -252,6 +260,8 @@ describe("LearningPathController (integration)", () => {
           targetNodeId: eventSourcingNodeResponse.body.id,
         })
         .expect(409);
+
+      expect(response.body).toEqual({});
     });
 
     test("Should return 400 when an edge is self-looping", async () => {
@@ -268,7 +278,7 @@ describe("LearningPathController (integration)", () => {
         .send({ title: "Big-O Notation" })
         .expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .post(`/api/v1/learning-paths/${pathId}/edges`)
         .set(authHeader())
         .send({
@@ -276,6 +286,10 @@ describe("LearningPathController (integration)", () => {
           targetNodeId: bigONotationNodeResponse.body.id,
         })
         .expect(400);
+
+      expect(response.body.sourceNodeId).toBe(
+        "Source and target node must be different",
+      );
     });
   });
 });
