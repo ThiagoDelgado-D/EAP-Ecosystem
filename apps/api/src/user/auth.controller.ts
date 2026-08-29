@@ -13,6 +13,7 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
 import { randomBytes } from "node:crypto";
 import type {
@@ -35,12 +36,14 @@ import {
   refreshSession,
   signOut,
 } from "@user/application";
-import { BaseError, type CryptoService, type JwtService } from "domain-lib";
+import { BaseError, type CryptoService, type JwtService, type UUID } from "domain-lib";
 import { RequestSignInDto } from "./dto/request/request-sign-in.dto.js";
 import { VerifySignInDto } from "./dto/request/verify-sign-in.dto.js";
 import { CompleteOnboardingDto } from "./dto/request/complete-onboarding.dto.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { EnvironmentService } from "../config/environment.service.js";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
+import { CurrentUserId } from "../auth/current-user-id.decorator.js";
 import type { Response, Request } from "express";
 
 const GOOGLE_OAUTH_STATE_COOKIE = "google_oauth_state";
@@ -112,23 +115,17 @@ export class AuthController {
     return { accessToken: result.accessToken, user: result.user };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch("onboarding")
   @HttpCode(200)
   async completeOnboarding(
     @Body() dto: CompleteOnboardingDto,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) throw new UnauthorizedException();
-
-    const token = authHeader.slice(7);
-    const payload = await this.jwtService.verify(token);
-    if (!payload?.sub) throw new UnauthorizedException();
-
     const result = await completeOnboarding(
       { userRepository: this.userRepository },
       {
-        userId: payload.sub,
+        userId,
         firstName: dto.firstName,
         featureConfig: dto.featureConfig as FeatureKey[],
       },
@@ -301,10 +298,9 @@ export class AuthController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get("sessions")
-  async getSessions(@Req() req: Request) {
-    const userId = await this.resolveUserId(req);
-
+  async getSessions(@Req() req: Request, @CurrentUserId() userId: UUID) {
     const rawRefreshToken = this.readCookie(req, "refreshToken");
     const currentHash = rawRefreshToken
       ? await this.cryptoService.hashToken(rawRefreshToken)
@@ -325,13 +321,13 @@ export class AuthController {
     }));
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete("sessions/:id")
   @HttpCode(204)
   async revokeOne(
     @Param("id") sessionId: string,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ): Promise<void> {
-    const userId = await this.resolveUserId(req);
     const result = await revokeSession(
       { sessionRepository: this.sessionRepository },
       { userId, sessionId },
@@ -339,11 +335,13 @@ export class AuthController {
     if (result instanceof BaseError) toHttpException(result);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete("sessions")
   @HttpCode(204)
-  async revokeAllOthers(@Req() req: Request): Promise<void> {
-    const userId = await this.resolveUserId(req);
-
+  async revokeAllOthers(
+    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
+  ): Promise<void> {
     const rawRefreshToken = this.readCookie(req, "refreshToken");
     if (!rawRefreshToken) throw new UnauthorizedException();
 
@@ -356,15 +354,6 @@ export class AuthController {
       { sessionRepository: this.sessionRepository },
       { userId, currentSessionId: currentSession.id },
     );
-  }
-
-  private async resolveUserId(req: Request): Promise<string> {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) throw new UnauthorizedException();
-    const token = authHeader.slice(7);
-    const payload = await this.jwtService.verify(token);
-    if (!payload?.sub) throw new UnauthorizedException();
-    return payload.sub;
   }
 
   // Requires app.set('trust proxy', 1) in main.ts so Express only honours

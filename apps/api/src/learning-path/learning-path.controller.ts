@@ -8,11 +8,9 @@ import {
   Param,
   Patch,
   Post,
-  Req,
-  UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
-import type { Request } from "express";
-import { BaseError, type CryptoService, type JwtService, type UUID } from "domain-lib";
+import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import type { ILearningPathRepository } from "@learning-resource/domain";
 import {
   addLearningPathEdge,
@@ -36,7 +34,10 @@ import {
   UpdateLearningPathNodeProgressDto,
 } from "./dto/request/index.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
+import { CurrentUserId } from "../auth/current-user-id.decorator.js";
 
+@UseGuards(JwtAuthGuard)
 @Controller("api/v1/learning-paths")
 export class LearningPathController {
   constructor(
@@ -44,22 +45,13 @@ export class LearningPathController {
     private readonly learningPathRepository: ILearningPathRepository,
     @Inject("ICryptoService")
     private readonly cryptoService: CryptoService,
-    @Inject("IJwtService")
-    private readonly jwtService: JwtService,
   ) {}
 
-  private async resolveUserId(req: Request): Promise<UUID> {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) throw new UnauthorizedException();
-    const token = authHeader.slice(7);
-    const payload = await this.jwtService.verify(token);
-    if (!payload?.sub) throw new UnauthorizedException();
-    return payload.sub as UUID;
-  }
-
   @Post()
-  async create(@Body() dto: CreateLearningPathDto, @Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async create(
+    @Body() dto: CreateLearningPathDto,
+    @CurrentUserId() userId: UUID,
+  ) {
     const result = await createLearningPath(
       { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService },
       { userId, ...dto },
@@ -69,8 +61,7 @@ export class LearningPathController {
   }
 
   @Get()
-  async list(@Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async list(@CurrentUserId() userId: UUID) {
     const result = await listLearningPaths(
       { learningPathRepository: this.learningPathRepository },
       { userId },
@@ -80,8 +71,7 @@ export class LearningPathController {
   }
 
   @Get(":id")
-  async findOne(@Param("id") id: UUID, @Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async findOne(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
     const result = await getLearningPath(
       { learningPathRepository: this.learningPathRepository },
       { userId, pathId: id },
@@ -94,9 +84,8 @@ export class LearningPathController {
   async update(
     @Param("id") id: UUID,
     @Body() dto: UpdateLearningPathDto,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ) {
-    const userId = await this.resolveUserId(req);
     const result = await updateLearningPath(
       { learningPathRepository: this.learningPathRepository },
       { userId, pathId: id, ...dto },
@@ -107,8 +96,7 @@ export class LearningPathController {
 
   @Delete(":id")
   @HttpCode(200)
-  async remove(@Param("id") id: UUID, @Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async remove(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
     const result = await deleteLearningPath(
       { learningPathRepository: this.learningPathRepository },
       { userId, pathId: id },
@@ -120,9 +108,8 @@ export class LearningPathController {
   async addNode(
     @Param("id") id: UUID,
     @Body() dto: AddLearningPathNodeDto,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ) {
-    const userId = await this.resolveUserId(req);
     const result = await addLearningPathNode(
       { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService },
       { userId, pathId: id, ...dto },
@@ -136,9 +123,8 @@ export class LearningPathController {
     @Param("id") id: UUID,
     @Param("nodeId") nodeId: UUID,
     @Body() dto: UpdateLearningPathNodeDto,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ) {
-    const userId = await this.resolveUserId(req);
     const result = await updateLearningPathNode(
       { learningPathRepository: this.learningPathRepository },
       { userId, pathId: id, nodeId, ...dto },
@@ -149,8 +135,11 @@ export class LearningPathController {
 
   @Delete(":id/nodes/:nodeId")
   @HttpCode(200)
-  async removeNode(@Param("id") id: UUID, @Param("nodeId") nodeId: UUID, @Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async removeNode(
+    @Param("id") id: UUID,
+    @Param("nodeId") nodeId: UUID,
+    @CurrentUserId() userId: UUID,
+  ) {
     const result = await deleteLearningPathNode(
       { learningPathRepository: this.learningPathRepository },
       { userId, pathId: id, nodeId },
@@ -163,9 +152,8 @@ export class LearningPathController {
     @Param("id") id: UUID,
     @Param("nodeId") nodeId: UUID,
     @Body() dto: UpdateLearningPathNodeProgressDto,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ) {
-    const userId = await this.resolveUserId(req);
     const result = await updateLearningPathNodeProgress(
       { learningPathRepository: this.learningPathRepository },
       { userId, pathId: id, nodeId, progress: dto.progress },
@@ -178,9 +166,8 @@ export class LearningPathController {
   async addEdge(
     @Param("id") id: UUID,
     @Body() dto: AddLearningPathEdgeDto,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ) {
-    const userId = await this.resolveUserId(req);
     const result = await addLearningPathEdge(
       { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService },
       { userId, pathId: id, sourceNodeId: dto.sourceNodeId, targetNodeId: dto.targetNodeId },
@@ -191,8 +178,11 @@ export class LearningPathController {
 
   @Delete(":id/edges/:edgeId")
   @HttpCode(200)
-  async removeEdge(@Param("id") id: UUID, @Param("edgeId") edgeId: UUID, @Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async removeEdge(
+    @Param("id") id: UUID,
+    @Param("edgeId") edgeId: UUID,
+    @CurrentUserId() userId: UUID,
+  ) {
     const result = await deleteLearningPathEdge(
       { learningPathRepository: this.learningPathRepository },
       { userId, pathId: id, edgeId },
