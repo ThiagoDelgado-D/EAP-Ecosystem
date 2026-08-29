@@ -1,13 +1,11 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService } from "domain-lib";
 import {
   NodeProgress,
-  PathMode,
-  PathSource,
   StubScope,
-  type LearningPath,
   type LearningPathNode,
 } from "@learning-resource/domain";
+import { seedLearningPath } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { addLearningPathNode } from "./add-learning-path-node.js";
 import {
@@ -24,21 +22,6 @@ describe("addLearningPathNode", () => {
     learningPathRepository = mockLearningPathRepository();
   });
 
-  async function seedPath(userId: UUID): Promise<LearningPath> {
-    const path: LearningPath = {
-      id: await crypto.generateUUID(),
-      userId,
-      title: "Go Programming Language",
-      description: "From concurrency primitives to building production-grade services",
-      mode: PathMode.SEQUENTIAL,
-      source: PathSource.MANUAL,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    learningPathRepository.paths.push(path);
-    return path;
-  }
-
   test("should return LearningPathNotFoundError when path does not exist", async () => {
     const userId = await crypto.generateUUID();
     const pathId = await crypto.generateUUID();
@@ -54,7 +37,7 @@ describe("addLearningPathNode", () => {
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
     const userId = await crypto.generateUUID();
     const otherUserId = await crypto.generateUUID();
-    const path = await seedPath(otherUserId);
+    const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
 
     const result = await addLearningPathNode(
       { learningPathRepository, cryptoService: crypto },
@@ -66,7 +49,7 @@ describe("addLearningPathNode", () => {
 
   test("should create a stub node with default progress and stubScope", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
 
     const result = await addLearningPathNode(
       { learningPathRepository, cryptoService: crypto },
@@ -86,7 +69,7 @@ describe("addLearningPathNode", () => {
 
   test("should create a linked node when learningResourceId is provided", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
     const learningResourceId = await crypto.generateUUID();
 
     const result = await addLearningPathNode(
@@ -104,7 +87,7 @@ describe("addLearningPathNode", () => {
 
   test("should respect explicit stubScope and progress when provided", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
 
     const result = await addLearningPathNode(
       { learningPathRepository, cryptoService: crypto },
@@ -129,7 +112,7 @@ describe("addLearningPathNode", () => {
 
   test("should persist the node in the repository", async () => {
     const userId = await crypto.generateUUID();
-    const path = await seedPath(userId);
+    const path = seedLearningPath(learningPathRepository, { userId });
 
     await addLearningPathNode(
       { learningPathRepository, cryptoService: crypto },
