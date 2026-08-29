@@ -16,6 +16,19 @@ import type {
 import type { PaginatedResourcesDto } from '@features/learning-resource/infrastructure/learning-resource.dto';
 import { API_CONFIG } from '@core/config/api.config';
 
+const TOGGLE_FIELD_HANDLERS = {
+  difficulty: (service: LearningResourceService, id: string, value: string) =>
+    service.toggleDifficulty(id, value as DifficultyLevel),
+  energy: (service: LearningResourceService, id: string, value: string) =>
+    service.toggleEnergy(id, value as EnergyLevel),
+  status: (service: LearningResourceService, id: string, value: string) =>
+    service.toggleStatus(id, value as ResourceStatus),
+  mentalState: (service: LearningResourceService, id: string, value: string) =>
+    service.toggleMentalState(id, value as MentalStateType),
+} as const;
+
+export type ToggleableField = keyof typeof TOGGLE_FIELD_HANDLERS;
+
 @Injectable()
 export class LearningResourceService {
   private readonly http = inject(HttpClient);
@@ -168,6 +181,10 @@ export class LearningResourceService {
     return this.optimisticToggle(id, { mentalState }, () =>
       this.repository.toggleMentalState(id, mentalState),
     );
+  }
+
+  async toggleField(id: string, field: ToggleableField, value: string): Promise<void> {
+    return TOGGLE_FIELD_HANDLERS[field](this, id, value);
   }
 
   async deleteResource(id: string): Promise<void> {

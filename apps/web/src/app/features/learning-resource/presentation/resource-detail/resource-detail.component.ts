@@ -1,7 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service.js';
+import {
+  LearningResourceService,
+  type ToggleableField,
+} from '@features/learning-resource/application/learning-resource.service.js';
 import type {
   LearningResource,
   DifficultyLevel,
@@ -20,6 +23,13 @@ import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service.js';
 import { MatDialogModule } from '@angular/material/dialog';
 import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
 import type { EnumOption } from '@shared/components/enum-badge/enum-badge.types';
+
+const FIELD_PATCHERS: Record<ToggleableField, (value: string) => Partial<LearningResource>> = {
+  difficulty: (value) => ({ difficulty: value as DifficultyLevel }),
+  energy: (value) => ({ energyLevel: value as EnergyLevel }),
+  status: (value) => ({ status: value as ResourceStatus }),
+  mentalState: (value) => ({ mentalState: value as MentalStateType }),
+};
 
 @Component({
   selector: 'app-resource-detail',
@@ -148,28 +158,23 @@ export class ResourceDetailComponent implements OnInit {
     );
   }
 
-  async onToggle(
-    value: string,
-    field: 'difficulty' | 'energy' | 'status' | 'mentalState',
-  ): Promise<void> {
+  async onToggle(value: string, field: ToggleableField): Promise<void> {
     if (!this.resourceId) return;
     this.toggleLoadingField.set(field);
     try {
-      if (field === 'difficulty') {
-        await this.resourceService.toggleDifficulty(this.resourceId, value as DifficultyLevel);
-      } else if (field === 'energy') {
-        await this.resourceService.toggleEnergy(this.resourceId, value as EnergyLevel);
-      } else if (field === 'status') {
-        await this.resourceService.toggleStatus(this.resourceId, value as ResourceStatus);
-      } else if (field === 'mentalState') {
-        await this.resourceService.toggleMentalState(this.resourceId, value as MentalStateType);
-      }
-      const updated = await this.resourceService.getById(this.resourceId);
-      this.resource.set(updated);
+      await this.resourceService.toggleField(this.resourceId, field, value);
+      this.patchResource(FIELD_PATCHERS[field](value));
     } catch {
       this.toastService.show(`Failed to update ${field}`, 'error');
     } finally {
       this.toggleLoadingField.set(null);
+    }
+  }
+
+  private patchResource(patch: Partial<LearningResource>): void {
+    const current = this.resource();
+    if (current) {
+      this.resource.set({ ...current, ...patch });
     }
   }
 

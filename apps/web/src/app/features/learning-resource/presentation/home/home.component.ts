@@ -28,7 +28,6 @@ import { PaginatorComponent } from '@shared/components/paginator/paginator.compo
 export type TabMode = 'all' | 'saved' | 'recent';
 
 const DEFAULT_PAGE_SIZE = 5;
-const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
 const TYPE_META: Record<string, { label: string; icon: string; color: string }> = {
   video: { label: 'Video', icon: 'video', color: 'bg-violet-950/70 text-violet-400' },
@@ -372,13 +371,7 @@ export class HomeComponent implements OnInit {
     const key = `${resource.id}:${field}`;
     this.toggleLoadingId.set(key);
     try {
-      if (field === 'difficulty') {
-        await this.service.toggleDifficulty(resource.id, value as DifficultyLevel);
-      } else if (field === 'energy') {
-        await this.service.toggleEnergy(resource.id, value as EnergyLevel);
-      } else if (field === 'status') {
-        await this.service.toggleStatus(resource.id, value as ResourceStatus);
-      }
+      await this.service.toggleField(resource.id, field, value);
     } catch {
       this.toastService.show(`Failed to update ${field}`, 'error');
     } finally {
