@@ -6,8 +6,7 @@ import {
   Inject,
   Patch,
   Post,
-  Req,
-  UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
 import type { IUserRepository, UserAppearancePreferences } from "@user/domain";
 import {
@@ -19,32 +18,23 @@ import {
   updateUserAppearance,
   resetPreferences,
 } from "@user/application";
-import { BaseError, type JwtService } from "domain-lib";
+import { BaseError, type UUID } from "domain-lib";
 import { UpdateFeatureConfigDto } from "./dto/request/update-feature-config.dto.js";
 import { UpdateWidgetConfigDto } from "./dto/request/update-widget-config.dto.js";
 import { UpdateUserAppearanceDto } from "./dto/request/update-user-appearance.dto.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
-import type { Request } from "express";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
+import { CurrentUserId } from "../auth/current-user-id.decorator.js";
 
+@UseGuards(JwtAuthGuard)
 @Controller("api/v1/preferences")
 export class PreferencesController {
   constructor(
     @Inject("IUserRepository") private readonly userRepository: IUserRepository,
-    @Inject("IJwtService") private readonly jwtService: JwtService,
   ) {}
 
-  private async resolveUserId(req: Request): Promise<string> {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) throw new UnauthorizedException();
-    const token = authHeader.slice(7);
-    const payload = await this.jwtService.verify(token);
-    if (!payload?.sub) throw new UnauthorizedException();
-    return payload.sub;
-  }
-
   @Get("features")
-  async getFeatures(@Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async getFeatures(@CurrentUserId() userId: UUID) {
     const result = await getFeatureConfig(
       { userRepository: this.userRepository },
       { userId },
@@ -57,9 +47,8 @@ export class PreferencesController {
   @HttpCode(200)
   async updateFeatures(
     @Body() dto: UpdateFeatureConfigDto,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ) {
-    const userId = await this.resolveUserId(req);
     const result = await updateFeatureConfig(
       { userRepository: this.userRepository },
       { userId, featureConfig: dto.featureConfig },
@@ -69,8 +58,7 @@ export class PreferencesController {
   }
 
   @Get("widgets")
-  async getWidgets(@Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async getWidgets(@CurrentUserId() userId: UUID) {
     const result = await getWidgetConfig(
       { userRepository: this.userRepository },
       { userId },
@@ -81,8 +69,10 @@ export class PreferencesController {
 
   @Patch("widgets")
   @HttpCode(200)
-  async updateWidgets(@Body() dto: UpdateWidgetConfigDto, @Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async updateWidgets(
+    @Body() dto: UpdateWidgetConfigDto,
+    @CurrentUserId() userId: UUID,
+  ) {
     const result = await updateWidgetConfig(
       { userRepository: this.userRepository },
       { userId, widgetConfig: dto.widgetConfig },
@@ -92,8 +82,7 @@ export class PreferencesController {
   }
 
   @Get("appearance")
-  async getAppearance(@Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async getAppearance(@CurrentUserId() userId: UUID) {
     const result = await getUserAppearance(
       { userRepository: this.userRepository },
       { userId },
@@ -106,9 +95,8 @@ export class PreferencesController {
   @HttpCode(200)
   async updateAppearance(
     @Body() dto: UpdateUserAppearanceDto,
-    @Req() req: Request,
+    @CurrentUserId() userId: UUID,
   ) {
-    const userId = await this.resolveUserId(req);
     const result = await updateUserAppearance(
       { userRepository: this.userRepository },
       { userId, appearance: dto as Partial<UserAppearancePreferences> },
@@ -119,8 +107,7 @@ export class PreferencesController {
 
   @Post("reset")
   @HttpCode(200)
-  async resetPreferences(@Req() req: Request) {
-    const userId = await this.resolveUserId(req);
+  async resetPreferences(@CurrentUserId() userId: UUID) {
     const result = await resetPreferences(
       { userRepository: this.userRepository },
       { userId },
