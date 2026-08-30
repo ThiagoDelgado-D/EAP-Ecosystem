@@ -167,7 +167,7 @@
                 </span>
               </div>
               <div class="flex gap-[3px] w-full">
-                @for (node of sortedNodes(); track node.id) {
+                @for (node of displayNodes(); track node.id) {
                   <div
                     class="flex-1 h-[5px] rounded-sm transition-colors"
                     [class]="
@@ -187,9 +187,10 @@
               cdkDropList
               [cdkDropListDisabled]="reordering()"
               (cdkDropListDropped)="onDrop($event)"
+              (cdkDropListSorted)="onSorted($event)"
             >
               @for (node of sortedNodes(); track node.id; let i = $index) {
-                <div cdkDrag class="flex items-stretch mb-2">
+                <div cdkDrag (cdkDragEnded)="resetLiveOrder()" class="flex items-stretch mb-2">
                   <!-- rail -->
                   <div class="w-[34px] shrink-0 flex flex-col items-center">
                     <div
