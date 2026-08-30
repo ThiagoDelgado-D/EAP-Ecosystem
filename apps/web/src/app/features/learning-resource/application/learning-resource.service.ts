@@ -92,10 +92,11 @@ export class LearningResourceService {
     this.queryCache.clear();
   }
 
-  async addResource(resource: AddResourcePayload): Promise<void> {
-    await this.repository.addResourceLearning(resource);
+  async addResource(resource: AddResourcePayload): Promise<LearningResource> {
+    const created = await this.repository.addResourceLearning(resource);
     this.invalidateCache();
     await this.load({ page: 1, pageSize: 20 });
+    return created;
   }
 
   async getById(id: string): Promise<LearningResource> {

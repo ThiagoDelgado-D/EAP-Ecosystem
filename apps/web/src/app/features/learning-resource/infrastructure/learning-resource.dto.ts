@@ -25,6 +25,23 @@ export interface LearningResourceByIdDto {
   updatedAt: string;
 }
 
+export interface CreatedLearningResourceDto {
+  id: string;
+  title: string;
+  url?: string | null;
+  imageUrl?: string | null;
+  typeId: string;
+  topicIds: string[];
+  difficulty: string;
+  estimatedDuration: { value: number; isEstimated: boolean };
+  energyLevel: string;
+  mentalState?: string | null;
+  status: string;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface LearningResourceListDto {
   resources: LearningResourceDto[];
 }
