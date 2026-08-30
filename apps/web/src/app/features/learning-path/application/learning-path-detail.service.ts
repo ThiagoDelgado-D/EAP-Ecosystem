@@ -87,6 +87,16 @@ export class LearningPathDetailService {
     }
   }
 
+  async linkNode(pathId: string, nodeId: string, learningResourceId: string): Promise<void> {
+    const updated = await this.repository.updateNode(pathId, nodeId, { learningResourceId });
+    this.upsertNodeInState(updated);
+  }
+
+  async unlinkNode(pathId: string, nodeId: string): Promise<void> {
+    const updated = await this.repository.updateNode(pathId, nodeId, { learningResourceId: null });
+    this.upsertNodeInState(updated);
+  }
+
   async deletePath(pathId: string): Promise<void> {
     await this.repository.delete(pathId);
   }
