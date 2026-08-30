@@ -5,6 +5,7 @@ import {
   CdkDrag,
   CdkDragDrop,
   CdkDragHandle,
+  CdkDragSortEvent,
   CdkDropList,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
@@ -51,6 +52,18 @@ export class LearningPathDetailComponent implements OnInit {
   readonly sortedNodes = computed(() => {
     const nodes = this.detailService.data()?.nodes ?? [];
     return [...nodes].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  });
+
+  /** Ids in drag position, live-updated via (sorted) — null when no drag is in progress. */
+  private readonly liveOrderIds = signal<string[] | null>(null);
+
+  /** sortedNodes(), re-ordered to match an in-progress drag so the progress bar shifts with it. */
+  readonly displayNodes = computed(() => {
+    const live = this.liveOrderIds();
+    const sorted = this.sortedNodes();
+    if (!live) return sorted;
+    const byId = new Map(sorted.map((n) => [n.id, n]));
+    return live.map((id) => byId.get(id)).filter((n): n is LearningPathNode => !!n);
   });
 
   readonly progressPercent = computed(() => {
@@ -178,6 +191,20 @@ export class LearningPathDetailComponent implements OnInit {
     await this.setProgress(node, next);
   }
 
+  /** Fires continuously while dragging, whenever the live position within the list changes. */
+  onSorted(event: CdkDragSortEvent<LearningPathNode[]>): void {
+    const current = this.liveOrderIds() ?? this.sortedNodes().map((n) => n.id);
+    const reordered = [...current];
+    moveItemInArray(reordered, event.previousIndex, event.currentIndex);
+    this.liveOrderIds.set(reordered);
+  }
+
+  /** Safety net if a drag ends without a drop (e.g. cancelled) — (cdkDropListDropped) already
+   * resets this on a normal drop, in its `finally`. */
+  resetLiveOrder(): void {
+    this.liveOrderIds.set(null);
+  }
+
   async onDrop(event: CdkDragDrop<LearningPathNode[]>): Promise<void> {
     const reordered = [...this.sortedNodes()];
     moveItemInArray(reordered, event.previousIndex, event.currentIndex);
@@ -189,6 +216,7 @@ export class LearningPathDetailComponent implements OnInit {
       this.toastService.show('No se pudo reordenar los nodos', 'error');
     } finally {
       this.reordering.set(false);
+      this.liveOrderIds.set(null);
     }
   }
 
