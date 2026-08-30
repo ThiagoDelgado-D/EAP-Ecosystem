@@ -27,6 +27,12 @@ export const STUB_SCOPE = {
 
 export type StubScope = (typeof STUB_SCOPE)[keyof typeof STUB_SCOPE];
 
+export interface LearningPathStats {
+  total: number;
+  done: number;
+  linked: number;
+}
+
 export interface LearningPath {
   id: string;
   userId: string;
@@ -37,6 +43,7 @@ export interface LearningPath {
   sourceSlug?: string;
   createdAt: Date;
   updatedAt: Date;
+  stats?: LearningPathStats;
 }
 
 export interface LearningPathNode {

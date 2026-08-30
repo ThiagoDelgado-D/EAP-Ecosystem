@@ -1,3 +1,9 @@
+export interface LearningPathStatsDto {
+  total: number;
+  done: number;
+  linked: number;
+}
+
 export interface LearningPathDto {
   id: string;
   userId: string;
@@ -8,6 +14,7 @@ export interface LearningPathDto {
   sourceSlug?: string;
   createdAt: string;
   updatedAt: string;
+  stats?: LearningPathStatsDto;
 }
 
 export interface LearningPathNodeDto {

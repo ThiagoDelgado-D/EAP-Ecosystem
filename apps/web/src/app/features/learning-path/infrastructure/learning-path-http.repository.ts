@@ -130,6 +130,7 @@ export class LearningPathHttpRepository extends LearningPathRepository {
       sourceSlug: dto.sourceSlug ?? undefined,
       createdAt: this.parseDate(dto.createdAt),
       updatedAt: this.parseDate(dto.updatedAt),
+      stats: dto.stats,
     };
   }
 
