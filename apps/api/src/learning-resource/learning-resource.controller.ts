@@ -70,7 +70,8 @@ export class LearningResourceController {
       dto,
     );
 
-    if (result instanceof BaseError) toHttpException(result);
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
   }
   @Get()
   async listResources(
