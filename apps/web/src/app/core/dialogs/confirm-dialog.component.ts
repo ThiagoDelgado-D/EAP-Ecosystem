@@ -10,7 +10,7 @@ import { ConfirmDialogOptions } from './confirm-dialog.types';
       <h2 class="text-lg font-semibold text-slate-100 mb-2">
         {{ data.title || 'Confirm action' }}
       </h2>
-      <p class="text-sm text-slate-400 mb-6">{{ data.message }}</p>
+      <p class="text-sm text-slate-400 leading-normal mb-6">{{ data.message }}</p>
       <div class="flex justify-end gap-3">
         <button
           (click)="onCancel()"
