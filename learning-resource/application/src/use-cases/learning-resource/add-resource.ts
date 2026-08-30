@@ -93,7 +93,7 @@ export const addResource = async (
     cryptoService,
   }: AddResourceDependencies,
   request: AddResourceRequestModel,
-): Promise<void | InvalidDataError | NotFoundError> => {
+): Promise<LearningResource | InvalidDataError | NotFoundError> => {
   const validationResult = await addResourceSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
@@ -150,4 +150,5 @@ export const addResource = async (
   };
 
   await learningResourceRepository.save(newResource);
+  return newResource;
 };

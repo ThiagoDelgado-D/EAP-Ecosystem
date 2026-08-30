@@ -81,7 +81,9 @@ describe("addResource", () => {
 
     const stored = learningResourceRepository.learningResources[0];
 
-    expect(result).toBeUndefined();
+    expect(result).not.toBeInstanceOf(InvalidDataError);
+    expect(result).not.toBeInstanceOf(NotFoundError);
+    expect((result as { id: string }).id).toBe(stored.id);
 
     expect(stored.title).toBe("Learning Typescript");
     expect(stored.topicIds.includes(topicId)).toBe(true);
