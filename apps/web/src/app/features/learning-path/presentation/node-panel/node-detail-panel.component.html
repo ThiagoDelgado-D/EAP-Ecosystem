@@ -1,11 +1,9 @@
-<div
-  class="fixed inset-0 bg-slate-950/60 z-40"
+<button
+  type="button"
+  class="fixed inset-0 bg-slate-950/60 z-40 appearance-none border-0 p-0 cursor-default"
   (click)="closed.emit()"
-  (keydown.escape)="closed.emit()"
-  role="button"
-  tabindex="-1"
   aria-label="Close panel"
-></div>
+></button>
 <div
   class="fixed top-0 right-0 bottom-0 w-full sm:w-[380px] bg-slate-900 border-l border-slate-800 z-50 flex flex-col shadow-[-24px_0_60px_rgba(0,0,0,0.45)]"
 >
@@ -146,9 +144,9 @@
               }
             </select>
           </div>
-          <div>
-            <span class="text-[10.5px] font-bold text-slate-400 block mb-1.5">Topics</span>
-            <div class="flex flex-wrap gap-1.5" role="group" aria-label="Topics">
+          <fieldset class="border-0 p-0 m-0">
+            <legend class="text-[10.5px] font-bold text-slate-400 mb-1.5">Topics</legend>
+            <div class="flex flex-wrap gap-1.5">
               @for (topic of topicService.topics(); track topic.id) {
                 <button
                   type="button"
@@ -164,7 +162,7 @@
                 </button>
               }
             </div>
-          </div>
+          </fieldset>
           <div class="flex gap-2.5">
             <div class="flex-1">
               <label for="promote-difficulty" class="text-[10.5px] font-bold text-slate-400 block mb-1.5">Difficulty</label>

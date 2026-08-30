@@ -1,4 +1,13 @@
-import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '@core/toast/toast.service';
 import { LearningPathDetailService } from '@features/learning-path/application/learning-path-detail.service';
@@ -57,6 +66,11 @@ export class NodeDetailPanelComponent {
   readonly node = input.required<LearningPathNode>();
   readonly pathId = input.required<string>();
   readonly closed = output<void>();
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closed.emit();
+  }
 
   private readonly detailService = inject(LearningPathDetailService);
   private readonly toastService = inject(ToastService);
