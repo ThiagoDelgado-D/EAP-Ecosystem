@@ -1,0 +1,372 @@
+<div
+  class="w-[540px] max-h-[92vh] bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-2xl"
+>
+  <!-- head -->
+  <div class="px-5.5 pt-4.5 flex flex-col gap-3.5">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+          <path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z" />
+        </svg>
+        <span class="text-sm font-extrabold text-slate-100 tracking-tight">Nuevo Learning Path</span>
+      </div>
+      <button type="button" (click)="cancel()" class="cursor-pointer text-slate-500 hover:text-slate-300 p-1">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <!-- stepper -->
+    <div class="flex gap-1.5">
+      @for (i of [0, 1, 2, 3, 4]; track i) {
+        <div
+          class="flex-1 h-[3px] rounded-full transition-colors duration-300"
+          [class]="i <= step() ? 'bg-violet-400' : 'bg-slate-800'"
+        ></div>
+      }
+    </div>
+  </div>
+
+  <!-- body -->
+  <div class="px-5.5 pt-5 pb-1.5 overflow-y-auto flex-1">
+    @if (step() === 0) {
+      <div class="flex flex-col gap-4">
+        <div>
+          <div class="text-[11px] font-extrabold tracking-widest uppercase text-slate-600 mb-2.5">
+            Paso 1 · Nombrá tu path
+          </div>
+          <label class="text-[11px] font-bold text-slate-400 block mb-1.5">Título</label>
+          <input
+            type="text"
+            maxlength="200"
+            autofocus
+            [ngModel]="title()"
+            (ngModelChange)="title.set($event)"
+            placeholder="Ej: Frontend desde cero"
+            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-violet-400"
+          />
+        </div>
+        <div>
+          <label class="text-[11px] font-bold text-slate-400 block mb-1.5">
+            Descripción <span class="text-slate-600 font-medium">· opcional</span>
+          </label>
+          <textarea
+            maxlength="1000"
+            rows="3"
+            [ngModel]="description()"
+            (ngModelChange)="description.set($event)"
+            placeholder="¿Cuál es el objetivo de este path?"
+            class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-violet-400 resize-none leading-relaxed"
+          ></textarea>
+        </div>
+        <div class="text-[11.5px] text-slate-500 leading-relaxed bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2.5">
+          Después, 3 preguntas rápidas nos ayudan a sugerir la estructura correcta —
+          <span class="text-violet-400 font-semibold">Secuencial</span> o
+          <span class="text-emerald-400 font-semibold">Grafo</span>. Podés cambiar la sugerencia.
+        </div>
+      </div>
+    }
+
+    @if (currentQuestion(); as q) {
+      <div class="flex flex-col gap-4">
+        <div>
+          <div class="text-[11px] font-extrabold tracking-widest uppercase text-slate-600 mb-2.5">
+            Pregunta {{ step() }} de 3
+          </div>
+          <div class="text-[17px] font-bold text-slate-100 leading-snug tracking-tight">{{ q.question }}</div>
+          <div class="text-[12.5px] text-slate-400 mt-1.5 leading-relaxed">{{ q.hint }}</div>
+        </div>
+        <div class="flex gap-2.5">
+          <button
+            type="button"
+            (click)="selectAnswer(q.yesMode)"
+            class="flex-1 text-left cursor-pointer px-4 py-3.5 rounded-xl border-[1.5px] transition-all"
+            [class]="
+              answers()[step() - 1] === q.yesMode
+                ? (q.yesMode === PATH_MODE.GRAPH ? 'bg-emerald-400/[.08] border-emerald-400' : 'bg-violet-400/[.08] border-violet-400')
+                : 'bg-slate-950 border-slate-800'
+            "
+          >
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center"
+                [class]="
+                  answers()[step() - 1] === q.yesMode
+                    ? (q.yesMode === PATH_MODE.GRAPH ? 'bg-emerald-400 border-emerald-400' : 'bg-violet-400 border-violet-400')
+                    : 'border-slate-700'
+                "
+              >
+                @if (answers()[step() - 1] === q.yesMode) {
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0b0f1a" stroke-width="3.5">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                }
+              </div>
+              <span
+                class="text-[9px] font-extrabold uppercase tracking-wide opacity-85"
+                [class]="q.yesMode === PATH_MODE.GRAPH ? 'text-emerald-400' : 'text-violet-400'"
+                >{{ q.yesMode === PATH_MODE.GRAPH ? 'graph' : 'sequential' }}</span
+              >
+            </div>
+            <div
+              class="text-[13.5px] font-bold"
+              [class]="answers()[step() - 1] === q.yesMode ? 'text-slate-100' : 'text-slate-400'"
+            >
+              {{ q.yesLabel }}
+            </div>
+          </button>
+
+          <button
+            type="button"
+            (click)="selectAnswer(q.noMode)"
+            class="flex-1 text-left cursor-pointer px-4 py-3.5 rounded-xl border-[1.5px] transition-all"
+            [class]="
+              answers()[step() - 1] === q.noMode
+                ? (q.noMode === PATH_MODE.GRAPH ? 'bg-emerald-400/[.08] border-emerald-400' : 'bg-violet-400/[.08] border-violet-400')
+                : 'bg-slate-950 border-slate-800'
+            "
+          >
+            <div class="flex items-center justify-between mb-2">
+              <div
+                class="w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center"
+                [class]="
+                  answers()[step() - 1] === q.noMode
+                    ? (q.noMode === PATH_MODE.GRAPH ? 'bg-emerald-400 border-emerald-400' : 'bg-violet-400 border-violet-400')
+                    : 'border-slate-700'
+                "
+              >
+                @if (answers()[step() - 1] === q.noMode) {
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0b0f1a" stroke-width="3.5">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                }
+              </div>
+              <span
+                class="text-[9px] font-extrabold uppercase tracking-wide opacity-85"
+                [class]="q.noMode === PATH_MODE.GRAPH ? 'text-emerald-400' : 'text-violet-400'"
+                >{{ q.noMode === PATH_MODE.GRAPH ? 'graph' : 'sequential' }}</span
+              >
+            </div>
+            <div
+              class="text-[13.5px] font-bold"
+              [class]="answers()[step() - 1] === q.noMode ? 'text-slate-100' : 'text-slate-400'"
+            >
+              {{ q.noLabel }}
+            </div>
+          </button>
+        </div>
+
+        <!-- mode meter -->
+        <div class="px-4 py-3.5 bg-slate-950 border border-slate-800 rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <span
+              class="text-[11px] font-bold transition-colors"
+              [class]="meterPositionPercent() < 50 ? 'text-violet-400' : 'text-slate-600'"
+              >Secuencial</span
+            >
+            <span class="text-[9.5px] font-bold tracking-widest uppercase text-slate-600"
+              >{{ answeredCount() }}/3 respondidas</span
+            >
+            <span
+              class="text-[11px] font-bold transition-colors"
+              [class]="meterPositionPercent() > 50 ? 'text-emerald-400' : 'text-slate-600'"
+              >Grafo</span
+            >
+          </div>
+          <div class="relative h-2 rounded-[5px] overflow-hidden bg-gradient-to-r from-violet-400/15 via-slate-800 to-emerald-400/15">
+            <div class="absolute left-[66.66%] -top-0.5 -bottom-0.5 w-0.5 bg-slate-700 opacity-70"></div>
+            <div
+              class="absolute top-1/2 w-4 h-4 rounded-full -translate-y-1/2 -translate-x-1/2 border-2 border-slate-900 transition-all duration-300"
+              [style.left.%]="meterPositionPercent()"
+              [class]="
+                meterLeaning() === PATH_MODE.GRAPH
+                  ? 'bg-emerald-400'
+                  : meterLeaning() === PATH_MODE.SEQUENTIAL
+                    ? 'bg-violet-400'
+                    : 'bg-slate-500'
+              "
+            ></div>
+          </div>
+          <div class="flex justify-between mt-1.5">
+            <span class="text-[10px] text-slate-600">orden y checklist</span>
+            <span class="text-[10px] text-slate-600">umbral</span>
+            <span class="text-[10px] text-slate-600">ramas y mapa</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (step() === 4) {
+      <div class="flex flex-col gap-4">
+        <div>
+          <div class="text-[11px] font-extrabold tracking-widest uppercase text-slate-600 mb-2">
+            Recomendación
+          </div>
+          <div class="text-[17px] font-bold text-slate-100 leading-snug tracking-tight">
+            Según tus respuestas, te sugerimos
+            <span [class]="suggestedMode() === PATH_MODE.GRAPH ? 'text-emerald-400' : 'text-violet-400'">
+              modo {{ suggestedMode() === PATH_MODE.GRAPH ? 'Grafo' : 'Secuencial' }}</span
+            >
+            <span class="text-slate-600 font-semibold"> ({{ score() }} de 3 apuntan a Grafo)</span>.
+          </div>
+          <div class="text-[12.5px] text-slate-400 mt-1.5 leading-relaxed">
+            No es definitivo — elegí lo que mejor te quede. Podés reestructurar después.
+          </div>
+        </div>
+
+        <div class="px-4 py-3.5 bg-slate-950 border border-slate-800 rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <span
+              class="text-[11px] font-bold"
+              [class]="suggestedMode() === PATH_MODE.SEQUENTIAL ? 'text-violet-400' : 'text-slate-600'"
+              >Secuencial</span
+            >
+            <span class="text-[9.5px] font-bold tracking-widest uppercase text-slate-600">3/3 respondidas</span>
+            <span
+              class="text-[11px] font-bold"
+              [class]="suggestedMode() === PATH_MODE.GRAPH ? 'text-emerald-400' : 'text-slate-600'"
+              >Grafo</span
+            >
+          </div>
+          <div class="relative h-2 rounded-[5px] overflow-hidden bg-gradient-to-r from-violet-400/15 via-slate-800 to-emerald-400/15">
+            <div class="absolute left-[66.66%] -top-0.5 -bottom-0.5 w-0.5 bg-slate-700 opacity-70"></div>
+            <div
+              class="absolute top-1/2 w-4 h-4 rounded-full -translate-y-1/2 -translate-x-1/2 border-2 border-slate-900"
+              [style.left.%]="meterPositionPercent()"
+              [class]="suggestedMode() === PATH_MODE.GRAPH ? 'bg-emerald-400' : 'bg-violet-400'"
+            ></div>
+          </div>
+        </div>
+
+        <div class="flex gap-2.5">
+          <button
+            type="button"
+            (click)="selectMode(PATH_MODE.SEQUENTIAL)"
+            class="flex-1 text-left cursor-pointer relative px-4 py-3.5 rounded-xl border-[1.5px] transition-all"
+            [class]="isChosen(PATH_MODE.SEQUENTIAL) ? 'bg-violet-400/[.08] border-violet-400' : 'bg-slate-950 border-slate-800'"
+          >
+            @if (isSuggested(PATH_MODE.SEQUENTIAL)) {
+              <span
+                class="absolute -top-2 right-3 text-[9px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full bg-violet-400 text-[#0b0f1a]"
+                >Sugerido</span
+              >
+            }
+            <div class="flex items-center gap-2 mb-2">
+              <div
+                class="w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 bg-violet-400/[.12] border border-violet-400/30"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+                  <circle cx="6" cy="5" r="2" /><circle cx="6" cy="12" r="2" /><circle cx="6" cy="19" r="2" />
+                  <path d="M6 7v3M6 14v3M11 5h8M11 12h8M11 19h8" />
+                </svg>
+              </div>
+              <div class="text-sm font-extrabold" [class]="isChosen(PATH_MODE.SEQUENTIAL) ? 'text-violet-400' : 'text-slate-100'">
+                Secuencial
+              </div>
+              <div
+                class="ml-auto w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center"
+                [class]="isChosen(PATH_MODE.SEQUENTIAL) ? 'bg-violet-400 border-violet-400' : 'border-slate-700'"
+              >
+                @if (isChosen(PATH_MODE.SEQUENTIAL)) {
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0b0f1a" stroke-width="3.5">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                }
+              </div>
+            </div>
+            <div class="text-[11.5px] text-slate-400 leading-relaxed">
+              Una lista ordenada de pasos que reordenás a mano. Un solo camino claro.
+            </div>
+          </button>
+
+          <button
+            type="button"
+            (click)="selectMode(PATH_MODE.GRAPH)"
+            class="flex-1 text-left cursor-pointer relative px-4 py-3.5 rounded-xl border-[1.5px] transition-all"
+            [class]="isChosen(PATH_MODE.GRAPH) ? 'bg-emerald-400/[.08] border-emerald-400' : 'bg-slate-950 border-slate-800'"
+          >
+            @if (isSuggested(PATH_MODE.GRAPH)) {
+              <span
+                class="absolute -top-2 right-3 text-[9px] font-extrabold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-400 text-[#0b0f1a]"
+                >Sugerido</span
+              >
+            }
+            <div class="flex items-center gap-2 mb-2">
+              <div
+                class="w-[30px] h-[30px] rounded-lg flex items-center justify-center shrink-0 bg-emerald-400/[.12] border border-emerald-400/30"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
+                  <circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="6" r="2.5" /><circle cx="12" cy="18" r="2.5" />
+                  <path d="M7.5 7.5l3 8.5M16.5 7.5l-3 8.5" />
+                </svg>
+              </div>
+              <div class="text-sm font-extrabold" [class]="isChosen(PATH_MODE.GRAPH) ? 'text-emerald-400' : 'text-slate-100'">
+                Grafo
+              </div>
+              <div
+                class="ml-auto w-[18px] h-[18px] rounded-full border-[1.5px] flex items-center justify-center"
+                [class]="isChosen(PATH_MODE.GRAPH) ? 'bg-emerald-400 border-emerald-400' : 'border-slate-700'"
+              >
+                @if (isChosen(PATH_MODE.GRAPH)) {
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0b0f1a" stroke-width="3.5">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                }
+              </div>
+            </div>
+            <div class="text-[11.5px] text-slate-400 leading-relaxed">
+              Conexiones explícitas, ramas y rutas opcionales en un lienzo con zoom.
+            </div>
+          </button>
+        </div>
+
+        @if (errorMessage()) {
+          <p class="text-sm text-red-400">{{ errorMessage() }}</p>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- footer -->
+  <div class="px-5.5 pt-3.5 pb-4.5 mt-2 border-t border-slate-800 flex items-center justify-between">
+    <div>
+      @if (step() > 0) {
+        <button
+          type="button"
+          (click)="back()"
+          class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold tracking-wide bg-transparent hover:bg-slate-800 text-slate-400 border border-slate-800 transition-colors"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          Atrás
+        </button>
+      }
+    </div>
+    @if (step() < 4) {
+      <button
+        type="button"
+        (click)="next()"
+        [disabled]="!canAdvance()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold tracking-wide bg-violet-400 hover:bg-violet-300 text-[#0b0f1a] disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed transition-colors"
+      >
+        {{ step() === 0 ? 'Comenzar' : 'Continuar' }}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </button>
+    } @else {
+      <button
+        type="button"
+        (click)="submit()"
+        [disabled]="submitting()"
+        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold tracking-wide bg-violet-400 hover:bg-violet-300 text-[#0b0f1a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+        {{ submitting() ? 'Creando...' : 'Crear path ' + (effectiveMode() === PATH_MODE.GRAPH ? 'Grafo' : 'Secuencial') }}
+      </button>
+    }
+  </div>
+</div>

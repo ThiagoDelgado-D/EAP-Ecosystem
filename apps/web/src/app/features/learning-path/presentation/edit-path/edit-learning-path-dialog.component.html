@@ -1,0 +1,49 @@
+<div class="p-6 w-full max-w-md bg-slate-900 border border-slate-800 rounded-xl flex flex-col gap-4">
+  <h2 class="text-lg font-semibold text-slate-100">Editar Learning Path</h2>
+
+  <div>
+    <label class="text-xs uppercase tracking-widest text-slate-500 font-medium">Título</label>
+    <input
+      type="text"
+      maxlength="200"
+      [ngModel]="title()"
+      (ngModelChange)="title.set($event)"
+      class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-violet-500"
+    />
+  </div>
+
+  <div>
+    <label class="text-xs uppercase tracking-widest text-slate-500 font-medium"
+      >Descripción (opcional)</label
+    >
+    <textarea
+      maxlength="1000"
+      rows="2"
+      [ngModel]="description()"
+      (ngModelChange)="description.set($event)"
+      class="mt-1 w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 resize-none"
+    ></textarea>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="text-sm text-red-400">{{ errorMessage() }}</p>
+  }
+
+  <div class="flex justify-end gap-3">
+    <button
+      type="button"
+      (click)="cancel()"
+      class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-slate-100 transition-colors"
+    >
+      Cancelar
+    </button>
+    <button
+      type="button"
+      (click)="submit()"
+      [disabled]="!title().trim() || submitting()"
+      class="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+    >
+      {{ submitting() ? 'Guardando...' : 'Guardar' }}
+    </button>
+  </div>
+</div>

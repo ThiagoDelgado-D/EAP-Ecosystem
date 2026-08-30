@@ -70,3 +70,24 @@
     border-radius: 0.75rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
+
+.lp-wizard-dialog .mat-mdc-dialog-container {
+    background-color: transparent !important;
+    box-shadow: none;
+}
+
+.lp-wizard-dialog .mdc-dialog__surface {
+    background-color: transparent !important;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes lp-pulse-ring {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.27); }
+    50% { box-shadow: 0 0 0 5px rgba(167, 139, 250, 0); }
+}
+
+.lp-pulse-ring {
+    animation: lp-pulse-ring 2s ease-in-out infinite;
+}

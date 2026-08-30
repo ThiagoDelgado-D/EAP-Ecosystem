@@ -72,6 +72,13 @@ export const learningResourceRoutes: Routes = [
         loadChildren: () =>
           import('@features/settings/presentation/settings.routes').then((m) => m.settingsRoutes),
       },
+      {
+        path: 'paths',
+        loadChildren: () =>
+          import('@features/learning-path/presentation/learning-path.routes').then(
+            (m) => m.learningPathRoutes,
+          ),
+      },
     ],
   },
 ];
