@@ -35,8 +35,9 @@
           <div class="text-[11px] font-extrabold tracking-widest uppercase text-slate-600 mb-2.5">
             Paso 1 · Nombrá tu path
           </div>
-          <label class="text-[11px] font-bold text-slate-400 block mb-1.5">Título</label>
+          <label for="wizard-title" class="text-[11px] font-bold text-slate-400 block mb-1.5">Título</label>
           <input
+            id="wizard-title"
             type="text"
             maxlength="200"
             autofocus
@@ -47,10 +48,11 @@
           />
         </div>
         <div>
-          <label class="text-[11px] font-bold text-slate-400 block mb-1.5">
+          <label for="wizard-description" class="text-[11px] font-bold text-slate-400 block mb-1.5">
             Descripción <span class="text-slate-600 font-medium">· opcional</span>
           </label>
           <textarea
+            id="wizard-description"
             maxlength="1000"
             rows="3"
             [ngModel]="description()"

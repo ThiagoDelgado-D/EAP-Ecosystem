@@ -2,8 +2,9 @@
   <h2 class="text-lg font-semibold text-slate-100">Editar Learning Path</h2>
 
   <div>
-    <label class="text-xs uppercase tracking-widest text-slate-500 font-medium">Título</label>
+    <label for="edit-path-title" class="text-xs uppercase tracking-widest text-slate-500 font-medium">Título</label>
     <input
+      id="edit-path-title"
       type="text"
       maxlength="200"
       [ngModel]="title()"
@@ -13,10 +14,11 @@
   </div>
 
   <div>
-    <label class="text-xs uppercase tracking-widest text-slate-500 font-medium"
+    <label for="edit-path-description" class="text-xs uppercase tracking-widest text-slate-500 font-medium"
       >Descripción (opcional)</label
     >
     <textarea
+      id="edit-path-description"
       maxlength="1000"
       rows="2"
       [ngModel]="description()"

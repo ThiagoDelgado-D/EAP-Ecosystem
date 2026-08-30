@@ -4,8 +4,9 @@
   </h2>
 
   <div>
-    <label class="text-xs uppercase tracking-widest text-slate-500 font-medium">Título</label>
+    <label for="node-title" class="text-xs uppercase tracking-widest text-slate-500 font-medium">Título</label>
     <input
+      id="node-title"
       type="text"
       maxlength="200"
       [ngModel]="title()"
@@ -16,10 +17,11 @@
   </div>
 
   <div>
-    <label class="text-xs uppercase tracking-widest text-slate-500 font-medium"
+    <label for="node-description" class="text-xs uppercase tracking-widest text-slate-500 font-medium"
       >Descripción (opcional)</label
     >
     <textarea
+      id="node-description"
       maxlength="1000"
       rows="2"
       [ngModel]="description()"
@@ -29,10 +31,11 @@
   </div>
 
   <div>
-    <label class="text-xs uppercase tracking-widest text-slate-500 font-medium"
+    <label for="node-external-url" class="text-xs uppercase tracking-widest text-slate-500 font-medium"
       >Link externo (opcional)</label
     >
     <input
+      id="node-external-url"
       type="url"
       [ngModel]="externalUrl()"
       (ngModelChange)="externalUrl.set($event)"
