@@ -47,6 +47,29 @@
     }
   </div>
 
+  <!-- progress — available for stubs too, independent of linking a resource -->
+  <div class="px-5 pt-3.5">
+    <span class="text-[9.5px] font-extrabold uppercase tracking-widest text-slate-600 block mb-2">
+      Progress
+    </span>
+    <div class="flex gap-1.5">
+      @for (s of STATUS_OPTIONS; track s.value) {
+        <button
+          type="button"
+          (click)="setStatus(s.value)"
+          class="flex-1 py-1.5 rounded-md text-[10.5px] font-bold border"
+          [class]="
+            node().progress === s.value
+              ? 'bg-violet-400/15 text-violet-400 border-violet-400/40'
+              : 'text-slate-500 border-slate-800'
+          "
+        >
+          {{ s.label }}
+        </button>
+      }
+    </div>
+  </div>
+
   @if (isStub()) {
     <!-- tabs -->
     <div class="flex gap-0.5 px-5 pt-3">
@@ -247,28 +270,6 @@
           }
         </div>
       }
-
-      <div>
-        <span class="text-[9.5px] font-extrabold uppercase tracking-widest text-slate-600 block mb-2">
-          Progress
-        </span>
-        <div class="flex gap-1.5">
-          @for (s of STATUS_OPTIONS; track s.value) {
-            <button
-              type="button"
-              (click)="setStatus(s.value)"
-              class="flex-1 py-1.5 rounded-md text-[10.5px] font-bold border"
-              [class]="
-                node().progress === s.value
-                  ? 'bg-violet-400/15 text-violet-400 border-violet-400/40'
-                  : 'text-slate-500 border-slate-800'
-              "
-            >
-              {{ s.label }}
-            </button>
-          }
-        </div>
-      </div>
 
       <button
         type="button"

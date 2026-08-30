@@ -293,39 +293,38 @@
                           </svg>
                           Link resource
                         </button>
-                      } @else {
-                        @if (node.id === activeNodeId()) {
-                          <button
-                            type="button"
-                            (click)="advanceProgress(node)"
-                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-violet-400 text-slate-950 text-[11.5px] font-bold"
-                          >
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 3l14 9-14 9z" /></svg>
-                            Continue
-                          </button>
-                        }
+                      }
+                      @if (node.id === activeNodeId()) {
                         <button
                           type="button"
                           (click)="advanceProgress(node)"
-                          title="Click to advance status"
-                          class="text-[11px] font-semibold px-2 py-0.5 rounded"
-                          [class]="
-                            node.progress === NODE_PROGRESS.DONE
-                              ? 'bg-emerald-400/15 text-emerald-400'
-                              : node.progress === NODE_PROGRESS.IN_PROGRESS
-                                ? 'bg-blue-400/15 text-blue-400'
-                                : 'bg-slate-800 text-slate-500'
-                          "
+                          class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-violet-400 text-slate-950 text-[11.5px] font-bold"
                         >
-                          {{
-                            node.progress === NODE_PROGRESS.DONE
-                              ? 'Done'
-                              : node.progress === NODE_PROGRESS.IN_PROGRESS
-                                ? 'In progress'
-                                : 'Pending'
-                          }}
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 3l14 9-14 9z" /></svg>
+                          Continue
                         </button>
                       }
+                      <button
+                        type="button"
+                        (click)="advanceProgress(node)"
+                        title="Click to advance status"
+                        class="text-[11px] font-semibold px-2 py-0.5 rounded"
+                        [class]="
+                          node.progress === NODE_PROGRESS.DONE
+                            ? 'bg-emerald-400/15 text-emerald-400'
+                            : node.progress === NODE_PROGRESS.IN_PROGRESS
+                              ? 'bg-blue-400/15 text-blue-400'
+                              : 'bg-slate-800 text-slate-500'
+                        "
+                      >
+                        {{
+                          node.progress === NODE_PROGRESS.DONE
+                            ? 'Done'
+                            : node.progress === NODE_PROGRESS.IN_PROGRESS
+                              ? 'In progress'
+                              : 'Pending'
+                        }}
+                      </button>
                       <button
                         type="button"
                         (click)="openEditNode(node)"
