@@ -115,7 +115,7 @@ export class LearningPathHttpRepository extends LearningPathRepository {
       return new Date();
     }
     const date = new Date(value);
-    if (isNaN(date.getTime())) throw new Error(`Invalid date string: ${value}`);
+    if (Number.isNaN(date.getTime())) throw new Error(`Invalid date string: ${value}`);
     return date;
   }
 
