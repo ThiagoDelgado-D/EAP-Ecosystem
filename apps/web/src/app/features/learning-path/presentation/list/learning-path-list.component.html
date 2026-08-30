@@ -1,0 +1,108 @@
+<div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-6">
+  <div class="flex items-start justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-extrabold text-slate-100 tracking-tight">Learning Paths</h1>
+      <p class="text-[12.5px] text-slate-400 mt-1.5 leading-relaxed max-w-md">
+        Sequences and maps of nodes — link resources from your library, or leave stubs to fill in
+        later.
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="openCreateWizard()"
+      class="inline-flex items-center gap-1.5 bg-violet-400 hover:bg-violet-300 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      New Path
+    </button>
+  </div>
+
+  @if (pathService.loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="rounded-xl border border-slate-800 bg-slate-900 h-[150px] animate-pulse"></div>
+      }
+    </div>
+  } @else if (pathService.error()) {
+    <div class="rounded-xl border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-400">
+      {{ pathService.error() }}
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (path of pathService.paths(); track path.id) {
+        <a
+          [routerLink]="['/paths', path.id]"
+          class="rounded-xl border border-slate-800 bg-slate-900 p-[18px] flex flex-col gap-[13px] hover:border-slate-700 hover:-translate-y-0.5 hover:shadow-[0_10px_34px_rgba(0,0,0,0.4)] transition-all duration-150"
+        >
+          <div class="flex justify-between items-start gap-2.5">
+            <div class="text-sm font-extrabold text-slate-100 tracking-tight leading-tight">
+              {{ path.title }}
+            </div>
+            <span
+              class="inline-flex items-center gap-[5px] shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
+              [class]="
+                path.mode === PATH_MODE.GRAPH
+                  ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20'
+                  : 'bg-violet-400/10 text-violet-400 border border-violet-400/20'
+              "
+            >
+              <span
+                class="w-[5px] h-[5px]"
+                [class]="path.mode === PATH_MODE.GRAPH ? 'rounded-full bg-emerald-400' : 'rounded-[1px] bg-violet-400'"
+              ></span>
+              {{ path.mode === PATH_MODE.GRAPH ? 'Graph' : 'Sequential' }}
+            </span>
+          </div>
+
+          <div class="text-[11.5px] text-slate-400 leading-relaxed line-clamp-2 min-h-[36px]">
+            {{ path.description }}
+          </div>
+
+          <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-violet-400 rounded-full transition-all"
+              [style.width.%]="progressPct(path)"
+            ></div>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <div class="flex gap-[11px]">
+              <span class="text-[11px] text-slate-600">
+                <b class="text-slate-400 font-semibold">{{ path.stats?.done ?? 0 }}</b
+                >/{{ path.stats?.total ?? 0 }} done
+              </span>
+              <span class="text-[11px] text-slate-600">
+                <b class="text-violet-400 font-semibold">{{ path.stats?.linked ?? 0 }}</b> linked
+              </span>
+              @if (stubsCount(path) > 0) {
+                <span class="text-[11px] text-slate-500">{{ stubsCount(path) }} stubs</span>
+              }
+            </div>
+            <span
+              class="text-[11px] font-bold"
+              [class]="progressPct(path) === 100 ? 'text-emerald-400' : 'text-slate-600'"
+            >
+              {{ progressPct(path) }}%
+            </span>
+          </div>
+        </a>
+      }
+
+      <button
+        type="button"
+        (click)="openCreateWizard()"
+        class="rounded-xl border-[1.5px] border-dashed border-slate-700 p-[18px] min-h-[150px] flex flex-col items-center justify-center gap-2.5 cursor-pointer hover:border-slate-600 transition-colors"
+      >
+        <div class="w-[34px] h-[34px] rounded-lg bg-slate-800 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-violet-400">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </div>
+        <span class="text-xs text-slate-400 font-semibold">Create a new path</span>
+        <span class="text-[11px] text-slate-600">Guided wizard picks the mode</span>
+      </button>
+    </div>
+  }
+</div>

@@ -14,6 +14,12 @@ export const PathSource = {
 
 export type PathSource = (typeof PathSource)[keyof typeof PathSource];
 
+export interface LearningPathStats {
+  total: number;
+  done: number;
+  linked: number;
+}
+
 export interface LearningPath extends Entity, TimestampedEntity {
   userId: UUID;
   title: string;
@@ -21,4 +27,5 @@ export interface LearningPath extends Entity, TimestampedEntity {
   mode: PathMode;
   source: PathSource;
   sourceSlug?: string;
+  stats?: LearningPathStats;
 }

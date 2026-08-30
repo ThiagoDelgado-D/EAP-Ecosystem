@@ -26,7 +26,28 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
 
   async findAllByUserId(userId: UUID): Promise<LearningPath[]> {
     const entities = await this.pathRepository.find({ where: { userId } });
-    return entities.map((e) => this.toDomainPath(e));
+    if (entities.length === 0) return [];
+
+    const statsRows = await this.nodeRepository
+      .createQueryBuilder("node")
+      .select("node.pathId", "pathId")
+      .addSelect("COUNT(*)", "total")
+      .addSelect("COUNT(*) FILTER (WHERE node.progress = 'done')", "done")
+      .addSelect("COUNT(*) FILTER (WHERE node.learningResourceId IS NOT NULL)", "linked")
+      .where("node.pathId IN (:...pathIds)", { pathIds: entities.map((e) => e.id) })
+      .groupBy("node.pathId")
+      .getRawMany<{ pathId: string; total: string; done: string; linked: string }>();
+
+    const statsByPathId = new Map(
+      statsRows.map((row) => [
+        row.pathId,
+        { total: Number(row.total), done: Number(row.done), linked: Number(row.linked) },
+      ]),
+    );
+
+    return entities.map((e) =>
+      this.toDomainPath(e, statsByPathId.get(e.id) ?? { total: 0, done: 0, linked: 0 }),
+    );
   }
 
   async findById(id: UUID): Promise<LearningPath | null> {
@@ -125,7 +146,10 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
     return entities.map((e) => this.toDomainEdge(e));
   }
 
-  private toDomainPath(entity: LearningPathEntity): LearningPath {
+  private toDomainPath(
+    entity: LearningPathEntity,
+    stats?: { total: number; done: number; linked: number },
+  ): LearningPath {
     return {
       id: entity.id as UUID,
       userId: entity.userId as UUID,
@@ -136,6 +160,7 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
       sourceSlug: entity.sourceSlug ?? undefined,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      stats,
     };
   }
 
