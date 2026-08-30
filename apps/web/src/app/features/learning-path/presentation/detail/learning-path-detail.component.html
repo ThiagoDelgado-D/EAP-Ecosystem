@@ -220,7 +220,8 @@
 
                   <!-- card -->
                   <div
-                    class="flex-1 min-w-0 rounded-[10px] p-3.5 flex items-center gap-3 transition-all"
+                    (click)="openNodePanel(node)"
+                    class="flex-1 min-w-0 rounded-[10px] p-3.5 flex items-center gap-3 transition-all cursor-pointer"
                     [class]="
                       !node.learningResourceId
                         ? 'border-[1.5px] border-dashed border-slate-700'
@@ -229,7 +230,11 @@
                           : 'bg-slate-900 border border-slate-800'
                     "
                   >
-                    <div cdkDragHandle class="cursor-grab text-slate-600 shrink-0 flex touch-none">
+                    <div
+                      cdkDragHandle
+                      (click)="$event.stopPropagation()"
+                      class="cursor-grab text-slate-600 shrink-0 flex touch-none"
+                    >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                         <circle cx="9" cy="6" r="1.4" /><circle cx="9" cy="12" r="1.4" /><circle cx="9" cy="18" r="1.4" />
                         <circle cx="15" cy="6" r="1.4" /><circle cx="15" cy="12" r="1.4" /><circle cx="15" cy="18" r="1.4" />
@@ -280,7 +285,7 @@
                       @if (!node.learningResourceId) {
                         <button
                           type="button"
-                          (click)="openEditNode(node)"
+                          (click)="$event.stopPropagation(); openNodePanel(node)"
                           class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-violet-400/30 bg-violet-400/10 text-violet-400 text-[11.5px] font-bold"
                         >
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -292,7 +297,7 @@
                         @if (node.id === activeNodeId()) {
                           <button
                             type="button"
-                            (click)="advanceProgress(node)"
+                            (click)="$event.stopPropagation(); advanceProgress(node)"
                             class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-violet-400 text-slate-950 text-[11.5px] font-bold"
                           >
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 3l14 9-14 9z" /></svg>
@@ -301,7 +306,7 @@
                         }
                         <button
                           type="button"
-                          (click)="advanceProgress(node)"
+                          (click)="$event.stopPropagation(); advanceProgress(node)"
                           title="Click to advance status"
                           class="text-[11px] font-semibold px-2 py-0.5 rounded"
                           [class]="
@@ -323,14 +328,14 @@
                       }
                       <button
                         type="button"
-                        (click)="openEditNode(node)"
+                        (click)="$event.stopPropagation(); openEditNode(node)"
                         class="text-[11px] text-slate-600 hover:text-slate-400 transition-colors"
                       >
                         Editar
                       </button>
                       <button
                         type="button"
-                        (click)="removeNode(node)"
+                        (click)="$event.stopPropagation(); removeNode(node)"
                         class="text-[11px] text-red-400/70 hover:text-red-300 transition-colors"
                       >
                         Eliminar
@@ -368,5 +373,9 @@
         </div>
       }
     </div>
+  }
+
+  @if (selectedNode(); as node) {
+    <app-node-detail-panel [node]="node" [pathId]="pathId" (closed)="closeNodePanel()" />
   }
 </div>

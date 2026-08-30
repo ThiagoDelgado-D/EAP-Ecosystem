@@ -23,6 +23,7 @@ import {
 } from '@features/learning-path/domain/learning-path.model';
 import { NodeFormDialogComponent } from '../node-form/node-form-dialog.component';
 import { EditLearningPathDialogComponent } from '../edit-path/edit-learning-path-dialog.component';
+import { NodeDetailPanelComponent } from '../node-panel/node-detail-panel.component';
 
 @Component({
   selector: 'app-learning-path-detail',
@@ -32,7 +33,7 @@ import { EditLearningPathDialogComponent } from '../edit-path/edit-learning-path
     LearningPathDetailService,
     { provide: LearningPathRepository, useClass: LearningPathHttpRepository },
   ],
-  imports: [RouterModule, CdkDropList, CdkDrag, CdkDragHandle],
+  imports: [RouterModule, CdkDropList, CdkDrag, CdkDragHandle, NodeDetailPanelComponent],
 })
 export class LearningPathDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -83,6 +84,18 @@ export class LearningPathDetailComponent implements OnInit {
   }
 
   readonly reordering = signal(false);
+  private readonly selectedNodeId = signal<string | null>(null);
+  readonly selectedNode = computed(
+    () => (this.detailService.data()?.nodes ?? []).find((n) => n.id === this.selectedNodeId()) ?? null,
+  );
+
+  openNodePanel(node: LearningPathNode): void {
+    this.selectedNodeId.set(node.id);
+  }
+
+  closeNodePanel(): void {
+    this.selectedNodeId.set(null);
+  }
 
   ngOnInit(): void {
     void this.detailService.load(this.pathId);
