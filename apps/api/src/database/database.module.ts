@@ -5,6 +5,10 @@ import {
   LearningResourceEntity,
   TopicEntity,
   ResourceTypeEntity,
+  LearningPathEntity,
+  LearningPathNodeEntity,
+  LearningPathEdgeEntity,
+  ResourceRelationEntity,
 } from "@learning-resource/infrastructure";
 import {
   IdentityEntity,
@@ -29,6 +33,10 @@ import {
             LearningResourceEntity,
             TopicEntity,
             ResourceTypeEntity,
+            LearningPathEntity,
+            LearningPathNodeEntity,
+            LearningPathEdgeEntity,
+            ResourceRelationEntity,
             UserEntity,
             IdentityEntity,
             SignInChallengeEntity,
