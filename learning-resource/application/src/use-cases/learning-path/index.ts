@@ -7,5 +7,6 @@ export * from "./add-learning-path-node.js";
 export * from "./update-learning-path-node.js";
 export * from "./delete-learning-path-node.js";
 export * from "./update-learning-path-node-progress.js";
+export * from "./update-learning-path-node-position.js";
 export * from "./add-learning-path-edge.js";
 export * from "./delete-learning-path-edge.js";
