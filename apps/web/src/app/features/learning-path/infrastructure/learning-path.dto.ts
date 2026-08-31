@@ -27,6 +27,8 @@ export interface LearningPathNodeDto {
   stubScope?: string;
   order?: number;
   progress: string;
+  x?: number | null;
+  y?: number | null;
   createdAt: string;
   updatedAt: string;
 }

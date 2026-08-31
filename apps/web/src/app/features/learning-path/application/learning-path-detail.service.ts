@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import type {
   LearningPath,
+  LearningPathEdge,
   LearningPathNode,
   LearningPathWithNodes,
   NodeProgress,
@@ -61,6 +62,18 @@ export class LearningPathDetailService {
     }
   }
 
+  async updateNodePosition(pathId: string, nodeId: string, x: number, y: number): Promise<void> {
+    const previous = this.data()?.nodes;
+    if (!previous) return;
+    this.patchNodes((nodes) => nodes.map((n) => (n.id === nodeId ? { ...n, x, y } : n)));
+    try {
+      await this.repository.updateNodePosition(pathId, nodeId, x, y);
+    } catch {
+      this.patchNodes(() => previous);
+      throw new Error('No se pudo guardar la posición del nodo.');
+    }
+  }
+
   async reorderNodes(pathId: string, orderedNodes: LearningPathNode[]): Promise<void> {
     const previous = this.data()?.nodes;
     if (!previous) return;
@@ -101,9 +114,25 @@ export class LearningPathDetailService {
     await this.repository.delete(pathId);
   }
 
+  async addEdge(pathId: string, sourceNodeId: string, targetNodeId: string): Promise<void> {
+    const edge = await this.repository.addEdge(pathId, { sourceNodeId, targetNodeId });
+    this.patchEdges((edges) => [...edges, edge]);
+  }
+
+  async deleteEdge(pathId: string, edgeId: string): Promise<void> {
+    await this.repository.deleteEdge(pathId, edgeId);
+    this.patchEdges((edges) => edges.filter((e) => e.id !== edgeId));
+  }
+
   private patchNodes(updater: (nodes: LearningPathNode[]) => LearningPathNode[]): void {
     this.data.update((current) =>
       current ? { ...current, nodes: updater(current.nodes) } : current,
+    );
+  }
+
+  private patchEdges(updater: (edges: LearningPathEdge[]) => LearningPathEdge[]): void {
+    this.data.update((current) =>
+      current ? { ...current, edges: updater(current.edges) } : current,
     );
   }
 }

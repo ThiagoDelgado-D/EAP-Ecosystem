@@ -56,6 +56,8 @@ export interface LearningPathNode {
   stubScope?: StubScope;
   order?: number;
   progress: NodeProgress;
+  x?: number;
+  y?: number;
   createdAt: Date;
   updatedAt: Date;
 }

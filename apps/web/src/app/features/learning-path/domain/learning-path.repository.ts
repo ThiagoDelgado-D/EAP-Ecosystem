@@ -30,6 +30,12 @@ export abstract class LearningPathRepository {
     nodeId: string,
     progress: NodeProgress,
   ): Promise<LearningPathNode>;
+  abstract updateNodePosition(
+    pathId: string,
+    nodeId: string,
+    x: number,
+    y: number,
+  ): Promise<LearningPathNode>;
 
   abstract addEdge(pathId: string, payload: AddLearningPathEdgePayload): Promise<LearningPathEdge>;
   abstract deleteEdge(pathId: string, edgeId: string): Promise<void>;
