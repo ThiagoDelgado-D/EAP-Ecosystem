@@ -61,6 +61,18 @@ export class LearningPathDetailService {
     }
   }
 
+  async updateNodePosition(pathId: string, nodeId: string, x: number, y: number): Promise<void> {
+    const previous = this.data()?.nodes;
+    if (!previous) return;
+    this.patchNodes((nodes) => nodes.map((n) => (n.id === nodeId ? { ...n, x, y } : n)));
+    try {
+      await this.repository.updateNodePosition(pathId, nodeId, x, y);
+    } catch {
+      this.patchNodes(() => previous);
+      throw new Error('No se pudo guardar la posición del nodo.');
+    }
+  }
+
   async reorderNodes(pathId: string, orderedNodes: LearningPathNode[]): Promise<void> {
     const previous = this.data()?.nodes;
     if (!previous) return;
