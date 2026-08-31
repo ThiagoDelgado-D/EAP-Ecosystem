@@ -24,6 +24,8 @@ interface BaseNode extends Entity, TimestampedEntity {
   externalUrl?: string;
   order?: number;
   progress: NodeProgress;
+  x?: number;
+  y?: number;
 }
 
 export interface LinkedLearningPathNode extends BaseNode {
