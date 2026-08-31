@@ -46,7 +46,7 @@ export const updateLearningPathNodePosition = async (
   | LearningPathNodeNotFoundError
   | InvalidDataError
 > => {
-  const validationResult = await updateLearningPathNodePositionSchema(request);
+  const validationResult = updateLearningPathNodePositionSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
   }
@@ -57,7 +57,7 @@ export const updateLearningPathNodePosition = async (
   if (isErrorResult(path)) return path;
 
   const node = await learningPathRepository.findNodeById(nodeId);
-  if (!node || node.pathId !== pathId) return new LearningPathNodeNotFoundError();
+  if (node?.pathId !== pathId) return new LearningPathNodeNotFoundError();
 
   return learningPathRepository.updateNode(nodeId, { x, y });
 };
