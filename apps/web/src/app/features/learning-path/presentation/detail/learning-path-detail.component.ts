@@ -25,6 +25,7 @@ import {
 import { NodeFormDialogComponent } from '../node-form/node-form-dialog.component';
 import { EditLearningPathDialogComponent } from '../edit-path/edit-learning-path-dialog.component';
 import { NodeDetailPanelComponent } from '../node-panel/node-detail-panel.component';
+import { LearningPathGraphComponent } from '../graph/learning-path-graph.component';
 
 @Component({
   selector: 'app-learning-path-detail',
@@ -34,7 +35,14 @@ import { NodeDetailPanelComponent } from '../node-panel/node-detail-panel.compon
     LearningPathDetailService,
     { provide: LearningPathRepository, useClass: LearningPathHttpRepository },
   ],
-  imports: [RouterModule, CdkDropList, CdkDrag, CdkDragHandle, NodeDetailPanelComponent],
+  imports: [
+    RouterModule,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+    NodeDetailPanelComponent,
+    LearningPathGraphComponent,
+  ],
 })
 export class LearningPathDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

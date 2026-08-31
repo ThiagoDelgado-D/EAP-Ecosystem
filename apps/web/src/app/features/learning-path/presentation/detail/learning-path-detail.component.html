@@ -361,15 +361,11 @@
           </div>
         </div>
       } @else {
-        <div
-          class="rounded-xl border border-slate-800 bg-slate-900 p-8 flex flex-col items-center gap-2 text-center"
-        >
-          <p class="text-slate-300 text-sm font-medium">La vista de grafo está en construcción.</p>
-          <p class="text-xs text-slate-500 max-w-sm">
-            Este path se creó en modo Grafo. La visualización de nodos y conexiones va a estar
-            disponible en una próxima actualización.
-          </p>
-        </div>
+        <app-learning-path-graph
+          [nodes]="data.nodes"
+          [edges]="data.edges"
+          (nodeSelected)="openNodePanel($event)"
+        />
       }
     </div>
   }
