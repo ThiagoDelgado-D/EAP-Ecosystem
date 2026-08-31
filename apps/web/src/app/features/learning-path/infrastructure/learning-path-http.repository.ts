@@ -98,6 +98,21 @@ export class LearningPathHttpRepository extends LearningPathRepository {
     return this.toNodeDomain(dto);
   }
 
+  async updateNodePosition(
+    pathId: string,
+    nodeId: string,
+    x: number,
+    y: number,
+  ): Promise<LearningPathNode> {
+    const dto = await firstValueFrom(
+      this.http.patch<LearningPathNodeDto>(
+        `${this.baseUrl}/${pathId}/nodes/${nodeId}/position`,
+        { x, y },
+      ),
+    );
+    return this.toNodeDomain(dto);
+  }
+
   async addEdge(pathId: string, payload: AddLearningPathEdgePayload): Promise<LearningPathEdge> {
     const dto = await firstValueFrom(
       this.http.post<LearningPathEdgeDto>(`${this.baseUrl}/${pathId}/edges`, payload),
@@ -145,6 +160,8 @@ export class LearningPathHttpRepository extends LearningPathRepository {
       stubScope: dto.stubScope as StubScope | undefined,
       order: dto.order ?? undefined,
       progress: dto.progress as NodeProgress,
+      x: dto.x ?? undefined,
+      y: dto.y ?? undefined,
       createdAt: this.parseDate(dto.createdAt),
       updatedAt: this.parseDate(dto.updatedAt),
     };
