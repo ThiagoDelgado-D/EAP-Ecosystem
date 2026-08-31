@@ -1,0 +1,78 @@
+<div
+  #canvas
+  class="relative w-full h-[600px] rounded-xl border border-slate-800 bg-slate-950 overflow-hidden touch-none"
+>
+  <div
+    class="absolute inset-0 origin-top-left"
+    [style.transform]="'translate(' + transform().x + 'px, ' + transform().y + 'px) scale(' + transform().k + ')'"
+  >
+    <svg class="absolute inset-0 overflow-visible pointer-events-none" width="1" height="1">
+      @for (line of edgeLines(); track line.edge.id) {
+        <line
+          [attr.x1]="line.x1"
+          [attr.y1]="line.y1"
+          [attr.x2]="line.x2"
+          [attr.y2]="line.y2"
+          stroke="#334155"
+          stroke-width="1.5"
+        />
+      }
+    </svg>
+
+    @for (entry of positionedNodes(); track entry.node.id) {
+      <div
+        data-node-card
+        class="absolute -translate-x-1/2 -translate-y-1/2 w-[200px]"
+        [style.left.px]="entry.x"
+        [style.top.px]="entry.y"
+      >
+        <div
+          class="rounded-[10px] p-3 flex items-start gap-2 bg-slate-900 transition-all"
+          [class]="
+            !entry.node.learningResourceId
+              ? 'border-[1.5px] border-dashed border-slate-700'
+              : 'border border-slate-800'
+          "
+        >
+          <div
+            class="w-5 h-5 rounded-full shrink-0 flex items-center justify-center border-[1.5px] mt-0.5"
+            [class]="
+              entry.node.progress === NODE_PROGRESS.DONE
+                ? 'bg-emerald-400/10 border-emerald-400'
+                : entry.node.progress === NODE_PROGRESS.IN_PROGRESS
+                  ? 'bg-violet-400/10 border-violet-400 lp-pulse-ring'
+                  : 'bg-slate-900 border-slate-700'
+            "
+          >
+            @if (entry.node.progress === NODE_PROGRESS.DONE) {
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            }
+          </div>
+          <div class="flex-1 min-w-0">
+            <button
+              type="button"
+              (click)="onNodeClick(entry.node)"
+              class="flex items-center gap-1.5 flex-wrap text-left bg-transparent border-0 p-0 cursor-pointer w-full"
+            >
+              <span
+                class="text-[12.5px] font-bold truncate"
+                [class]="entry.node.learningResourceId ? 'text-slate-100' : 'text-slate-400'"
+              >
+                {{ entry.node.title }}
+              </span>
+            </button>
+            @if (!entry.node.learningResourceId) {
+              <span
+                class="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 mt-1 rounded text-slate-500 border border-dashed border-slate-700"
+              >
+                Stub
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
