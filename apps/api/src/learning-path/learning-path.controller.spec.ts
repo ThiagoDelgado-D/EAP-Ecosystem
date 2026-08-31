@@ -145,6 +145,31 @@ describe("LearningPathController (integration)", () => {
       expect(updateProgressResponse.body.progress).toBe("done");
     });
 
+    test("updates node position", async () => {
+      const createPathResponse = await request(app.getHttpServer())
+        .post("/api/v1/learning-paths")
+        .set(authHeader())
+        .send({ title: "System Design Map", mode: "graph" })
+        .expect(201);
+      const pathId = createPathResponse.body.id;
+
+      const cachingNodeResponse = await request(app.getHttpServer())
+        .post(`/api/v1/learning-paths/${pathId}/nodes`)
+        .set(authHeader())
+        .send({ title: "Caching Strategies" })
+        .expect(201);
+      const cachingNodeId = cachingNodeResponse.body.id;
+
+      const updatePositionResponse = await request(app.getHttpServer())
+        .patch(`/api/v1/learning-paths/${pathId}/nodes/${cachingNodeId}/position`)
+        .set(authHeader())
+        .send({ x: 340.5, y: -12 })
+        .expect(200);
+
+      expect(updatePositionResponse.body.x).toBe(340.5);
+      expect(updatePositionResponse.body.y).toBe(-12);
+    });
+
     test("deletes an edge", async () => {
       const createPathResponse = await request(app.getHttpServer())
         .post("/api/v1/learning-paths")
