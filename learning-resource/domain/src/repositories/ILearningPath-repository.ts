@@ -11,7 +11,10 @@ import type { LearningPathEdge } from "../entities/learning-path-edge.js";
 export type LearningPathPatch = Partial<Pick<LearningPath, "title" | "description">>;
 
 export type LearningPathNodePatch = Partial<
-  Pick<LearningPathNode & { stubScope: never }, "title" | "description" | "externalUrl" | "order" | "progress">
+  Pick<
+    LearningPathNode & { stubScope: never },
+    "title" | "description" | "externalUrl" | "order" | "progress" | "x" | "y"
+  >
 > & { learningResourceId?: UUID | null; stubScope?: StubScope | null };
 
 export interface ILearningPathRepository {

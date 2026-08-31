@@ -108,6 +108,8 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
     if (patch.externalUrl !== undefined) updateData.externalUrl = patch.externalUrl ?? null;
     if (patch.order !== undefined) updateData.order = patch.order ?? null;
     if (patch.progress !== undefined) updateData.progress = patch.progress;
+    if (patch.x !== undefined) updateData.x = patch.x ?? null;
+    if (patch.y !== undefined) updateData.y = patch.y ?? null;
     if (patch.learningResourceId !== undefined) {
       updateData.learningResourceId = patch.learningResourceId;
     }
@@ -187,6 +189,8 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
       externalUrl: entity.externalUrl ?? undefined,
       order: entity.order ?? undefined,
       progress: entity.progress as NodeProgress,
+      x: entity.x ?? undefined,
+      y: entity.y ?? undefined,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };
@@ -206,6 +210,8 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
     entity.externalUrl = node.externalUrl ?? null;
     entity.order = node.order ?? null;
     entity.progress = node.progress;
+    entity.x = node.x ?? null;
+    entity.y = node.y ?? null;
     entity.learningResourceId = node.learningResourceId ?? null;
     entity.stubScope = node.stubScope ?? null;
     entity.createdAt = node.createdAt;

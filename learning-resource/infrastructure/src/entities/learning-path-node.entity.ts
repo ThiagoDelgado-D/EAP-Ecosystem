@@ -35,6 +35,12 @@ export class LearningPathNodeEntity {
   @Column({ length: 20, default: "pending" })
   progress!: string;
 
+  @Column({ type: "double precision", nullable: true })
+  x!: number | null;
+
+  @Column({ type: "double precision", nullable: true })
+  y!: number | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

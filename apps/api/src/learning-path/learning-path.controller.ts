@@ -23,6 +23,7 @@ import {
   listLearningPaths,
   updateLearningPath,
   updateLearningPathNode,
+  updateLearningPathNodePosition,
   updateLearningPathNodeProgress,
 } from "@learning-resource/application";
 import {
@@ -31,6 +32,7 @@ import {
   CreateLearningPathDto,
   UpdateLearningPathDto,
   UpdateLearningPathNodeDto,
+  UpdateLearningPathNodePositionDto,
   UpdateLearningPathNodeProgressDto,
 } from "./dto/request/index.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
@@ -157,6 +159,21 @@ export class LearningPathController {
     const result = await updateLearningPathNodeProgress(
       { learningPathRepository: this.learningPathRepository },
       { userId, pathId: id, nodeId, progress: dto.progress },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Patch(":id/nodes/:nodeId/position")
+  async updateNodePosition(
+    @Param("id") id: UUID,
+    @Param("nodeId") nodeId: UUID,
+    @Body() dto: UpdateLearningPathNodePositionDto,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const result = await updateLearningPathNodePosition(
+      { learningPathRepository: this.learningPathRepository },
+      { userId, pathId: id, nodeId, x: dto.x, y: dto.y },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
