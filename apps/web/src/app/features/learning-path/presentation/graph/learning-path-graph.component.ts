@@ -186,8 +186,8 @@ export class LearningPathGraphComponent implements AfterViewInit {
 
     const targetCard = document
       .elementFromPoint(event.clientX, event.clientY)
-      ?.closest('[data-node-card]');
-    const targetNodeId = targetCard?.getAttribute('data-node-id');
+      ?.closest<HTMLElement>('[data-node-card]');
+    const targetNodeId = targetCard?.dataset['nodeId'];
     if (!targetNodeId || targetNodeId === sourceNodeId) return;
 
     const alreadyLinked = this.edges().some(
@@ -199,6 +199,7 @@ export class LearningPathGraphComponent implements AfterViewInit {
   }
 
   onEdgeLineClick(edge: LearningPathEdge, event: Event): void {
+    event.preventDefault();
     event.stopPropagation();
     this.edgeClicked.emit(edge);
   }

@@ -27,7 +27,12 @@
           stroke="transparent"
           stroke-width="12"
           class="cursor-pointer"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'Eliminar conexión'"
           (click)="onEdgeLineClick(line.edge, $event)"
+          (keydown.enter)="onEdgeLineClick(line.edge, $event)"
+          (keydown.space)="onEdgeLineClick(line.edge, $event)"
         />
       }
       @if (edgeDraft(); as draft) {
