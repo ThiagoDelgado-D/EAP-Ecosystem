@@ -6,7 +6,7 @@
     class="absolute inset-0 origin-top-left"
     [style.transform]="'translate(' + transform().x + 'px, ' + transform().y + 'px) scale(' + transform().k + ')'"
   >
-    <svg class="absolute inset-0 overflow-visible pointer-events-none" width="1" height="1">
+    <svg class="absolute inset-0 overflow-visible" width="1" height="1">
       @for (line of edgeLines(); track line.edge.id) {
         <line
           [attr.x1]="line.x1"
@@ -15,6 +15,31 @@
           [attr.y2]="line.y2"
           stroke="#334155"
           stroke-width="1.5"
+          class="pointer-events-none"
+        />
+        <!-- Wider transparent hit-area on top of the thin visible line — 1.5px is too
+             thin to click reliably, this makes the whole edge easy to target/delete. -->
+        <line
+          [attr.x1]="line.x1"
+          [attr.y1]="line.y1"
+          [attr.x2]="line.x2"
+          [attr.y2]="line.y2"
+          stroke="transparent"
+          stroke-width="12"
+          class="cursor-pointer"
+          (click)="onEdgeLineClick(line.edge, $event)"
+        />
+      }
+      @if (edgeDraft(); as draft) {
+        <line
+          [attr.x1]="draft.x1"
+          [attr.y1]="draft.y1"
+          [attr.x2]="draft.x2"
+          [attr.y2]="draft.y2"
+          stroke="#a78bfa"
+          stroke-width="1.5"
+          stroke-dasharray="4 3"
+          class="pointer-events-none"
         />
       }
     </svg>
@@ -22,12 +47,17 @@
     @for (entry of positionedNodes(); track entry.node.id) {
       <div
         data-node-card
-        class="absolute -translate-x-1/2 -translate-y-1/2 w-[200px]"
+        [attr.data-node-id]="entry.node.id"
+        class="absolute -translate-x-1/2 -translate-y-1/2 w-[200px] touch-none"
         [style.left.px]="entry.x"
         [style.top.px]="entry.y"
+        (pointerdown)="onNodePointerDown($event, entry.node, entry.x, entry.y)"
+        (pointermove)="onNodePointerMove($event, entry.node)"
+        (pointerup)="onNodePointerUp($event, entry.node)"
+        (pointercancel)="onNodePointerCancel()"
       >
         <div
-          class="rounded-[10px] p-3 flex items-start gap-2 bg-slate-900 transition-all"
+          class="relative rounded-[10px] p-3 flex items-start gap-2 bg-slate-900 transition-all cursor-grab"
           [class]="
             !entry.node.learningResourceId
               ? 'border-[1.5px] border-dashed border-slate-700'
@@ -51,18 +81,12 @@
             }
           </div>
           <div class="flex-1 min-w-0">
-            <button
-              type="button"
-              (click)="onNodeClick(entry.node)"
-              class="flex items-center gap-1.5 flex-wrap text-left bg-transparent border-0 p-0 cursor-pointer w-full"
+            <span
+              class="flex items-center gap-1.5 flex-wrap text-[12.5px] font-bold truncate"
+              [class]="entry.node.learningResourceId ? 'text-slate-100' : 'text-slate-400'"
             >
-              <span
-                class="text-[12.5px] font-bold truncate"
-                [class]="entry.node.learningResourceId ? 'text-slate-100' : 'text-slate-400'"
-              >
-                {{ entry.node.title }}
-              </span>
-            </button>
+              {{ entry.node.title }}
+            </span>
             @if (!entry.node.learningResourceId) {
               <span
                 class="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 mt-1 rounded text-slate-500 border border-dashed border-slate-700"
@@ -71,6 +95,14 @@
               </span>
             }
           </div>
+
+          <div
+            title="Arrastrá para conectar con otro nodo"
+            class="absolute -bottom-1.5 -right-1.5 w-4 h-4 rounded-full bg-slate-700 border border-slate-500 cursor-crosshair hover:bg-violet-500 hover:border-violet-400 touch-none"
+            (pointerdown)="onEdgeHandlePointerDown($event, entry.node, entry.x, entry.y)"
+            (pointermove)="onEdgeHandlePointerMove($event)"
+            (pointerup)="onEdgeHandlePointerUp($event)"
+          ></div>
         </div>
       </div>
     }

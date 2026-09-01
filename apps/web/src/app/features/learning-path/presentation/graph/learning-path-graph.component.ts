@@ -37,6 +37,17 @@ const LINK_DISTANCE = 140;
 const CHARGE_STRENGTH = -300;
 const COLLIDE_RADIUS = 70;
 
+/** Below this, a pointerdown/up pair on a node is a click, not a drag — d3-zoom style. */
+const DRAG_CLICK_THRESHOLD = 4;
+
+interface EdgeDraft {
+  sourceNodeId: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
 @Component({
   selector: 'app-learning-path-graph',
   standalone: true,
@@ -48,11 +59,24 @@ export class LearningPathGraphComponent implements AfterViewInit {
   readonly nodes = input.required<LearningPathNode[]>();
   readonly edges = input.required<LearningPathEdge[]>();
   readonly nodeSelected = output<LearningPathNode>();
+  readonly nodeMoved = output<{ node: LearningPathNode; x: number; y: number }>();
+  readonly edgeCreateRequested = output<{ sourceNodeId: string; targetNodeId: string }>();
+  readonly edgeClicked = output<LearningPathEdge>();
 
   private readonly canvasRef = viewChild.required<ElementRef<HTMLDivElement>>('canvas');
 
   private readonly positions = signal<Record<string, CanvasPosition>>({});
   readonly transform = signal({ x: 0, y: 0, k: 1 });
+
+  // Plain fields, not signals: only read synchronously inside the pointermove/up
+  // handlers of the same gesture, never rendered directly.
+  private draggingNodeId: string | null = null;
+  private dragMoved = false;
+  private dragStartClient: CanvasPosition = { x: 0, y: 0 };
+  private dragStartNodePos: CanvasPosition = { x: 0, y: 0 };
+
+  private edgeDragSourceId: string | null = null;
+  readonly edgeDraft = signal<EdgeDraft | null>(null);
 
   readonly positionedNodes = computed(() => {
     const positions = this.positions();
@@ -96,6 +120,93 @@ export class LearningPathGraphComponent implements AfterViewInit {
 
   onNodeClick(node: LearningPathNode): void {
     this.nodeSelected.emit(node);
+  }
+
+  onNodePointerDown(event: PointerEvent, node: LearningPathNode, x: number, y: number): void {
+    (event.currentTarget as Element).setPointerCapture(event.pointerId);
+    this.draggingNodeId = node.id;
+    this.dragMoved = false;
+    this.dragStartClient = { x: event.clientX, y: event.clientY };
+    this.dragStartNodePos = { x, y };
+  }
+
+  onNodePointerMove(event: PointerEvent, node: LearningPathNode): void {
+    if (this.draggingNodeId !== node.id) return;
+    const dx = event.clientX - this.dragStartClient.x;
+    const dy = event.clientY - this.dragStartClient.y;
+    if (!this.dragMoved && Math.hypot(dx, dy) < DRAG_CLICK_THRESHOLD) return;
+    this.dragMoved = true;
+
+    const k = this.transform().k;
+    const next = { x: this.dragStartNodePos.x + dx / k, y: this.dragStartNodePos.y + dy / k };
+    this.positions.update((prev) => ({ ...prev, [node.id]: next }));
+  }
+
+  onNodePointerUp(event: PointerEvent, node: LearningPathNode): void {
+    if (this.draggingNodeId !== node.id) return;
+    (event.currentTarget as Element).releasePointerCapture(event.pointerId);
+    this.draggingNodeId = null;
+
+    if (!this.dragMoved) {
+      this.onNodeClick(node);
+      return;
+    }
+    const { x, y } = this.positions()[node.id];
+    this.nodeMoved.emit({ node, x, y });
+  }
+
+  onNodePointerCancel(): void {
+    this.draggingNodeId = null;
+  }
+
+  onEdgeHandlePointerDown(
+    event: PointerEvent,
+    node: LearningPathNode,
+    x: number,
+    y: number,
+  ): void {
+    event.stopPropagation();
+    (event.currentTarget as Element).setPointerCapture(event.pointerId);
+    this.edgeDragSourceId = node.id;
+    this.edgeDraft.set({ sourceNodeId: node.id, x1: x, y1: y, x2: x, y2: y });
+  }
+
+  onEdgeHandlePointerMove(event: PointerEvent): void {
+    if (!this.edgeDragSourceId) return;
+    const { x, y } = this.toWorldCoords(event.clientX, event.clientY);
+    this.edgeDraft.update((draft) => (draft ? { ...draft, x2: x, y2: y } : draft));
+  }
+
+  onEdgeHandlePointerUp(event: PointerEvent): void {
+    const sourceNodeId = this.edgeDragSourceId;
+    if (!sourceNodeId) return;
+    (event.currentTarget as Element).releasePointerCapture(event.pointerId);
+    this.edgeDragSourceId = null;
+    this.edgeDraft.set(null);
+
+    const targetCard = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest('[data-node-card]');
+    const targetNodeId = targetCard?.getAttribute('data-node-id');
+    if (!targetNodeId || targetNodeId === sourceNodeId) return;
+
+    const alreadyLinked = this.edges().some(
+      (e) => e.sourceNodeId === sourceNodeId && e.targetNodeId === targetNodeId,
+    );
+    if (alreadyLinked) return;
+
+    this.edgeCreateRequested.emit({ sourceNodeId, targetNodeId });
+  }
+
+  onEdgeLineClick(edge: LearningPathEdge, event: Event): void {
+    event.stopPropagation();
+    this.edgeClicked.emit(edge);
+  }
+
+  private toWorldCoords(clientX: number, clientY: number): CanvasPosition {
+    const rect = this.canvasRef().nativeElement.getBoundingClientRect();
+    const { x, y, k } = this.transform();
+    return { x: (clientX - rect.left - x) / k, y: (clientY - rect.top - y) / k };
   }
 
   /**

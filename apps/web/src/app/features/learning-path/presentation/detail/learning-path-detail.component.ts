@@ -18,6 +18,7 @@ import { LearningPathHttpRepository } from '@features/learning-path/infrastructu
 import {
   NODE_PROGRESS,
   PATH_MODE,
+  type LearningPathEdge,
   type LearningPathNode,
   type NodeProgress,
   type PathMode,
@@ -225,6 +226,38 @@ export class LearningPathDetailComponent implements OnInit {
     } finally {
       this.reordering.set(false);
       this.liveOrderIds.set(null);
+    }
+  }
+
+  async onNodeMoved(event: { node: LearningPathNode; x: number; y: number }): Promise<void> {
+    try {
+      await this.detailService.updateNodePosition(this.pathId, event.node.id, event.x, event.y);
+    } catch {
+      this.toastService.show('No se pudo guardar la posición del nodo', 'error');
+    }
+  }
+
+  async onEdgeCreateRequested(event: { sourceNodeId: string; targetNodeId: string }): Promise<void> {
+    try {
+      await this.detailService.addEdge(this.pathId, event.sourceNodeId, event.targetNodeId);
+    } catch {
+      this.toastService.show('No se pudo crear la conexión', 'error');
+    }
+  }
+
+  async onEdgeClicked(edge: LearningPathEdge): Promise<void> {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Eliminar conexión',
+      message: '¿Seguro que querés eliminar esta conexión entre nodos?',
+      confirmLabel: 'Eliminar',
+      confirmButtonClass: 'bg-red-600 hover:bg-red-500 text-white',
+    });
+    if (!confirmed) return;
+
+    try {
+      await this.detailService.deleteEdge(this.pathId, edge.id);
+    } catch {
+      this.toastService.show('No se pudo eliminar la conexión', 'error');
     }
   }
 
