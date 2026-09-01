@@ -61,9 +61,8 @@ guided form, URL import, voice capture, or file import. A Settings section lets 
 | **Soft-match Search**      | ✅ Complete          | pg_trgm + GIN index, getSuggestions use case, empty-state suggestions UI (v0.8.6) |
 | **Appearance Preferences** | ✅ Complete          | Timezone, date/time format, language, density persisted to DB (v0.8.7)            |
 | **Learning Paths**         | 📅 Planned (v0.9.0)  | Ordered resource sequences with progress tracking                                 |
-| **Pomodoro & Sessions**    | 📅 Planned (v0.9.5)  | Focus Pulse and Architect's Pulse wired to real session data                      |
-| **Spaced Repetition**      | 📅 Planned (v0.10.0) | SRS scheduling + recommendation engine                                            |
-| **Recommendation Engine**  | 📅 Planned (v0.10.0) | Ideal Match wired to real endpoint                                                |
+| **Pomodoro & Sessions**    | 📅 Planned (v0.9.5)  | Simple timer tied to the active resource + session history                        |
+| **Recommendation Engine**  | 📅 Planned (v0.10.0) | Rule-based suggestions from energy/state and pending resources                    |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
