@@ -365,6 +365,9 @@
           [nodes]="data.nodes"
           [edges]="data.edges"
           (nodeSelected)="openNodePanel($event)"
+          (nodeMoved)="onNodeMoved($event)"
+          (edgeCreateRequested)="onEdgeCreateRequested($event)"
+          (edgeClicked)="onEdgeClicked($event)"
         />
       }
     </div>
