@@ -1,13 +1,83 @@
-## [Unreleased][Unreleased]
+## [Unreleased]
 
 ### Planned
 
-- Learning resources associated to authenticated user (data isolation per user) — v0.8.4earning resources associated to authenticated user (data isolation per user) — v0.8.4
-- `LearningPath` entity — graph + sequential modes, stub nodes, roadmap.sh import (ADR-0021) — v0.9.0LearningPath` entity — ordered resource sequences with phases and progress tracking — v0.9.0
-- `ResourceRelationship` entity — typed directed edges between resources — v0.9.0ResourceRelationship` entity — typed directed edges between resources — v0.9.0
-- Atlas View — `@swimlane/ngx-graph` force-directed knowledge graph visualization — v0.9.0tlas View — D3.js force-directed knowledge graph visualization — v0.9.0
-- Pomodoro timer + `LearningSession` records — v0.9.5omodoro timer + `LearningSession` records — v0.9.5
-- WebSocket gateway for cross-device session sync — v0.9.5ebSocket gateway for cross-device session sync — v0.9.5
+- Learning resources associated to authenticated user (data isolation per user) — not yet scheduled to a version
+- Pomodoro timer + `LearningSession` records — v0.9.5
+- WebSocket gateway for cross-device session sync — Post-MVP
+
+---
+
+## [0.9.0] - 2026-09-02
+
+### Learning Paths + Knowledge Graph
+
+Resources can be sequenced into a `LearningPath`, in either sequential or graph mode.
+A path holds nodes that either link to an existing `LearningResource` or stand alone
+as a lightweight stub, each with independent progress (pending / in progress / done).
+Sequential mode is a drag-to-reorder rail with status chips; graph mode is a new
+interactive canvas — `d3-force` auto-layout, pan/zoom, drag-to-reposition, and
+creating/deleting edges directly on the canvas.
+
+---
+
+### Added
+
+#### Backend — Domain & Application
+
+- `LearningPath`, `LearningPathNode` (linked or stub), `LearningPathEdge` domain
+  entities
+- Path-level, node-level, and edge-level CRUD use cases, with ownership
+  verification centralized across all three
+- Shared faker.js mock factory for Learning Path specs
+
+#### Backend — Infrastructure
+
+- Controller, TypeORM repository, and DI module wiring for the Learning Path
+  bounded context
+- Node position (`x`/`y`) persistence endpoint
+
+#### Frontend — Sequential view
+
+- `CreateLearningPathWizardComponent` — 3-question wizard that leans the
+  suggested mode (sequential/graph) toward one, with manual override
+- `LearningPathListComponent` — card grid with per-path progress/done/linked/stub
+  counts
+- `LearningPathDetailComponent` — sequential rail (drag-to-reorder, live-updating
+  progress) and node detail / promote-stub panel, shared with graph mode
+- Progress editable on stub nodes, not just linked ones
+
+#### Frontend — Graph canvas
+
+- `LearningPathGraphComponent` — one-shot `d3-force` auto-layout (already-placed
+  nodes pinned via `fx`/`fy`), `d3-zoom` pan/zoom
+- Drag-to-reposition nodes, persisted via the node position endpoint, with
+  automatic snap-back on a failed request
+- Create/delete edges directly on the canvas, with client-side rejection of
+  self-loops and duplicate edges before the request goes out
+
+### Fixed
+
+- `LearningPath` entities were missing from `DatabaseModule` registration
+- Duplicated border/background on `ConfirmDialogComponent` — the component's own
+  wrapper re-applied styles already covered by the Material dialog surface
+
+### Changed
+
+- `@angular/cli` bumped to 21.2.22 — patches a `pacote` denial-of-service
+  vulnerability (GHSA-w4pp-8pjf-rmxw)
+
+### Known Limitations (intentional)
+
+- Edges are untyped — the originally planned `PREREQUISITE`/`BUILDS_ON`/`RELATED`/
+  `ALTERNATIVE` typing was cut from this release.
+- No Kanban view — only Sequential and Graph modes shipped.
+- No full-text search (`tsvector`) across path titles/notes.
+- No working roadmap.sh import — `PathSource.ROADMAP_SH` is tracked on the entity,
+  but nothing fetches or parses a roadmap.sh JSON yet.
+- No milestones/phases, and no PWA groundwork (`@angular/pwa`, Service Worker).
+- The graph canvas shipped on raw `d3-force`/`d3-zoom` instead of the
+  `@swimlane/ngx-graph` (Dagre) ADR-0021 documents — that ADR is now stale.
 
 ---
 
