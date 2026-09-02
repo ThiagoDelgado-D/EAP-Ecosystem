@@ -6,7 +6,7 @@ import { ConfirmDialogOptions } from './confirm-dialog.types';
   selector: 'app-confirm-dialog',
   standalone: true,
   template: `
-    <div class="p-6 max-w-sm bg-slate-900 border border-slate-800 rounded-xl">
+    <div class="p-6 max-w-sm">
       <h2 class="text-lg font-semibold text-slate-100 mb-2">
         {{ data.title || 'Confirm action' }}
       </h2>
