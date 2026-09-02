@@ -14,7 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.8.7-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
+[![Version](https://img.shields.io/badge/version-0.9.0-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
 [![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
 [![Last Commit](https://img.shields.io/github/last-commit/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/commits/main)
@@ -31,11 +31,11 @@ The long-term goal is a recommendation engine that suggests what to study based 
 Users authenticate via magic link or Google Sign-In, complete a two-step onboarding to select
 which modules to activate, and land on a dashboard with their resource library. Resources can
 be managed with inline metadata editing, filtered by difficulty and energy level, and added via
-guided form, URL import, voice capture, or file import. A Settings section lets users manage active sessions, toggle which modules and widgets are visible, and configure appearance preferences (timezone, date format, time format, language, density) — persisted to the backend and restored on every sign-in.
+guided form, URL import, voice capture, or file import. A Settings section lets users manage active sessions, toggle which modules and widgets are visible, and configure appearance preferences (timezone, date format, time format, language, density) — persisted to the backend and restored on every sign-in. Resources can be sequenced into Learning Paths with progress tracking, visualized and edited as an interactive knowledge graph.
 
 ---
 
-## 🎯 Current Status (v0.8.7)
+## 🎯 Current Status (v0.9.0)
 
 | Component                  | Status               | Notes                                                                             |
 | -------------------------- | -------------------- | --------------------------------------------------------------------------------- |
@@ -54,13 +54,12 @@ guided form, URL import, voice capture, or file import. A Settings section lets 
 | **OAuth (Google)**         | ✅ Complete          | Google Sign-In, account linking, redirect flow (v0.8.2)                           |
 | **Email Templates**        | ✅ Complete          | HBS templates, Ethereal dev fallback, welcome email (v0.8.2)                      |
 | **User Settings**          | ✅ Complete          | Settings layout (9 sections), preferences API, session management (v0.8.3)        |
-| **User Settings**          | ✅ Complete          | Settings layout (9 sections), preferences API, session management (v0.8.3)        |
 | **Module Catalog & UI**    | ✅ Complete          | FeatureModuleCatalog, 3-column grid, StatusBadge, drop dark mode toggle (v0.8.4)  |
 | **Danger Zone**            | ✅ Complete          | Reset preferences endpoint + Settings panel, full use case test coverage (v0.8.5) |
 | **Pagination & Filtering** | ✅ Complete          | Server-side filtering + PaginatorComponent + sessionStorage nav state (v0.8.6)    |
 | **Soft-match Search**      | ✅ Complete          | pg_trgm + GIN index, getSuggestions use case, empty-state suggestions UI (v0.8.6) |
 | **Appearance Preferences** | ✅ Complete          | Timezone, date/time format, language, density persisted to DB (v0.8.7)            |
-| **Learning Paths**         | 📅 Planned (v0.9.0)  | Ordered resource sequences with progress tracking                                 |
+| **Learning Paths**         | ✅ Complete          | Ordered resource sequences, stub promotion, progress tracking, interactive knowledge graph canvas — drag-to-reposition, add/delete edges (v0.9.0) |
 | **Pomodoro & Sessions**    | 📅 Planned (v0.9.5)  | Simple timer tied to the active resource + session history                        |
 | **Recommendation Engine**  | 📅 Planned (v0.10.0) | Rule-based suggestions from energy/state and pending resources                    |
 
