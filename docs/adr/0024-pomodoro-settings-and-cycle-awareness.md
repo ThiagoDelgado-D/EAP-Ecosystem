@@ -29,13 +29,26 @@ extension once the basic timer is built and validated."
   Editable, applied to sessions/rounds started **after** the edit — never
   rewriting a past `Session.plannedMin` (same snapshot principle ADR-0022
   uses).
-- **Cycle counter**: scoped to a "Pomodoro set" (resets on a long break or
-  when the user ends the set). Needs a server-side home once it must
-  survive a page refresh — ADR-0022's refresh-recovery only restores the
-  active session, not an implicit "which round am I on" counter. This ADR
-  needs to decide where that counter lives (on `Session`? a separate
-  `PomodoroCycle` row? derived by counting recent sessions?) when it's
-  picked up.
+- **Cycle position — derived, not stored**: no new field or table.
+  `PomodoroService.breakAfter()` counts the user's focus `Session` rows
+  started on the current calendar day — any `targetKind`, any `plannedMin`
+  (a 90-minute immersion block counts the same as a 15-minute round) — and
+  computes:
+  - `dayCount` = number of focus Sessions started today
+  - `cyclePosition = ((dayCount - 1) % amountOfFocus) + 1`
+  - `isLongBreak = dayCount % amountOfFocus === 0`
+
+  Reaching `isLongBreak` is what closes the set — the next Session starts
+  a new set at position 1. Taking a break, short or long, never forces the
+  set closed by itself; only completing `amountOfFocus` rounds does. This
+  survives a page refresh for free, since it is recomputed from `Session`
+  rows already durable in Postgres — no counter to lose.
+- **Daily reset**: the cycle resets every calendar day regardless of
+  whether the previous day's set was completed — an incomplete set (say 2
+  of 4 rounds) never carries into the next day as "2 of 4," it starts over
+  at 0. The day boundary is already the reset point used elsewhere (session
+  history, streaks), so this introduces no new concept of "abandoning a
+  set" to define.
 - **Cycle-aware break**: a `breakAfter(cycle)`-style computation (short vs.
   long break, based on how many rounds have run) lives in `PomodoroService`
   and reads the user's `Settings`. Still **offered**, not auto-started —
@@ -54,14 +67,32 @@ extension once the basic timer is built and validated."
 - A version of this exact rhythm calculation is already sketched at the
   UI level — this isn't starting from zero, just moving it from throwaway
   client state to a real, tested service method.
+- The cycle-position mechanism needs zero new tables or columns beyond
+  `Settings` itself — cheaper to ship than the original sketch assumed.
 
 **Negative**
 
-- Needs a decision this ADR doesn't make yet: what happens to an
-  in-progress cycle count when `Settings` changes mid-set (e.g. user drops
-  `amountOfFocus` from 4 to 3 while on round 3)?
+- Because cycle position is derived live from `Settings.amountOfFocus`, a
+  mid-day change to that value immediately reinterprets the whole day's
+  count — a round that would have triggered a short break before the edit
+  can retroactively become the long-break-triggering round, or vice versa.
+  Accepted: the daily reset caps the blast radius to a single day: it never
+  carries the reinterpretation into tomorrow.
 - Adds a `Settings` entity and its own migration/UI surface that v0.9.5
   deliberately shipped without.
+
+## Rejected alternatives
+
+- **A dedicated `cycleIndex` field on `Session`** — rejected: still
+  requires computing "how many rounds so far" at write time instead of
+  read time, and gives a `Settings` change mid-set nowhere better to
+  snapshot against than the derived approach already gets for free from
+  the daily reset.
+- **A separate `PomodoroCycle` entity** grouping `Session` rows into an
+  explicit "set" — rejected as unnecessary once the reset is daily: there
+  is no ambiguous "when did this set actually end" left to track, since
+  the calendar day is already the boundary, and the target-count-reached
+  rule needs no persisted state of its own.
 
 ## References
 
