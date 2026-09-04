@@ -69,7 +69,7 @@ Post-MVP. This ADR's `Session`/`Segment` model does not depend on a
 | `intent`      | text, nullable      | Free-text "session goal" (e.g. "Understand conditional types…"), shown as a quote in zen mode                 |
 | `plannedMin`  | int                 | Duration chosen at start (15 / 25 / 50 / 90 in the prototype); a snapshot, not a live pointer to any settings |
 
-**`Segment`** (belongs to `Session`, one-to-many, ordered by `startOffsetSec`)
+**`Segment`** (belongs to `Session`, one-to-many, ordered by `startSec`)
 
 | Field                | Type                                 | Notes                                                                        |
 | -------------------- | ------------------------------------ | ---------------------------------------------------------------------------- |
@@ -79,14 +79,14 @@ Post-MVP. This ADR's `Session`/`Segment` model does not depend on a
 | `resourceId`         | uuid, nullable                       | Set when `targetKind` is `resource`, or `node` with a promoted resource      |
 | `learningPathId`     | uuid, nullable                       | Set when `targetKind` is `node`                                              |
 | `learningPathNodeId` | uuid, nullable                       | Set when `targetKind` is `node`. `resourceId` null here = a **stub** segment |
-| `startOffsetSec`     | int                                  | Seconds from `Session.startedAt`                                             |
-| `endOffsetSec`       | int, nullable                        | Null = this is the currently active segment                                  |
+| `startSec`           | int                                  | Seconds from `Session.startedAt`                                             |
+| `endSec`             | int, nullable                        | Null = this is the currently active segment                                  |
 
-At most one segment per session may have `endOffsetSec = null` at a time.
+At most one segment per session may have `endSec = null` at a time.
 Switching material (`SessionService.switchTarget`) closes the current
-segment (`endOffsetSec = elapsed`) and opens a new one — the clock never
+segment (`endSec = elapsed`) and opens a new one — the clock never
 stops. This is enforced in `SessionService`; at the infrastructure level, a
-Postgres **partial unique index** on `(sessionId) WHERE end_offset_sec IS
+Postgres **partial unique index** on `(sessionId) WHERE end_sec IS
 NULL` backstops it against concurrent requests.
 
 A "free" session (no target picked at all) is just a session whose only
