@@ -1,7 +1,7 @@
 # ADR-0022: Pomodoro Focus Sessions
 
 **Date:** 2026-09-03
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
 
@@ -67,7 +67,7 @@ Post-MVP. This ADR's `Session`/`Segment` model does not depend on a
 | `startedAt`   | timestamp           | Server-set, at creation (see Lifecycle below)                                                                 |
 | `completedAt` | timestamp, nullable | Server-computed at `Ended`, from the server's own clock                                                       |
 | `intent`      | text, nullable      | Free-text "session goal" (e.g. "Understand conditional types…"), shown as a quote in zen mode                 |
-| `plannedMin`  | int                 | Duration chosen at start (15 / 25 / 50 / 90 in the prototype); a snapshot, not a live pointer to any settings |
+| `plannedMin`  | int                 | Duration chosen at start (15 / 25 / 50 / 90 in the v0.9.5 prototype — a placeholder default, not a fixed business rule; becomes per-user via `Settings.durationPresets` once ADR-0024 ships); a snapshot, not a live pointer to any settings |
 
 **`Segment`** (belongs to `Session`, one-to-many, ordered by `startSec`)
 
@@ -111,9 +111,14 @@ out in the design mock:
 
 - **Start**: single-suggestion hero (ranked by: in-progress > continues
   last session > unblocked prerequisites > energy match > path momentum),
-  one tap to start with a pre-picked duration. "Browse" opens the full
-  picker (Ready to learn / In progress / All paths / Library tabs). "Just
-  focus, nothing attached" is first-class, not a fallback.
+  one tap to start with a pre-picked duration. The duration picker shows
+  quick-pick buttons (15/25/50/90 in the v0.9.5 default) plus a "Custom"
+  option that opens a numeric input right there, before the session
+  starts — a one-off value for this session, not saved as a preset unless
+  the user does so separately (same pattern as Rize's "Use a custom
+  duration..."). "Browse" opens the full picker (Ready to learn / In
+  progress / All paths / Library tabs). "Just focus, nothing attached" is
+  first-class, not a fallback.
 - **Active**: three view modes — full (timer + right rail with
   Session/Segments/Notes tabs), mini (floating widget, persists while
   browsing the rest of the app), zen (fullscreen, no chrome). Mode changes
@@ -174,11 +179,12 @@ entity existing.
 ## Deferred
 
 - **Settings persistence + cycle-aware breaks** — see ADR-0024 (explicitly
-  Post-MVP).
+  Post-MVP). Includes making the quick-pick duration list itself per-user
+  (`Settings.durationPresets`) instead of the hardcoded 15/25/50/90 this ADR
+  ships with — that list reflects one person's habits, not every user's.
 - **Cross-device session sync** — requires the WebSocket gateway (ADR-0014).
-  CHANGELOG lists this as Post-MVP; ADR-0017 has a line saying it's
-  "introduced in v0.9.5" that should be corrected to Post-MVP when that ADR
-  is next touched.
+  CHANGELOG lists this as Post-MVP, not scheduled; ADR-0017's ambiguous
+  wording on this point was corrected (2026-09-05) to match.
 - Exact color/state semantics for the timer ring, and the Angular-level
   implementation of the mini widget's persistence (layout-level singleton
   service vs. CDK overlay) — implementation detail, not architecture.
@@ -220,3 +226,5 @@ entity existing.
 - ADR-0014: Realtime Communication Strategy (deferred cross-device sync)
 - CHANGELOG.md, `[Unreleased]` → Planned: "Pomodoro timer + `LearningSession`
   records — v0.9.5"
+- Duration picker pattern (quick-pick presets + custom-duration input at
+  session start): Rize
