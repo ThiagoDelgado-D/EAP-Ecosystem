@@ -77,8 +77,10 @@ This strategy is documented separately in the offline sync ADR (planned).
 
 **Push notification integration with Pomodoro**: When a focus session is
 started on mobile, a local notification is scheduled for session end.
-Cross-device sync (session started on web, visible on mobile) requires
-WebSockets (see ADR-0014), introduced in v0.9.5.
+Cross-device sync (session started on web, visible on mobile) is Post-MVP,
+not part of this: it requires the WebSocket gateway that ADR-0014
+introduces in v0.9.5, but the gateway shipping does not by itself mean
+cross-device sync ships — that is separate client work, not yet scheduled.
 
 ### Mobile-first layout preparation
 
