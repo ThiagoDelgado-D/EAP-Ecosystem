@@ -104,7 +104,7 @@ without requiring the window to be open.
 
 The desktop app can optionally run a local SQLite database (via
 `tauri-plugin-sql`) that mirrors a subset of the user's data for offline
-access. Sync strategy is the same as mobile (see ADR-0016, offline ADR
+access. Sync strategy is the same as mobile (see ADR-0017, offline ADR
 planned): last-write-wins with server timestamp authority, write queue
 replayed on reconnect.
 
