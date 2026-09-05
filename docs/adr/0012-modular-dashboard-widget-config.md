@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Superseded by ADR-0015 — see Resolution
 
 ## Context
 
@@ -162,8 +162,16 @@ on every change. No save button — changes are immediate and optimistic.
 - **Drag-only, no toggles**: order without enable/disable is insufficient —
   the user should be able to fully hide features they don't use
 
+## Resolution
+
+Absorbed into ADR-0015 (Modular Application System), which carries the
+same `widgetConfig` shape forward alongside a new `featureConfig` layer for
+module-level (not just dashboard-level) opt-in. This ADR's draft is kept
+for its rejected-alternatives reasoning, which still applies.
+
 ## References
 
 - ADR-0011: URL metadata extraction strategy
+- ADR-0015: Modular Application System (supersedes this ADR)
 - Roadmap: post-MVP — dashboard personalization
 - Depends on: User Module (in progress), Authentication (planned)
