@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by PostgreSQL migration (v0.3.0) — see ADR-0009
 
 ## Context
 
@@ -68,3 +68,10 @@ Data files are stored in `apps/api/data/` and are excluded from version control 
 - The read-modify-write pattern in `save()` and `delete()` is not safe for concurrent access; overlapping calls can cause lost updates (tracked as a pending task: `Add file locking mechanism for concurrent access`)
 - Performance degrades as file size grows since the entire file is read and written on every operation
 - Data files must be seeded manually after cloning the repository
+
+## Resolution
+
+`JsonStorage<T>` was retired by the PostgreSQL migration in v0.3.0 (see
+ADR-0009). The `StorageAdapter<T>` interface did its job: repositories were
+replaced with TypeORM-backed implementations without touching the domain
+or application layers.
