@@ -82,9 +82,12 @@ GET    /api/v1/resource-relationships/:id/neighbors — neighbors of a resource
 
 ### Frontend — Atlas View
 
-The Atlas View renders the knowledge graph as a force-directed visualization
-using **D3.js** (`d3-force`). Each resource is a node; each relationship is
-a directed edge with a label indicating its type. Clicking a node opens a
+The Atlas View renders the knowledge graph as an interactive visualization
+using **`@swimlane/ngx-graph`** (Dagre layout, draggable nodes, zoom/pan,
+standalone Angular components) — the same dependency ADR-0021 adopts for
+the Learning Path graph mode, replacing the D3.js (`d3-force`) approach
+originally planned here. Each resource is a node; each relationship is a
+directed edge with a label indicating its type. Clicking a node opens a
 detail panel (same data as `ResourceDetailComponent`) without navigating
 away from the graph.
 
@@ -98,7 +101,7 @@ Visual encoding:
 - Edge direction: arrow indicating source → target
 
 The Atlas View is registered as the `knowledge-graph` feature module
-(see ADR-0016). It is only active when the user has enabled the feature.
+(see ADR-0015). It is only active when the user has enabled the feature.
 
 ### Relationship to Learning Paths
 
@@ -142,8 +145,10 @@ have at most one `PREREQUISITE` and one `RELATED` relationship, for example.
   one does not block or conflict with the other
 - The `note` field allows users to annotate why a relationship exists,
   making the graph personally meaningful
-- D3.js integrates cleanly with Angular via a directive wrapping the SVG
-  container; no full library rewrite needed
+- `@swimlane/ngx-graph` gives first-class Angular standalone component
+  support, so the graph rendering shares one dependency and one visual
+  model with the Learning Path graph mode (ADR-0021) instead of maintaining
+  a separate D3 integration
 - The `CASCADE` delete on `source_id` and `target_id` keeps the graph
   consistent when resources are deleted
 
