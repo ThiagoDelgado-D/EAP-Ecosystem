@@ -78,7 +78,7 @@ This strategy is documented separately in the offline sync ADR (planned).
 **Push notification integration with Pomodoro**: When a focus session is
 started on mobile, a local notification is scheduled for session end.
 Cross-device sync (session started on web, visible on mobile) requires
-WebSockets (see ADR-0013), introduced in v0.9.5.
+WebSockets (see ADR-0014), introduced in v0.9.5.
 
 ### Mobile-first layout preparation
 
