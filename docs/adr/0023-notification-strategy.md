@@ -1,7 +1,7 @@
 # ADR-0023: Notification Strategy (NotificationPort)
 
 **Date:** 2026-09-03
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
 
@@ -93,7 +93,7 @@ written against once mobile/desktop work starts.
 ## Deferred
 
 - **Notification preferences** (mute a type, quiet hours) — depends on
-  `Settings` (deferred in ADR-0022).
+  `Settings` (see ADR-0024).
 - **Rich/actionable notifications** (snooze from the notification itself)
   — per-platform, additive at the adapter level if ever needed.
 
