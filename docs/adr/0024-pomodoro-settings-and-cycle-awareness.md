@@ -1,9 +1,13 @@
 # ADR-0024: Pomodoro Settings & Cycle Awareness
 
 **Date:** 2026-09-03
-**Status:** Proposed — Post-MVP, not scheduled to a version
+**Status:** Accepted
 
 ## Context
+
+**Post-MVP, not scheduled to a version** — this ADR records the accepted
+design so it doesn't need to be re-derived when the work is picked up, not
+a commitment to build it in any particular release.
 
 ADR-0022 ships v0.9.5 with a fixed set of duration choices picked per
 session (15 / 25 / 50 / 90 min) and a flat, non-cycle-aware break — no
@@ -22,13 +26,27 @@ an explicit, named decision, not an oversight: kept manual-only and
 auto-cycle-free for v0.9.5, treating a configurable plan as "a natural
 extension once the basic timer is built and validated."
 
-## Decision (sketched — not final, revisit when this is actually scheduled)
+## Decision
 
 - **`Settings`**: one row per user — `focusDurationMin`, `amountOfFocus`
-  (focus rounds before a long break), `shortBreakMin`, `longBreakMin`.
-  Editable, applied to sessions/rounds started **after** the edit — never
-  rewriting a past `Session.plannedMin` (same snapshot principle ADR-0022
-  uses).
+  (focus rounds before a long break), `shortBreakMin`, `longBreakMin`,
+  `dayStartHour` (local hour, 0–23, default 4), `durationPresets: number[]`
+  (default `[15, 25, 50, 90]` on user creation). Editable, applied to
+  sessions/rounds started **after** the edit — never rewriting a past
+  `Session.plannedMin` (same snapshot principle ADR-0022 uses).
+- **`durationPresets` replaces the hardcoded quick-pick buttons**:
+  ADR-0022's Start screen shows quick-pick duration buttons; the specific
+  values (15/25/50/90 in the v0.9.5 default) are personal habit, not a
+  business rule — a different user has no reason to share them. Once
+  `Settings` ships, the buttons read `durationPresets` per user instead of
+  a literal array in the frontend. This is separate from the "Custom"
+  numeric input ADR-0022 already ships in v0.9.5 alongside the presets: the
+  custom input is a one-off value typed at session start, independent of
+  `Settings` — it works the same whether or not this ADR has shipped.
+  `focusDurationMin` (the cycle's round length) and `durationPresets` (the
+  quick-pick buttons) are also independent fields — the cycle-aware flow
+  and the one-off "just focus" flow are different use cases and don't need
+  to share a value.
 - **Cycle position — derived, not stored**: no new field or table.
   `PomodoroService.breakAfter()` counts the user's focus `Session` rows
   started on the current calendar day — any `targetKind`, any `plannedMin`
@@ -46,9 +64,13 @@ extension once the basic timer is built and validated."
 - **Daily reset**: the cycle resets every calendar day regardless of
   whether the previous day's set was completed — an incomplete set (say 2
   of 4 rounds) never carries into the next day as "2 of 4," it starts over
-  at 0. The day boundary is already the reset point used elsewhere (session
-  history, streaks), so this introduces no new concept of "abandoning a
-  set" to define.
+  at 0. "Calendar day" is not literal local midnight: it is bounded by
+  `Settings.dayStartHour`, evaluated in the user's local timezone, not the
+  server's. A session started at 00:30 with `dayStartHour = 4` still counts
+  toward the day that is ending, not a new one — a late-night study block
+  that happens to cross literal midnight isn't artificially split into two
+  sets. This is the same day boundary session history/streaks should use,
+  so it introduces no second, conflicting definition of "today."
 - **Cycle-aware break**: a `breakAfter(cycle)`-style computation (short vs.
   long break, based on how many rounds have run) lives in `PomodoroService`
   and reads the user's `Settings`. Still **offered**, not auto-started —
@@ -80,6 +102,10 @@ extension once the basic timer is built and validated."
   carries the reinterpretation into tomorrow.
 - Adds a `Settings` entity and its own migration/UI surface that v0.9.5
   deliberately shipped without.
+- Evaluating `dayStartHour` in the user's local timezone means the server
+  needs to know that timezone (from the client, or a stored profile value)
+  to compute `dayCount` correctly — this cycle logic can't run on server
+  wall-clock time alone.
 
 ## Rejected alternatives
 
