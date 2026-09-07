@@ -25,6 +25,7 @@
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
     "@vitest/coverage-v8": "4.0.13",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.13"
   }
 }

@@ -2120,6 +2120,7 @@ __metadata:
     "@learning-resource/domain": "workspace:^"
     "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
@@ -2130,6 +2131,7 @@ __metadata:
   dependencies:
     "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
@@ -2145,6 +2147,7 @@ __metadata:
     cheerio: "npm:^1.2.0"
     infrastructure-lib: "workspace:^"
     typeorm: "npm:^0.3.31"
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
@@ -2991,6 +2994,7 @@ __metadata:
   dependencies:
     "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
@@ -4291,6 +4295,7 @@ __metadata:
     "@user/domain": "workspace:^"
     "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
@@ -4301,6 +4306,7 @@ __metadata:
   dependencies:
     "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
@@ -4313,6 +4319,7 @@ __metadata:
     "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
     typeorm: "npm:^0.3.31"
+    typescript: "npm:^5.9.3"
     vitest: "npm:^4.0.13"
   languageName: unknown
   linkType: soft
