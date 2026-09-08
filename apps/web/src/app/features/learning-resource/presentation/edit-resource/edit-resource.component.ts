@@ -23,19 +23,21 @@ import { ResourceTypeRepository } from '@features/learning-resource/domain/resou
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { ToastService } from '@core/toast/toast.service';
 
-const LEVEL_BAR_CLASS: Record<'Low' | 'Medium' | 'High', string> = {
+type Level = 'Low' | 'Medium' | 'High';
+
+const LEVEL_BAR_CLASS: Record<Level, string> = {
   Low: 'bg-energy-low',
   Medium: 'bg-energy-medium',
   High: 'bg-energy-high',
 };
 
-const LEVEL_TEXT_CLASS: Record<'Low' | 'Medium' | 'High', string> = {
+const LEVEL_TEXT_CLASS: Record<Level, string> = {
   Low: 'text-energy-low',
   Medium: 'text-energy-medium',
   High: 'text-energy-high',
 };
 
-const LEVEL_SELECTED_BTN_CLASS: Record<'Low' | 'Medium' | 'High', string> = {
+const LEVEL_SELECTED_BTN_CLASS: Record<Level, string> = {
   Low: 'border-energy-low/70 bg-energy-low/10 text-energy-low',
   Medium: 'border-energy-medium/70 bg-energy-medium/10 text-energy-medium',
   High: 'border-energy-high/70 bg-energy-high/10 text-energy-high',
