@@ -6,6 +6,11 @@ import type {
   EnergyLevel,
   ResourceStatus,
 } from '@features/learning-resource/domain/learning-resource.model';
+import {
+  DIFFICULTY_LEVELS,
+  ENERGY_LEVELS,
+  RESOURCE_STATUSES,
+} from '@features/learning-resource/domain/learning-resource.constants';
 
 export type RowValidationStatus = 'valid' | 'warning' | 'error';
 
@@ -33,9 +38,9 @@ export interface ValidatedRow {
   selected: boolean;
 }
 
-const VALID_DIFFICULTIES: DifficultyLevel[] = ['Low', 'Medium', 'High'];
-const VALID_ENERGY_LEVELS: EnergyLevel[] = ['Low', 'Medium', 'High'];
-const VALID_STATUSES: ResourceStatus[] = ['Pending', 'InProgress', 'Completed'];
+const VALID_DIFFICULTIES: readonly DifficultyLevel[] = DIFFICULTY_LEVELS;
+const VALID_ENERGY_LEVELS: readonly EnergyLevel[] = ENERGY_LEVELS;
+const VALID_STATUSES: readonly ResourceStatus[] = RESOURCE_STATUSES;
 
 const URL_PATTERN = /^https?:\/\/.+/i;
 

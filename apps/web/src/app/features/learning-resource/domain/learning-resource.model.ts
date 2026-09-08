@@ -1,8 +1,14 @@
-export type DifficultyLevel = 'Low' | 'Medium' | 'High';
-export type EnergyLevel = 'Low' | 'Medium' | 'High';
-export type ResourceStatus = 'Pending' | 'InProgress' | 'Completed';
+import {
+  DIFFICULTY_LEVELS,
+  ENERGY_LEVELS,
+  RESOURCE_STATUSES,
+  MENTAL_STATE_TYPES,
+} from './learning-resource.constants.js';
 
-export type MentalStateType = 'deep_focus' | 'light_read' | 'creative' | 'quick_op' | 'review';
+export type DifficultyLevel = (typeof DIFFICULTY_LEVELS)[number];
+export type EnergyLevel = (typeof ENERGY_LEVELS)[number];
+export type ResourceStatus = (typeof RESOURCE_STATUSES)[number];
+export type MentalStateType = (typeof MENTAL_STATE_TYPES)[number];
 
 export interface LearningResource {
   id: string;

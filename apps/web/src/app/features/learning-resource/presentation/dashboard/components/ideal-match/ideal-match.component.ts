@@ -4,6 +4,8 @@ import {
   LearningResource,
   MentalStateType,
 } from '@features/learning-resource/domain/learning-resource.model.js';
+import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
+import { MENTAL_STATE_BADGE_OPTIONS } from '@shared/components/enum-badge/enum-badge-options.js';
 
 // Hardcoded fallback used when the API has no matching resource yet
 // or when the backend recommendation endpoint is not implemented (v0.5.0)
@@ -25,23 +27,18 @@ const FALLBACK_RESOURCES: Record<EnergyLevel, { title: string; desc: string; dur
   },
 };
 
-const MENTAL_STATE_LABELS: Record<MentalStateType, string> = {
-  deep_focus: 'Deep Focus',
-  light_read: 'Light Read',
-  creative: 'Creative',
-  quick_op: 'Quick Op',
-  review: 'Review',
-};
-
 @Component({
   selector: 'app-ideal-match',
   standalone: true,
+  imports: [EnumBadgeComponent],
   templateUrl: './ideal-match.component.html',
 })
 export class IdealMatchComponent {
   readonly resource = input.required<LearningResource | null>();
   readonly energyLevel = input.required<EnergyLevel>();
   readonly mentalState = input.required<MentalStateType>();
+
+  readonly mentalStateOptions = MENTAL_STATE_BADGE_OPTIONS;
 
   readonly displayResource = computed(() => {
     const r = this.resource();
@@ -60,5 +57,4 @@ export class IdealMatchComponent {
   });
 
   readonly energyBadgeLabel = computed(() => `Recommended for ${this.energyLevel()} Energy`);
-  readonly mentalStateLabel = computed(() => MENTAL_STATE_LABELS[this.mentalState()]);
 }

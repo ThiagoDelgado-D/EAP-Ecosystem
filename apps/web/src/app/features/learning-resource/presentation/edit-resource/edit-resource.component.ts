@@ -9,6 +9,10 @@ import {
   LearningResource,
   UpdateResourcePayload,
 } from '@features/learning-resource/domain/learning-resource.model';
+import {
+  DIFFICULTY_LEVELS,
+  ENERGY_LEVELS,
+} from '@features/learning-resource/domain/learning-resource.constants';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
 import { TopicService } from '@features/learning-resource/application/topic.service';
@@ -18,6 +22,26 @@ import { TopicHttpRepository } from '@features/learning-resource/infrastructure/
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { ToastService } from '@core/toast/toast.service';
+
+type Level = 'Low' | 'Medium' | 'High';
+
+const LEVEL_BAR_CLASS: Record<Level, string> = {
+  Low: 'bg-energy-low',
+  Medium: 'bg-energy-medium',
+  High: 'bg-energy-high',
+};
+
+const LEVEL_TEXT_CLASS: Record<Level, string> = {
+  Low: 'text-energy-low',
+  Medium: 'text-energy-medium',
+  High: 'text-energy-high',
+};
+
+const LEVEL_SELECTED_BTN_CLASS: Record<Level, string> = {
+  Low: 'border-energy-low/70 bg-energy-low/10 text-energy-low',
+  Medium: 'border-energy-medium/70 bg-energy-medium/10 text-energy-medium',
+  High: 'border-energy-high/70 bg-energy-high/10 text-energy-high',
+};
 
 @Component({
   selector: 'app-edit-resource',
@@ -53,8 +77,8 @@ export class EditResourceComponent implements OnInit {
 
   form!: FormGroup;
 
-  readonly difficulties: DifficultyLevel[] = ['Low', 'Medium', 'High'];
-  readonly energyLevels: EnergyLevel[] = ['Low', 'Medium', 'High'];
+  readonly difficulties: readonly DifficultyLevel[] = DIFFICULTY_LEVELS;
+  readonly energyLevels: readonly EnergyLevel[] = ENERGY_LEVELS;
 
   readonly impactRating = computed<number>(() => {
     const resource = this.resource();
@@ -178,39 +202,19 @@ export class EditResourceComponent implements OnInit {
   }
 
   getDifficultyBarClass(level: DifficultyLevel): string {
-    const map: Record<DifficultyLevel, string> = {
-      Low: 'bg-emerald-500',
-      Medium: 'bg-yellow-500',
-      High: 'bg-orange-500',
-    };
-    return map[level];
+    return LEVEL_BAR_CLASS[level];
   }
 
   getEnergyBarClass(level: EnergyLevel): string {
-    const map: Record<EnergyLevel, string> = {
-      Low: 'bg-emerald-500',
-      Medium: 'bg-yellow-500',
-      High: 'bg-orange-500',
-    };
-    return map[level];
+    return LEVEL_BAR_CLASS[level];
   }
 
   getDifficultyTextClass(level: DifficultyLevel): string {
-    const map: Record<DifficultyLevel, string> = {
-      Low: 'text-emerald-400',
-      Medium: 'text-yellow-400',
-      High: 'text-orange-400',
-    };
-    return map[level];
+    return LEVEL_TEXT_CLASS[level];
   }
 
   getEnergyTextClass(level: EnergyLevel): string {
-    const map: Record<EnergyLevel, string> = {
-      Low: 'text-emerald-400',
-      Medium: 'text-yellow-400',
-      High: 'text-orange-400',
-    };
-    return map[level];
+    return LEVEL_TEXT_CLASS[level];
   }
 
   getDifficultyBtnClass(level: DifficultyLevel): string {
@@ -218,12 +222,7 @@ export class EditResourceComponent implements OnInit {
     const base =
       'flex-1 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer';
     if (selected) {
-      const map: Record<DifficultyLevel, string> = {
-        Low: 'border-emerald-600/70 bg-emerald-950/50 text-emerald-300',
-        Medium: 'border-yellow-600/70 bg-yellow-950/50 text-yellow-300',
-        High: 'border-orange-600/70 bg-orange-950/50 text-orange-300',
-      };
-      return `${base} ${map[level]}`;
+      return `${base} ${LEVEL_SELECTED_BTN_CLASS[level]}`;
     }
     return `${base} border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-500 hover:text-slate-300`;
   }
@@ -233,12 +232,7 @@ export class EditResourceComponent implements OnInit {
     const base =
       'flex-1 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer';
     if (selected) {
-      const map: Record<EnergyLevel, string> = {
-        Low: 'border-emerald-600/70 bg-emerald-950/50 text-emerald-300',
-        Medium: 'border-yellow-600/70 bg-yellow-950/50 text-yellow-300',
-        High: 'border-orange-600/70 bg-orange-950/50 text-orange-300',
-      };
-      return `${base} ${map[level]}`;
+      return `${base} ${LEVEL_SELECTED_BTN_CLASS[level]}`;
     }
     return `${base} border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-500 hover:text-slate-300`;
   }
