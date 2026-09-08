@@ -22,8 +22,20 @@ import type { ResourceType } from '../../domain/resource-type.model';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service.js';
 import { ToastService } from '@core/toast/toast.service';
 import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
-import type { EnumOption } from '@shared/components/enum-badge/enum-badge.types';
 import { PaginatorComponent } from '@shared/components/paginator/paginator.component';
+import {
+  DIFFICULTY_BADGE_OPTIONS,
+  ENERGY_BADGE_OPTIONS,
+  STATUS_BADGE_OPTIONS,
+  MENTAL_STATE_BADGE_OPTIONS,
+} from '@shared/components/enum-badge/enum-badge-options';
+import {
+  DIFFICULTY_LEVELS,
+  ENERGY_LEVELS,
+  RESOURCE_STATUSES,
+  MENTAL_STATE_TYPES,
+  MENTAL_STATE_LABELS,
+} from '@features/learning-resource/domain/learning-resource.constants';
 
 export type TabMode = 'all' | 'saved' | 'recent';
 
@@ -91,100 +103,20 @@ export class HomeComponent implements OnInit {
   statusFilterValue = signal<ResourceStatus | null>(null);
   mentalStateFilterValue = signal<MentalStateType | null>(null);
 
-  readonly difficulties: DifficultyLevel[] = ['Low', 'Medium', 'High'];
-  readonly energyLevels: EnergyLevel[] = ['Low', 'Medium', 'High'];
-  readonly statuses: ResourceStatus[] = ['Pending', 'InProgress', 'Completed'];
-  readonly mentalStates: { value: MentalStateType; label: string }[] = [
-    { value: 'deep_focus', label: 'Deep Focus' },
-    { value: 'light_read', label: 'Light Read' },
-    { value: 'creative', label: 'Creative' },
-    { value: 'quick_op', label: 'Quick Op' },
-    { value: 'review', label: 'Review' },
-  ];
+  readonly difficulties: readonly DifficultyLevel[] = DIFFICULTY_LEVELS;
+  readonly energyLevels: readonly EnergyLevel[] = ENERGY_LEVELS;
+  readonly statuses: readonly ResourceStatus[] = RESOURCE_STATUSES;
+  readonly mentalStates: { value: MentalStateType; label: string }[] = MENTAL_STATE_TYPES.map(
+    (value) => ({ value, label: MENTAL_STATE_LABELS[value] }),
+  );
 
   readonly toggleLoadingId = signal<string | null>(null);
   private suggestionsSeq = 0;
 
-  readonly difficultyOptions: EnumOption<DifficultyLevel>[] = [
-    {
-      value: 'Low',
-      label: 'Low',
-      badgeClass: 'bg-emerald-950/60 text-emerald-400',
-      dotClass: 'bg-emerald-500',
-    },
-    {
-      value: 'Medium',
-      label: 'Medium',
-      badgeClass: 'bg-yellow-950/60 text-yellow-400',
-      dotClass: 'bg-yellow-500',
-    },
-    {
-      value: 'High',
-      label: 'High',
-      badgeClass: 'bg-red-950/60 text-red-400',
-      dotClass: 'bg-red-500',
-    },
-  ];
-
-  readonly energyOptions: EnumOption<EnergyLevel>[] = [
-    { value: 'Low',    label: 'Low',    badgeClass: 'bg-emerald-950/60 text-emerald-400', dotClass: 'bg-emerald-500' },
-    { value: 'Medium', label: 'Medium', badgeClass: 'bg-yellow-950/60 text-yellow-400',  dotClass: 'bg-yellow-500'  },
-    { value: 'High',   label: 'High',   badgeClass: 'bg-red-950/60 text-red-400',        dotClass: 'bg-red-500'     },
-  ];
-
-  readonly statusOptions: EnumOption<ResourceStatus>[] = [
-    {
-      value: 'Pending',
-      label: 'Pending',
-      badgeClass: 'bg-slate-800 text-slate-400',
-      dotClass: 'bg-slate-500',
-    },
-    {
-      value: 'InProgress',
-      label: 'In Progress',
-      badgeClass: 'bg-blue-950/60 text-blue-300',
-      dotClass: 'bg-blue-500',
-    },
-    {
-      value: 'Completed',
-      label: 'Completed',
-      badgeClass: 'bg-emerald-950/60 text-emerald-300',
-      dotClass: 'bg-emerald-500',
-    },
-  ];
-
-  readonly mentalStateOptions: EnumOption<MentalStateType>[] = [
-    {
-      value: 'deep_focus',
-      label: 'Deep Focus',
-      badgeClass: 'bg-violet-950/60 text-violet-300',
-      dotClass: 'bg-violet-500',
-    },
-    {
-      value: 'light_read',
-      label: 'Light Read',
-      badgeClass: 'bg-sky-950/60 text-sky-300',
-      dotClass: 'bg-sky-500',
-    },
-    {
-      value: 'creative',
-      label: 'Creative',
-      badgeClass: 'bg-pink-950/60 text-pink-300',
-      dotClass: 'bg-pink-500',
-    },
-    {
-      value: 'quick_op',
-      label: 'Quick Op',
-      badgeClass: 'bg-amber-950/60 text-amber-300',
-      dotClass: 'bg-amber-500',
-    },
-    {
-      value: 'review',
-      label: 'Review',
-      badgeClass: 'bg-slate-800 text-slate-300',
-      dotClass: 'bg-slate-400',
-    },
-  ];
+  readonly difficultyOptions = DIFFICULTY_BADGE_OPTIONS;
+  readonly energyOptions = ENERGY_BADGE_OPTIONS;
+  readonly statusOptions = STATUS_BADGE_OPTIONS;
+  readonly mentalStateOptions = MENTAL_STATE_BADGE_OPTIONS;
 
   readonly tabFilteredResources = computed<LearningResource[]>(() => {
     const all = this.allResources();
@@ -252,10 +184,7 @@ export class HomeComponent implements OnInit {
       // malformed entry — fall back to defaults
     }
     if (pageSize !== DEFAULT_PAGE_SIZE) this.pageSize.set(pageSize);
-    await Promise.all([
-      this.service.load({ page, pageSize }),
-      this.typeService.loadAll(),
-    ]);
+    await Promise.all([this.service.load({ page, pageSize }), this.typeService.loadAll()]);
   }
 
   setTab(tab: TabMode): void {
@@ -263,7 +192,10 @@ export class HomeComponent implements OnInit {
   }
 
   private buildCurrentParams(): ResourceQueryParams {
-    const params: ResourceQueryParams = { page: this.service.currentPage(), pageSize: this.pageSize() };
+    const params: ResourceQueryParams = {
+      page: this.service.currentPage(),
+      pageSize: this.pageSize(),
+    };
     if (this.difficultyFilterValue()) params.difficulty = this.difficultyFilterValue()!;
     if (this.energyFilterValue()) params.energyLevel = this.energyFilterValue()!;
     if (this.statusFilterValue()) params.status = this.statusFilterValue()!;
