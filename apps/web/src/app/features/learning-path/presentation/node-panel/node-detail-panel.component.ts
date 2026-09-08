@@ -25,6 +25,10 @@ import type {
   EnergyLevel,
   LearningResource,
 } from '@features/learning-resource/domain/learning-resource.model';
+import {
+  DIFFICULTY_LEVELS as RESOURCE_DIFFICULTY_LEVELS,
+  ENERGY_LEVELS as RESOURCE_ENERGY_LEVELS,
+} from '@features/learning-resource/domain/learning-resource.constants';
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
@@ -40,8 +44,8 @@ interface CreateForm {
   energyLevel: EnergyLevel;
 }
 
-const DIFFICULTIES: DifficultyLevel[] = ['Low', 'Medium', 'High'];
-const ENERGY_LEVELS: EnergyLevel[] = ['Low', 'Medium', 'High'];
+const DIFFICULTIES: readonly DifficultyLevel[] = RESOURCE_DIFFICULTY_LEVELS;
+const ENERGY_LEVELS: readonly EnergyLevel[] = RESOURCE_ENERGY_LEVELS;
 const STATUS_OPTIONS: Array<{ value: NodeProgress; label: string }> = [
   { value: NODE_PROGRESS.PENDING, label: 'Pending' },
   { value: NODE_PROGRESS.IN_PROGRESS, label: 'In progress' },
