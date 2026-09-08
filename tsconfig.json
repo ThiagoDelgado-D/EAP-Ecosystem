@@ -17,6 +17,12 @@
       "@learning-resource/infrastructure": [
         "learning-resource/infrastructure/src/index.ts"
       ],
+      "@pomodoro/domain": [
+        "pomodoro/domain/src/index.ts"
+      ],
+      "@pomodoro/application": [
+        "pomodoro/application/src/index.ts"
+      ],
       "@user/domain": [
         "user/domain/src/index.ts"
       ],
