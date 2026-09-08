@@ -11,10 +11,18 @@ import { CommonModule } from '@angular/common';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
 import type {
   AddResourcePayload,
+  DifficultyLevel,
+  EnergyLevel,
   LearningResource,
   MentalStateType,
   ResourceStatus,
 } from '@features/learning-resource/domain/learning-resource.model';
+import {
+  DIFFICULTY_LEVELS,
+  ENERGY_LEVELS,
+  MENTAL_STATE_LABELS,
+  MENTAL_STATE_TYPES,
+} from '@features/learning-resource/domain/learning-resource.constants';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
 import { ToastService } from '@core/toast/toast.service';
@@ -24,6 +32,13 @@ import { TopicHttpRepository } from '@features/learning-resource/infrastructure/
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
+
+const LEVEL_SELECTED_CARD_CLASS: Record<string, string> = {
+  Low: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-energy-low/60 bg-energy-low/10 text-energy-low transition-all',
+  Medium:
+    'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-energy-medium/60 bg-energy-medium/10 text-energy-medium transition-all',
+  High: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-energy-high/60 bg-energy-high/10 text-energy-high transition-all',
+};
 
 @Component({
   selector: 'app-guided-form',
@@ -58,15 +73,11 @@ export class GuidedFormComponent implements OnInit {
   isSubmitting = false;
   submitError: string | null = null;
 
-  readonly difficulties = ['Low', 'Medium', 'High'];
-  readonly energyLevels = ['Low', 'Medium', 'High'];
-  readonly mentalStates: { value: MentalStateType; label: string }[] = [
-    { value: 'deep_focus', label: 'Deep Focus' },
-    { value: 'light_read', label: 'Light Read' },
-    { value: 'creative', label: 'Creative' },
-    { value: 'quick_op', label: 'Quick Op' },
-    { value: 'review', label: 'Review' },
-  ];
+  readonly difficulties: readonly DifficultyLevel[] = DIFFICULTY_LEVELS;
+  readonly energyLevels: readonly EnergyLevel[] = ENERGY_LEVELS;
+  readonly mentalStates: { value: MentalStateType; label: string }[] = MENTAL_STATE_TYPES.map(
+    (value) => ({ value, label: MENTAL_STATE_LABELS[value] }),
+  );
 
   constructor() {
     this.step1Form = this.fb.group({
@@ -136,23 +147,11 @@ export class GuidedFormComponent implements OnInit {
   }
 
   getDifficultySelectedClass(d: string): string {
-    const map: Record<string, string> = {
-      Low: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-emerald-600/60 bg-emerald-950/40 text-emerald-300 transition-all',
-      Medium:
-        'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-yellow-600/60 bg-yellow-950/40 text-yellow-300 transition-all',
-      High: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-red-600/60 bg-red-950/40 text-red-300 transition-all',
-    };
-    return map[d] ?? '';
+    return LEVEL_SELECTED_CARD_CLASS[d] ?? '';
   }
 
   getEnergySelectedClass(e: string): string {
-    const map: Record<string, string> = {
-      Low: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-emerald-600/60 bg-emerald-950/40 text-emerald-300 transition-all',
-      Medium:
-        'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-yellow-600/60 bg-yellow-950/40 text-yellow-300 transition-all',
-      High: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-red-600/60 bg-red-950/40 text-red-300 transition-all',
-    };
-    return map[e] ?? '';
+    return LEVEL_SELECTED_CARD_CLASS[e] ?? '';
   }
 
   async onSubmit(): Promise<void> {
