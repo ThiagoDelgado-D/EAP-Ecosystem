@@ -12,6 +12,11 @@ import type {
   ResourceStatus,
   UpdateResourcePayload,
 } from '../domain/learning-resource.model';
+import {
+  DIFFICULTY_LEVELS,
+  ENERGY_LEVELS,
+  MENTAL_STATE_TYPES,
+} from '../domain/learning-resource.constants.js';
 import type {
   CreatedLearningResourceDto,
   LearningResourceByIdDto,
@@ -167,24 +172,23 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
 
   private capitalizeDifficulty(value: string): DifficultyLevel {
     const capitalized = this.capitalize(value);
-    if (capitalized === 'Low' || capitalized === 'Medium' || capitalized === 'High') {
-      return capitalized;
+    if (DIFFICULTY_LEVELS.includes(capitalized as DifficultyLevel)) {
+      return capitalized as DifficultyLevel;
     }
     throw new Error(`Unknown difficulty value from API: ${value}`);
   }
 
   private capitalizeEnergyLevel(value: string): EnergyLevel {
     const capitalized = this.capitalize(value);
-    if (capitalized === 'Low' || capitalized === 'Medium' || capitalized === 'High') {
-      return capitalized;
+    if (ENERGY_LEVELS.includes(capitalized as EnergyLevel)) {
+      return capitalized as EnergyLevel;
     }
     throw new Error(`Unknown energy level value from API: ${value}`);
   }
 
   private parseMentalState(value: string | null | undefined): MentalStateType | undefined {
     if (!value) return undefined;
-    const valid: MentalStateType[] = ['deep_focus', 'light_read', 'creative', 'quick_op', 'review'];
-    if (valid.includes(value as MentalStateType)) return value as MentalStateType;
+    if (MENTAL_STATE_TYPES.includes(value as MentalStateType)) return value as MentalStateType;
     console.warn(`Unknown mentalState value from API: ${value}`);
     return undefined;
   }
