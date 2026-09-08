@@ -22,7 +22,12 @@ import { ToastService } from '@core/toast/toast.service.js';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service.js';
 import { MatDialogModule } from '@angular/material/dialog';
 import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
-import type { EnumOption } from '@shared/components/enum-badge/enum-badge.types';
+import {
+  DIFFICULTY_BADGE_OPTIONS,
+  ENERGY_BADGE_OPTIONS,
+  STATUS_BADGE_OPTIONS,
+  MENTAL_STATE_BADGE_OPTIONS,
+} from '@shared/components/enum-badge/enum-badge-options.js';
 
 const FIELD_PATCHERS: Record<ToggleableField, (value: string) => Partial<LearningResource>> = {
   difficulty: (value) => ({ difficulty: value as DifficultyLevel }),
@@ -59,31 +64,10 @@ export class ResourceDetailComponent implements OnInit {
 
   private resourceId: string | null = null;
 
-  readonly difficultyOptions: EnumOption<DifficultyLevel>[] = [
-    { value: 'Low',    label: 'Low',    badgeClass: 'bg-emerald-950/60 text-emerald-400', dotClass: 'bg-emerald-500' },
-    { value: 'Medium', label: 'Medium', badgeClass: 'bg-amber-950/60 text-amber-400',    dotClass: 'bg-amber-500'   },
-    { value: 'High',   label: 'High',   badgeClass: 'bg-red-950/60 text-red-400',        dotClass: 'bg-red-500'     },
-  ];
-
-  readonly energyOptions: EnumOption<EnergyLevel>[] = [
-    { value: 'Low',    label: 'Low',    badgeClass: 'bg-emerald-950/60 text-emerald-400', dotClass: 'bg-emerald-500' },
-    { value: 'Medium', label: 'Medium', badgeClass: 'bg-amber-950/60 text-amber-400',    dotClass: 'bg-amber-500'   },
-    { value: 'High',   label: 'High',   badgeClass: 'bg-red-950/60 text-red-400',        dotClass: 'bg-red-500'     },
-  ];
-
-  readonly statusOptions: EnumOption<ResourceStatus>[] = [
-    { value: 'Pending',    label: 'Pending',     badgeClass: 'bg-slate-800/60 text-slate-400',    dotClass: 'bg-slate-500'  },
-    { value: 'InProgress', label: 'In Progress', badgeClass: 'bg-blue-950/60 text-blue-400',      dotClass: 'bg-blue-500'   },
-    { value: 'Completed',  label: 'Completed',   badgeClass: 'bg-emerald-950/60 text-emerald-400', dotClass: 'bg-emerald-500' },
-  ];
-
-  readonly mentalStateOptions: EnumOption<MentalStateType>[] = [
-    { value: 'deep_focus', label: 'Deep Focus', badgeClass: 'bg-violet-950/60 text-violet-300', dotClass: 'bg-violet-500' },
-    { value: 'light_read', label: 'Light Read', badgeClass: 'bg-sky-950/60 text-sky-300',       dotClass: 'bg-sky-500'    },
-    { value: 'creative',   label: 'Creative',   badgeClass: 'bg-pink-950/60 text-pink-300',     dotClass: 'bg-pink-500'   },
-    { value: 'quick_op',   label: 'Quick Op',   badgeClass: 'bg-amber-950/60 text-amber-300',   dotClass: 'bg-amber-500'  },
-    { value: 'review',     label: 'Review',     badgeClass: 'bg-slate-800/60 text-slate-300',   dotClass: 'bg-slate-400'  },
-  ];
+  readonly difficultyOptions = DIFFICULTY_BADGE_OPTIONS;
+  readonly energyOptions = ENERGY_BADGE_OPTIONS;
+  readonly statusOptions = STATUS_BADGE_OPTIONS;
+  readonly mentalStateOptions = MENTAL_STATE_BADGE_OPTIONS;
 
   ngOnInit(): void {
     this.resourceTypeService.loadAll();
