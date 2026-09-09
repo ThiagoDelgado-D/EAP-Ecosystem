@@ -4,7 +4,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@faker-js/faker": "^10.3.0",
+    "@faker-js/faker": "^10.5.0",
     "@learning-resource/application": "workspace:^",
     "@learning-resource/domain": "workspace:^",
     "cheerio": "^1.2.0",
