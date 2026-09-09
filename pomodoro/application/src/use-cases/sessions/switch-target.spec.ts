@@ -46,19 +46,18 @@ describe("switchTarget", () => {
     });
   });
 
+  const deps = () => ({
+    sessionRepository,
+    cryptoService,
+    learningPathMembershipPort: membershipPort,
+  });
+
   const startFreeSession = async () => {
-    const session = await startSession(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        plannedMin: 25,
-        target: { kind: SegmentTargetKind.FREE },
-      },
-    );
+    const session = await startSession(deps(), {
+      userId: requestingUserId,
+      plannedMin: 25,
+      target: { kind: SegmentTargetKind.FREE },
+    });
     return session as Exclude<typeof session, Error>;
   };
 
@@ -66,18 +65,11 @@ describe("switchTarget", () => {
     const session = await startFreeSession();
     const resourceId = await cryptoService.generateUUID();
 
-    const result = await switchTarget(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        sessionId: session.id,
-        target: { kind: SegmentTargetKind.RESOURCE, resourceId },
-      },
-    );
+    const result = await switchTarget(deps(), {
+      userId: requestingUserId,
+      sessionId: session.id,
+      target: { kind: SegmentTargetKind.RESOURCE, resourceId },
+    });
 
     expect(result).not.toBeInstanceOf(Error);
     const { closedSegment, openedSegment } = result as Exclude<
@@ -100,17 +92,10 @@ describe("switchTarget", () => {
   });
 
   test("Should return InvalidDataError when sessionId is missing", async () => {
-    const result = await switchTarget(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        target: { kind: SegmentTargetKind.FREE },
-      } as any,
-    );
+    const result = await switchTarget(deps(), {
+      userId: requestingUserId,
+      target: { kind: SegmentTargetKind.FREE },
+    } as any);
 
     expect(result).toBeInstanceOf(InvalidDataError);
   });
@@ -118,18 +103,11 @@ describe("switchTarget", () => {
   test("Should return SessionNotFoundError when the session does not exist", async () => {
     const nonExistentSessionId = await cryptoService.generateUUID();
 
-    const result = await switchTarget(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        sessionId: nonExistentSessionId,
-        target: { kind: SegmentTargetKind.FREE },
-      },
-    );
+    const result = await switchTarget(deps(), {
+      userId: requestingUserId,
+      sessionId: nonExistentSessionId,
+      target: { kind: SegmentTargetKind.FREE },
+    });
 
     expect(result).toBeInstanceOf(SessionNotFoundError);
   });
@@ -138,18 +116,11 @@ describe("switchTarget", () => {
     const session = await startFreeSession();
     const otherUserId = await cryptoService.generateUUID();
 
-    const result = await switchTarget(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: otherUserId,
-        sessionId: session.id,
-        target: { kind: SegmentTargetKind.FREE },
-      },
-    );
+    const result = await switchTarget(deps(), {
+      userId: otherUserId,
+      sessionId: session.id,
+      target: { kind: SegmentTargetKind.FREE },
+    });
 
     expect(result).toBeInstanceOf(SessionForbiddenError);
   });
@@ -161,18 +132,11 @@ describe("switchTarget", () => {
     )!;
     storedSession.completedAt = new Date();
 
-    const result = await switchTarget(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        sessionId: session.id,
-        target: { kind: SegmentTargetKind.FREE },
-      },
-    );
+    const result = await switchTarget(deps(), {
+      userId: requestingUserId,
+      sessionId: session.id,
+      target: { kind: SegmentTargetKind.FREE },
+    });
 
     expect(result).toBeInstanceOf(SessionNotActiveError);
   });
@@ -187,18 +151,11 @@ describe("switchTarget", () => {
       endSec: 120,
     });
 
-    const result = await switchTarget(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        sessionId: session.id,
-        target: { kind: SegmentTargetKind.FREE },
-      },
-    );
+    const result = await switchTarget(deps(), {
+      userId: requestingUserId,
+      sessionId: session.id,
+      target: { kind: SegmentTargetKind.FREE },
+    });
 
     expect(result).toBeInstanceOf(NoOpenSegmentError);
   });
@@ -206,21 +163,14 @@ describe("switchTarget", () => {
   test("Should return AmbiguousPathTargetError instead of guessing which path counts", async () => {
     const session = await startFreeSession();
 
-    const result = await switchTarget(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
+    const result = await switchTarget(deps(), {
+      userId: requestingUserId,
+      sessionId: session.id,
+      target: {
+        kind: SegmentTargetKind.RESOURCE,
+        resourceId: multiPathResourceId,
       },
-      {
-        userId: requestingUserId,
-        sessionId: session.id,
-        target: {
-          kind: SegmentTargetKind.RESOURCE,
-          resourceId: multiPathResourceId,
-        },
-      },
-    );
+    });
 
     expect(result).toBeInstanceOf(AmbiguousPathTargetError);
 
