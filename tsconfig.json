@@ -5,6 +5,9 @@
       "domain-lib": [
         "shared/domain-lib/src/index.ts"
       ],
+      "domain-lib/testing": [
+        "shared/domain-lib/src/testing/index.ts"
+      ],
       "infrastructure-lib": [
         "shared/infrastructure-lib/src/index.ts"
       ],
@@ -16,6 +19,12 @@
       ],
       "@learning-resource/infrastructure": [
         "learning-resource/infrastructure/src/index.ts"
+      ],
+      "@pomodoro/domain": [
+        "pomodoro/domain/src/index.ts"
+      ],
+      "@pomodoro/application": [
+        "pomodoro/application/src/index.ts"
       ],
       "@user/domain": [
         "user/domain/src/index.ts"

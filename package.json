@@ -13,6 +13,7 @@
     "learning-resource/application",
     "learning-resource/infrastructure",
     "pomodoro/domain",
+    "pomodoro/application",
     "user/domain",
     "user/application",
     "user/infrastructure"

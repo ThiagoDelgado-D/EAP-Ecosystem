@@ -20,7 +20,8 @@
       "types": "./dist/index.d.ts"
     },
     "./entities": "./dist/entities/index.js",
-    "./types": "./dist/types/index.js"
+    "./types": "./dist/types/index.js",
+    "./testing": "./dist/testing/index.js"
   },
   "packageManager": "yarn@4.9.2",
   "devDependencies": {

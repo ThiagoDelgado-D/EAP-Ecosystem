@@ -2988,7 +2988,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pomodoro/domain@workspace:pomodoro/domain":
+"@pomodoro/application@workspace:pomodoro/application":
+  version: 0.0.0-use.local
+  resolution: "@pomodoro/application@workspace:pomodoro/application"
+  dependencies:
+    "@faker-js/faker": "npm:^10.3.0"
+    "@pomodoro/domain": "workspace:^"
+    "@vitest/coverage-v8": "npm:4.0.13"
+    domain-lib: "workspace:^"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^4.0.13"
+  languageName: unknown
+  linkType: soft
+
+"@pomodoro/domain@workspace:^, @pomodoro/domain@workspace:pomodoro/domain":
   version: 0.0.0-use.local
   resolution: "@pomodoro/domain@workspace:pomodoro/domain"
   dependencies:
