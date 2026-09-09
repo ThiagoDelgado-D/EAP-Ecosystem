@@ -39,7 +39,7 @@
     "@types/node": "^24.9.2",
     "@vitest/coverage-v8": "^4.0.15",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
+    "vitest": "^4.1.11"
   },
   "scripts": {
     "build": "yarn workspaces foreach -A -tv run build",
