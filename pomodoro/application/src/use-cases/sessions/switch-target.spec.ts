@@ -21,28 +21,28 @@ describe("switchTarget", () => {
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
   let requestingUserId: UUID;
-  let multiPathResourceId: UUID;
+  let cleanArchitectureResourceId: UUID;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
     requestingUserId = await cryptoService.generateUUID();
-    multiPathResourceId = await cryptoService.generateUUID();
+    cleanArchitectureResourceId = await cryptoService.generateUUID();
 
-    const candidates: LearningPathMembership[] = [
+    const pathsSharingCleanArchitecture: LearningPathMembership[] = [
       {
         pathId: await cryptoService.generateUUID(),
-        pathTitle: "First Path",
+        pathTitle: "Frontend Architecture Mastery",
         nodeId: await cryptoService.generateUUID(),
       },
       {
         pathId: await cryptoService.generateUUID(),
-        pathTitle: "Second Path",
+        pathTitle: "System Design Prep",
         nodeId: await cryptoService.generateUUID(),
       },
     ];
     membershipPort = mockLearningPathMembershipPort({
-      [multiPathResourceId]: candidates,
+      [cleanArchitectureResourceId]: pathsSharingCleanArchitecture,
     });
   });
 
@@ -63,12 +63,15 @@ describe("switchTarget", () => {
 
   test("Should close the open segment and open a new one for the resolved target", async () => {
     const session = await startFreeSession();
-    const resourceId = await cryptoService.generateUUID();
+    const reactDocsResourceId = await cryptoService.generateUUID();
 
     const result = await switchTarget(deps(), {
       userId: requestingUserId,
       sessionId: session.id,
-      target: { kind: SegmentTargetKind.RESOURCE, resourceId },
+      target: {
+        kind: SegmentTargetKind.RESOURCE,
+        resourceId: reactDocsResourceId,
+      },
     });
 
     expect(result).not.toBeInstanceOf(Error);
@@ -168,7 +171,7 @@ describe("switchTarget", () => {
       sessionId: session.id,
       target: {
         kind: SegmentTargetKind.RESOURCE,
-        resourceId: multiPathResourceId,
+        resourceId: cleanArchitectureResourceId,
       },
     });
 
