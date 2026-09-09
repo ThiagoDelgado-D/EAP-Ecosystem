@@ -5,6 +5,9 @@
       "domain-lib": [
         "shared/domain-lib/src/index.ts"
       ],
+      "domain-lib/testing": [
+        "shared/domain-lib/src/testing/index.ts"
+      ],
       "infrastructure-lib": [
         "shared/infrastructure-lib/src/index.ts"
       ],
