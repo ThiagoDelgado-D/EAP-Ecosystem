@@ -45,6 +45,13 @@ export function mockSessionRepository(
       );
     },
 
+    async findMostRecentByUserId(userId: UUID): Promise<Session | null> {
+      const completed = this.sessions
+        .filter((s) => s.userId === userId && s.completedAt)
+        .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime());
+      return completed[0] ?? null;
+    },
+
     async saveSegment(segment: Segment): Promise<Segment> {
       this.segments.push(segment);
       return segment;
@@ -72,6 +79,18 @@ export function mockSessionRepository(
 
     async findSegmentsBySessionId(sessionId: UUID): Promise<Segment[]> {
       return this.segments.filter((s) => s.sessionId === sessionId);
+    },
+
+    async findSegmentsByUserIdSince(
+      userId: UUID,
+      since: Date,
+    ): Promise<Segment[]> {
+      const sessionIds = new Set(
+        this.sessions
+          .filter((s) => s.userId === userId && s.startedAt >= since)
+          .map((s) => s.id),
+      );
+      return this.segments.filter((s) => sessionIds.has(s.sessionId));
     },
 
     reset(): void {
