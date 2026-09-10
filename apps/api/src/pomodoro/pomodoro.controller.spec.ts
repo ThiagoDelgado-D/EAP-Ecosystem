@@ -386,17 +386,17 @@ describe("PomodoroController (integration)", () => {
       candidateNodesPort.nodesByUser[ownerId] = [
         {
           pathId,
-          pathTitle: "Backend Fundamentals",
+          pathTitle: "Frontend Architecture Mastery",
           nodeId: pendingNodeId,
-          nodeTitle: "Hexagonal Architecture",
+          nodeTitle: "Signals Deep Dive",
           progress: CandidateNodeProgress.PENDING,
           prerequisitesDone: true,
         },
         {
           pathId,
-          pathTitle: "Backend Fundamentals",
+          pathTitle: "Frontend Architecture Mastery",
           nodeId: inProgressNodeId,
-          nodeTitle: "Clean Architecture",
+          nodeTitle: "Angular Official Docs",
           progress: CandidateNodeProgress.IN_PROGRESS,
           prerequisitesDone: true,
         },
@@ -415,7 +415,7 @@ describe("PomodoroController (integration)", () => {
       candidateNodesPort.nodesByUser[ownerId] = [
         {
           pathId: await cryptoService.generateUUID(),
-          pathTitle: "Backend Fundamentals",
+          pathTitle: "TypeScript, Step by Step",
           nodeId: await cryptoService.generateUUID(),
           nodeTitle: "TypeScript Handbook",
           progress: CandidateNodeProgress.DONE,
@@ -431,24 +431,14 @@ describe("PomodoroController (integration)", () => {
       expect(response.body).toEqual([]);
     });
 
-    test("boosts a node whose resource matches the requested energy", async () => {
+    test("forwards the energy query through to the response", async () => {
       const matchingNodeId = await cryptoService.generateUUID();
       candidateNodesPort.nodesByUser[ownerId] = [
         {
           pathId: await cryptoService.generateUUID(),
-          pathTitle: "Backend Fundamentals",
-          nodeId: await cryptoService.generateUUID(),
-          nodeTitle: "Hexagonal Architecture",
-          progress: CandidateNodeProgress.PENDING,
-          prerequisitesDone: true,
-          resourceId: await cryptoService.generateUUID(),
-          resourceEnergyLevel: CandidateNodeEnergyLevel.MEDIUM,
-        },
-        {
-          pathId: await cryptoService.generateUUID(),
-          pathTitle: "System Design Map",
+          pathTitle: "System Design Prep",
           nodeId: matchingNodeId,
-          nodeTitle: "Event Sourcing",
+          nodeTitle: "CAP Theorem",
           progress: CandidateNodeProgress.PENDING,
           prerequisitesDone: true,
           resourceId: await cryptoService.generateUUID(),
@@ -463,6 +453,7 @@ describe("PomodoroController (integration)", () => {
         .expect(200);
 
       expect(response.body[0].nodeId).toBe(matchingNodeId);
+      expect(response.body[0].why).toContain("fits high energy");
     });
 
     test("Should return 400 when energy is not a known level", async () => {

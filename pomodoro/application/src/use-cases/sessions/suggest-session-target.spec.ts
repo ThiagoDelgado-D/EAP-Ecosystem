@@ -38,9 +38,9 @@ describe("suggestSessionTarget", () => {
     candidateNodesPort.nodesByUser[requestingUserId] = [
       {
         pathId,
-        pathTitle: "Backend Fundamentals",
+        pathTitle: "Frontend Architecture Mastery",
         nodeId,
-        nodeTitle: "Hexagonal Architecture",
+        nodeTitle: "DDD Distilled",
         progress: CandidateNodeProgress.PENDING,
         prerequisitesDone: true,
       },
@@ -79,9 +79,9 @@ describe("suggestSessionTarget", () => {
     candidateNodesPort.nodesByUser[requestingUserId] = [
       {
         pathId: await cryptoService.generateUUID(),
-        pathTitle: "Backend Fundamentals",
+        pathTitle: "TypeScript, Step by Step",
         nodeId,
-        nodeTitle: "Hexagonal Architecture",
+        nodeTitle: "Generics & Conditional Types",
         progress: CandidateNodeProgress.PENDING,
         prerequisitesDone: true,
         resourceId: await cryptoService.generateUUID(),
@@ -105,9 +105,9 @@ describe("suggestSessionTarget", () => {
     candidateNodesPort.nodesByUser[requestingUserId] = [
       {
         pathId: await cryptoService.generateUUID(),
-        pathTitle: "Backend Fundamentals",
+        pathTitle: "TypeScript, Step by Step",
         nodeId: await cryptoService.generateUUID(),
-        nodeTitle: "Hexagonal Architecture",
+        nodeTitle: "TypeScript Design Patterns",
         progress: CandidateNodeProgress.PENDING,
         prerequisitesDone: true,
         resourceId: await cryptoService.generateUUID(),
@@ -115,9 +115,9 @@ describe("suggestSessionTarget", () => {
       },
       {
         pathId: await cryptoService.generateUUID(),
-        pathTitle: "System Design Map",
+        pathTitle: "System Design Prep",
         nodeId: matchingNodeId,
-        nodeTitle: "Event Sourcing",
+        nodeTitle: "CAP Theorem",
         progress: CandidateNodeProgress.PENDING,
         prerequisitesDone: true,
         resourceId: await cryptoService.generateUUID(),
@@ -143,18 +143,18 @@ describe("suggestSessionTarget", () => {
     candidateNodesPort.nodesByUser[requestingUserId] = [
       {
         pathId: quietPathId,
-        pathTitle: "System Design Map",
+        pathTitle: "System Design Prep",
         nodeId: await cryptoService.generateUUID(),
-        nodeTitle: "CAP Theorem",
+        nodeTitle: "Event Sourcing",
         progress: CandidateNodeProgress.PENDING,
         prerequisitesDone: true,
         resourceId: await cryptoService.generateUUID(),
       },
       {
         pathId: activePathId,
-        pathTitle: "Backend Fundamentals",
+        pathTitle: "Frontend Architecture Mastery",
         nodeId: activePathNodeId,
-        nodeTitle: "Hexagonal Architecture",
+        nodeTitle: "CQRS Pattern",
         progress: CandidateNodeProgress.PENDING,
         prerequisitesDone: true,
         resourceId: await cryptoService.generateUUID(),
@@ -198,9 +198,9 @@ describe("suggestSessionTarget", () => {
     candidateNodesPort.nodesByUser[requestingUserId] = [
       {
         pathId: await cryptoService.generateUUID(),
-        pathTitle: "System Design Map",
+        pathTitle: "System Design Prep",
         nodeId: stubNodeId,
-        nodeTitle: "Event Sourcing",
+        nodeTitle: "Compiler API Internals",
         progress: CandidateNodeProgress.PENDING,
         prerequisitesDone: true,
       },
@@ -215,9 +215,9 @@ describe("suggestSessionTarget", () => {
       },
       {
         pathId: await cryptoService.generateUUID(),
-        pathTitle: "Backend Fundamentals",
+        pathTitle: "Frontend Architecture Mastery",
         nodeId: inProgressNodeId,
-        nodeTitle: "Hexagonal Architecture",
+        nodeTitle: "Angular Official Docs",
         progress: CandidateNodeProgress.IN_PROGRESS,
         prerequisitesDone: true,
         resourceId: await cryptoService.generateUUID(),
