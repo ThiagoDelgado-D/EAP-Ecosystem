@@ -1,6 +1,8 @@
-import { Body, Controller, HttpCode, Inject, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Inject, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import type {
+  CandidateNodesPort,
+  CandidateNodeEnergyLevel,
   ISessionRepository,
   LearningPathMembershipPort,
   NotificationPort,
@@ -9,6 +11,7 @@ import {
   endSession,
   startBreak,
   startSession,
+  suggestSessionTarget,
   switchTarget,
   type SegmentTargetInput,
 } from "@pomodoro/application";
@@ -29,6 +32,8 @@ export class PomodoroController {
     private readonly learningPathMembershipPort: LearningPathMembershipPort,
     @Inject("INotificationPort")
     private readonly notificationPort: NotificationPort,
+    @Inject("ICandidateNodesPort")
+    private readonly candidateNodesPort: CandidateNodesPort,
   ) {}
 
   @Post("sessions")
@@ -88,5 +93,21 @@ export class PomodoroController {
   @HttpCode(200)
   async startBreak() {
     await startBreak({ notificationPort: this.notificationPort });
+  }
+
+  @Get("suggestion")
+  async suggestSessionTarget(
+    @Query("energy") energy: CandidateNodeEnergyLevel | undefined,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const result = await suggestSessionTarget(
+      {
+        sessionRepository: this.sessionRepository,
+        candidateNodesPort: this.candidateNodesPort,
+      },
+      { userId, energy },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
   }
 }
