@@ -212,7 +212,7 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
       status: this.capitalizeStatus(dto.status),
       typeId: dto.typeId,
       topicIds: dto.topicIds,
-      estimatedDuration: { value: 0, isEstimated: true },
+      estimatedDuration: dto.estimatedDuration,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
