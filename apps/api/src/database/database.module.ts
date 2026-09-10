@@ -16,6 +16,10 @@ import {
   SignInChallengeEntity,
   UserEntity,
 } from "@user/infrastructure";
+import {
+  SessionEntity as PomodoroSessionEntity,
+  SegmentEntity as PomodoroSegmentEntity,
+} from "@pomodoro/infrastructure";
 
 @Module({
   imports: [
@@ -41,6 +45,8 @@ import {
             IdentityEntity,
             SignInChallengeEntity,
             SessionEntity,
+            PomodoroSessionEntity,
+            PomodoroSegmentEntity,
           ],
           synchronize: false,
         };

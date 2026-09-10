@@ -16,6 +16,10 @@ import {
   SignInChallengeEntity,
   SessionEntity,
 } from "@user/infrastructure";
+import {
+  SessionEntity as PomodoroSessionEntity,
+  SegmentEntity as PomodoroSegmentEntity,
+} from "@pomodoro/infrastructure";
 
 config({ path: "../../apps/api/.env" });
 
@@ -38,6 +42,8 @@ export const AppDataSource = new DataSource({
     IdentityEntity,
     SignInChallengeEntity,
     SessionEntity,
+    PomodoroSessionEntity,
+    PomodoroSegmentEntity,
   ],
   migrations: ["src/database/migrations/*.ts"],
   synchronize: false,
