@@ -1,0 +1,92 @@
+import { Body, Controller, HttpCode, Inject, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { BaseError, type CryptoService, type UUID } from "domain-lib";
+import type {
+  ISessionRepository,
+  LearningPathMembershipPort,
+  NotificationPort,
+} from "@pomodoro/domain";
+import {
+  endSession,
+  startBreak,
+  startSession,
+  switchTarget,
+  type SegmentTargetInput,
+} from "@pomodoro/application";
+import { StartSessionDto, SwitchTargetDto } from "./dto/request/index.js";
+import { toHttpException } from "../errors/domain-error-mapper.js";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
+import { CurrentUserId } from "../auth/current-user-id.decorator.js";
+
+@UseGuards(JwtAuthGuard)
+@Controller("api/v1/pomodoro")
+export class PomodoroController {
+  constructor(
+    @Inject("IPomodoroSessionRepository")
+    private readonly sessionRepository: ISessionRepository,
+    @Inject("ICryptoService")
+    private readonly cryptoService: CryptoService,
+    @Inject("ILearningPathMembershipPort")
+    private readonly learningPathMembershipPort: LearningPathMembershipPort,
+    @Inject("INotificationPort")
+    private readonly notificationPort: NotificationPort,
+  ) {}
+
+  @Post("sessions")
+  async startSession(
+    @Body() dto: StartSessionDto,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const result = await startSession(
+      {
+        sessionRepository: this.sessionRepository,
+        cryptoService: this.cryptoService,
+        learningPathMembershipPort: this.learningPathMembershipPort,
+      },
+      {
+        userId,
+        plannedMin: dto.plannedMin,
+        intent: dto.intent,
+        target: dto.target as SegmentTargetInput,
+      },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Patch("sessions/:id/target")
+  async switchTarget(
+    @Param("id") id: UUID,
+    @Body() dto: SwitchTargetDto,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const result = await switchTarget(
+      {
+        sessionRepository: this.sessionRepository,
+        cryptoService: this.cryptoService,
+        learningPathMembershipPort: this.learningPathMembershipPort,
+      },
+      { userId, sessionId: id, target: dto.target as SegmentTargetInput },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Post("sessions/:id/end")
+  async endSession(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
+    const result = await endSession(
+      {
+        sessionRepository: this.sessionRepository,
+        notificationPort: this.notificationPort,
+      },
+      { userId, sessionId: id },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Post("breaks")
+  @HttpCode(200)
+  async startBreak() {
+    await startBreak({ notificationPort: this.notificationPort });
+  }
+}

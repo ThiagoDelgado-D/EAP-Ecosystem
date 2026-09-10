@@ -2988,7 +2988,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pomodoro/application@workspace:pomodoro/application":
+"@pomodoro/application@workspace:^, @pomodoro/application@workspace:pomodoro/application":
   version: 0.0.0-use.local
   resolution: "@pomodoro/application@workspace:pomodoro/application"
   dependencies:
@@ -3012,7 +3012,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@pomodoro/infrastructure@workspace:pomodoro/infrastructure":
+"@pomodoro/infrastructure@workspace:^, @pomodoro/infrastructure@workspace:pomodoro/infrastructure":
   version: 0.0.0-use.local
   resolution: "@pomodoro/infrastructure@workspace:pomodoro/infrastructure"
   dependencies:
@@ -4959,6 +4959,9 @@ __metadata:
     "@nestjs/schematics": "npm:^11.0.0"
     "@nestjs/testing": "npm:^11.1.14"
     "@nestjs/typeorm": "npm:^11.0.0"
+    "@pomodoro/application": "workspace:^"
+    "@pomodoro/domain": "workspace:^"
+    "@pomodoro/infrastructure": "workspace:^"
     "@types/express": "npm:^5.0.6"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^22.10.7"

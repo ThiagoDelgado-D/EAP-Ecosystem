@@ -1,6 +1,6 @@
 import { defineConfig, mergeConfig } from "vitest/config";
 import { resolve } from "node:path";
-import { baseNodeVitestConfig } from "domain-lib/testing";
+import { baseNodeVitestConfig } from "../../shared/domain-lib/src/testing/index.js";
 
 export default mergeConfig(
   baseNodeVitestConfig,

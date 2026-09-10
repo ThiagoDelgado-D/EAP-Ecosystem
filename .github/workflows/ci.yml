@@ -43,9 +43,17 @@ jobs:
       matrix:
         workspace:
           - shared/domain-lib
+          - shared/infrastructure-lib
+          - learning-resource/domain
           - learning-resource/application
+          - learning-resource/infrastructure
+          - pomodoro/domain
+          - pomodoro/application
+          - pomodoro/infrastructure
+          - user/domain
           - user/application
           - user/infrastructure
+          - apps/api
 
     steps:
       - name: Checkout code

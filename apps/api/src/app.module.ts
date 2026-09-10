@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { HealthModule } from "./health/health.module.js";
 import { LearningResourceModule } from "./learning-resource/learning-resource.module.js";
 import { LearningPathModule } from "./learning-path/learning-path.module.js";
+import { PomodoroModule } from "./pomodoro/pomodoro.module.js";
 import { DatabaseModule } from "./database/database.module.js";
 import { ConfigModule } from "@nestjs/config";
 import { LoggingInterceptor } from "./interceptors/logging.interceptor.js";
@@ -20,6 +21,7 @@ import { AppConfigModule } from "./config/app-config.module.js";
     HealthModule,
     LearningResourceModule,
     LearningPathModule,
+    PomodoroModule,
     UserModule,
   ],
   controllers: [],
