@@ -74,6 +74,48 @@ describe("LearningPathController (integration)", () => {
     });
   });
 
+  describe("List with nodes", () => {
+    test("returns every owned path with its nodes, excluding other users' paths", async () => {
+      const ownedPathResponse = await request(app.getHttpServer())
+        .post("/api/v1/learning-paths")
+        .set(authHeader())
+        .send({ title: "Rust for Backend Engineers", mode: "sequential" })
+        .expect(201);
+      const ownedPathId = ownedPathResponse.body.id;
+
+      await request(app.getHttpServer())
+        .post(`/api/v1/learning-paths/${ownedPathId}/nodes`)
+        .set(authHeader())
+        .send({ title: "Ownership & Borrowing", stubScope: "path-local" })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post("/api/v1/learning-paths")
+        .set(authHeader(intruderToken))
+        .send({ title: "Go Concurrency Patterns", mode: "sequential" })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-paths/with-nodes")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0].path.id).toBe(ownedPathId);
+      expect(response.body[0].nodes).toHaveLength(1);
+      expect(response.body[0].nodes[0].title).toBe("Ownership & Borrowing");
+    });
+
+    test("returns an empty array when the user has no paths", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-paths/with-nodes")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual([]);
+    });
+  });
+
   describe("Full path -> node -> edge lifecycle", () => {
     test("creates a path, adds two nodes, links them with an edge, and reads it back", async () => {
       const createPathResponse = await request(app.getHttpServer())
