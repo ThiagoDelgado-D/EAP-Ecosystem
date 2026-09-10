@@ -21,6 +21,8 @@ const config: Config = {
       "<rootDir>/../../learning-resource/domain/src",
     "^@learning-resource/application$":
       "<rootDir>/../../learning-resource/application/src",
+    "^@pomodoro/domain$": "<rootDir>/../../pomodoro/domain/src",
+    "^@pomodoro/application$": "<rootDir>/../../pomodoro/application/src",
     "^domain-lib$": "<rootDir>/../../shared/domain-lib/src",
     "^infrastructure-lib$": "<rootDir>/../../shared/infrastructure-lib/src",
     "^(\\.{1,2}/.+)\\.js$": "$1",
