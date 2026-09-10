@@ -6,3 +6,4 @@ export * from "./end-session.js";
 export * from "./start-break.js";
 export * from "./get-last-session-target.js";
 export * from "./get-path-momentum.js";
+export * from "./suggest-session-target.js";
