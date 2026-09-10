@@ -3012,6 +3012,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@pomodoro/infrastructure@workspace:pomodoro/infrastructure":
+  version: 0.0.0-use.local
+  resolution: "@pomodoro/infrastructure@workspace:pomodoro/infrastructure"
+  dependencies:
+    "@pomodoro/domain": "workspace:^"
+    "@vitest/coverage-v8": "npm:4.0.13"
+    domain-lib: "workspace:^"
+    typeorm: "npm:^0.3.31"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^4.1.11"
+  languageName: unknown
+  linkType: soft
+
 "@rolldown/binding-android-arm64@npm:1.0.0-rc.4":
   version: 1.0.0-rc.4
   resolution: "@rolldown/binding-android-arm64@npm:1.0.0-rc.4"

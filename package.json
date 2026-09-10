@@ -14,6 +14,7 @@
     "learning-resource/infrastructure",
     "pomodoro/domain",
     "pomodoro/application",
+    "pomodoro/infrastructure",
     "user/domain",
     "user/application",
     "user/infrastructure"
