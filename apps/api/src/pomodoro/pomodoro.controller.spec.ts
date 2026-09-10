@@ -1,10 +1,16 @@
 import {
+  mockCandidateNodesPort,
   mockLearningPathMembershipPort,
   mockNotificationPort,
   mockSessionRepository,
   MIN_SESSION_DURATION_SEC,
 } from "@pomodoro/application";
-import { SegmentTargetKind, DomainNotificationType } from "@pomodoro/domain";
+import {
+  CandidateNodeEnergyLevel,
+  CandidateNodeProgress,
+  SegmentTargetKind,
+  DomainNotificationType,
+} from "@pomodoro/domain";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
@@ -12,7 +18,12 @@ import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { SegmentEntity, SessionEntity } from "@pomodoro/infrastructure";
-import { LearningPathNodeEntity } from "@learning-resource/infrastructure";
+import {
+  LearningPathEdgeEntity,
+  LearningPathEntity,
+  LearningPathNodeEntity,
+  LearningResourceEntity,
+} from "@learning-resource/infrastructure";
 import { PomodoroModule } from "./pomodoro.module.js";
 import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
 
@@ -21,6 +32,7 @@ describe("PomodoroController (integration)", () => {
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
+  let candidateNodesPort: ReturnType<typeof mockCandidateNodesPort>;
   let cryptoService: CryptoServiceImpl;
   let jwtService: MockedJwtService;
 
@@ -37,6 +49,7 @@ describe("PomodoroController (integration)", () => {
     sessionRepository = mockSessionRepository();
     membershipPort = mockLearningPathMembershipPort();
     notificationPort = mockNotificationPort();
+    candidateNodesPort = mockCandidateNodesPort();
     jwtService = mockJwtService();
 
     const module = await Test.createTestingModule({
@@ -48,12 +61,20 @@ describe("PomodoroController (integration)", () => {
       .useValue({})
       .overrideProvider(getRepositoryToken(LearningPathNodeEntity))
       .useValue({})
+      .overrideProvider(getRepositoryToken(LearningPathEntity))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(LearningPathEdgeEntity))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(LearningResourceEntity))
+      .useValue({})
       .overrideProvider("IPomodoroSessionRepository")
       .useValue(sessionRepository)
       .overrideProvider("ILearningPathMembershipPort")
       .useValue(membershipPort)
       .overrideProvider("INotificationPort")
       .useValue(notificationPort)
+      .overrideProvider("ICandidateNodesPort")
+      .useValue(candidateNodesPort)
       .overrideProvider("ICryptoService")
       .useValue(cryptoService)
       .overrideProvider("IJwtService")
@@ -62,7 +83,11 @@ describe("PomodoroController (integration)", () => {
 
     app = module.createNestApplication();
     app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true,
+      }),
     );
     app.useGlobalFilters(new GlobalExceptionFilter());
     await app.init();
@@ -77,6 +102,7 @@ describe("PomodoroController (integration)", () => {
     sessionRepository.reset();
     membershipPort.reset();
     notificationPort.reset();
+    candidateNodesPort.reset();
   });
 
   const authHeader = (bearerToken: string = ownerToken) => ({
@@ -180,7 +206,12 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader())
         .send({
           plannedMin: 45,
-          target: { kind: "node", learningPathId: pathId, learningPathNodeId: nodeId, resourceId },
+          target: {
+            kind: "node",
+            learningPathId: pathId,
+            learningPathNodeId: nodeId,
+            resourceId,
+          },
         })
         .expect(201);
       const sessionId = startResponse.body.id;
@@ -215,7 +246,13 @@ describe("PomodoroController (integration)", () => {
       const switchResponse = await request(app.getHttpServer())
         .patch(`/api/v1/pomodoro/sessions/${startResponse.body.id}/target`)
         .set(authHeader())
-        .send({ target: { kind: "node", learningPathId: pathId, learningPathNodeId: stubNodeId } })
+        .send({
+          target: {
+            kind: "node",
+            learningPathId: pathId,
+            learningPathNodeId: stubNodeId,
+          },
+        })
         .expect(200);
 
       expect(switchResponse.body.openedSegment).toMatchObject({
@@ -238,7 +275,11 @@ describe("PomodoroController (integration)", () => {
       const unresolvedSegment = sessionRepository.segments.find(
         (s) => s.sessionId === startResponse.body.id,
       );
-      expect(unresolvedSegment).toMatchObject({ targetKind: SegmentTargetKind.RESOURCE, resourceId });
+
+      expect(unresolvedSegment).toMatchObject({
+        targetKind: SegmentTargetKind.RESOURCE,
+        resourceId,
+      });
     });
 
     test("chains three targets in one session before ending it", async () => {
@@ -263,7 +304,13 @@ describe("PomodoroController (integration)", () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/pomodoro/sessions/${sessionId}/target`)
         .set(authHeader())
-        .send({ target: { kind: "node", learningPathId: pathId, learningPathNodeId: nodeId } })
+        .send({
+          target: {
+            kind: "node",
+            learningPathId: pathId,
+            learningPathNodeId: nodeId,
+          },
+        })
         .expect(200);
 
       const endResponse = await request(app.getHttpServer())
@@ -272,10 +319,22 @@ describe("PomodoroController (integration)", () => {
         .expect(201);
 
       expect(endResponse.body.segments).toHaveLength(3);
-      const [freeSegment, resourceSegment, nodeSegment] = endResponse.body.segments;
+
+      const [freeSegment, resourceSegment, nodeSegment] =
+        endResponse.body.segments;
+
       expect(freeSegment).toMatchObject({ targetKind: "free", startSec: 0 });
-      expect(resourceSegment).toMatchObject({ targetKind: "resource", resourceId });
-      expect(nodeSegment).toMatchObject({ targetKind: "node", learningPathId: pathId, learningPathNodeId: nodeId });
+      expect(resourceSegment).toMatchObject({
+        targetKind: "resource",
+        resourceId,
+      });
+
+      expect(nodeSegment).toMatchObject({
+        targetKind: "node",
+        learningPathId: pathId,
+        learningPathNodeId: nodeId,
+      });
+
       expect(resourceSegment.startSec).toBe(freeSegment.endSec);
       expect(nodeSegment.startSec).toBe(resourceSegment.endSec);
       expect(nodeSegment.endSec).toBeDefined();
@@ -316,6 +375,104 @@ describe("PomodoroController (integration)", () => {
       expect(notificationPort.notifications[0]!.type).toBe(
         DomainNotificationType.BREAK_STARTED,
       );
+    });
+  });
+
+  describe("Suggestion", () => {
+    test("ranks an in-progress node above a pending one", async () => {
+      const pathId = await cryptoService.generateUUID();
+      const inProgressNodeId = await cryptoService.generateUUID();
+      const pendingNodeId = await cryptoService.generateUUID();
+      candidateNodesPort.nodesByUser[ownerId] = [
+        {
+          pathId,
+          pathTitle: "Backend Fundamentals",
+          nodeId: pendingNodeId,
+          nodeTitle: "Hexagonal Architecture",
+          progress: CandidateNodeProgress.PENDING,
+          prerequisitesDone: true,
+        },
+        {
+          pathId,
+          pathTitle: "Backend Fundamentals",
+          nodeId: inProgressNodeId,
+          nodeTitle: "Clean Architecture",
+          progress: CandidateNodeProgress.IN_PROGRESS,
+          prerequisitesDone: true,
+        },
+      ];
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/suggestion")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body[0].nodeId).toBe(inProgressNodeId);
+      expect(response.body[0].why).toContain("already open");
+    });
+
+    test("excludes a node that is already done", async () => {
+      candidateNodesPort.nodesByUser[ownerId] = [
+        {
+          pathId: await cryptoService.generateUUID(),
+          pathTitle: "Backend Fundamentals",
+          nodeId: await cryptoService.generateUUID(),
+          nodeTitle: "TypeScript Handbook",
+          progress: CandidateNodeProgress.DONE,
+          prerequisitesDone: true,
+        },
+      ];
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/suggestion")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual([]);
+    });
+
+    test("boosts a node whose resource matches the requested energy", async () => {
+      const matchingNodeId = await cryptoService.generateUUID();
+      candidateNodesPort.nodesByUser[ownerId] = [
+        {
+          pathId: await cryptoService.generateUUID(),
+          pathTitle: "Backend Fundamentals",
+          nodeId: await cryptoService.generateUUID(),
+          nodeTitle: "Hexagonal Architecture",
+          progress: CandidateNodeProgress.PENDING,
+          prerequisitesDone: true,
+          resourceId: await cryptoService.generateUUID(),
+          resourceEnergyLevel: CandidateNodeEnergyLevel.MEDIUM,
+        },
+        {
+          pathId: await cryptoService.generateUUID(),
+          pathTitle: "System Design Map",
+          nodeId: matchingNodeId,
+          nodeTitle: "Event Sourcing",
+          progress: CandidateNodeProgress.PENDING,
+          prerequisitesDone: true,
+          resourceId: await cryptoService.generateUUID(),
+          resourceEnergyLevel: CandidateNodeEnergyLevel.HIGH,
+        },
+      ];
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/suggestion")
+        .query({ energy: CandidateNodeEnergyLevel.HIGH })
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body[0].nodeId).toBe(matchingNodeId);
+    });
+
+    test("Should return 400 when energy is not a known level", async () => {
+      const invalidEnergyResponse = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/suggestion")
+        .query({ energy: "extreme" })
+        .set(authHeader())
+        .expect(400);
+
+      expect(invalidEnergyResponse.body.energy).toContain("Energy");
     });
   });
 
@@ -430,7 +587,8 @@ describe("PomodoroController (integration)", () => {
       const sessionId = startResponse.body.id;
       backdateSession(sessionId, MIN_SESSION_DURATION_SEC + 60);
 
-      const openSegment = await sessionRepository.findOpenSegmentBySessionId(sessionId);
+      const openSegment =
+        await sessionRepository.findOpenSegmentBySessionId(sessionId);
       await sessionRepository.updateSegment({ ...openSegment!, endSec: 120 });
 
       const noOpenSegmentResponse = await request(app.getHttpServer())
