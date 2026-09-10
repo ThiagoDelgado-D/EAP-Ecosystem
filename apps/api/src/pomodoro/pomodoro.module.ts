@@ -6,9 +6,15 @@ import {
   SessionEntity,
   TypeOrmSessionRepository,
 } from "@pomodoro/infrastructure";
-import { LearningPathNodeEntity } from "@learning-resource/infrastructure";
+import {
+  LearningPathEdgeEntity,
+  LearningPathEntity,
+  LearningPathNodeEntity,
+  LearningResourceEntity,
+} from "@learning-resource/infrastructure";
 import { CryptoServiceImpl, JwtServiceImpl } from "infrastructure-lib";
 import { TypeOrmLearningPathMembershipAdapter } from "./typeorm-learning-path-membership-adapter.js";
+import { TypeOrmCandidateNodesAdapter } from "./typeorm-candidate-nodes-adapter.js";
 import { LoggerNotificationService } from "./logger-notification-service.js";
 import { EnvironmentService } from "../config/environment.service.js";
 
@@ -18,6 +24,9 @@ import { EnvironmentService } from "../config/environment.service.js";
       SessionEntity,
       SegmentEntity,
       LearningPathNodeEntity,
+      LearningPathEntity,
+      LearningPathEdgeEntity,
+      LearningResourceEntity,
     ]),
   ],
   controllers: [PomodoroController],
@@ -35,6 +44,17 @@ import { EnvironmentService } from "../config/environment.service.js";
       provide: "ILearningPathMembershipPort",
       useFactory: (nodeRepo) => new TypeOrmLearningPathMembershipAdapter(nodeRepo),
       inject: [getRepositoryToken(LearningPathNodeEntity)],
+    },
+    {
+      provide: "ICandidateNodesPort",
+      useFactory: (pathRepo, nodeRepo, edgeRepo, resourceRepo) =>
+        new TypeOrmCandidateNodesAdapter(pathRepo, nodeRepo, edgeRepo, resourceRepo),
+      inject: [
+        getRepositoryToken(LearningPathEntity),
+        getRepositoryToken(LearningPathNodeEntity),
+        getRepositoryToken(LearningPathEdgeEntity),
+        getRepositoryToken(LearningResourceEntity),
+      ],
     },
     { provide: "ICryptoService", useClass: CryptoServiceImpl },
     { provide: "INotificationPort", useClass: LoggerNotificationService },
