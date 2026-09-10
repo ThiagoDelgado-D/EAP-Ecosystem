@@ -6,13 +6,15 @@ import type {
   LearningPathEdgeDomainError,
 } from "@learning-resource/application";
 import type { UserDomainError } from "@user/application";
+import type { PomodoroDomainError } from "@pomodoro/application";
 
 type AppDomainError =
   | LearningResourceDomainError
   | UserDomainError
   | LearningPathDomainError
   | LearningPathNodeDomainError
-  | LearningPathEdgeDomainError;
+  | LearningPathEdgeDomainError
+  | PomodoroDomainError;
 type ErrorName = AppDomainError["name"];
 
 const httpStatusMap: Record<ErrorName, number> = {
@@ -29,6 +31,11 @@ const httpStatusMap: Record<ErrorName, number> = {
   LEARNING_PATH_NODE_NOT_FOUND_ERROR: 404,
   LEARNING_PATH_EDGE_NOT_FOUND_ERROR: 404,
   DUPLICATE_LEARNING_PATH_EDGE_ERROR: 409,
+  SESSION_ALREADY_ACTIVE_ERROR: 409,
+  AMBIGUOUS_PATH_TARGET_ERROR: 409,
+  SESSION_NOT_ACTIVE_ERROR: 409,
+  NO_OPEN_SEGMENT_ERROR: 409,
+  SESSION_FORBIDDEN_ERROR: 403,
 };
 
 export function toHttpException(error: AppDomainError): never {
