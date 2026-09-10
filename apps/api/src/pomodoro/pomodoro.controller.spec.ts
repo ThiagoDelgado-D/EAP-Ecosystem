@@ -157,15 +157,149 @@ describe("PomodoroController (integration)", () => {
         .send({ plannedMin: 25, target: { kind: "resource", resourceId } })
         .expect(201);
 
-      const segment = sessionRepository.segments.find(
+      const resolvedSegment = sessionRepository.segments.find(
         (s) => s.sessionId === startResponse.body.id,
       );
-      expect(segment).toMatchObject({
+      expect(resolvedSegment).toMatchObject({
         targetKind: SegmentTargetKind.NODE,
         learningPathId: pathId,
         learningPathNodeId: nodeId,
         resourceId,
       });
+    });
+
+    test("starts directly on a node target and ends with a single segment", async () => {
+      const pathId = await cryptoService.generateUUID();
+      const nodeId = await cryptoService.generateUUID();
+      const resourceId = await cryptoService.generateUUID();
+
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({
+          plannedMin: 45,
+          target: { kind: "node", learningPathId: pathId, learningPathNodeId: nodeId, resourceId },
+        })
+        .expect(201);
+      const sessionId = startResponse.body.id;
+      backdateSession(sessionId, MIN_SESSION_DURATION_SEC + 30);
+
+      const endResponse = await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/sessions/${sessionId}/end`)
+        .set(authHeader())
+        .expect(201);
+
+      expect(endResponse.body.segments).toHaveLength(1);
+      expect(endResponse.body.segments[0]).toMatchObject({
+        targetKind: "node",
+        learningPathId: pathId,
+        learningPathNodeId: nodeId,
+        startSec: 0,
+      });
+      expect(endResponse.body.segments[0].endSec).toBeDefined();
+    });
+
+    test("switches target on a stub node (no linked resource yet)", async () => {
+      const pathId = await cryptoService.generateUUID();
+      const stubNodeId = await cryptoService.generateUUID();
+
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+      backdateSession(startResponse.body.id, 30);
+
+      const switchResponse = await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/sessions/${startResponse.body.id}/target`)
+        .set(authHeader())
+        .send({ target: { kind: "node", learningPathId: pathId, learningPathNodeId: stubNodeId } })
+        .expect(200);
+
+      expect(switchResponse.body.openedSegment).toMatchObject({
+        targetKind: "node",
+        learningPathId: pathId,
+        learningPathNodeId: stubNodeId,
+      });
+      expect(switchResponse.body.openedSegment.resourceId).toBeUndefined();
+    });
+
+    test("keeps a resource target as-is when it belongs to no path", async () => {
+      const resourceId = await cryptoService.generateUUID();
+
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "resource", resourceId } })
+        .expect(201);
+
+      const unresolvedSegment = sessionRepository.segments.find(
+        (s) => s.sessionId === startResponse.body.id,
+      );
+      expect(unresolvedSegment).toMatchObject({ targetKind: SegmentTargetKind.RESOURCE, resourceId });
+    });
+
+    test("chains three targets in one session before ending it", async () => {
+      const resourceId = await cryptoService.generateUUID();
+      const pathId = await cryptoService.generateUUID();
+      const nodeId = await cryptoService.generateUUID();
+
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 50, target: { kind: "free" } })
+        .expect(201);
+      const sessionId = startResponse.body.id;
+      backdateSession(sessionId, MIN_SESSION_DURATION_SEC * 3);
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/sessions/${sessionId}/target`)
+        .set(authHeader())
+        .send({ target: { kind: "resource", resourceId } })
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/sessions/${sessionId}/target`)
+        .set(authHeader())
+        .send({ target: { kind: "node", learningPathId: pathId, learningPathNodeId: nodeId } })
+        .expect(200);
+
+      const endResponse = await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/sessions/${sessionId}/end`)
+        .set(authHeader())
+        .expect(201);
+
+      expect(endResponse.body.segments).toHaveLength(3);
+      const [freeSegment, resourceSegment, nodeSegment] = endResponse.body.segments;
+      expect(freeSegment).toMatchObject({ targetKind: "free", startSec: 0 });
+      expect(resourceSegment).toMatchObject({ targetKind: "resource", resourceId });
+      expect(nodeSegment).toMatchObject({ targetKind: "node", learningPathId: pathId, learningPathNodeId: nodeId });
+      expect(resourceSegment.startSec).toBe(freeSegment.endSec);
+      expect(nodeSegment.startSec).toBe(resourceSegment.endSec);
+      expect(nodeSegment.endSec).toBeDefined();
+    });
+
+    test("allows starting a new session right after the previous one ends", async () => {
+      const firstStart = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+      backdateSession(firstStart.body.id, MIN_SESSION_DURATION_SEC + 5);
+
+      await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/sessions/${firstStart.body.id}/end`)
+        .set(authHeader())
+        .expect(201);
+
+      const secondStart = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 15, target: { kind: "free" } })
+        .expect(201);
+
+      expect(secondStart.body.id).not.toBe(firstStart.body.id);
+      expect(sessionRepository.sessions).toHaveLength(2);
     });
   });
 
@@ -185,13 +319,13 @@ describe("PomodoroController (integration)", () => {
 
   describe("Error cases", () => {
     test("Should return 400 when plannedMin is missing on start", async () => {
-      const response = await request(app.getHttpServer())
+      const missingPlannedMinResponse = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/sessions")
         .set(authHeader())
         .send({ target: { kind: "free" } })
         .expect(400);
 
-      expect(response.body.message).toEqual(
+      expect(missingPlannedMinResponse.body.message).toEqual(
         expect.arrayContaining([expect.stringContaining("plannedMin")]),
       );
     });
@@ -203,13 +337,13 @@ describe("PomodoroController (integration)", () => {
         .send({ plannedMin: 25, target: { kind: "free" } })
         .expect(201);
 
-      const response = await request(app.getHttpServer())
+      const duplicateStartResponse = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/sessions")
         .set(authHeader())
         .send({ plannedMin: 25, target: { kind: "free" } })
         .expect(409);
 
-      expect(response.body.activeSessionId).toBeDefined();
+      expect(duplicateStartResponse.body.activeSessionId).toBeDefined();
     });
 
     test("Should return 409 when a resource target has more than one path membership", async () => {
@@ -217,23 +351,23 @@ describe("PomodoroController (integration)", () => {
       membershipPort.memberships[resourceId] = [
         {
           pathId: await cryptoService.generateUUID(),
-          pathTitle: "Backend Fundamentals",
+          pathTitle: "Kubernetes Internals",
           nodeId: await cryptoService.generateUUID(),
         },
         {
           pathId: await cryptoService.generateUUID(),
-          pathTitle: "System Design Map",
+          pathTitle: "Distributed Tracing Guide",
           nodeId: await cryptoService.generateUUID(),
         },
       ];
 
-      const response = await request(app.getHttpServer())
+      const ambiguousTargetResponse = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/sessions")
         .set(authHeader())
         .send({ plannedMin: 25, target: { kind: "resource", resourceId } })
         .expect(409);
 
-      expect(response.body.candidates).toHaveLength(2);
+      expect(ambiguousTargetResponse.body.candidates).toHaveLength(2);
     });
 
     test("Should return 403 when a different user tries to switch target", async () => {
@@ -304,12 +438,12 @@ describe("PomodoroController (integration)", () => {
         .send({ plannedMin: 25, target: { kind: "free" } })
         .expect(201);
 
-      const response = await request(app.getHttpServer())
+      const discardedEndResponse = await request(app.getHttpServer())
         .post(`/api/v1/pomodoro/sessions/${startResponse.body.id}/end`)
         .set(authHeader())
         .expect(201);
 
-      expect(response.body).toEqual({ discarded: true });
+      expect(discardedEndResponse.body).toEqual({ discarded: true });
       expect(notificationPort.notifications).toHaveLength(0);
     });
   });
