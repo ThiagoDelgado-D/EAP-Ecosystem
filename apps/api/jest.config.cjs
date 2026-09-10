@@ -20,8 +20,14 @@ const config = {
       "<rootDir>/../../learning-resource/domain/src",
     "^@learning-resource/application$":
       "<rootDir>/../../learning-resource/application/src",
+    "^@learning-resource/infrastructure$":
+      "<rootDir>/../../learning-resource/infrastructure/src",
     "^@pomodoro/domain$": "<rootDir>/../../pomodoro/domain/src",
     "^@pomodoro/application$": "<rootDir>/../../pomodoro/application/src",
+    "^@pomodoro/infrastructure$": "<rootDir>/../../pomodoro/infrastructure/src",
+    "^@user/domain$": "<rootDir>/../../user/domain/src",
+    "^@user/application$": "<rootDir>/../../user/application/src",
+    "^@user/infrastructure$": "<rootDir>/../../user/infrastructure/src",
     "^domain-lib$": "<rootDir>/../../shared/domain-lib/src",
     "^infrastructure-lib$": "<rootDir>/../../shared/infrastructure-lib/src",
     "^(\\.{1,2}/.+)\\.js$": "$1",
