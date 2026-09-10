@@ -19,6 +19,7 @@ export type LearningPathNodePatch = Partial<
 
 export interface ILearningPathRepository {
   findAllByUserId(userId: UUID): Promise<LearningPath[]>;
+  findAllByUserIdWithNodes(userId: UUID): Promise<LearningPathWithNodes[]>;
   findById(id: UUID): Promise<LearningPath | null>;
   findByIdWithNodes(id: UUID): Promise<LearningPathWithNodes | null>;
   save(path: LearningPath): Promise<LearningPath>;
