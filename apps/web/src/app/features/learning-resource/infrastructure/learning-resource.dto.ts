@@ -6,6 +6,7 @@ export interface LearningResourceDto {
   status: string;
   typeId: string;
   topicIds: string[];
+  estimatedDuration: { value: number; isEstimated: boolean };
 }
 
 export interface LearningResourceByIdDto {
