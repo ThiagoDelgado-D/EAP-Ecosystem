@@ -26,6 +26,9 @@
       "@pomodoro/application": [
         "pomodoro/application/src/index.ts"
       ],
+      "@pomodoro/infrastructure": [
+        "pomodoro/infrastructure/src/index.ts"
+      ],
       "@user/domain": [
         "user/domain/src/index.ts"
       ],
