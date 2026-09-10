@@ -90,10 +90,12 @@ describe("PomodoroController (integration)", () => {
 
   describe("Unauthenticated access", () => {
     test("Should return 401 without a bearer token", async () => {
-      await request(app.getHttpServer())
+      const unauthenticatedResponse = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/sessions")
         .send({ plannedMin: 25, target: { kind: "free" } })
         .expect(401);
+
+      expect(unauthenticatedResponse.body.message).toBe("Unauthorized");
     });
   });
 
@@ -377,20 +379,24 @@ describe("PomodoroController (integration)", () => {
         .send({ plannedMin: 25, target: { kind: "free" } })
         .expect(201);
 
-      await request(app.getHttpServer())
+      const forbiddenSwitchResponse = await request(app.getHttpServer())
         .patch(`/api/v1/pomodoro/sessions/${startResponse.body.id}/target`)
         .set(authHeader(intruderToken))
         .send({ target: { kind: "free" } })
         .expect(403);
+
+      expect(forbiddenSwitchResponse.body).toEqual({});
     });
 
     test("Should return 404 when ending a session that does not exist", async () => {
       const nonExistentSessionId = await cryptoService.generateUUID();
 
-      await request(app.getHttpServer())
+      const sessionNotFoundResponse = await request(app.getHttpServer())
         .post(`/api/v1/pomodoro/sessions/${nonExistentSessionId}/end`)
         .set(authHeader())
         .expect(404);
+
+      expect(sessionNotFoundResponse.body).toEqual({});
     });
 
     test("Should return 409 when ending a session that already ended", async () => {
@@ -407,10 +413,12 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader())
         .expect(201);
 
-      await request(app.getHttpServer())
+      const alreadyEndedResponse = await request(app.getHttpServer())
         .post(`/api/v1/pomodoro/sessions/${sessionId}/end`)
         .set(authHeader())
         .expect(409);
+
+      expect(alreadyEndedResponse.body.sessionId).toBe(sessionId);
     });
 
     test("Should return 409 when the session has no open segment", async () => {
@@ -425,10 +433,12 @@ describe("PomodoroController (integration)", () => {
       const openSegment = await sessionRepository.findOpenSegmentBySessionId(sessionId);
       await sessionRepository.updateSegment({ ...openSegment!, endSec: 120 });
 
-      await request(app.getHttpServer())
+      const noOpenSegmentResponse = await request(app.getHttpServer())
         .post(`/api/v1/pomodoro/sessions/${sessionId}/end`)
         .set(authHeader())
         .expect(409);
+
+      expect(noOpenSegmentResponse.body.sessionId).toBe(sessionId);
     });
 
     test("Should discard a session shorter than the minimum duration, without notifying", async () => {
