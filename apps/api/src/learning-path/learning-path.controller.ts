@@ -21,6 +21,7 @@ import {
   deleteLearningPathNode,
   getLearningPath,
   listLearningPaths,
+  listLearningPathsWithNodes,
   updateLearningPath,
   updateLearningPathNode,
   updateLearningPathNodePosition,
@@ -65,6 +66,16 @@ export class LearningPathController {
   @Get()
   async list(@CurrentUserId() userId: UUID) {
     const result = await listLearningPaths(
+      { learningPathRepository: this.learningPathRepository },
+      { userId },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Get("with-nodes")
+  async listWithNodes(@CurrentUserId() userId: UUID) {
+    const result = await listLearningPathsWithNodes(
       { learningPathRepository: this.learningPathRepository },
       { userId },
     );
