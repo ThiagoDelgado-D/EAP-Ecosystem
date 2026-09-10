@@ -1,7 +1,7 @@
 import type { UUID } from "domain-lib";
 import type { ISessionRepository, Segment, Session } from "@pomodoro/domain";
 import { SegmentTargetKind } from "@pomodoro/domain";
-import { IsNull, type Repository } from "typeorm";
+import { IsNull, Not, type Repository } from "typeorm";
 import { SessionEntity } from "../entities/session.entity.js";
 import { SegmentEntity } from "../entities/segment.entity.js";
 
@@ -40,6 +40,14 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     return entity ? this.toSessionDomain(entity) : null;
   }
 
+  async findMostRecentByUserId(userId: UUID): Promise<Session | null> {
+    const entity = await this.sessionRepository.findOne({
+      where: { userId, completedAt: Not(IsNull()) },
+      order: { startedAt: "DESC" },
+    });
+    return entity ? this.toSessionDomain(entity) : null;
+  }
+
   async saveSegment(segment: Segment): Promise<Segment> {
     await this.segmentRepository.save(this.toSegmentEntity(segment));
     return segment;
@@ -62,6 +70,16 @@ export class TypeOrmSessionRepository implements ISessionRepository {
       where: { sessionId },
       order: { startSec: "ASC" },
     });
+    return entities.map((entity) => this.toSegmentDomain(entity));
+  }
+
+  async findSegmentsByUserIdSince(userId: UUID, since: Date): Promise<Segment[]> {
+    const entities = await this.segmentRepository
+      .createQueryBuilder("segment")
+      .innerJoin(SessionEntity, "session", "session.id = segment.sessionId")
+      .where("session.userId = :userId", { userId })
+      .andWhere("session.startedAt >= :since", { since })
+      .getMany();
     return entities.map((entity) => this.toSegmentDomain(entity));
   }
 
