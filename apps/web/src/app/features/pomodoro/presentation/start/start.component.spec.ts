@@ -273,4 +273,28 @@ describe('StartComponent', () => {
 
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
+
+  test('should clear the browse search query', () => {
+    const { component } = setup();
+    component.query.set('clean architecture');
+
+    component.clearQuery();
+
+    expect(component.query()).toBe('');
+  });
+
+  test('should report progress for a given path by id', async () => {
+    const { component, learningPathRepository } = setup();
+    const pathId = crypto.randomUUID();
+    learningPathRepository.paths = [
+      { id: pathId, userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
+    ];
+    learningPathRepository.nodes = [
+      { id: crypto.randomUUID(), pathId, title: 'Ownership', progress: 'done', createdAt: now, updatedAt: now },
+      { id: crypto.randomUUID(), pathId, title: 'Trait Objects', progress: 'pending', createdAt: now, updatedAt: now },
+    ];
+    await component.picker.load();
+
+    expect(component.progressForPath(pathId)).toEqual(component.pathProgress(learningPathRepository.nodes));
+  });
 });
