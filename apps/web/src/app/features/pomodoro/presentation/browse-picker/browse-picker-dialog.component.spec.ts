@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
@@ -30,7 +30,10 @@ describe('BrowsePickerDialogComponent', () => {
       },
     });
     TestBed.configureTestingModule({
-      providers: [{ provide: MatDialogRef, useValue: dialogRef }],
+      providers: [
+        { provide: MatDialogRef, useValue: dialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: null },
+      ],
     });
 
     component = TestBed.createComponent(BrowsePickerDialogComponent).componentInstance;
@@ -195,5 +198,37 @@ describe('BrowsePickerDialogComponent', () => {
     TestBed.tick();
 
     expect(component.activeTab()).toBe('in-progress');
+  });
+
+  test('should have no quick pick when the dialog is opened without one', () => {
+    expect(component.quickPick).toBeNull();
+  });
+
+  test('should close with the quick pick\'s target when it is picked', () => {
+    const quickPick = { target: { kind: 'free' as const }, label: { title: 'Free focus', subtitle: 'No material attached' } };
+    TestBed.resetTestingModule();
+    const freshLearningPathRepository = mockLearningPathRepository();
+    const freshLearningResourceRepository = mockLearningResourceRepository();
+    const freshDialogRef = { close: vi.fn() };
+    TestBed.overrideComponent(BrowsePickerDialogComponent, {
+      set: {
+        providers: [
+          PomodoroPickerService,
+          { provide: LearningPathRepository, useValue: freshLearningPathRepository },
+          { provide: LearningResourceRepository, useValue: freshLearningResourceRepository },
+        ],
+      },
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: MatDialogRef, useValue: freshDialogRef },
+        { provide: MAT_DIALOG_DATA, useValue: quickPick },
+      ],
+    });
+    const freshComponent = TestBed.createComponent(BrowsePickerDialogComponent).componentInstance;
+
+    freshComponent.pickQuickPick();
+
+    expect(freshDialogRef.close).toHaveBeenCalledWith(quickPick.target);
   });
 });

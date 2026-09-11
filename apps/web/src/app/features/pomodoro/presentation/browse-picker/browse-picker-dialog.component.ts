@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
@@ -16,6 +16,11 @@ import type { LearningPathNode, NodeProgress } from '@features/learning-path/dom
 import { pathColor } from '../start/path-color';
 
 export type BrowsePickerTab = 'ready' | 'in-progress' | 'all-paths' | 'library';
+
+export interface BrowsePickerQuickPick {
+  target: SegmentTarget;
+  label: { title: string; subtitle?: string };
+}
 
 export const NODE_PROGRESS_LABELS: Record<NodeProgress, string> = {
   pending: 'Pending',
@@ -37,6 +42,7 @@ export const NODE_PROGRESS_LABELS: Record<NodeProgress, string> = {
 export class BrowsePickerDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<BrowsePickerDialogComponent, SegmentTarget | undefined>);
   readonly picker = inject(PomodoroPickerService);
+  readonly quickPick = inject<BrowsePickerQuickPick | null>(MAT_DIALOG_DATA, { optional: true }) ?? null;
 
   readonly activeTab = signal<BrowsePickerTab>('ready');
   readonly query = signal('');
@@ -108,6 +114,10 @@ export class BrowsePickerDialogComponent {
 
   pickResource(resource: LearningResource): void {
     this.dialogRef.close({ kind: SEGMENT_TARGET_KIND.RESOURCE, resourceId: resource.id });
+  }
+
+  pickQuickPick(): void {
+    if (this.quickPick) this.dialogRef.close(this.quickPick.target);
   }
 
   cancel(): void {
