@@ -364,6 +364,50 @@ describe("PomodoroController (integration)", () => {
     });
   });
 
+  describe("Active session", () => {
+    test("returns null when the user has no active session", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/sessions/active")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual({});
+    });
+
+    test("returns the active session with its segments", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, intent: "Rehydrate me", target: { kind: "free" } })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/sessions/active")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body.session.id).toBe(startResponse.body.id);
+      expect(response.body.session.intent).toBe("Rehydrate me");
+      expect(response.body.segments).toHaveLength(1);
+      expect(response.body.segments[0]).toMatchObject({ targetKind: "free", startSec: 0 });
+    });
+
+    test("does not return another user's active session", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/sessions/active")
+        .set(authHeader(intruderToken))
+        .expect(200);
+
+      expect(response.body).toEqual({});
+    });
+  });
+
   describe("Breaks", () => {
     test("fires a break-started notification", async () => {
       await request(app.getHttpServer())
