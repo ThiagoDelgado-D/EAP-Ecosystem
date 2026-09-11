@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
@@ -118,6 +118,17 @@ export class StartComponent {
   constructor() {
     void this.picker.load();
     void this.store.loadSuggestions(this.energy());
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter') return;
+    if (this.mode() !== 'hero' || !this.canStart() || this.store.starting()) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.tagName === 'BUTTON' || target?.tagName === 'A') return;
+
+    event.preventDefault();
+    void this.start();
   }
 
   setEnergy(energy: CandidateEnergyLevel): void {
