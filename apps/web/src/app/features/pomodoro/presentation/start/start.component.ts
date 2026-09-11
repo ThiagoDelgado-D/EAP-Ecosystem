@@ -1,9 +1,9 @@
-import { Component, HostListener, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
-import { filterLibraryResources, filterPickerNodes, filterPickerPathGroups } from '@features/pomodoro/application/picker-search';
+import { filterLibraryResources, filterPickerNodes, filterPickerPathGroups, firstTabWithResults } from '@features/pomodoro/application/picker-search';
 import type { PickerPathNode } from '@features/pomodoro/application/pomodoro-picker.model';
 import type { LearningPathNode } from '@features/learning-path/domain/learning-path.model';
 import {
@@ -102,6 +102,17 @@ export class StartComponent {
   constructor() {
     void this.picker.load();
     void this.store.loadSuggestions(this.energy());
+
+    effect(() => {
+      if (!this.query().trim()) return;
+      const next = firstTabWithResults(this.activeTab(), {
+        ready: this.filteredReady().length,
+        going: this.filteredGoing().length,
+        paths: this.filteredPathGroups().reduce((count, group) => count + group.nodes.length, 0),
+        library: this.filteredLibrary().length,
+      });
+      if (next) this.activeTab.set(next);
+    });
   }
 
   @HostListener('window:keydown', ['$event'])

@@ -32,3 +32,12 @@ export function filterLibraryResources(resources: LearningResource[], query: str
   if (!q) return resources;
   return resources.filter((resource) => resource.title.toLowerCase().includes(q));
 }
+
+export function firstTabWithResults<Tab extends string>(
+  currentTab: Tab,
+  resultCountByTab: Record<Tab, number>,
+): Tab | null {
+  if (resultCountByTab[currentTab] > 0) return null;
+  const match = Object.entries(resultCountByTab).find(([, count]) => (count as number) > 0);
+  return match ? (match[0] as Tab) : null;
+}

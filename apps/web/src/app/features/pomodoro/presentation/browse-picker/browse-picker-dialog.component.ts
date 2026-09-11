@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -10,7 +10,7 @@ import type { LearningResource } from '@features/learning-resource/domain/learni
 import { RESOURCE_STATUS_LABELS } from '@features/learning-resource/domain/learning-resource.constants';
 import { SEGMENT_TARGET_KIND, type SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
-import { filterLibraryResources, filterPickerNodes, filterPickerPathGroups } from '@features/pomodoro/application/picker-search';
+import { filterLibraryResources, filterPickerNodes, filterPickerPathGroups, firstTabWithResults } from '@features/pomodoro/application/picker-search';
 import type { PickerPathNode } from '@features/pomodoro/application/pomodoro-picker.model';
 import type { LearningPathNode, NodeProgress } from '@features/learning-path/domain/learning-path.model';
 import { pathColor } from '../start/path-color';
@@ -49,6 +49,17 @@ export class BrowsePickerDialogComponent {
 
   constructor() {
     void this.picker.load();
+
+    effect(() => {
+      if (!this.query().trim()) return;
+      const next = firstTabWithResults(this.activeTab(), {
+        ready: this.filteredReady().length,
+        'in-progress': this.filteredInProgress().length,
+        'all-paths': this.filteredPathGroups().reduce((count, group) => count + group.nodes.length, 0),
+        library: this.filteredLibrary().length,
+      });
+      if (next) this.activeTab.set(next);
+    });
   }
 
   selectTab(tab: BrowsePickerTab): void {
