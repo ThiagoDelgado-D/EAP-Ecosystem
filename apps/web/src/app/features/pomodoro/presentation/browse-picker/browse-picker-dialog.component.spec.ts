@@ -145,21 +145,7 @@ describe('BrowsePickerDialogComponent', () => {
     expect(component.query()).toBe('');
   });
 
-  test('should flag a node with no linked resource as a stub', async () => {
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    await component.picker.load();
-
-    expect(component.isStub(component.picker.readyToLearn()[0].node)).toBe(true);
-  });
-
-  test('should describe a subtitle from the path title, and either the resource duration or "no resource linked"', async () => {
+  test('should flag stub nodes and describe each subtitle from the path title and the resource duration', async () => {
     const pathId = crypto.randomUUID();
     const linkedNodeId = crypto.randomUUID();
     const stubNodeId = crypto.randomUUID();
@@ -190,6 +176,8 @@ describe('BrowsePickerDialogComponent', () => {
 
     expect(component.nodeSubtitle(linked.path, linked.node)).toBe('Rust for Backend Engineers · 45min');
     expect(component.nodeSubtitle(stub.path, stub.node)).toBe('Rust for Backend Engineers · no resource linked');
+    expect(component.isStub(linked.node)).toBe(false);
+    expect(component.isStub(stub.node)).toBe(true);
   });
 
   test('should jump to the first tab that actually has matches for the search', async () => {
