@@ -159,15 +159,17 @@ describe('BrowsePickerDialogComponent', () => {
     expect(component.isStub(component.picker.readyToLearn()[0].node)).toBe(true);
   });
 
-  test('should describe a linked node with the path title and the resource duration', async () => {
+  test('should describe a subtitle from the path title, and either the resource duration or "no resource linked"', async () => {
     const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
+    const linkedNodeId = crypto.randomUUID();
+    const stubNodeId = crypto.randomUUID();
     const resourceId = crypto.randomUUID();
     learningPathRepository.paths = [
       { id: pathId, userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
     ];
     learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'Trait Objects', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
+      { id: linkedNodeId, pathId, title: 'Trait Objects', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
+      { id: stubNodeId, pathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
     ];
     learningResourceRepository.resources = [
       {
@@ -184,23 +186,9 @@ describe('BrowsePickerDialogComponent', () => {
       },
     ];
     await component.picker.load();
-    const { path, node } = component.picker.readyToLearn()[0];
+    const [linked, stub] = component.picker.readyToLearn();
 
-    expect(component.nodeSubtitle(path, node)).toBe('Rust for Backend Engineers · 45min');
-  });
-
-  test('should describe a stub node as having no resource linked', async () => {
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    await component.picker.load();
-    const { path, node } = component.picker.readyToLearn()[0];
-
-    expect(component.nodeSubtitle(path, node)).toBe('System Design Prep · no resource linked');
+    expect(component.nodeSubtitle(linked.path, linked.node)).toBe('Rust for Backend Engineers · 45min');
+    expect(component.nodeSubtitle(stub.path, stub.node)).toBe('Rust for Backend Engineers · no resource linked');
   });
 });
