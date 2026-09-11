@@ -34,6 +34,26 @@ describe('PomodoroSessionStore', () => {
 
     expect(store.suggestions()).toEqual(repository.suggestions);
     expect(store.suggestionsLoading()).toBe(false);
+    expect(store.suggestionsError()).toBe(false);
+  });
+
+  test('should flag suggestionsError when fetching suggestions fails', async () => {
+    repository.getSuggestion = async () => Promise.reject(new Error('network down'));
+
+    await store.loadSuggestions();
+
+    expect(store.suggestions()).toEqual([]);
+    expect(store.suggestionsError()).toBe(true);
+  });
+
+  test('should clear a previous suggestionsError on a successful retry', async () => {
+    repository.getSuggestion = async () => Promise.reject(new Error('network down'));
+    await store.loadSuggestions();
+    repository.getSuggestion = async () => repository.suggestions;
+
+    await store.loadSuggestions();
+
+    expect(store.suggestionsError()).toBe(false);
   });
 
   test('should set the active session and clear the error after a successful start', async () => {
