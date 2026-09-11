@@ -94,6 +94,9 @@
             }
           </div>
           <div class="ml-auto flex items-center gap-2">
+            @if (canStart() && !store.starting()) {
+              <span class="text-[10px] text-ink-faint hidden sm:inline">press <b class="text-ink-dim">Enter</b></span>
+            }
             <button
               type="button"
               (click)="startFree()"
@@ -106,8 +109,11 @@
               type="button"
               (click)="start()"
               [disabled]="!canStart() || store.starting()"
-              class="font-mono bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-semibold px-5 py-2.5 rounded-lg transition-colors"
+              class="font-mono inline-flex items-center gap-1.5 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-semibold px-5 py-2.5 rounded-lg transition-colors"
             >
+              @if (canStart() && !store.starting()) {
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z" /></svg>
+              }
               {{ store.starting() ? 'Starting...' : selectedDuration() ? 'Start ' + selectedDuration() + ' min' : 'Pick a duration' }}
             </button>
           </div>
@@ -230,8 +236,11 @@
           }
         </button>
 
-        <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-line-soft focus-within:border-accent-line">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-ghost)" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
+        <div
+          [class]="query() ? 'border-accent-line' : 'border-line-soft'"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg border focus-within:border-accent-line transition-colors"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" [attr.stroke]="query() ? 'var(--color-accent-ink)' : 'var(--color-ink-ghost)'" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
           <label for="browse-search-input" class="sr-only">Search steps, paths, resources</label>
           <input
             id="browse-search-input"
@@ -241,6 +250,11 @@
             placeholder="Search steps, paths, resources..."
             class="flex-1 min-w-0 bg-transparent text-sm text-ink-strong placeholder:text-ink-ghost focus:outline-none"
           />
+          @if (query()) {
+            <button type="button" (click)="clearQuery()" class="text-ink-faint hover:text-ink-body flex-shrink-0" aria-label="Clear search">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12" /></svg>
+            </button>
+          }
         </div>
 
         <div class="flex items-center gap-1 border-b border-line-hairline">
@@ -348,11 +362,24 @@
                         @for (option of pendingResourcePick()!.options; track option.path.id) {
                           <button type="button" (click)="pickPendingPath(option)" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md border border-line-hairline text-left hover:border-line-soft transition-colors">
                             <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(option.path.id)"></span>
-                            <span class="text-xs font-semibold text-ink-body truncate">{{ option.path.title }}</span>
+                            <div class="flex-1 min-w-0">
+                              <div class="text-xs font-semibold text-ink-body truncate">{{ option.path.title }}</div>
+                              <div class="text-[10px] text-ink-faint mt-0.5">
+                                as "{{ option.node.title }}" · {{ progressForPath(option.path.id).done }}/{{ progressForPath(option.path.id).total }} done
+                              </div>
+                            </div>
+                            <span
+                              [class]="option.node.progress === 'done' ? 'text-status-done bg-status-done/10 border-status-done/30' : option.node.progress === 'in_progress' ? 'text-status-in-progress bg-status-in-progress/10 border-status-in-progress/30' : 'text-status-pending bg-status-pending/10 border-status-pending/30'"
+                              class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
+                            >{{ option.node.progress }}</span>
                           </button>
                         }
-                        <button type="button" (click)="pickPendingNone()" class="px-2.5 py-2 rounded-md border border-dashed border-line-soft text-left text-xs text-ink-faint hover:text-ink-body transition-colors">
-                          Neither — just the resource
+                        <button type="button" (click)="pickPendingNone()" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md border border-dashed border-line-soft text-left hover:text-ink-body transition-colors">
+                          <span class="w-1.5 h-1.5 rounded-full border border-dashed border-ink-faint flex-shrink-0"></span>
+                          <div class="flex-1 min-w-0">
+                            <div class="text-xs font-semibold text-ink-body">Neither — just the resource</div>
+                            <div class="text-[10px] text-ink-faint mt-0.5">No path advances. Progress stays on the resource.</div>
+                          </div>
                         </button>
                       </div>
                     </div>

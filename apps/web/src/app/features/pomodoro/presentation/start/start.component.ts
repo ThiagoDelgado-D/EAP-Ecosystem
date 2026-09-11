@@ -149,6 +149,10 @@ export class StartComponent {
     this.activeTab.set(tab);
   }
 
+  clearQuery(): void {
+    this.query.set('');
+  }
+
   togglePath(pathId: string): void {
     this.openPaths.update((current) => {
       const next = new Set(current);
@@ -168,6 +172,11 @@ export class StartComponent {
 
   pathProgress(nodes: LearningPathNode[]): PathProgress {
     return pathProgress(nodes);
+  }
+
+  progressForPath(pathId: string): PathProgress {
+    const group = this.picker.allPaths().find((g) => g.path.id === pathId);
+    return pathProgress(group?.nodes ?? []);
   }
 
   expandAllPaths(): void {
