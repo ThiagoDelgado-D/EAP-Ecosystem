@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroRepository } from '../domain/pomodoro.repository';
 import type {
+  ActiveSessionSnapshot,
   CandidateEnergyLevel,
   EndSessionResult,
   Segment,
@@ -13,6 +14,7 @@ import type {
   SwitchTargetResult,
 } from '../domain/pomodoro.model';
 import type {
+  ActiveSessionResponseDto,
   EndSessionResponseDto,
   SegmentDto,
   SessionDto,
@@ -68,6 +70,17 @@ export class PomodoroHttpRepository extends PomodoroRepository {
       }),
     );
     return dtos.map((dto) => ({ ...dto }));
+  }
+
+  async getActiveSession(): Promise<ActiveSessionSnapshot | null> {
+    const dto = await firstValueFrom(
+      this.http.get<ActiveSessionResponseDto | null>(`${this.baseUrl}/sessions/active`),
+    );
+    if (!dto) return null;
+    return {
+      session: this.toSessionDomain(dto.session),
+      segments: dto.segments.map((segment) => this.toSegmentDomain(segment)),
+    };
   }
 
   private parseDate(value: string | null | undefined): Date | undefined {

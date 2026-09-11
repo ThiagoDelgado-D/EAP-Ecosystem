@@ -61,6 +61,11 @@ export interface SwitchTargetResult {
   openedSegment: Segment;
 }
 
+export interface ActiveSessionSnapshot {
+  session: Session;
+  segments: Segment[];
+}
+
 export type EndSessionResult =
   | { discarded: true }
   | { discarded: false; session: Session; segments: Segment[] };

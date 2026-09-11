@@ -7,6 +7,7 @@ import { LearningPathRepository } from '@features/learning-path/domain/learning-
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
+import { redirectIfActiveSessionGuard, requireActiveSessionGuard } from './guards/active-session.guards';
 
 export const pomodoroRoutes: Routes = [
   {
@@ -21,10 +22,12 @@ export const pomodoroRoutes: Routes = [
     children: [
       {
         path: '',
+        canActivate: [redirectIfActiveSessionGuard],
         loadComponent: () => import('./start/start.component').then((m) => m.StartComponent),
       },
       {
         path: 'active',
+        canActivate: [requireActiveSessionGuard],
         loadComponent: () => import('./active/active.component').then((m) => m.ActiveComponent),
       },
     ],
