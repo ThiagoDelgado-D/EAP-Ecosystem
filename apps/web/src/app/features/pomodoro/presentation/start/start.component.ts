@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import type { PickerPathNode } from '@features/pomodoro/application/pomodoro-picker.model';
@@ -33,7 +33,7 @@ interface TargetLabel {
 @Component({
   selector: 'app-pomodoro-start',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './start.component.html',
 })
 export class StartComponent {
@@ -87,6 +87,9 @@ export class StartComponent {
     return suggestion ? { title: suggestion.nodeTitle, subtitle: suggestion.pathTitle } : null;
   });
   readonly canStart = computed(() => this.selectedDuration() !== null && this.effectiveTarget() !== null);
+  readonly hasNoMaterial = computed(
+    () => !this.picker.loading() && this.picker.allPaths().length === 0 && this.picker.library().length === 0,
+  );
 
   private readonly filteredQuery = computed(() => this.query().trim().toLowerCase());
 
@@ -282,5 +285,10 @@ export class StartComponent {
 
     const session = await this.store.start({ plannedMin, target, intent: this.intent().trim() || undefined });
     if (session) void this.router.navigateByUrl('/pomodoro/active');
+  }
+
+  async startFree(): Promise<void> {
+    this.pickFree();
+    await this.start();
   }
 }
