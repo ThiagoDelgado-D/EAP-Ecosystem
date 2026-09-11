@@ -3,14 +3,22 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroRepository } from '../domain/pomodoro.repository';
 import type {
+  CandidateEnergyLevel,
   EndSessionResult,
   Segment,
   SegmentTarget,
   Session,
   StartSessionPayload,
+  SuggestedCandidate,
   SwitchTargetResult,
 } from '../domain/pomodoro.model';
-import type { EndSessionResponseDto, SegmentDto, SessionDto, SwitchTargetResponseDto } from './pomodoro.dto';
+import type {
+  EndSessionResponseDto,
+  SegmentDto,
+  SessionDto,
+  SuggestedCandidateDto,
+  SwitchTargetResponseDto,
+} from './pomodoro.dto';
 import { API_CONFIG } from '@core/config/api.config';
 
 @Injectable()
@@ -51,6 +59,15 @@ export class PomodoroHttpRepository extends PomodoroRepository {
 
   async startBreak(): Promise<void> {
     await firstValueFrom(this.http.post(`${this.baseUrl}/breaks`, {}));
+  }
+
+  async getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]> {
+    const dtos = await firstValueFrom(
+      this.http.get<SuggestedCandidateDto[]>(`${this.baseUrl}/suggestion`, {
+        params: energy ? { energy } : {},
+      }),
+    );
+    return dtos.map((dto) => ({ ...dto }));
   }
 
   private parseDate(value: string | null | undefined): Date | undefined {

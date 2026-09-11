@@ -70,3 +70,21 @@ export interface PathMembershipCandidate {
   pathTitle: string;
   nodeId: string;
 }
+
+export const CANDIDATE_ENERGY_LEVEL = {
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+} as const;
+
+export type CandidateEnergyLevel = (typeof CANDIDATE_ENERGY_LEVEL)[keyof typeof CANDIDATE_ENERGY_LEVEL];
+
+export interface SuggestedCandidate {
+  pathId: string;
+  pathTitle: string;
+  nodeId: string;
+  nodeTitle: string;
+  resourceId?: string;
+  score: number;
+  why: string[];
+}
