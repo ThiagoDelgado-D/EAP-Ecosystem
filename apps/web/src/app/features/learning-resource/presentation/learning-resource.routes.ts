@@ -79,6 +79,11 @@ export const learningResourceRoutes: Routes = [
             (m) => m.learningPathRoutes,
           ),
       },
+      {
+        path: 'pomodoro',
+        loadChildren: () =>
+          import('@features/pomodoro/presentation/pomodoro.routes').then((m) => m.pomodoroRoutes),
+      },
     ],
   },
 ];
