@@ -101,4 +101,26 @@ describe('PomodoroSessionStore', () => {
 
     expect(store.segments()).toEqual([]);
   });
+
+  test('should populate the active session and its segments on rehydrate', async () => {
+    const sessionId = crypto.randomUUID();
+    const session = { id: sessionId, userId: crypto.randomUUID(), startedAt: new Date(), plannedMin: 50 };
+    const segment = { id: crypto.randomUUID(), sessionId, startSec: 0, targetKind: 'free' as const };
+    repository.sessions.push(session);
+    repository.segments.push(segment);
+
+    const result = await store.rehydrate();
+
+    expect(result).toEqual(session);
+    expect(store.activeSession()).toEqual(session);
+    expect(store.segments()).toEqual([segment]);
+    expect(store.rehydrating()).toBe(false);
+  });
+
+  test('should return null from rehydrate when there is no active session', async () => {
+    const result = await store.rehydrate();
+
+    expect(result).toBeNull();
+    expect(store.activeSession()).toBeNull();
+  });
 });

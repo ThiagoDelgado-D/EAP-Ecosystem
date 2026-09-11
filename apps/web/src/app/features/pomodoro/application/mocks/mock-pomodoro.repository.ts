@@ -1,5 +1,6 @@
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
+  ActiveSessionSnapshot,
   EndSessionResult,
   Segment,
   SegmentTarget,
@@ -11,6 +12,7 @@ import type {
 
 export interface MockedPomodoroRepository extends PomodoroRepository {
   sessions: Session[];
+  segments: Segment[];
   suggestions: SuggestedCandidate[];
   reset(): void;
 }
@@ -34,10 +36,11 @@ function buildOpenedSegment(sessionId: string, startSec: number, target: Segment
 }
 
 export function mockPomodoroRepository(
-  initial: { sessions?: Session[]; suggestions?: SuggestedCandidate[] } = {},
+  initial: { sessions?: Session[]; segments?: Segment[]; suggestions?: SuggestedCandidate[] } = {},
 ): MockedPomodoroRepository {
   return {
     sessions: [...(initial.sessions ?? [])],
+    segments: [...(initial.segments ?? [])],
     suggestions: [...(initial.suggestions ?? [])],
 
     async startSession(payload: StartSessionPayload): Promise<Session> {
@@ -80,8 +83,18 @@ export function mockPomodoroRepository(
       return this.suggestions;
     },
 
+    async getActiveSession(): Promise<ActiveSessionSnapshot | null> {
+      const session = this.sessions.find((s) => !s.completedAt);
+      if (!session) return null;
+      return {
+        session,
+        segments: this.segments.filter((segment) => segment.sessionId === session.id),
+      };
+    },
+
     reset(): void {
       this.sessions = [];
+      this.segments = [];
       this.suggestions = [];
     },
   };

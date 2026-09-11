@@ -197,4 +197,33 @@ describe('StartComponent', () => {
     expect(component.store.activeSession()?.intent).toBe('Finish the current chapter');
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
   });
+
+  test('should pick a free target and start in a single action', async () => {
+    const { component, navigateByUrl } = setup();
+    component.pickDuration(50);
+
+    await component.startFree();
+
+    expect(component.selectedTarget()).toEqual({ kind: 'free' });
+    expect(component.store.activeSession()?.plannedMin).toBe(50);
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
+  test('should flag when there is no path or resource to suggest from', async () => {
+    const { component } = setup();
+
+    await component.picker.load();
+
+    expect(component.hasNoMaterial()).toBe(true);
+  });
+
+  test('should not flag missing material once a path or a resource exists', async () => {
+    const { component, learningPathRepository } = setup();
+    learningPathRepository.paths = [
+      { id: crypto.randomUUID(), userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
+    ];
+    await component.picker.load();
+
+    expect(component.hasNoMaterial()).toBe(false);
+  });
 });

@@ -37,7 +37,23 @@ export class PomodoroSessionStore {
   readonly suggestionsLoading = signal(false);
   readonly starting = signal(false);
   readonly switchingTarget = signal(false);
+  readonly rehydrating = signal(false);
   readonly error = signal<string | null>(null);
+
+  async rehydrate(): Promise<Session | null> {
+    this.rehydrating.set(true);
+    try {
+      const snapshot = await this.repository.getActiveSession();
+      if (!snapshot) return null;
+      this.activeSession.set(snapshot.session);
+      this.segments.set(snapshot.segments);
+      return snapshot.session;
+    } catch {
+      return null;
+    } finally {
+      this.rehydrating.set(false);
+    }
+  }
 
   async loadSuggestions(energy?: CandidateEnergyLevel): Promise<void> {
     this.suggestionsLoading.set(true);

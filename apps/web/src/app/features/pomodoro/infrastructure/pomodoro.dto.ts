@@ -41,6 +41,11 @@ export type EndSessionResponseDto =
   | { discarded: true }
   | { discarded: false; session: SessionDto; segments: SegmentDto[] };
 
+export interface ActiveSessionResponseDto {
+  session: SessionDto;
+  segments: SegmentDto[];
+}
+
 export interface SuggestedCandidateDto {
   pathId: string;
   pathTitle: string;
