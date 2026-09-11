@@ -114,4 +114,93 @@ describe('BrowsePickerDialogComponent', () => {
 
     expect(dialogRef.close).toHaveBeenCalledWith(undefined);
   });
+
+  test('should filter ready-to-learn entries by the search query', async () => {
+    const cleanArchPathId = crypto.randomUUID();
+    const cleanArchNodeId = crypto.randomUUID();
+    const systemDesignPathId = crypto.randomUUID();
+    const systemDesignNodeId = crypto.randomUUID();
+    learningPathRepository.paths = [
+      { id: cleanArchPathId, userId: crypto.randomUUID(), title: 'Frontend Architecture Mastery', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
+      { id: systemDesignPathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
+    ];
+    learningPathRepository.nodes = [
+      { id: cleanArchNodeId, pathId: cleanArchPathId, title: 'Clean Architecture', progress: 'pending', createdAt: now, updatedAt: now },
+      { id: systemDesignNodeId, pathId: systemDesignPathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
+    ];
+    await component.picker.load();
+
+    component.query.set('clean');
+
+    expect(component.filteredReady()).toEqual([
+      { path: learningPathRepository.paths[0], node: learningPathRepository.nodes[0] },
+    ]);
+  });
+
+  test('should clear the search query', () => {
+    component.query.set('clean architecture');
+
+    component.clearQuery();
+
+    expect(component.query()).toBe('');
+  });
+
+  test('should flag a node with no linked resource as a stub', async () => {
+    const pathId = crypto.randomUUID();
+    const nodeId = crypto.randomUUID();
+    learningPathRepository.paths = [
+      { id: pathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
+    ];
+    learningPathRepository.nodes = [
+      { id: nodeId, pathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
+    ];
+    await component.picker.load();
+
+    expect(component.isStub(component.picker.readyToLearn()[0].node)).toBe(true);
+  });
+
+  test('should describe a linked node with the path title and the resource duration', async () => {
+    const pathId = crypto.randomUUID();
+    const nodeId = crypto.randomUUID();
+    const resourceId = crypto.randomUUID();
+    learningPathRepository.paths = [
+      { id: pathId, userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
+    ];
+    learningPathRepository.nodes = [
+      { id: nodeId, pathId, title: 'Trait Objects', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
+    ];
+    learningResourceRepository.resources = [
+      {
+        id: resourceId,
+        title: 'Rust Book Chapter 17',
+        difficulty: 'Medium',
+        energyLevel: 'Medium',
+        status: 'Pending',
+        estimatedDuration: { value: 45, isEstimated: true },
+        topicIds: [],
+        typeId: crypto.randomUUID(),
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    await component.picker.load();
+    const { path, node } = component.picker.readyToLearn()[0];
+
+    expect(component.nodeSubtitle(path, node)).toBe('Rust for Backend Engineers · 45min');
+  });
+
+  test('should describe a stub node as having no resource linked', async () => {
+    const pathId = crypto.randomUUID();
+    const nodeId = crypto.randomUUID();
+    learningPathRepository.paths = [
+      { id: pathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
+    ];
+    learningPathRepository.nodes = [
+      { id: nodeId, pathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
+    ];
+    await component.picker.load();
+    const { path, node } = component.picker.readyToLearn()[0];
+
+    expect(component.nodeSubtitle(path, node)).toBe('System Design Prep · no resource linked');
+  });
 });
