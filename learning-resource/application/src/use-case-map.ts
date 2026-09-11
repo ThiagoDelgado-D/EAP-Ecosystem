@@ -11,6 +11,7 @@ import { toggleStatus } from "./use-cases/toggles/toggle-resource-status.js";
 import { toggleMentalState } from "./use-cases/toggles/toggle-mental-state.js";
 import { createLearningPath } from "./use-cases/learning-path/create-learning-path.js";
 import { listLearningPaths } from "./use-cases/learning-path/list-learning-paths.js";
+import { listLearningPathsWithNodes } from "./use-cases/learning-path/list-learning-paths-with-nodes.js";
 import { getLearningPath } from "./use-cases/learning-path/get-learning-path.js";
 import { updateLearningPath } from "./use-cases/learning-path/update-learning-path.js";
 import { deleteLearningPath } from "./use-cases/learning-path/delete-learning-path.js";
@@ -42,6 +43,7 @@ export type LearningResourceDomainError =
 export const learningPathUseCaseMap = {
   createLearningPath,
   listLearningPaths,
+  listLearningPathsWithNodes,
   getLearningPath,
   updateLearningPath,
   deleteLearningPath,

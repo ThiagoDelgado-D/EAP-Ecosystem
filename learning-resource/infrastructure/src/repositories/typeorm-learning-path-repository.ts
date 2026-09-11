@@ -1,4 +1,4 @@
-import type { Repository } from "typeorm";
+import { In, type Repository } from "typeorm";
 import type { UUID } from "domain-lib";
 import type {
   ILearningPathRepository,
@@ -48,6 +48,27 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
     return entities.map((e) =>
       this.toDomainPath(e, statsByPathId.get(e.id) ?? { total: 0, done: 0, linked: 0 }),
     );
+  }
+
+  async findAllByUserIdWithNodes(userId: UUID): Promise<LearningPathWithNodes[]> {
+    const pathEntities = await this.pathRepository.find({ where: { userId } });
+    if (pathEntities.length === 0) return [];
+
+    const pathIds = pathEntities.map((e) => e.id);
+    const [nodeEntities, edgeEntities] = await Promise.all([
+      this.nodeRepository.find({ where: { pathId: In(pathIds) }, order: { order: "ASC" } }),
+      this.edgeRepository.find({ where: { pathId: In(pathIds) } }),
+    ]);
+
+    return pathEntities.map((pathEntity) => ({
+      path: this.toDomainPath(pathEntity),
+      nodes: nodeEntities
+        .filter((n) => n.pathId === pathEntity.id)
+        .map((e) => this.toDomainNode(e)),
+      edges: edgeEntities
+        .filter((e) => e.pathId === pathEntity.id)
+        .map((e) => this.toDomainEdge(e)),
+    }));
   }
 
   async findById(id: UUID): Promise<LearningPath | null> {
