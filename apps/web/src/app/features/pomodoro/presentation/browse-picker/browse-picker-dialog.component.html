@@ -73,6 +73,29 @@
     </button>
   </div>
 
+  <ng-template #nodeRow let-entry>
+    <button
+      type="button"
+      (click)="pickNode(entry)"
+      class="text-left flex items-center gap-3 px-3 py-2.5 rounded-lg border border-line-hairline hover:border-line-soft transition-colors"
+    >
+      <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(entry.path.id)"></span>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-ink-strong truncate">{{ entry.node.title }}</span>
+          @if (isStub(entry.node)) {
+            <span class="badge badge--unset">Stub</span>
+          }
+        </div>
+        <div class="text-[10.5px] text-ink-faint truncate mt-0.5">{{ nodeSubtitle(entry.path, entry.node) }}</div>
+      </div>
+      <span
+        [class]="progressPillClass(entry.node.progress)"
+        class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
+      >{{ nodeProgressLabel(entry.node.progress) }}</span>
+    </button>
+  </ng-template>
+
   <div class="p-6 overflow-y-auto flex-1 flex flex-col gap-2.5">
     @if (picker.loading()) {
       <div class="text-sm text-ink-faint">Loading...</div>
@@ -82,26 +105,7 @@
       @switch (activeTab()) {
         @case ('ready') {
           @for (entry of filteredReady(); track entry.node.id) {
-            <button
-              type="button"
-              (click)="pickNode(entry)"
-              class="text-left flex items-center gap-3 px-3 py-2.5 rounded-lg border border-line-hairline hover:border-line-soft transition-colors"
-            >
-              <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(entry.path.id)"></span>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm text-ink-strong truncate">{{ entry.node.title }}</span>
-                  @if (isStub(entry.node)) {
-                    <span class="badge badge--unset">Stub</span>
-                  }
-                </div>
-                <div class="text-[10.5px] text-ink-faint truncate mt-0.5">{{ nodeSubtitle(entry.path, entry.node) }}</div>
-              </div>
-              <span
-                [class]="entry.node.progress === 'done' ? 'text-status-done bg-status-done/10 border-status-done/30' : entry.node.progress === 'in_progress' ? 'text-status-in-progress bg-status-in-progress/10 border-status-in-progress/30' : 'text-status-pending bg-status-pending/10 border-status-pending/30'"
-                class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
-              >{{ NODE_PROGRESS_LABELS[entry.node.progress] }}</span>
-            </button>
+            <ng-container *ngTemplateOutlet="nodeRow; context: { $implicit: entry }"></ng-container>
           } @empty {
             <div class="text-sm text-ink-faint px-1 py-4">
               {{ query() ? 'Nothing matches "' + query() + '".' : 'No nodes are ready to start yet.' }}
@@ -110,26 +114,7 @@
         }
         @case ('in-progress') {
           @for (entry of filteredInProgress(); track entry.node.id) {
-            <button
-              type="button"
-              (click)="pickNode(entry)"
-              class="text-left flex items-center gap-3 px-3 py-2.5 rounded-lg border border-line-hairline hover:border-line-soft transition-colors"
-            >
-              <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(entry.path.id)"></span>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm text-ink-strong truncate">{{ entry.node.title }}</span>
-                  @if (isStub(entry.node)) {
-                    <span class="badge badge--unset">Stub</span>
-                  }
-                </div>
-                <div class="text-[10.5px] text-ink-faint truncate mt-0.5">{{ nodeSubtitle(entry.path, entry.node) }}</div>
-              </div>
-              <span
-                [class]="entry.node.progress === 'done' ? 'text-status-done bg-status-done/10 border-status-done/30' : entry.node.progress === 'in_progress' ? 'text-status-in-progress bg-status-in-progress/10 border-status-in-progress/30' : 'text-status-pending bg-status-pending/10 border-status-pending/30'"
-                class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
-              >{{ NODE_PROGRESS_LABELS[entry.node.progress] }}</span>
-            </button>
+            <ng-container *ngTemplateOutlet="nodeRow; context: { $implicit: entry }"></ng-container>
           } @empty {
             <div class="text-sm text-ink-faint px-1 py-4">
               {{ query() ? 'Nothing matches "' + query() + '".' : 'Nothing in progress right now.' }}
@@ -159,9 +144,9 @@
                       </div>
                     </div>
                     <span
-                      [class]="node.progress === 'done' ? 'text-status-done bg-status-done/10 border-status-done/30' : node.progress === 'in_progress' ? 'text-status-in-progress bg-status-in-progress/10 border-status-in-progress/30' : 'text-status-pending bg-status-pending/10 border-status-pending/30'"
+                      [class]="progressPillClass(node.progress)"
                       class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
-                    >{{ NODE_PROGRESS_LABELS[node.progress] }}</span>
+                    >{{ nodeProgressLabel(node.progress) }}</span>
                   </button>
                 }
               </div>
@@ -182,7 +167,7 @@
                 <div class="text-[10.5px] text-ink-faint truncate mt-0.5">{{ resource.estimatedDuration.value }}min</div>
               </div>
               <span
-                [class]="resource.status === 'Completed' ? 'text-status-done bg-status-done/10 border-status-done/30' : resource.status === 'InProgress' ? 'text-status-in-progress bg-status-in-progress/10 border-status-in-progress/30' : 'text-status-pending bg-status-pending/10 border-status-pending/30'"
+                [class]="progressPillClass(resource.status)"
                 class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
               >{{ RESOURCE_STATUS_LABELS[resource.status] }}</span>
             </button>
