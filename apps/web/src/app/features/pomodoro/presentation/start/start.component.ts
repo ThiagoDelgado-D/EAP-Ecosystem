@@ -1,8 +1,9 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
+import { filterLibraryResources, filterPickerNodes, filterPickerPathGroups, firstTabWithResults } from '@features/pomodoro/application/picker-search';
 import type { PickerPathNode } from '@features/pomodoro/application/pomodoro-picker.model';
 import type { LearningPathNode } from '@features/learning-path/domain/learning-path.model';
 import {
@@ -93,31 +94,36 @@ export class StartComponent {
 
   private readonly filteredQuery = computed(() => this.query().trim().toLowerCase());
 
-  readonly filteredReady = computed(() => this.filterEntries(this.picker.readyToLearn()));
-  readonly filteredGoing = computed(() => this.filterEntries(this.picker.inProgress()));
-  readonly filteredPathGroups = computed(() => {
-    const q = this.filteredQuery();
-    return this.picker
-      .allPaths()
-      .map((group) => ({
-        path: group.path,
-        nodes: q
-          ? group.nodes.filter(
-              (n) => n.title.toLowerCase().includes(q) || group.path.title.toLowerCase().includes(q),
-            )
-          : group.nodes,
-      }))
-      .filter((group) => !q || group.nodes.length > 0);
-  });
-  readonly filteredLibrary = computed(() => {
-    const q = this.filteredQuery();
-    if (!q) return this.picker.library();
-    return this.picker.library().filter((r) => r.title.toLowerCase().includes(q));
-  });
+  readonly filteredReady = computed(() => filterPickerNodes(this.picker.readyToLearn(), this.query()));
+  readonly filteredGoing = computed(() => filterPickerNodes(this.picker.inProgress(), this.query()));
+  readonly filteredPathGroups = computed(() => filterPickerPathGroups(this.picker.allPaths(), this.query()));
+  readonly filteredLibrary = computed(() => filterLibraryResources(this.picker.library(), this.query()));
 
   constructor() {
     void this.picker.load();
     void this.store.loadSuggestions(this.energy());
+
+    effect(() => {
+      if (!this.query().trim()) return;
+      const next = firstTabWithResults(this.activeTab(), {
+        ready: this.filteredReady().length,
+        going: this.filteredGoing().length,
+        paths: this.filteredPathGroups().reduce((count, group) => count + group.nodes.length, 0),
+        library: this.filteredLibrary().length,
+      });
+      if (next) this.activeTab.set(next);
+    });
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter') return;
+    if (this.mode() !== 'hero' || !this.canStart() || this.store.starting()) return;
+    const target = event.target as HTMLElement | null;
+    if (target?.tagName === 'BUTTON' || target?.tagName === 'A') return;
+
+    event.preventDefault();
+    void this.start();
   }
 
   setEnergy(energy: CandidateEnergyLevel): void {
@@ -136,6 +142,10 @@ export class StartComponent {
 
   selectTab(tab: BrowseTab): void {
     this.activeTab.set(tab);
+  }
+
+  clearQuery(): void {
+    this.query.set('');
   }
 
   togglePath(pathId: string): void {
@@ -157,6 +167,11 @@ export class StartComponent {
 
   pathProgress(nodes: LearningPathNode[]): PathProgress {
     return pathProgress(nodes);
+  }
+
+  progressForPath(pathId: string): PathProgress {
+    const group = this.picker.allPaths().find((g) => g.path.id === pathId);
+    return pathProgress(group?.nodes ?? []);
   }
 
   expandAllPaths(): void {
@@ -268,14 +283,6 @@ export class StartComponent {
   clearOverride(): void {
     this.selectedTarget.set(null);
     this.selectedTargetLabel.set(null);
-  }
-
-  private filterEntries(entries: PickerPathNode[]): PickerPathNode[] {
-    const q = this.filteredQuery();
-    if (!q) return entries;
-    return entries.filter(
-      (entry) => entry.node.title.toLowerCase().includes(q) || entry.path.title.toLowerCase().includes(q),
-    );
   }
 
   async start(): Promise<void> {

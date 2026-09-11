@@ -35,6 +35,7 @@ export class PomodoroSessionStore {
   readonly segments = signal<Segment[]>([]);
   readonly suggestions = signal<SuggestedCandidate[]>([]);
   readonly suggestionsLoading = signal(false);
+  readonly suggestionsError = signal(false);
   readonly starting = signal(false);
   readonly switchingTarget = signal(false);
   readonly rehydrating = signal(false);
@@ -57,10 +58,12 @@ export class PomodoroSessionStore {
 
   async loadSuggestions(energy?: CandidateEnergyLevel): Promise<void> {
     this.suggestionsLoading.set(true);
+    this.suggestionsError.set(false);
     try {
       this.suggestions.set(await this.repository.getSuggestion(energy));
     } catch {
       this.suggestions.set([]);
+      this.suggestionsError.set(true);
     } finally {
       this.suggestionsLoading.set(false);
     }

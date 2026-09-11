@@ -12,7 +12,7 @@ import { formatMinutes, segmentToTarget, segmentTotals, type SegmentTotal } from
 
 type RailTab = 'session' | 'segments';
 
-interface ContextDisplay {
+export interface ContextDisplay {
   title: string;
   subtitle?: string;
 }
@@ -79,11 +79,28 @@ export class ActiveComponent implements OnDestroy {
     return last ? segmentToTarget(last) : null;
   });
 
+  readonly previousTarget = computed<SegmentTarget | null>(() => {
+    const segs = this.store.segments();
+    const previous = segs[segs.length - 2];
+    return previous ? segmentToTarget(previous) : null;
+  });
+
   readonly description = computed(() => describeTarget(this.currentTarget(), this.picker.allPaths()));
 
   readonly contextDisplay = computed<ContextDisplay | null>(() => {
     const target = this.currentTarget();
-    if (!target) return null;
+    return target ? this.resolveTargetDisplay(target) : null;
+  });
+
+  readonly segmentTotals = computed<SegmentTotal[]>(() =>
+    segmentTotals(this.store.segments(), this.elapsedSec()),
+  );
+
+  segmentTargetLabel(target: SegmentTarget): string {
+    return this.resolveTargetDisplay(target).title;
+  }
+
+  private resolveTargetDisplay(target: SegmentTarget): ContextDisplay {
     if (target.kind === 'free') return { title: 'Free focus', subtitle: 'No material attached' };
     if (target.kind === 'resource') {
       const resource = this.picker.library().find((r) => r.id === target.resourceId);
@@ -92,11 +109,7 @@ export class ActiveComponent implements OnDestroy {
     const group = this.picker.allPaths().find((g) => g.path.id === target.learningPathId);
     const node = group?.nodes.find((n) => n.id === target.learningPathNodeId);
     return { title: node?.title ?? 'Path step', subtitle: group?.path.title };
-  });
-
-  readonly segmentTotals = computed<SegmentTotal[]>(() =>
-    segmentTotals(this.store.segments(), this.elapsedSec()),
-  );
+  }
 
   readonly formatMinutes = formatMinutes;
 
@@ -124,9 +137,11 @@ export class ActiveComponent implements OnDestroy {
   }
 
   async openSwitchDialog(): Promise<void> {
+    const previous = this.previousTarget();
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
       panelClass: 'confirm-dark-dialog',
       autoFocus: false,
+      data: previous ? { target: previous, label: this.resolveTargetDisplay(previous) } : null,
     });
     const target = await firstValueFrom(dialogRef.afterClosed());
     if (target) await this.applySwitchedTarget(target);

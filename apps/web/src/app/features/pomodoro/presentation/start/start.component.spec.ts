@@ -226,4 +226,101 @@ describe('StartComponent', () => {
 
     expect(component.hasNoMaterial()).toBe(false);
   });
+
+  function enterKeydown(target: EventTarget = document.body): KeyboardEvent {
+    const event = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+    Object.defineProperty(event, 'target', { value: target });
+    return event;
+  }
+
+  test('should start the session when Enter is pressed with a duration and target already chosen', async () => {
+    const { component, navigateByUrl } = setup();
+    component.pickDuration(25);
+    component.pickFree();
+
+    component.onKeydown(enterKeydown());
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
+  test('should ignore Enter when nothing is ready to start yet', () => {
+    const { component, navigateByUrl } = setup();
+
+    component.onKeydown(enterKeydown());
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  test('should ignore Enter while in browse mode', () => {
+    const { component, navigateByUrl } = setup();
+    component.pickDuration(25);
+    component.pickFree();
+    component.openBrowse();
+
+    component.onKeydown(enterKeydown());
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  test('should ignore Enter pressed on a button to avoid double-triggering its own click', () => {
+    const { component, navigateByUrl } = setup();
+    component.pickDuration(25);
+    component.pickFree();
+    const button = document.createElement('button');
+
+    component.onKeydown(enterKeydown(button));
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  test('should clear the browse search query', () => {
+    const { component } = setup();
+    component.query.set('clean architecture');
+
+    component.clearQuery();
+
+    expect(component.query()).toBe('');
+  });
+
+  test('should report progress for a given path by id', async () => {
+    const { component, learningPathRepository } = setup();
+    const pathId = crypto.randomUUID();
+    learningPathRepository.paths = [
+      { id: pathId, userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
+    ];
+    learningPathRepository.nodes = [
+      { id: crypto.randomUUID(), pathId, title: 'Ownership', progress: 'done', createdAt: now, updatedAt: now },
+      { id: crypto.randomUUID(), pathId, title: 'Trait Objects', progress: 'pending', createdAt: now, updatedAt: now },
+    ];
+    await component.picker.load();
+
+    expect(component.progressForPath(pathId)).toEqual(component.pathProgress(learningPathRepository.nodes));
+  });
+
+  test('should jump to the first browse tab that actually has matches for the search', async () => {
+    const { component, learningResourceRepository } = setup();
+    const resourceId = crypto.randomUUID();
+    learningResourceRepository.resources = [
+      {
+        id: resourceId,
+        title: 'Rust Book Chapter 17',
+        difficulty: 'Medium',
+        energyLevel: 'Medium',
+        status: 'Pending',
+        estimatedDuration: { value: 45, isEstimated: true },
+        topicIds: [],
+        typeId: crypto.randomUUID(),
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    await component.picker.load();
+    component.openBrowse();
+
+    component.query.set('Rust Book');
+    TestBed.tick();
+
+    expect(component.activeTab()).toBe('library');
+  });
 });
