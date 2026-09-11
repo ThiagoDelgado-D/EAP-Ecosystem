@@ -226,4 +226,51 @@ describe('StartComponent', () => {
 
     expect(component.hasNoMaterial()).toBe(false);
   });
+
+  function enterKeydown(target: EventTarget = document.body): KeyboardEvent {
+    const event = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+    Object.defineProperty(event, 'target', { value: target });
+    return event;
+  }
+
+  test('should start the session when Enter is pressed with a duration and target already chosen', async () => {
+    const { component, navigateByUrl } = setup();
+    component.pickDuration(25);
+    component.pickFree();
+
+    component.onKeydown(enterKeydown());
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
+  test('should ignore Enter when nothing is ready to start yet', () => {
+    const { component, navigateByUrl } = setup();
+
+    component.onKeydown(enterKeydown());
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  test('should ignore Enter while in browse mode', () => {
+    const { component, navigateByUrl } = setup();
+    component.pickDuration(25);
+    component.pickFree();
+    component.openBrowse();
+
+    component.onKeydown(enterKeydown());
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  test('should ignore Enter pressed on a button to avoid double-triggering its own click', () => {
+    const { component, navigateByUrl } = setup();
+    component.pickDuration(25);
+    component.pickFree();
+    const button = document.createElement('button');
+
+    component.onKeydown(enterKeydown(button));
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
 });
