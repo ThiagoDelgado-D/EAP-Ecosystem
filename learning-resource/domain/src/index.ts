@@ -15,6 +15,10 @@ export * from "./repositories/ILearning-resource-repository.js";
 export * from "./repositories/IResource-type-repository.js";
 export * from "./repositories/ILearningPath-repository.js";
 
+// ============= SERVICES =============
+
+export * from "./services/learning-path-stats.js";
+
 // ============= HEALTH =============
 
 export * from "./health.js";

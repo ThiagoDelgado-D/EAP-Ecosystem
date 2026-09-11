@@ -1,17 +1,18 @@
 import { In, type Repository } from "typeorm";
 import type { UUID } from "domain-lib";
-import type {
-  ILearningPathRepository,
-  LearningPath,
-  LearningPathEdge,
-  LearningPathNode,
-  LearningPathNodePatch,
-  LearningPathPatch,
-  LearningPathWithNodes,
-  NodeProgress,
-  PathMode,
-  PathSource,
-  StubScope,
+import {
+  computeLearningPathStats,
+  type ILearningPathRepository,
+  type LearningPath,
+  type LearningPathEdge,
+  type LearningPathNode,
+  type LearningPathNodePatch,
+  type LearningPathPatch,
+  type LearningPathWithNodes,
+  type NodeProgress,
+  type PathMode,
+  type PathSource,
+  type StubScope,
 } from "@learning-resource/domain";
 import { LearningPathEntity } from "../entities/learning-path.entity.js";
 import { LearningPathNodeEntity } from "../entities/learning-path-node.entity.js";
@@ -60,15 +61,19 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
       this.edgeRepository.find({ where: { pathId: In(pathIds) } }),
     ]);
 
-    return pathEntities.map((pathEntity) => ({
-      path: this.toDomainPath(pathEntity),
-      nodes: nodeEntities
+    return pathEntities.map((pathEntity) => {
+      const pathNodes = nodeEntities
         .filter((n) => n.pathId === pathEntity.id)
-        .map((e) => this.toDomainNode(e)),
-      edges: edgeEntities
-        .filter((e) => e.pathId === pathEntity.id)
-        .map((e) => this.toDomainEdge(e)),
-    }));
+        .map((e) => this.toDomainNode(e));
+
+      return {
+        path: this.toDomainPath(pathEntity, computeLearningPathStats(pathNodes)),
+        nodes: pathNodes,
+        edges: edgeEntities
+          .filter((e) => e.pathId === pathEntity.id)
+          .map((e) => this.toDomainEdge(e)),
+      };
+    });
   }
 
   async findById(id: UUID): Promise<LearningPath | null> {
@@ -85,9 +90,11 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
       this.edgeRepository.find({ where: { pathId: id } }),
     ]);
 
+    const nodes = nodeEntities.map((e) => this.toDomainNode(e));
+
     return {
-      path: this.toDomainPath(pathEntity),
-      nodes: nodeEntities.map((e) => this.toDomainNode(e)),
+      path: this.toDomainPath(pathEntity, computeLearningPathStats(nodes)),
+      nodes,
       edges: edgeEntities.map((e) => this.toDomainEdge(e)),
     };
   }

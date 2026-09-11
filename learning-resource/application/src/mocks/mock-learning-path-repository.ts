@@ -1,10 +1,11 @@
 import type { UUID } from "domain-lib";
-import type {
-  ILearningPathRepository,
-  LearningPath,
-  LearningPathEdge,
-  LearningPathNode,
-  LearningPathWithNodes,
+import {
+  computeLearningPathStats,
+  type ILearningPathRepository,
+  type LearningPath,
+  type LearningPathEdge,
+  type LearningPathNode,
+  type LearningPathWithNodes,
 } from "@learning-resource/domain";
 import type {
   LearningPathNodePatch,
@@ -37,11 +38,14 @@ export function mockLearningPathRepository(
     async findAllByUserIdWithNodes(userId: UUID): Promise<LearningPathWithNodes[]> {
       return this.paths
         .filter((p) => p.userId === userId)
-        .map((path) => ({
-          path,
-          nodes: this.nodes.filter((n) => n.pathId === path.id),
-          edges: this.edges.filter((e) => e.pathId === path.id),
-        }));
+        .map((path) => {
+          const pathNodes = this.nodes.filter((n) => n.pathId === path.id);
+          return {
+            path: { ...path, stats: computeLearningPathStats(pathNodes) },
+            nodes: pathNodes,
+            edges: this.edges.filter((e) => e.pathId === path.id),
+          };
+        });
     },
 
     async findById(id: UUID): Promise<LearningPath | null> {
@@ -51,9 +55,10 @@ export function mockLearningPathRepository(
     async findByIdWithNodes(id: UUID): Promise<LearningPathWithNodes | null> {
       const path = this.paths.find((p) => p.id === id);
       if (!path) return null;
+      const pathNodes = this.nodes.filter((n) => n.pathId === id);
       return {
-        path,
-        nodes: this.nodes.filter((n) => n.pathId === id),
+        path: { ...path, stats: computeLearningPathStats(pathNodes) },
+        nodes: pathNodes,
         edges: this.edges.filter((e) => e.pathId === id),
       };
     },

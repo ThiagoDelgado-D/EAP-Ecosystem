@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { InvalidDataError, mockCryptoService } from "domain-lib";
-import { seedLearningPath } from "../../mocks/factories.js";
+import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { getLearningPath } from "./get-learning-path.js";
 import {
@@ -59,6 +59,29 @@ describe("getLearningPath", () => {
     expect(result.path.title).toBe(path.title);
     expect(result.nodes).toEqual([]);
     expect(result.edges).toEqual([]);
+    expect(result.path.stats).toEqual({ total: 0, done: 0, linked: 0 });
+  });
+
+  test("should populate stats from the path's own nodes", async () => {
+    const userId = await crypto.generateUUID();
+    const path = seedLearningPath(learningPathRepository, { userId });
+    seedLearningPathNode(learningPathRepository, {
+      pathId: path.id,
+      progress: "done",
+      learningResourceId: await crypto.generateUUID(),
+    });
+    seedLearningPathNode(learningPathRepository, { pathId: path.id, progress: "pending" });
+
+    const result = await getLearningPath(
+      { learningPathRepository },
+      { userId, pathId: path.id },
+    );
+
+    if (result instanceof LearningPathNotFoundError) throw result;
+    if (result instanceof LearningPathForbiddenError) throw result;
+    if (result instanceof InvalidDataError) throw result;
+
+    expect(result.path.stats).toEqual({ total: 2, done: 1, linked: 1 });
   });
 
   test("should return InvalidDataError when pathId is not a valid UUID", async () => {
