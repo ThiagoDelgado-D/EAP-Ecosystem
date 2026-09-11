@@ -9,6 +9,7 @@ import type {
 } from "@pomodoro/domain";
 import {
   endSession,
+  getActiveSession,
   startBreak,
   startSession,
   suggestSessionTarget,
@@ -35,6 +36,16 @@ export class PomodoroController {
     @Inject("ICandidateNodesPort")
     private readonly candidateNodesPort: CandidateNodesPort,
   ) {}
+
+  @Get("sessions/active")
+  async getActiveSession(@CurrentUserId() userId: UUID) {
+    const result = await getActiveSession(
+      { sessionRepository: this.sessionRepository },
+      { userId },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
 
   @Post("sessions")
   async startSession(
