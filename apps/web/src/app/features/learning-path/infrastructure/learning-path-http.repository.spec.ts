@@ -20,11 +20,17 @@ describe('LearningPathHttpRepository', () => {
   afterEach(() => httpController.verify());
 
   test('getAllWithNodes should GET /learning-paths/with-nodes and map every path, node, and edge to domain', async () => {
+    const rustPathId = crypto.randomUUID();
+    const ownershipNodeId = crypto.randomUUID();
+    const traitObjectsNodeId = crypto.randomUUID();
+    const ownershipResourceId = crypto.randomUUID();
+    const ownershipToTraitsEdgeId = crypto.randomUUID();
+
     const dtos: LearningPathWithNodesDto[] = [
       {
         path: {
-          id: 'path-rust-backend',
-          userId: 'user-1',
+          id: rustPathId,
+          userId: crypto.randomUUID(),
           title: 'Rust for Backend Engineers',
           mode: 'sequential',
           source: 'manual',
@@ -34,17 +40,17 @@ describe('LearningPathHttpRepository', () => {
         },
         nodes: [
           {
-            id: 'node-ownership',
-            pathId: 'path-rust-backend',
+            id: ownershipNodeId,
+            pathId: rustPathId,
             title: 'Ownership & Borrowing',
-            learningResourceId: 'resource-1',
+            learningResourceId: ownershipResourceId,
             progress: 'done',
             createdAt: '2026-08-20T10:00:00.000Z',
             updatedAt: '2026-08-24T10:00:00.000Z',
           },
           {
-            id: 'node-trait-objects',
-            pathId: 'path-rust-backend',
+            id: traitObjectsNodeId,
+            pathId: rustPathId,
             title: 'Trait Objects',
             stubScope: 'path-local',
             progress: 'pending',
@@ -54,10 +60,10 @@ describe('LearningPathHttpRepository', () => {
         ],
         edges: [
           {
-            id: 'edge-ownership-to-traits',
-            pathId: 'path-rust-backend',
-            sourceNodeId: 'node-ownership',
-            targetNodeId: 'node-trait-objects',
+            id: ownershipToTraitsEdgeId,
+            pathId: rustPathId,
+            sourceNodeId: ownershipNodeId,
+            targetNodeId: traitObjectsNodeId,
           },
         ],
       },
@@ -73,17 +79,17 @@ describe('LearningPathHttpRepository', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].path).toMatchObject({
-      id: 'path-rust-backend',
+      id: rustPathId,
       title: 'Rust for Backend Engineers',
       stats: { total: 2, done: 1, linked: 1 },
     });
     expect(result[0].nodes.map((n) => n.title)).toEqual(['Ownership & Borrowing', 'Trait Objects']);
     expect(result[0].edges).toEqual([
       {
-        id: 'edge-ownership-to-traits',
-        pathId: 'path-rust-backend',
-        sourceNodeId: 'node-ownership',
-        targetNodeId: 'node-trait-objects',
+        id: ownershipToTraitsEdgeId,
+        pathId: rustPathId,
+        sourceNodeId: ownershipNodeId,
+        targetNodeId: traitObjectsNodeId,
       },
     ]);
   });

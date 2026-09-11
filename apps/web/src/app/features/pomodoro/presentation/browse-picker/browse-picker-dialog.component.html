@@ -1,0 +1,133 @@
+<div class="w-full max-w-2xl max-h-[80vh] bg-slate-900 border border-slate-800 rounded-xl flex flex-col">
+  <div class="p-6 pb-0 flex items-center justify-between">
+    <h2 class="text-lg font-semibold text-slate-100">Choose what to focus on</h2>
+    <button
+      type="button"
+      (click)="cancel()"
+      class="text-slate-500 hover:text-slate-300 transition-colors"
+      aria-label="Close"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <div class="px-6 pt-4 flex items-center gap-1 border-b border-slate-800">
+    <button
+      type="button"
+      (click)="selectTab('ready')"
+      [class]="activeTab() === 'ready'
+        ? 'text-violet-400 border-violet-400'
+        : 'text-slate-500 border-transparent hover:text-slate-300'"
+      class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
+    >
+      Ready to learn ({{ picker.readyToLearn().length }})
+    </button>
+    <button
+      type="button"
+      (click)="selectTab('in-progress')"
+      [class]="activeTab() === 'in-progress'
+        ? 'text-violet-400 border-violet-400'
+        : 'text-slate-500 border-transparent hover:text-slate-300'"
+      class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
+    >
+      In progress ({{ picker.inProgress().length }})
+    </button>
+    <button
+      type="button"
+      (click)="selectTab('all-paths')"
+      [class]="activeTab() === 'all-paths'
+        ? 'text-violet-400 border-violet-400'
+        : 'text-slate-500 border-transparent hover:text-slate-300'"
+      class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
+    >
+      All paths ({{ picker.allPaths().length }})
+    </button>
+    <button
+      type="button"
+      (click)="selectTab('library')"
+      [class]="activeTab() === 'library'
+        ? 'text-violet-400 border-violet-400'
+        : 'text-slate-500 border-transparent hover:text-slate-300'"
+      class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
+    >
+      Library ({{ picker.library().length }})
+    </button>
+  </div>
+
+  <div class="p-6 overflow-y-auto flex-1 flex flex-col gap-2">
+    @if (picker.loading()) {
+      <p class="text-sm text-slate-500">Loading...</p>
+    } @else if (picker.error()) {
+      <p class="text-sm text-red-400">{{ picker.error() }}</p>
+    } @else {
+      @switch (activeTab()) {
+        @case ('ready') {
+          @for (entry of picker.readyToLearn(); track entry.node.id) {
+            <button
+              type="button"
+              (click)="pickNode(entry)"
+              class="text-left px-4 py-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-violet-500 transition-colors"
+            >
+              <p class="text-sm text-slate-100">{{ entry.node.title }}</p>
+              <p class="text-xs text-slate-500 mt-0.5">{{ entry.path.title }}</p>
+            </button>
+          } @empty {
+            <p class="text-sm text-slate-500">No nodes are ready to start yet.</p>
+          }
+        }
+        @case ('in-progress') {
+          @for (entry of picker.inProgress(); track entry.node.id) {
+            <button
+              type="button"
+              (click)="pickNode(entry)"
+              class="text-left px-4 py-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-violet-500 transition-colors"
+            >
+              <p class="text-sm text-slate-100">{{ entry.node.title }}</p>
+              <p class="text-xs text-slate-500 mt-0.5">{{ entry.path.title }}</p>
+            </button>
+          } @empty {
+            <p class="text-sm text-slate-500">Nothing in progress right now.</p>
+          }
+        }
+        @case ('all-paths') {
+          @for (group of picker.allPaths(); track group.path.id) {
+            <div class="rounded-lg bg-slate-950 border border-slate-800">
+              <p class="px-4 py-3 text-sm font-medium text-slate-200 border-b border-slate-800">
+                {{ group.path.title }}
+              </p>
+              <div class="flex flex-col">
+                @for (node of group.nodes; track node.id) {
+                  <button
+                    type="button"
+                    (click)="pickNode({ path: group.path, node })"
+                    class="text-left px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-900 hover:text-slate-100 transition-colors flex items-center justify-between"
+                  >
+                    <span>{{ node.title }}</span>
+                    <span class="text-xs text-slate-500">{{ NODE_PROGRESS_LABELS[node.progress] }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+          } @empty {
+            <p class="text-sm text-slate-500">You haven't created any Learning Path yet.</p>
+          }
+        }
+        @case ('library') {
+          @for (resource of picker.library(); track resource.id) {
+            <button
+              type="button"
+              (click)="pickResource(resource)"
+              class="text-left px-4 py-3 rounded-lg bg-slate-950 border border-slate-800 hover:border-violet-500 transition-colors"
+            >
+              <p class="text-sm text-slate-100">{{ resource.title }}</p>
+            </button>
+          } @empty {
+            <p class="text-sm text-slate-500">Your resource library is empty.</p>
+          }
+        }
+      }
+    }
+  </div>
+</div>
