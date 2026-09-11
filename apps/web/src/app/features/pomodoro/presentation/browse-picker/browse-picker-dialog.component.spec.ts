@@ -1,41 +1,23 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialogRef } from '@angular/material/dialog';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
-import type { LearningPathWithNodes } from '@features/learning-path/domain/learning-path.model';
+import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
-import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
+import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { BrowsePickerDialogComponent } from './browse-picker-dialog.component';
 
 const now = new Date('2026-09-11T10:00:00.000Z');
 
-function fakeLearningPathRepository() {
-  return {
-    pathsWithNodes: [] as LearningPathWithNodes[],
-    async getAllWithNodes(): Promise<LearningPathWithNodes[]> {
-      return this.pathsWithNodes;
-    },
-  };
-}
-
-function fakeLearningResourceRepository() {
-  return {
-    resources: [] as LearningResource[],
-    async getAll(): Promise<LearningResource[]> {
-      return this.resources;
-    },
-  };
-}
-
 describe('BrowsePickerDialogComponent', () => {
-  let learningPathRepository: ReturnType<typeof fakeLearningPathRepository>;
-  let learningResourceRepository: ReturnType<typeof fakeLearningResourceRepository>;
+  let learningPathRepository: ReturnType<typeof mockLearningPathRepository>;
+  let learningResourceRepository: ReturnType<typeof mockLearningResourceRepository>;
   let dialogRef: { close: ReturnType<typeof vi.fn> };
   let component: BrowsePickerDialogComponent;
 
   beforeEach(() => {
-    learningPathRepository = fakeLearningPathRepository();
-    learningResourceRepository = fakeLearningResourceRepository();
+    learningPathRepository = mockLearningPathRepository();
+    learningResourceRepository = mockLearningResourceRepository();
     dialogRef = { close: vi.fn() };
 
     TestBed.overrideComponent(BrowsePickerDialogComponent, {
@@ -67,29 +49,26 @@ describe('BrowsePickerDialogComponent', () => {
     const rustPathId = crypto.randomUUID();
     const traitObjectsNodeId = crypto.randomUUID();
     const traitObjectsGuideResourceId = crypto.randomUUID();
-    learningPathRepository.pathsWithNodes = [
+    learningPathRepository.paths = [
       {
-        path: {
-          id: rustPathId,
-          userId: crypto.randomUUID(),
-          title: 'Rust for Backend Engineers',
-          mode: 'sequential',
-          source: 'manual',
-          createdAt: now,
-          updatedAt: now,
-        },
-        nodes: [
-          {
-            id: traitObjectsNodeId,
-            pathId: rustPathId,
-            title: 'Trait Objects',
-            learningResourceId: traitObjectsGuideResourceId,
-            progress: 'pending',
-            createdAt: now,
-            updatedAt: now,
-          },
-        ],
-        edges: [],
+        id: rustPathId,
+        userId: crypto.randomUUID(),
+        title: 'Rust for Backend Engineers',
+        mode: 'sequential',
+        source: 'manual',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    learningPathRepository.nodes = [
+      {
+        id: traitObjectsNodeId,
+        pathId: rustPathId,
+        title: 'Trait Objects',
+        learningResourceId: traitObjectsGuideResourceId,
+        progress: 'pending',
+        createdAt: now,
+        updatedAt: now,
       },
     ];
     await component.picker.load();
