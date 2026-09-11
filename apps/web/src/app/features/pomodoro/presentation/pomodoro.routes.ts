@@ -23,6 +23,10 @@ export const pomodoroRoutes: Routes = [
         path: '',
         loadComponent: () => import('./start/start.component').then((m) => m.StartComponent),
       },
+      {
+        path: 'active',
+        loadComponent: () => import('./active/active.component').then((m) => m.ActiveComponent),
+      },
     ],
   },
 ];
