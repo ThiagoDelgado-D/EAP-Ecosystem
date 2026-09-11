@@ -37,11 +37,21 @@ export function mockLearningPathRepository(
     async findAllByUserIdWithNodes(userId: UUID): Promise<LearningPathWithNodes[]> {
       return this.paths
         .filter((p) => p.userId === userId)
-        .map((path) => ({
-          path,
-          nodes: this.nodes.filter((n) => n.pathId === path.id),
-          edges: this.edges.filter((e) => e.pathId === path.id),
-        }));
+        .map((path) => {
+          const pathNodes = this.nodes.filter((n) => n.pathId === path.id);
+          return {
+            path: {
+              ...path,
+              stats: {
+                total: pathNodes.length,
+                done: pathNodes.filter((n) => n.progress === "done").length,
+                linked: pathNodes.filter((n) => n.learningResourceId != null).length,
+              },
+            },
+            nodes: pathNodes,
+            edges: this.edges.filter((e) => e.pathId === path.id),
+          };
+        });
     },
 
     async findById(id: UUID): Promise<LearningPath | null> {
