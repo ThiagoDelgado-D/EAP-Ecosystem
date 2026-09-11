@@ -15,9 +15,10 @@ export interface GetActiveSessionRequestModel {
   userId: UUID;
 }
 
-export type GetActiveSessionResponseModel =
-  | { session: Session; segments: Segment[] }
-  | null;
+export interface GetActiveSessionResponseModel {
+  session: Session;
+  segments: Segment[];
+}
 
 const getActiveSessionSchema = createValidationSchema<GetActiveSessionRequestModel>({
   userId: uuidField("UserId", { required: true }),
@@ -26,7 +27,7 @@ const getActiveSessionSchema = createValidationSchema<GetActiveSessionRequestMod
 export const getActiveSession = async (
   { sessionRepository }: GetActiveSessionDependencies,
   request: GetActiveSessionRequestModel,
-): Promise<GetActiveSessionResponseModel | InvalidDataError> => {
+): Promise<GetActiveSessionResponseModel | null | InvalidDataError> => {
   const validationResult = getActiveSessionSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
