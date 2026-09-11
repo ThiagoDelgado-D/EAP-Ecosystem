@@ -59,6 +59,28 @@ describe("listLearningPathsWithNodes", () => {
     expect(result[0].edges).toEqual([userEdge]);
   });
 
+  test("should populate stats from the path's own nodes", async () => {
+    const userId = await crypto.generateUUID();
+
+    const path = seedLearningPath(learningPathRepository, { userId });
+    seedLearningPathNode(learningPathRepository, {
+      pathId: path.id,
+      progress: "done",
+      learningResourceId: await crypto.generateUUID(),
+    });
+    seedLearningPathNode(learningPathRepository, { pathId: path.id, progress: "pending" });
+    seedLearningPathNode(learningPathRepository, { pathId: path.id, progress: "in_progress" });
+
+    const result = await listLearningPathsWithNodes(
+      { learningPathRepository },
+      { userId },
+    );
+
+    if (result instanceof InvalidDataError) throw result;
+
+    expect(result[0].path.stats).toEqual({ total: 3, done: 1, linked: 1 });
+  });
+
   test("should return InvalidDataError when userId is not a valid UUID", async () => {
     const result = await listLearningPathsWithNodes(
       { learningPathRepository },
