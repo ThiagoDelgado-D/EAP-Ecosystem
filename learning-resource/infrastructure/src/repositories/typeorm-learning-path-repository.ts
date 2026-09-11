@@ -60,15 +60,22 @@ export class TypeOrmLearningPathRepository implements ILearningPathRepository {
       this.edgeRepository.find({ where: { pathId: In(pathIds) } }),
     ]);
 
-    return pathEntities.map((pathEntity) => ({
-      path: this.toDomainPath(pathEntity),
-      nodes: nodeEntities
-        .filter((n) => n.pathId === pathEntity.id)
-        .map((e) => this.toDomainNode(e)),
-      edges: edgeEntities
-        .filter((e) => e.pathId === pathEntity.id)
-        .map((e) => this.toDomainEdge(e)),
-    }));
+    return pathEntities.map((pathEntity) => {
+      const pathNodes = nodeEntities.filter((n) => n.pathId === pathEntity.id);
+      const stats = {
+        total: pathNodes.length,
+        done: pathNodes.filter((n) => n.progress === "done").length,
+        linked: pathNodes.filter((n) => n.learningResourceId != null).length,
+      };
+
+      return {
+        path: this.toDomainPath(pathEntity, stats),
+        nodes: pathNodes.map((e) => this.toDomainNode(e)),
+        edges: edgeEntities
+          .filter((e) => e.pathId === pathEntity.id)
+          .map((e) => this.toDomainEdge(e)),
+      };
+    });
   }
 
   async findById(id: UUID): Promise<LearningPath | null> {
