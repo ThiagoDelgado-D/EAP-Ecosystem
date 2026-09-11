@@ -135,4 +135,26 @@ describe('ActiveComponent', () => {
 
     component.ngOnDestroy();
   });
+
+  test('should have no previous target right after starting the session', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+    expect(component.previousTarget()).toBeNull();
+
+    component.ngOnDestroy();
+  });
+
+  test('should track the target before the current one across a switch', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    const resourceId = crypto.randomUUID();
+
+    await component.applySwitchedTarget({ kind: 'resource', resourceId });
+
+    expect(component.previousTarget()).toEqual({ kind: 'free' });
+    expect(component.currentTarget()).toEqual({ kind: 'resource', resourceId });
+
+    component.ngOnDestroy();
+  });
 });
