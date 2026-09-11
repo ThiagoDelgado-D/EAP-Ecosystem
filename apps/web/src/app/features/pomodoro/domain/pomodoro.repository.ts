@@ -1,8 +1,10 @@
 import type {
+  CandidateEnergyLevel,
   EndSessionResult,
   SegmentTarget,
   Session,
   StartSessionPayload,
+  SuggestedCandidate,
   SwitchTargetResult,
 } from './pomodoro.model';
 
@@ -11,4 +13,5 @@ export abstract class PomodoroRepository {
   abstract switchTarget(sessionId: string, target: SegmentTarget): Promise<SwitchTargetResult>;
   abstract endSession(sessionId: string): Promise<EndSessionResult>;
   abstract startBreak(): Promise<void>;
+  abstract getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]>;
 }

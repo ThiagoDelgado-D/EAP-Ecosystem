@@ -40,3 +40,13 @@ export interface SwitchTargetResponseDto {
 export type EndSessionResponseDto =
   | { discarded: true }
   | { discarded: false; session: SessionDto; segments: SegmentDto[] };
+
+export interface SuggestedCandidateDto {
+  pathId: string;
+  pathTitle: string;
+  nodeId: string;
+  nodeTitle: string;
+  resourceId?: string;
+  score: number;
+  why: string[];
+}
