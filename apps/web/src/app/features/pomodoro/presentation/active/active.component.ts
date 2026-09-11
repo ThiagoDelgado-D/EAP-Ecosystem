@@ -83,7 +83,18 @@ export class ActiveComponent implements OnDestroy {
 
   readonly contextDisplay = computed<ContextDisplay | null>(() => {
     const target = this.currentTarget();
-    if (!target) return null;
+    return target ? this.resolveTargetDisplay(target) : null;
+  });
+
+  readonly segmentTotals = computed<SegmentTotal[]>(() =>
+    segmentTotals(this.store.segments(), this.elapsedSec()),
+  );
+
+  segmentTargetLabel(target: SegmentTarget): string {
+    return this.resolveTargetDisplay(target).title;
+  }
+
+  private resolveTargetDisplay(target: SegmentTarget): ContextDisplay {
     if (target.kind === 'free') return { title: 'Free focus', subtitle: 'No material attached' };
     if (target.kind === 'resource') {
       const resource = this.picker.library().find((r) => r.id === target.resourceId);
@@ -92,11 +103,7 @@ export class ActiveComponent implements OnDestroy {
     const group = this.picker.allPaths().find((g) => g.path.id === target.learningPathId);
     const node = group?.nodes.find((n) => n.id === target.learningPathNodeId);
     return { title: node?.title ?? 'Path step', subtitle: group?.path.title };
-  });
-
-  readonly segmentTotals = computed<SegmentTotal[]>(() =>
-    segmentTotals(this.store.segments(), this.elapsedSec()),
-  );
+  }
 
   readonly formatMinutes = formatMinutes;
 

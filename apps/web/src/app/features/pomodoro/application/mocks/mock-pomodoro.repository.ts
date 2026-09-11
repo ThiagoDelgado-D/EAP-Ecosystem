@@ -52,19 +52,20 @@ export function mockPomodoroRepository(
         plannedMin: payload.plannedMin,
       };
       this.sessions.push(session);
+      this.segments.push(buildOpenedSegment(session.id, 0, payload.target));
       return session;
     },
 
     async switchTarget(sessionId: string, target: SegmentTarget): Promise<SwitchTargetResult> {
       const now = Math.floor(Date.now() / 1000);
-      const closedSegment: Segment = {
-        id: crypto.randomUUID(),
-        sessionId,
-        startSec: 0,
-        endSec: now,
-        targetKind: 'free',
-      };
+      const openIndex = this.segments.findIndex((s) => s.sessionId === sessionId && s.endSec === undefined);
+      const closedSegment: Segment =
+        openIndex >= 0
+          ? { ...this.segments[openIndex], endSec: now }
+          : { id: crypto.randomUUID(), sessionId, startSec: 0, endSec: now, targetKind: 'free' };
+      if (openIndex >= 0) this.segments[openIndex] = closedSegment;
       const openedSegment = buildOpenedSegment(sessionId, now, target);
+      this.segments.push(openedSegment);
       return { closedSegment, openedSegment };
     },
 
