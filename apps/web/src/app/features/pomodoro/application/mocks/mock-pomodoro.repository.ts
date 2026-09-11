@@ -1,6 +1,5 @@
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
-  CandidateEnergyLevel,
   EndSessionResult,
   Segment,
   SegmentTarget,
@@ -14,6 +13,24 @@ export interface MockedPomodoroRepository extends PomodoroRepository {
   sessions: Session[];
   suggestions: SuggestedCandidate[];
   reset(): void;
+}
+
+function buildOpenedSegment(sessionId: string, startSec: number, target: SegmentTarget): Segment {
+  if (target.kind === 'node') {
+    return {
+      id: crypto.randomUUID(),
+      sessionId,
+      startSec,
+      targetKind: 'node',
+      learningPathId: target.learningPathId,
+      learningPathNodeId: target.learningPathNodeId,
+      resourceId: target.resourceId,
+    };
+  }
+  if (target.kind === 'resource') {
+    return { id: crypto.randomUUID(), sessionId, startSec, targetKind: 'resource', resourceId: target.resourceId };
+  }
+  return { id: crypto.randomUUID(), sessionId, startSec, targetKind: 'free' };
 }
 
 export function mockPomodoroRepository(
@@ -44,26 +61,7 @@ export function mockPomodoroRepository(
         endSec: now,
         targetKind: 'free',
       };
-      const openedSegment: Segment =
-        target.kind === 'node'
-          ? {
-              id: crypto.randomUUID(),
-              sessionId,
-              startSec: now,
-              targetKind: 'node',
-              learningPathId: target.learningPathId,
-              learningPathNodeId: target.learningPathNodeId,
-              resourceId: target.resourceId,
-            }
-          : target.kind === 'resource'
-            ? {
-                id: crypto.randomUUID(),
-                sessionId,
-                startSec: now,
-                targetKind: 'resource',
-                resourceId: target.resourceId,
-              }
-            : { id: crypto.randomUUID(), sessionId, startSec: now, targetKind: 'free' };
+      const openedSegment = buildOpenedSegment(sessionId, now, target);
       return { closedSegment, openedSegment };
     },
 
