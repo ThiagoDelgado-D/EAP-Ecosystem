@@ -104,6 +104,7 @@ describe("LearningPathController (integration)", () => {
       expect(response.body[0].path.id).toBe(ownedPathId);
       expect(response.body[0].nodes).toHaveLength(1);
       expect(response.body[0].nodes[0].title).toBe("Ownership & Borrowing");
+      expect(response.body[0].path.stats).toEqual({ total: 1, done: 0, linked: 0 });
     });
 
     test("returns an empty array when the user has no paths", async () => {
