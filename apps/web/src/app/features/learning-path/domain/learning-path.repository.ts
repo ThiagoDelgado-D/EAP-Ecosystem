@@ -13,6 +13,7 @@ import type {
 
 export abstract class LearningPathRepository {
   abstract getAll(): Promise<LearningPath[]>;
+  abstract getAllWithNodes(): Promise<LearningPathWithNodes[]>;
   abstract getById(id: string): Promise<LearningPathWithNodes>;
   abstract create(payload: CreateLearningPathPayload): Promise<LearningPath>;
   abstract update(id: string, payload: UpdateLearningPathPayload): Promise<LearningPath>;
