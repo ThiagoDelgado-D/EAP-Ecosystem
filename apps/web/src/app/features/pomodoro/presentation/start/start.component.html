@@ -155,6 +155,25 @@
           </div>
         }
       </div>
+    } @else if (store.suggestionsError()) {
+      <div class="rounded-xl border border-dashed border-line-strong p-6 text-center">
+        <div class="text-sm font-semibold text-ink-strong">We couldn't load a suggestion.</div>
+        <div class="text-xs text-ink-faint mt-1.5">Check your connection and try again, or pick something yourself.</div>
+        <div class="flex items-center justify-center gap-4 mt-4">
+          <button type="button" (click)="setEnergy(energy())" class="text-xs font-semibold text-white bg-accent hover:bg-accent-hover px-4 py-2 rounded-lg transition-colors">Try again</button>
+          <button type="button" (click)="openBrowse()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">Browse paths &amp; library</button>
+          <button type="button" (click)="pickFree()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">Just focus, nothing attached</button>
+        </div>
+      </div>
+    } @else if (picker.error()) {
+      <div class="rounded-xl border border-dashed border-line-strong p-6 text-center">
+        <div class="text-sm font-semibold text-ink-strong">We couldn't load your paths and resources.</div>
+        <div class="text-xs text-ink-faint mt-1.5">{{ picker.error() }}</div>
+        <div class="flex items-center justify-center gap-4 mt-4">
+          <button type="button" (click)="picker.load()" class="text-xs font-semibold text-white bg-accent hover:bg-accent-hover px-4 py-2 rounded-lg transition-colors">Try again</button>
+          <button type="button" (click)="pickFree()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">Just focus, nothing attached</button>
+        </div>
+      </div>
     } @else if (hasNoMaterial()) {
       <div class="rounded-xl border border-dashed border-line-strong p-6 text-center">
         <div class="text-sm font-semibold text-ink-strong">You haven't added anything to learn yet.</div>
