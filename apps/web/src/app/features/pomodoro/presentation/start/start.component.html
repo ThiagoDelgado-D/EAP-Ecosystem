@@ -109,7 +109,9 @@
               + Add an intention
             </button>
           } @else {
+            <label for="hero-intent-input" class="sr-only">Intention</label>
             <input
+              id="hero-intent-input"
               type="text"
               [ngModel]="intent()"
               (ngModelChange)="intent.set($event)"
@@ -185,7 +187,9 @@
 
         <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-line-soft focus-within:border-accent-line">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-ghost)" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
+          <label for="browse-search-input" class="sr-only">Search steps, paths, resources</label>
           <input
+            id="browse-search-input"
             type="text"
             [ngModel]="query()"
             (ngModelChange)="query.set($event)"
@@ -345,8 +349,9 @@
           </div>
 
           <div>
-            <div class="t-kicker mb-2">Intention <span class="normal-case tracking-normal font-normal">· optional</span></div>
+            <label for="sidebar-intent-input" class="t-kicker mb-2 block">Intention <span class="normal-case tracking-normal font-normal">· optional</span></label>
             <textarea
+              id="sidebar-intent-input"
               rows="3"
               [ngModel]="intent()"
               (ngModelChange)="intent.set($event)"
