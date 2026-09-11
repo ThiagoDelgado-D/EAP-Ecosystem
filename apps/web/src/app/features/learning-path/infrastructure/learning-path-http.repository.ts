@@ -35,15 +35,18 @@ export class LearningPathHttpRepository extends LearningPathRepository {
     return dtos.map((dto) => this.toDomain(dto));
   }
 
+  async getAllWithNodes(): Promise<LearningPathWithNodes[]> {
+    const dtos = await firstValueFrom(
+      this.http.get<LearningPathWithNodesDto[]>(`${this.baseUrl}/with-nodes`),
+    );
+    return dtos.map((dto) => this.toWithNodesDomain(dto));
+  }
+
   async getById(id: string): Promise<LearningPathWithNodes> {
     const dto = await firstValueFrom(
       this.http.get<LearningPathWithNodesDto>(`${this.baseUrl}/${id}`),
     );
-    return {
-      path: this.toDomain(dto.path),
-      nodes: dto.nodes.map((node) => this.toNodeDomain(node)),
-      edges: dto.edges.map((edge) => this.toEdgeDomain(edge)),
-    };
+    return this.toWithNodesDomain(dto);
   }
 
   async create(payload: CreateLearningPathPayload): Promise<LearningPath> {
@@ -164,6 +167,14 @@ export class LearningPathHttpRepository extends LearningPathRepository {
       y: dto.y ?? undefined,
       createdAt: this.parseDate(dto.createdAt),
       updatedAt: this.parseDate(dto.updatedAt),
+    };
+  }
+
+  private toWithNodesDomain(dto: LearningPathWithNodesDto): LearningPathWithNodes {
+    return {
+      path: this.toDomain(dto.path),
+      nodes: dto.nodes.map((node) => this.toNodeDomain(node)),
+      edges: dto.edges.map((edge) => this.toEdgeDomain(edge)),
     };
   }
 
