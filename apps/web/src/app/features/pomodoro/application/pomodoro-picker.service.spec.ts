@@ -1,38 +1,21 @@
 import { TestBed } from '@angular/core/testing';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
-import type { LearningPathWithNodes } from '@features/learning-path/domain/learning-path.model';
+import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
+import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
 import { PomodoroPickerService } from './pomodoro-picker.service';
 
 const now = new Date('2026-09-11T10:00:00.000Z');
 
-function fakeLearningPathRepository() {
-  return {
-    pathsWithNodes: [] as LearningPathWithNodes[],
-    async getAllWithNodes(): Promise<LearningPathWithNodes[]> {
-      return this.pathsWithNodes;
-    },
-  };
-}
-
-function fakeLearningResourceRepository() {
-  return {
-    resources: [] as LearningResource[],
-    async getAll(): Promise<LearningResource[]> {
-      return this.resources;
-    },
-  };
-}
-
 describe('PomodoroPickerService', () => {
-  let learningPathRepository: ReturnType<typeof fakeLearningPathRepository>;
-  let learningResourceRepository: ReturnType<typeof fakeLearningResourceRepository>;
+  let learningPathRepository: ReturnType<typeof mockLearningPathRepository>;
+  let learningResourceRepository: ReturnType<typeof mockLearningResourceRepository>;
   let service: PomodoroPickerService;
 
   beforeEach(() => {
-    learningPathRepository = fakeLearningPathRepository();
-    learningResourceRepository = fakeLearningResourceRepository();
+    learningPathRepository = mockLearningPathRepository();
+    learningResourceRepository = mockLearningResourceRepository();
     TestBed.configureTestingModule({
       providers: [
         PomodoroPickerService,
@@ -50,65 +33,63 @@ describe('PomodoroPickerService', () => {
     const asyncRuntimesNodeId = crypto.randomUUID();
     const macrosNodeId = crypto.randomUUID();
 
-    learningPathRepository.pathsWithNodes = [
+    learningPathRepository.paths = [
       {
-        path: {
-          id: rustPathId,
-          userId: crypto.randomUUID(),
-          title: 'Rust for Backend Engineers',
-          mode: 'sequential',
-          source: 'manual',
-          createdAt: now,
-          updatedAt: now,
-        },
-        nodes: [
-          {
-            id: ownershipNodeId,
-            pathId: rustPathId,
-            title: 'Ownership & Borrowing',
-            progress: 'done',
-            createdAt: now,
-            updatedAt: now,
-          },
-          {
-            id: traitObjectsNodeId,
-            pathId: rustPathId,
-            title: 'Trait Objects',
-            progress: 'pending',
-            createdAt: now,
-            updatedAt: now,
-          },
-          {
-            id: asyncRuntimesNodeId,
-            pathId: rustPathId,
-            title: 'Async Runtimes',
-            progress: 'pending',
-            createdAt: now,
-            updatedAt: now,
-          },
-          {
-            id: macrosNodeId,
-            pathId: rustPathId,
-            title: 'Procedural Macros',
-            progress: 'in_progress',
-            createdAt: now,
-            updatedAt: now,
-          },
-        ],
-        edges: [
-          {
-            id: crypto.randomUUID(),
-            pathId: rustPathId,
-            sourceNodeId: ownershipNodeId,
-            targetNodeId: traitObjectsNodeId,
-          },
-          {
-            id: crypto.randomUUID(),
-            pathId: rustPathId,
-            sourceNodeId: traitObjectsNodeId,
-            targetNodeId: asyncRuntimesNodeId,
-          },
-        ],
+        id: rustPathId,
+        userId: crypto.randomUUID(),
+        title: 'Rust for Backend Engineers',
+        mode: 'sequential',
+        source: 'manual',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    learningPathRepository.nodes = [
+      {
+        id: ownershipNodeId,
+        pathId: rustPathId,
+        title: 'Ownership & Borrowing',
+        progress: 'done',
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: traitObjectsNodeId,
+        pathId: rustPathId,
+        title: 'Trait Objects',
+        progress: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: asyncRuntimesNodeId,
+        pathId: rustPathId,
+        title: 'Async Runtimes',
+        progress: 'pending',
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: macrosNodeId,
+        pathId: rustPathId,
+        title: 'Procedural Macros',
+        progress: 'in_progress',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    learningPathRepository.edges = [
+      {
+        id: crypto.randomUUID(),
+        pathId: rustPathId,
+        sourceNodeId: ownershipNodeId,
+        targetNodeId: traitObjectsNodeId,
+      },
+      {
+        id: crypto.randomUUID(),
+        pathId: rustPathId,
+        sourceNodeId: traitObjectsNodeId,
+        targetNodeId: asyncRuntimesNodeId,
       },
     ];
 
@@ -122,28 +103,25 @@ describe('PomodoroPickerService', () => {
     const typescriptPathId = crypto.randomUUID();
     const handbookNodeId = crypto.randomUUID();
 
-    learningPathRepository.pathsWithNodes = [
+    learningPathRepository.paths = [
       {
-        path: {
-          id: typescriptPathId,
-          userId: crypto.randomUUID(),
-          title: 'TypeScript, Step by Step',
-          mode: 'sequential',
-          source: 'manual',
-          createdAt: now,
-          updatedAt: now,
-        },
-        nodes: [
-          {
-            id: handbookNodeId,
-            pathId: typescriptPathId,
-            title: 'TypeScript Handbook',
-            progress: 'pending',
-            createdAt: now,
-            updatedAt: now,
-          },
-        ],
-        edges: [],
+        id: typescriptPathId,
+        userId: crypto.randomUUID(),
+        title: 'TypeScript, Step by Step',
+        mode: 'sequential',
+        source: 'manual',
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    learningPathRepository.nodes = [
+      {
+        id: handbookNodeId,
+        pathId: typescriptPathId,
+        title: 'TypeScript Handbook',
+        progress: 'pending',
+        createdAt: now,
+        updatedAt: now,
       },
     ];
 
@@ -181,7 +159,8 @@ describe('PomodoroPickerService', () => {
         updatedAt: now,
       },
     ];
-    learningPathRepository.pathsWithNodes = [{ path: angularPath, nodes, edges: [] }];
+    learningPathRepository.paths = [angularPath];
+    learningPathRepository.nodes = nodes;
 
     await service.load();
 
