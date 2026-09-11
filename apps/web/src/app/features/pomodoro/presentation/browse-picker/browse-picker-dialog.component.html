@@ -18,6 +18,27 @@
     </button>
   </div>
 
+  @if (quickPick) {
+    <div class="px-6 pt-4">
+      <button
+        type="button"
+        (click)="pickQuickPick()"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-dashed border-line-strong hover:border-accent-line text-left transition-colors"
+      >
+        <div class="w-7 h-7 rounded-md bg-accent-wash flex items-center justify-center flex-shrink-0">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-ink)" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[10px] font-bold uppercase tracking-wide text-accent-ink">Continue previous</div>
+          <div class="text-sm font-semibold text-ink-strong truncate">{{ quickPick.label.title }}</div>
+          @if (quickPick.label.subtitle) {
+            <div class="text-[10.5px] text-ink-faint truncate">{{ quickPick.label.subtitle }}</div>
+          }
+        </div>
+      </button>
+    </div>
+  }
+
   <div class="px-6 pt-4">
     <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-line-soft focus-within:border-accent-line">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-ghost)" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
