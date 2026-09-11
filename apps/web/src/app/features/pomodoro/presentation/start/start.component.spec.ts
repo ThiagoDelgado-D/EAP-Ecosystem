@@ -297,4 +297,30 @@ describe('StartComponent', () => {
 
     expect(component.progressForPath(pathId)).toEqual(component.pathProgress(learningPathRepository.nodes));
   });
+
+  test('should jump to the first browse tab that actually has matches for the search', async () => {
+    const { component, learningResourceRepository } = setup();
+    const resourceId = crypto.randomUUID();
+    learningResourceRepository.resources = [
+      {
+        id: resourceId,
+        title: 'Rust Book Chapter 17',
+        difficulty: 'Medium',
+        energyLevel: 'Medium',
+        status: 'Pending',
+        estimatedDuration: { value: 45, isEstimated: true },
+        topicIds: [],
+        typeId: crypto.randomUUID(),
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+    await component.picker.load();
+    component.openBrowse();
+
+    component.query.set('Rust Book');
+    TestBed.tick();
+
+    expect(component.activeTab()).toBe('library');
+  });
 });

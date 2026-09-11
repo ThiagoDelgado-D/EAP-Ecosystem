@@ -191,4 +191,21 @@ describe('BrowsePickerDialogComponent', () => {
     expect(component.nodeSubtitle(linked.path, linked.node)).toBe('Rust for Backend Engineers · 45min');
     expect(component.nodeSubtitle(stub.path, stub.node)).toBe('Rust for Backend Engineers · no resource linked');
   });
+
+  test('should jump to the first tab that actually has matches for the search', async () => {
+    const pathId = crypto.randomUUID();
+    const nodeId = crypto.randomUUID();
+    learningPathRepository.paths = [
+      { id: pathId, userId: crypto.randomUUID(), title: 'Frontend desde cero', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
+    ];
+    learningPathRepository.nodes = [
+      { id: nodeId, pathId, title: 'Git y control de versiones', progress: 'in_progress', createdAt: now, updatedAt: now },
+    ];
+    await component.picker.load();
+
+    component.query.set('Git y control');
+    TestBed.tick();
+
+    expect(component.activeTab()).toBe('in-progress');
+  });
 });
