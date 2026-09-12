@@ -117,6 +117,10 @@ export class ActiveComponent {
     void this.router.navigateByUrl('/pomodoro/end');
   }
 
+  minimize(): void {
+    void this.router.navigateByUrl('/dashboard');
+  }
+
   backToStart(): void {
     void this.router.navigateByUrl('/pomodoro');
   }
