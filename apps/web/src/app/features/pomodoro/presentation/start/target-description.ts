@@ -1,5 +1,6 @@
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import type { PickerPathGroup } from '@features/pomodoro/application/pomodoro-picker.model';
+import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
 
 export interface TargetDescription {
   caseNo: 1 | 2 | 3 | 4;
@@ -28,6 +29,26 @@ export function describeTarget(
     isFree: false,
     isStub: stub,
   };
+}
+
+export interface TargetLabel {
+  title: string;
+  subtitle?: string;
+}
+
+export function describeTargetLabel(
+  target: SegmentTarget,
+  groups: PickerPathGroup[],
+  library: LearningResource[],
+): TargetLabel {
+  if (target.kind === 'free') return { title: 'Free focus', subtitle: 'No material attached' };
+  if (target.kind === 'resource') {
+    const resource = library.find((r) => r.id === target.resourceId);
+    return { title: resource?.title ?? 'Resource' };
+  }
+  const group = groups.find((g) => g.path.id === target.learningPathId);
+  const node = group?.nodes.find((n) => n.id === target.learningPathNodeId);
+  return { title: node?.title ?? 'Path step', subtitle: group?.path.title };
 }
 
 export interface ResourcePathMembership {
