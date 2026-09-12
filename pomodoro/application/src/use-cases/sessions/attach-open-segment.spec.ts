@@ -1,14 +1,8 @@
 import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
-import {
-  SegmentTargetKind,
-  type LearningPathMembership,
-} from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
-import {
-  mockLearningPathMembershipPort,
-  mockSessionRepository,
-} from "../../mocks/index.js";
-import { startSession } from "./start-session.js";
+import { mockLearningPathMembershipPort, mockSessionRepository } from "../../mocks/index.js";
+import { SegmentTargetKind } from "@pomodoro/domain";
+import { createSessionLifecycleFixture, type SessionLifecycleFixture } from "./session-lifecycle-fixture.js";
 import { attachOpenSegment } from "./attach-open-segment.js";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
 import { SessionForbiddenError } from "../../errors/session-forbidden.js";
@@ -22,42 +16,23 @@ describe("attachOpenSegment", () => {
   let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
   let requestingUserId: UUID;
   let cleanArchitectureResourceId: UUID;
+  let startFreeSession: SessionLifecycleFixture["startFreeSession"];
 
   beforeEach(async () => {
-    cryptoService = mockCryptoService();
-    sessionRepository = mockSessionRepository();
-    requestingUserId = await cryptoService.generateUUID();
-    cleanArchitectureResourceId = await cryptoService.generateUUID();
-
-    const pathsSharingCleanArchitecture: LearningPathMembership[] = [
-      {
-        pathId: await cryptoService.generateUUID(),
-        pathTitle: "Frontend Architecture Mastery",
-        nodeId: await cryptoService.generateUUID(),
-      },
-      {
-        pathId: await cryptoService.generateUUID(),
-        pathTitle: "System Design Prep",
-        nodeId: await cryptoService.generateUUID(),
-      },
-    ];
-    membershipPort = mockLearningPathMembershipPort({
-      [cleanArchitectureResourceId]: pathsSharingCleanArchitecture,
-    });
+    ({
+      cryptoService,
+      sessionRepository,
+      membershipPort,
+      requestingUserId,
+      cleanArchitectureResourceId,
+      startFreeSession,
+    } = await createSessionLifecycleFixture());
   });
 
   const deps = () => ({
     sessionRepository,
     learningPathMembershipPort: membershipPort,
   });
-
-  const startFreeSession = async () => {
-    const session = await startSession(
-      { sessionRepository, cryptoService, learningPathMembershipPort: membershipPort },
-      { userId: requestingUserId, plannedMin: 25, target: { kind: SegmentTargetKind.FREE } },
-    );
-    return session as Exclude<typeof session, Error>;
-  };
 
   test("Should retarget the open segment in place, without closing or opening a new one", async () => {
     const session = await startFreeSession();
