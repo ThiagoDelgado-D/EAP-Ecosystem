@@ -15,6 +15,11 @@ export function segmentToTarget(segment: Segment): SegmentTarget {
   return { kind: 'free' };
 }
 
+export function currentSegmentTarget(segments: Segment[]): SegmentTarget | null {
+  const last = segments[segments.length - 1];
+  return last ? segmentToTarget(last) : null;
+}
+
 export function segmentDurationSec(segment: Segment, elapsedSec: number): number {
   const end = segment.endSec ?? elapsedSec;
   return Math.max(0, end - segment.startSec);
