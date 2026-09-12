@@ -1,4 +1,4 @@
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
   mockLearningPathMembershipPort,
@@ -49,7 +49,7 @@ describe("attachOpenSegment", () => {
       target: { kind: SegmentTargetKind.RESOURCE, resourceId: reactDocsResourceId },
     });
 
-    if (result instanceof Error) throw result;
+    if (result instanceof BaseError) throw result;
     const { segment } = result;
 
     expect(segment.id).toBe(openSegmentBefore!.id);

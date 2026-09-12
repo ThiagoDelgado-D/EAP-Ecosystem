@@ -1,4 +1,4 @@
-import { mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, mockCryptoService, type UUID } from "domain-lib";
 import { SegmentTargetKind, type LearningPathMembership, type Session } from "@pomodoro/domain";
 import { mockLearningPathMembershipPort } from "./mock-learning-path-membership-port.js";
 import { mockSessionRepository } from "./mock-session-repository.js";
@@ -40,7 +40,7 @@ export async function createSessionLifecycleFixture(): Promise<SessionLifecycleF
       { sessionRepository, cryptoService, learningPathMembershipPort: membershipPort },
       { userId: requestingUserId, plannedMin: 25, target: { kind: SegmentTargetKind.FREE } },
     );
-    if (session instanceof Error) throw session;
+    if (session instanceof BaseError) throw session;
     return session;
   };
 
