@@ -1,15 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
-import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
-import { mockPomodoroRepository } from '@features/pomodoro/application/mocks/mock-pomodoro.repository';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
-import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
-import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
-import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
-import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
-import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
+import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { mockResourceTypeRepository } from '@features/learning-resource/application/mocks/mock-resource-type.repository';
 import type { ResourceType } from '@features/learning-resource/domain/resource-type.model';
@@ -21,12 +14,11 @@ import { EndComponent } from './end.component';
 const now = new Date('2026-09-11T10:00:00.000Z');
 
 function setup(options: { resourceTypes?: ResourceType[]; topics?: Topic[] } = {}) {
-  const pomodoroRepository = mockPomodoroRepository();
-  const learningPathRepository = mockLearningPathRepository();
-  const learningResourceRepository = mockLearningResourceRepository();
+  const navigateByUrl = vi.fn();
+  const { providers, learningPathRepository, learningResourceRepository } =
+    createPomodoroComponentTestProviders(navigateByUrl);
   const resourceTypeRepository = mockResourceTypeRepository({ resourceTypes: options.resourceTypes });
   const topicRepository = mockTopicRepository({ topics: options.topics });
-  const navigateByUrl = vi.fn();
   const dialogOpen = vi.fn();
 
   TestBed.overrideComponent(EndComponent, {
@@ -38,15 +30,7 @@ function setup(options: { resourceTypes?: ResourceType[]; topics?: Topic[] } = {
     },
   });
   TestBed.configureTestingModule({
-    providers: [
-      PomodoroSessionStore,
-      PomodoroPickerService,
-      { provide: PomodoroRepository, useValue: pomodoroRepository },
-      { provide: LearningPathRepository, useValue: learningPathRepository },
-      { provide: LearningResourceRepository, useValue: learningResourceRepository },
-      { provide: Router, useValue: { navigateByUrl } },
-      { provide: MatDialog, useValue: { open: dialogOpen } },
-    ],
+    providers: [...providers, { provide: MatDialog, useValue: { open: dialogOpen } }],
   });
 
   const store = TestBed.inject(PomodoroSessionStore);
