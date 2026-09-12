@@ -1,0 +1,63 @@
+@if (store.activeSession(); as session) {
+  <div class="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center">
+    @if (contextDisplay(); as ctx) {
+      <div class="mb-8 text-center opacity-65">
+        <p class="text-sm font-bold text-white tracking-tight">{{ ctx.title }}</p>
+        @if (ctx.subtitle) {
+          <p class="text-xs text-white/60 mt-1">{{ ctx.subtitle }}</p>
+        }
+      </div>
+    }
+
+    <div class="relative" style="width: 320px; height: 320px">
+      <svg width="320" height="320" style="transform: rotate(-90deg)">
+        <circle cx="160" cy="160" [attr.r]="RING_RADIUS" stroke="rgba(255,255,255,0.12)" stroke-width="3" fill="none" />
+        <circle
+          cx="160"
+          cy="160"
+          [attr.r]="RING_RADIUS"
+          [attr.stroke]="store.paused() ? 'var(--color-energy-medium)' : 'var(--color-accent-hover)'"
+          stroke-width="3"
+          fill="none"
+          stroke-linecap="round"
+          [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
+          [attr.stroke-dashoffset]="ringDashOffset()"
+        />
+      </svg>
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <span class="t-num font-mono text-[64px] text-white font-light">{{ store.remainingLabel() }}</span>
+        <span class="text-[11px] uppercase tracking-widest text-white/40 mt-1">remaining</span>
+      </div>
+    </div>
+
+    @if (session.intent) {
+      <p class="mt-8 max-w-[440px] text-center text-[13px] text-white/50 italic leading-relaxed">
+        &ldquo;{{ session.intent }}&rdquo;
+      </p>
+    }
+
+    <div class="absolute bottom-11 flex items-center gap-2.5">
+      <button
+        type="button"
+        (click)="togglePause()"
+        class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-white/15 text-white/85 hover:border-white/30 transition-colors"
+      >
+        {{ store.paused() ? 'Resume' : 'Pause' }}
+      </button>
+      <button
+        type="button"
+        (click)="exit()"
+        class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-white/15 text-white/85 hover:border-white/30 transition-colors"
+      >
+        Exit Zen · esc
+      </button>
+      <button
+        type="button"
+        (click)="endSession()"
+        class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-energy-high/10 border border-energy-high/30 text-energy-high hover:opacity-80 transition-colors"
+      >
+        End session
+      </button>
+    </div>
+  </div>
+}
