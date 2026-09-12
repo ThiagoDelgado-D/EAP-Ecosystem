@@ -114,14 +114,14 @@ describe('ActiveComponent', () => {
     component.ngOnDestroy();
   });
 
-  test('should end the session and navigate back to start', async () => {
+  test('should navigate to the end screen instead of ending the session directly', async () => {
     const { component, store, navigateByUrl } = setup();
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
 
-    await component.endSession();
+    component.endSession();
 
-    expect(store.activeSession()).toBeNull();
-    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+    expect(store.activeSession()).not.toBeNull();
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/end');
 
     component.ngOnDestroy();
   });
