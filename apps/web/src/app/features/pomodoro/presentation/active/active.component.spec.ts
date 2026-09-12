@@ -1,35 +1,17 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
-import { mockPomodoroRepository } from '@features/pomodoro/application/mocks/mock-pomodoro.repository';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
-import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
-import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
-import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
-import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
-import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
+import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { ActiveComponent } from './active.component';
 
 function setup() {
-  const repository = mockPomodoroRepository();
-  const learningPathRepository = mockLearningPathRepository();
-  const learningResourceRepository = mockLearningResourceRepository();
   const navigateByUrl = vi.fn();
+  const { providers, pomodoroRepository, learningPathRepository } = createPomodoroComponentTestProviders(navigateByUrl);
 
-  TestBed.configureTestingModule({
-    providers: [
-      PomodoroSessionStore,
-      PomodoroPickerService,
-      { provide: PomodoroRepository, useValue: repository },
-      { provide: LearningPathRepository, useValue: learningPathRepository },
-      { provide: LearningResourceRepository, useValue: learningResourceRepository },
-      { provide: Router, useValue: { navigateByUrl } },
-    ],
-  });
+  TestBed.configureTestingModule({ providers });
 
   const store = TestBed.inject(PomodoroSessionStore);
   const fixture = TestBed.createComponent(ActiveComponent);
-  return { component: fixture.componentInstance, fixture, store, repository, learningPathRepository, navigateByUrl };
+  return { component: fixture.componentInstance, fixture, store, repository: pomodoroRepository, learningPathRepository, navigateByUrl };
 }
 
 describe('ActiveComponent', () => {
