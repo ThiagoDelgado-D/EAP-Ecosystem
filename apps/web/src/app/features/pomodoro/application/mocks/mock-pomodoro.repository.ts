@@ -69,6 +69,15 @@ export function mockPomodoroRepository(
       return { closedSegment, openedSegment };
     },
 
+    async attachOpenSegment(sessionId: string, target: SegmentTarget): Promise<Segment> {
+      const openIndex = this.segments.findIndex((s) => s.sessionId === sessionId && s.endSec === undefined);
+      if (openIndex < 0) throw new Error(`No open segment for session: ${sessionId}`);
+      const retargeted = buildOpenedSegment(sessionId, this.segments[openIndex]!.startSec, target);
+      const segment: Segment = { ...retargeted, id: this.segments[openIndex]!.id };
+      this.segments[openIndex] = segment;
+      return segment;
+    },
+
     async endSession(sessionId: string): Promise<EndSessionResult> {
       const session = this.sessions.find((s) => s.id === sessionId);
       if (!session) throw new Error(`Session not found: ${sessionId}`);
