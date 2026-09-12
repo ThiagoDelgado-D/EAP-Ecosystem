@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
+import { startPathNodeSession } from '@features/pomodoro/application/mocks/pomodoro-node-session';
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { mockResourceTypeRepository } from '@features/learning-resource/application/mocks/mock-resource-type.repository';
 import type { ResourceType } from '@features/learning-resource/domain/resource-type.model';
@@ -57,17 +58,9 @@ describe('EndComponent', () => {
   });
 
   test('should list each non-free touched target with its real title and time', async () => {
-    const { component, store, learningPathRepository } = setup();
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'Frontend desde cero', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'HTML fundamentals', progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    await component.picker.load();
-    await store.start({ plannedMin: 25, target: { kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId } });
+    const ctx = setup();
+    const { component } = ctx;
+    const { pathId, nodeId } = await startPathNodeSession(ctx, { pathTitle: 'Frontend desde cero', nodeTitle: 'HTML fundamentals' });
 
     expect(component.freeOnly()).toBe(false);
     const [touched] = component.touchedTargets();
@@ -78,21 +71,13 @@ describe('EndComponent', () => {
   });
 
   test('should apply pending node progress and resource status only on save, then end the session', async () => {
-    const { component, store, learningPathRepository, learningResourceRepository, navigateByUrl } = setup();
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
+    const ctx = setup();
+    const { component, learningPathRepository, learningResourceRepository, navigateByUrl } = ctx;
     const resourceId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'Trait Objects', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
-    ];
     learningResourceRepository.resources = [
       { id: resourceId, title: 'Rust Book Chapter 17', difficulty: 'Medium', energyLevel: 'Medium', status: 'Pending', estimatedDuration: { value: 45, isEstimated: true }, topicIds: [], typeId: crypto.randomUUID(), createdAt: now, updatedAt: now },
     ];
-    await component.picker.load();
-    await store.start({ plannedMin: 25, target: { kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId, resourceId } });
+    const { nodeId } = await startPathNodeSession(ctx, { pathTitle: 'Rust for Backend Engineers', nodeTitle: 'Trait Objects', resourceId });
     const [touched] = component.touchedTargets();
 
     component.setNodeProgress(touched, 'done');
@@ -107,17 +92,9 @@ describe('EndComponent', () => {
   });
 
   test('should discard pending changes without applying them, but still end the session', async () => {
-    const { component, store, learningPathRepository, navigateByUrl } = setup();
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'Trait Objects', progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    await component.picker.load();
-    await store.start({ plannedMin: 25, target: { kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId } });
+    const ctx = setup();
+    const { component, learningPathRepository, navigateByUrl } = ctx;
+    const { nodeId } = await startPathNodeSession(ctx, { pathTitle: 'Rust for Backend Engineers', nodeTitle: 'Trait Objects' });
     const [touched] = component.touchedTargets();
     component.setNodeProgress(touched, 'done');
 
@@ -155,21 +132,13 @@ describe('EndComponent', () => {
   });
 
   test('should link an existing resource to a stub node and reflect it as promoted', async () => {
-    const { component, store, learningPathRepository, learningResourceRepository } = setup();
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
+    const ctx = setup();
+    const { component, learningPathRepository, learningResourceRepository } = ctx;
     const resourceId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
-    ];
     learningResourceRepository.resources = [
       { id: resourceId, title: 'CAP Theorem Explained', difficulty: 'Medium', energyLevel: 'Medium', status: 'Pending', estimatedDuration: { value: 20, isEstimated: true }, topicIds: [], typeId: crypto.randomUUID(), createdAt: now, updatedAt: now },
     ];
-    await component.picker.load();
-    await store.start({ plannedMin: 25, target: { kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId } });
+    const { nodeId } = await startPathNodeSession(ctx, { pathTitle: 'System Design Prep', pathMode: 'graph', nodeTitle: 'CAP Theorem' });
     const [touched] = component.touchedTargets();
 
     component.selectPromoteResource(touched.key, resourceId);
@@ -181,19 +150,11 @@ describe('EndComponent', () => {
 
   test('should refuse to create a resource without at least one topic selected', async () => {
     const typeId = crypto.randomUUID();
-    const { component, store, learningPathRepository, learningResourceRepository } = setup({
+    const ctx = setup({
       resourceTypes: [{ id: typeId, code: 'article', displayName: 'Article', createdAt: now, updatedAt: now }],
     });
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    await component.picker.load();
-    await store.start({ plannedMin: 25, target: { kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId } });
+    const { component, learningResourceRepository } = ctx;
+    await startPathNodeSession(ctx, { pathTitle: 'System Design Prep', pathMode: 'graph', nodeTitle: 'CAP Theorem' });
     const [touched] = component.touchedTargets();
 
     await component.createAndLinkResource(touched);
@@ -204,20 +165,12 @@ describe('EndComponent', () => {
   test('should create a new resource with the selected topics and link it to a stub node', async () => {
     const typeId = crypto.randomUUID();
     const topicId = crypto.randomUUID();
-    const { component, store, learningPathRepository, learningResourceRepository } = setup({
+    const ctx = setup({
       resourceTypes: [{ id: typeId, code: 'article', displayName: 'Article', createdAt: now, updatedAt: now }],
       topics: [{ id: topicId, name: 'System Design', createdAt: now, updatedAt: now }],
     });
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'CAP Theorem', progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    await component.picker.load();
-    await store.start({ plannedMin: 25, target: { kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId } });
+    const { component, learningPathRepository, learningResourceRepository } = ctx;
+    const { nodeId } = await startPathNodeSession(ctx, { pathTitle: 'System Design Prep', pathMode: 'graph', nodeTitle: 'CAP Theorem' });
     const [touched] = component.touchedTargets();
     component.toggleCreateTopic(touched.key, topicId);
 
