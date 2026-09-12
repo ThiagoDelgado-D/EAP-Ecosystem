@@ -27,7 +27,7 @@ export interface SegmentTotal {
   parts: number;
 }
 
-function targetKey(target: SegmentTarget): string {
+export function targetKey(target: SegmentTarget): string {
   if (target.kind === 'node') return `node:${target.learningPathId}:${target.learningPathNodeId}`;
   if (target.kind === 'resource') return `resource:${target.resourceId}`;
   return 'free';
