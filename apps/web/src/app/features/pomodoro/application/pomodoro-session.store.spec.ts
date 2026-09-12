@@ -155,4 +155,56 @@ describe('PomodoroSessionStore', () => {
     expect(segments).toHaveLength(1);
     expect(segments[0]).toMatchObject({ targetKind: 'node', learningPathId: pathId, learningPathNodeId: nodeId });
   });
+
+  describe('timer', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    test('should count down remaining time once a session starts', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+      expect(store.remainingLabel()).toBe('25:00');
+
+      vi.advanceTimersByTime(90 * 1000);
+
+      expect(store.remainingLabel()).toBe('23:30');
+    });
+
+    test('should freeze the countdown while paused', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+      vi.advanceTimersByTime(10 * 1000);
+      store.togglePause();
+      vi.advanceTimersByTime(60 * 1000);
+
+      expect(store.remainingLabel()).toBe('24:50');
+    });
+
+    test('should stop ticking and reset the countdown after the session ends', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      vi.advanceTimersByTime(10 * 1000);
+
+      await store.end();
+      vi.advanceTimersByTime(60 * 1000);
+
+      expect(store.elapsedSec()).toBe(0);
+    });
+
+    test('should resume ticking on rehydrate with paused reset to false', async () => {
+      repository.sessions = [
+        { id: crypto.randomUUID(), userId: crypto.randomUUID(), startedAt: new Date(), plannedMin: 25 },
+      ];
+
+      await store.rehydrate();
+
+      expect(store.paused()).toBe(false);
+      vi.advanceTimersByTime(30 * 1000);
+      expect(store.elapsedSec()).toBe(30);
+    });
+  });
 });
