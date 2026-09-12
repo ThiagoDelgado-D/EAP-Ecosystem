@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -8,7 +8,7 @@ import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-p
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import { describeTarget, describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
-import { formatMinutes, segmentToTarget, segmentTotals, type SegmentTotal } from './segment-display';
+import { currentSegmentTarget, formatMinutes, segmentToTarget, segmentTotals, type SegmentTotal } from './segment-display';
 
 type RailTab = 'session' | 'segments';
 
@@ -21,7 +21,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
   imports: [DatePipe, DecimalPipe],
   templateUrl: './active.component.html',
 })
-export class ActiveComponent implements OnDestroy {
+export class ActiveComponent {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   readonly store = inject(PomodoroSessionStore);
@@ -30,13 +30,13 @@ export class ActiveComponent implements OnDestroy {
   readonly RING_RADIUS = RING_RADIUS;
   readonly RING_CIRCUMFERENCE = RING_CIRCUMFERENCE;
 
-  private readonly intervalId = setInterval(() => {
-    if (!this.paused()) this.now.set(new Date());
-  }, 1000);
-  private readonly now = signal(new Date());
-
   readonly session = this.store.activeSession;
-  readonly paused = signal(false);
+  readonly paused = this.store.paused;
+  readonly elapsedSec = this.store.elapsedSec;
+  readonly totalSec = this.store.totalSec;
+  readonly remainingSec = this.store.remainingSec;
+  readonly remainingLabel = this.store.remainingLabel;
+  readonly progressFraction = this.store.progressFraction;
   readonly railOpen = signal(true);
   readonly activeTab = signal<RailTab>('session');
 
@@ -44,35 +44,9 @@ export class ActiveComponent implements OnDestroy {
     void this.picker.load();
   }
 
-  readonly elapsedSec = computed(() => {
-    const session = this.session();
-    if (!session) return 0;
-    return Math.max(0, Math.floor((this.now().getTime() - session.startedAt.getTime()) / 1000));
-  });
-
-  readonly totalSec = computed(() => (this.session()?.plannedMin ?? 0) * 60);
-
-  readonly remainingSec = computed(() => Math.max(0, this.totalSec() - this.elapsedSec()));
-
-  readonly remainingLabel = computed(() => {
-    const total = this.remainingSec();
-    const minutes = Math.floor(total / 60).toString().padStart(2, '0');
-    const seconds = (total % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds}`;
-  });
-
-  readonly progressFraction = computed(() => {
-    const total = this.totalSec();
-    return total > 0 ? Math.min(1, this.elapsedSec() / total) : 0;
-  });
-
   readonly ringDashOffset = computed(() => RING_CIRCUMFERENCE * this.progressFraction());
 
-  readonly currentTarget = computed<SegmentTarget | null>(() => {
-    const segs = this.store.segments();
-    const last = segs[segs.length - 1];
-    return last ? segmentToTarget(last) : null;
-  });
+  readonly currentTarget = computed<SegmentTarget | null>(() => currentSegmentTarget(this.store.segments()));
 
   readonly previousTarget = computed<SegmentTarget | null>(() => {
     const segs = this.store.segments();
@@ -113,7 +87,7 @@ export class ActiveComponent implements OnDestroy {
   }
 
   togglePause(): void {
-    this.paused.update((v) => !v);
+    this.store.togglePause();
   }
 
   toggleRail(): void {
@@ -145,9 +119,5 @@ export class ActiveComponent implements OnDestroy {
 
   backToStart(): void {
     void this.router.navigateByUrl('/pomodoro');
-  }
-
-  ngOnDestroy(): void {
-    clearInterval(this.intervalId);
   }
 }
