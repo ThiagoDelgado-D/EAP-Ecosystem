@@ -15,6 +15,7 @@ import type {
 } from '../domain/pomodoro.model';
 import type {
   ActiveSessionResponseDto,
+  AttachOpenSegmentResponseDto,
   EndSessionResponseDto,
   SegmentDto,
   SessionDto,
@@ -45,6 +46,15 @@ export class PomodoroHttpRepository extends PomodoroRepository {
       closedSegment: this.toSegmentDomain(dto.closedSegment),
       openedSegment: this.toSegmentDomain(dto.openedSegment),
     };
+  }
+
+  async attachOpenSegment(sessionId: string, target: SegmentTarget): Promise<Segment> {
+    const dto = await firstValueFrom(
+      this.http.patch<AttachOpenSegmentResponseDto>(`${this.baseUrl}/sessions/${sessionId}/attach`, {
+        target,
+      }),
+    );
+    return this.toSegmentDomain(dto.segment);
   }
 
   async endSession(sessionId: string): Promise<EndSessionResult> {

@@ -143,4 +143,16 @@ describe('PomodoroSessionStore', () => {
     expect(result).toBeNull();
     expect(store.activeSession()).toBeNull();
   });
+
+  test('should retarget the open segment in place when attaching, keeping a single segment', async () => {
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    const pathId = crypto.randomUUID();
+    const nodeId = crypto.randomUUID();
+
+    await store.attachOpenSegment({ kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId });
+
+    const segments = store.segments();
+    expect(segments).toHaveLength(1);
+    expect(segments[0]).toMatchObject({ targetKind: 'node', learningPathId: pathId, learningPathNodeId: nodeId });
+  });
 });

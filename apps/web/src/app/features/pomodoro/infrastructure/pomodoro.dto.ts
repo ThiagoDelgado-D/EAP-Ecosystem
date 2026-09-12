@@ -37,6 +37,10 @@ export interface SwitchTargetResponseDto {
   openedSegment: SegmentDto;
 }
 
+export interface AttachOpenSegmentResponseDto {
+  segment: SegmentDto;
+}
+
 export type EndSessionResponseDto =
   | { discarded: true }
   | { discarded: false; session: SessionDto; segments: SegmentDto[] };
