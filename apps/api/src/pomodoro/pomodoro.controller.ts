@@ -8,6 +8,7 @@ import type {
   NotificationPort,
 } from "@pomodoro/domain";
 import {
+  attachOpenSegment,
   endSession,
   getActiveSession,
   startBreak,
@@ -79,6 +80,23 @@ export class PomodoroController {
       {
         sessionRepository: this.sessionRepository,
         cryptoService: this.cryptoService,
+        learningPathMembershipPort: this.learningPathMembershipPort,
+      },
+      { userId, sessionId: id, target: dto.target as SegmentTargetInput },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Patch("sessions/:id/attach")
+  async attachOpenSegment(
+    @Param("id") id: UUID,
+    @Body() dto: SwitchTargetDto,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const result = await attachOpenSegment(
+      {
+        sessionRepository: this.sessionRepository,
         learningPathMembershipPort: this.learningPathMembershipPort,
       },
       { userId, sessionId: id, target: dto.target as SegmentTargetInput },

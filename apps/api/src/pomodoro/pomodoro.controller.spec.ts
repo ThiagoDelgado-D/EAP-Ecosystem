@@ -364,6 +364,57 @@ describe("PomodoroController (integration)", () => {
     });
   });
 
+  describe("Attach", () => {
+    test("retargets the open segment in place without opening a new one", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+      const sessionId = startResponse.body.id;
+      backdateSession(sessionId, MIN_SESSION_DURATION_SEC + 30);
+
+      const pathId = await cryptoService.generateUUID();
+      const nodeId = await cryptoService.generateUUID();
+      const attachResponse = await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/sessions/${sessionId}/attach`)
+        .set(authHeader())
+        .send({
+          target: { kind: "node", learningPathId: pathId, learningPathNodeId: nodeId },
+        })
+        .expect(200);
+
+      expect(attachResponse.body.segment).toMatchObject({
+        targetKind: "node",
+        learningPathId: pathId,
+        learningPathNodeId: nodeId,
+        startSec: 0,
+      });
+      expect(attachResponse.body.segment.endSec).toBeUndefined();
+
+      const segments = sessionRepository.segments.filter(
+        (s) => s.sessionId === sessionId,
+      );
+      expect(segments).toHaveLength(1);
+    });
+
+    test("Should return 403 when a different user tries to attach", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+
+      const forbiddenAttachResponse = await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/sessions/${startResponse.body.id}/attach`)
+        .set(authHeader(intruderToken))
+        .send({ target: { kind: "free" } })
+        .expect(403);
+
+      expect(forbiddenAttachResponse.body).toEqual({});
+    });
+  });
+
   describe("Active session", () => {
     test("returns null when the user has no active session", async () => {
       const response = await request(app.getHttpServer())
