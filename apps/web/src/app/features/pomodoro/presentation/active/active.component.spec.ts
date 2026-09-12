@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
+import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { ActiveComponent } from './active.component';
 
@@ -10,8 +11,9 @@ function setup() {
   TestBed.configureTestingModule({ providers });
 
   const store = TestBed.inject(PomodoroSessionStore);
+  const overlayHost = TestBed.inject(PomodoroOverlayHostService);
   const fixture = TestBed.createComponent(ActiveComponent);
-  return { component: fixture.componentInstance, fixture, store, repository: pomodoroRepository, learningPathRepository, navigateByUrl };
+  return { component: fixture.componentInstance, fixture, store, overlayHost, repository: pomodoroRepository, learningPathRepository, navigateByUrl };
 }
 
 describe('ActiveComponent', () => {
@@ -104,6 +106,17 @@ describe('ActiveComponent', () => {
 
     expect(store.activeSession()).not.toBeNull();
     expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
+  });
+
+  test('should show the zen overlay without ending or navigating away', async () => {
+    const { component, store, overlayHost, navigateByUrl } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+    component.openZen();
+
+    expect(overlayHost.isShown('pomodoro-zen')).toBe(true);
+    expect(store.activeSession()).not.toBeNull();
+    expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
   test('should navigate back to start when there is no active session', () => {

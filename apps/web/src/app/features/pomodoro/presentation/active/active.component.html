@@ -15,6 +15,17 @@
         </button>
         <button
           type="button"
+          (click)="openZen()"
+          title="Zen"
+          class="w-7 h-7 rounded-md flex items-center justify-center text-ink-dim hover:text-ink-body hover:bg-surface-overlay transition-colors"
+          aria-label="Enter zen view"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3a9 9 0 109 9 7 7 0 01-9-9z" />
+          </svg>
+        </button>
+        <button
+          type="button"
           (click)="toggleRail()"
           class="w-7 h-7 rounded-md flex items-center justify-center text-ink-dim hover:text-ink-body hover:bg-surface-overlay transition-colors"
           aria-label="Toggle details panel"

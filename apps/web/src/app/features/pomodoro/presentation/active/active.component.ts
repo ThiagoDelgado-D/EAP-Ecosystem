@@ -5,8 +5,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
+import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
+import { PomodoroZenViewComponent, POMODORO_ZEN_KEY } from '@features/pomodoro/presentation/zen-view/pomodoro-zen-view.component';
 import { describeTarget, describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
 import { currentSegmentTarget, formatMinutes, segmentToTarget, segmentTotals, type SegmentTotal } from './segment-display';
 
@@ -24,6 +26,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 export class ActiveComponent {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
+  private readonly overlayHost = inject(PomodoroOverlayHostService);
   readonly store = inject(PomodoroSessionStore);
   readonly picker = inject(PomodoroPickerService);
 
@@ -119,6 +122,10 @@ export class ActiveComponent {
 
   minimize(): void {
     void this.router.navigateByUrl('/dashboard');
+  }
+
+  openZen(): void {
+    this.overlayHost.show(POMODORO_ZEN_KEY, PomodoroZenViewComponent, 'fullscreen');
   }
 
   backToStart(): void {
