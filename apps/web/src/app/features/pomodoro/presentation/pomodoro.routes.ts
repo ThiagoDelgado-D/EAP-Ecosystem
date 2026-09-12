@@ -30,6 +30,11 @@ export const pomodoroRoutes: Routes = [
         canActivate: [requireActiveSessionGuard],
         loadComponent: () => import('./active/active.component').then((m) => m.ActiveComponent),
       },
+      {
+        path: 'end',
+        canActivate: [requireActiveSessionGuard],
+        loadComponent: () => import('./end/end.component').then((m) => m.EndComponent),
+      },
     ],
   },
 ];
