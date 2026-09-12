@@ -32,8 +32,6 @@ describe('ActiveComponent', () => {
     vi.advanceTimersByTime(90 * 1000);
 
     expect(component.remainingLabel()).toBe('23:30');
-
-    component.ngOnDestroy();
   });
 
   test('should freeze the countdown while paused', async () => {
@@ -45,8 +43,6 @@ describe('ActiveComponent', () => {
     vi.advanceTimersByTime(60 * 1000);
 
     expect(component.remainingLabel()).toBe('24:50');
-
-    component.ngOnDestroy();
   });
 
   test('should show "Free focus" context for a free target', async () => {
@@ -55,8 +51,6 @@ describe('ActiveComponent', () => {
 
     expect(component.contextDisplay()).toEqual({ title: 'Free focus', subtitle: 'No material attached' });
     expect(component.description().isFree).toBe(true);
-
-    component.ngOnDestroy();
   });
 
   test('should append a new segment and update the context when switching target', async () => {
@@ -68,8 +62,6 @@ describe('ActiveComponent', () => {
 
     expect(store.segments()).toHaveLength(2);
     expect(component.currentTarget()).toEqual({ kind: 'resource', resourceId });
-
-    component.ngOnDestroy();
   });
 
   test('should label each segment total with its own node title instead of a generic "Path step"', async () => {
@@ -92,8 +84,6 @@ describe('ActiveComponent', () => {
     const labels = component.segmentTotals().map((total) => component.segmentTargetLabel(total.target));
     expect(labels).toContain('Git y control de versiones');
     expect(labels).toContain('¿Qué es Docker?');
-
-    component.ngOnDestroy();
   });
 
   test('should navigate to the end screen instead of ending the session directly', async () => {
@@ -104,8 +94,6 @@ describe('ActiveComponent', () => {
 
     expect(store.activeSession()).not.toBeNull();
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/end');
-
-    component.ngOnDestroy();
   });
 
   test('should navigate back to start when there is no active session', () => {
@@ -114,8 +102,6 @@ describe('ActiveComponent', () => {
     component.backToStart();
 
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
-
-    component.ngOnDestroy();
   });
 
   test('should have no previous target right after starting the session', async () => {
@@ -123,8 +109,6 @@ describe('ActiveComponent', () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
 
     expect(component.previousTarget()).toBeNull();
-
-    component.ngOnDestroy();
   });
 
   test('should track the target before the current one across a switch', async () => {
@@ -136,7 +120,5 @@ describe('ActiveComponent', () => {
 
     expect(component.previousTarget()).toEqual({ kind: 'free' });
     expect(component.currentTarget()).toEqual({ kind: 'resource', resourceId });
-
-    component.ngOnDestroy();
   });
 });
