@@ -7,6 +7,7 @@ import { getLastSessionTarget } from "./use-cases/sessions/get-last-session-targ
 import { getPathMomentum } from "./use-cases/sessions/get-path-momentum.js";
 import { suggestSessionTarget } from "./use-cases/sessions/suggest-session-target.js";
 import { getActiveSession } from "./use-cases/sessions/get-active-session.js";
+import { attachOpenSegment } from "./use-cases/sessions/attach-open-segment.js";
 
 export const pomodoroUseCaseMap = {
   startSession,
@@ -17,6 +18,7 @@ export const pomodoroUseCaseMap = {
   getPathMomentum,
   suggestSessionTarget,
   getActiveSession,
+  attachOpenSegment,
 } as const;
 
 export type PomodoroUseCaseMap = typeof pomodoroUseCaseMap;
