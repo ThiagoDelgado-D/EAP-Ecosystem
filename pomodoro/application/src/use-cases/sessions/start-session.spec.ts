@@ -56,8 +56,8 @@ describe("startSession", () => {
       },
     );
 
-    expect(result).not.toBeInstanceOf(Error);
-    const session = result as Exclude<typeof result, Error>;
+    if (result instanceof Error) throw result;
+    const session = result;
     expect(session.userId).toBe(requestingUserId);
     expect(session.plannedMin).toBe(25);
     expect(session.completedAt).toBeUndefined();

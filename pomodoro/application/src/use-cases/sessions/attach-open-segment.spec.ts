@@ -1,8 +1,12 @@
 import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockLearningPathMembershipPort, mockSessionRepository } from "../../mocks/index.js";
+import {
+  mockLearningPathMembershipPort,
+  mockSessionRepository,
+  createSessionLifecycleFixture,
+  type SessionLifecycleFixture,
+} from "../../mocks/index.js";
 import { SegmentTargetKind } from "@pomodoro/domain";
-import { createSessionLifecycleFixture, type SessionLifecycleFixture } from "./session-lifecycle-fixture.js";
 import { attachOpenSegment } from "./attach-open-segment.js";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
 import { SessionForbiddenError } from "../../errors/session-forbidden.js";
@@ -45,8 +49,8 @@ describe("attachOpenSegment", () => {
       target: { kind: SegmentTargetKind.RESOURCE, resourceId: reactDocsResourceId },
     });
 
-    expect(result).not.toBeInstanceOf(Error);
-    const { segment } = result as Exclude<typeof result, Error>;
+    if (result instanceof Error) throw result;
+    const { segment } = result;
 
     expect(segment.id).toBe(openSegmentBefore!.id);
     expect(segment.startSec).toBe(openSegmentBefore!.startSec);

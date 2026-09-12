@@ -1,8 +1,12 @@
 import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockLearningPathMembershipPort, mockSessionRepository } from "../../mocks/index.js";
-import { createSessionLifecycleFixture, type SessionLifecycleFixture } from "./session-lifecycle-fixture.js";
+import {
+  mockLearningPathMembershipPort,
+  mockSessionRepository,
+  createSessionLifecycleFixture,
+  type SessionLifecycleFixture,
+} from "../../mocks/index.js";
 import { switchTarget } from "./switch-target.js";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
 import { SessionForbiddenError } from "../../errors/session-forbidden.js";
