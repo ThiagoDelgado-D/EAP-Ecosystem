@@ -7,7 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
-import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
+import { BrowsePickerDialogComponent, NODE_PROGRESS_LABELS } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import { describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
 import { filterLibraryResources } from '@features/pomodoro/application/picker-search';
 import { formatMinutes, segmentToTarget, segmentTotals, targetKey } from '@features/pomodoro/presentation/active/segment-display';
@@ -22,7 +22,6 @@ import { TopicRepository } from '@features/learning-resource/domain/topic.reposi
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
 import type { Topic } from '@features/learning-resource/domain/topic.model';
 import { RESOURCE_STATUS_LABELS } from '@features/learning-resource/domain/learning-resource.constants';
-import { NODE_PROGRESS_LABELS } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 
 interface TouchedTarget {
   key: string;
@@ -124,6 +123,7 @@ export class EndComponent {
         const target = total?.target as SegmentTarget;
         const label = describeTargetLabel(target, groups, library);
         const isStub = target.kind === 'node' && !target.resourceId;
+        const resourceId = target.kind === 'resource' || target.kind === 'node' ? target.resourceId : undefined;
         return {
           key,
           target,
@@ -132,7 +132,7 @@ export class EndComponent {
           isStub,
           pathId: target.kind === 'node' ? target.learningPathId : undefined,
           nodeId: target.kind === 'node' ? target.learningPathNodeId : undefined,
-          resourceId: target.kind === 'resource' ? target.resourceId : target.kind === 'node' ? target.resourceId : undefined,
+          resourceId,
         };
       });
   });
