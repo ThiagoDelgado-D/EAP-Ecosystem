@@ -96,6 +96,16 @@ describe('ActiveComponent', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/end');
   });
 
+  test('should minimize by navigating to the dashboard without ending the session', async () => {
+    const { component, store, navigateByUrl } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+    component.minimize();
+
+    expect(store.activeSession()).not.toBeNull();
+    expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
+  });
+
   test('should navigate back to start when there is no active session', () => {
     const { component, navigateByUrl } = setup();
 
