@@ -1,10 +1,8 @@
 import { mockCryptoService, type UUID } from "domain-lib";
 import { SegmentTargetKind, type LearningPathMembership, type Session } from "@pomodoro/domain";
-import {
-  mockLearningPathMembershipPort,
-  mockSessionRepository,
-} from "../../mocks/index.js";
-import { startSession } from "./start-session.js";
+import { mockLearningPathMembershipPort } from "./mock-learning-path-membership-port.js";
+import { mockSessionRepository } from "./mock-session-repository.js";
+import { startSession } from "../use-cases/sessions/start-session.js";
 
 export interface SessionLifecycleFixture {
   cryptoService: ReturnType<typeof mockCryptoService>;
