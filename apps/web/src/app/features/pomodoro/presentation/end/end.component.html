@@ -1,0 +1,261 @@
+@if (session(); as session) {
+  <div class="max-w-2xl mx-auto p-4 sm:p-6 pb-16 flex flex-col gap-5">
+    <div class="text-center pt-6">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-status-done/10 border border-status-done/30 mb-4">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-status-done)" stroke-width="3"><path d="M20 6L9 17l-5-5" /></svg>
+        <span class="t-kicker text-status-done">Session complete</span>
+      </div>
+      <div class="t-num text-5xl font-extralight text-ink-strong tracking-tight">{{ elapsedLabel() }}</div>
+      <div class="text-xs text-ink-faint mt-2">
+        {{ session.startedAt | date: 'shortTime' }} → {{ (endedAtOrNow()) | date: 'shortTime' }} · {{ store.segments().length }} segment{{ store.segments().length === 1 ? '' : 's' }}
+      </div>
+      @if (session.intent) {
+        <div class="text-xs text-ink-faint italic mt-3 max-w-sm mx-auto leading-relaxed">"{{ session.intent }}"</div>
+      }
+    </div>
+
+    <div class="rounded-xl border border-line-hairline p-4">
+      <div class="t-kicker mb-3">Time per target</div>
+      <div class="flex flex-col gap-3">
+        @for (total of totals(); track total.key) {
+          <div>
+            <div class="flex items-center gap-2 mb-1.5">
+              <span
+                class="w-1.5 h-1.5 rounded-sm flex-shrink-0"
+                [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-ghost)'"
+              ></span>
+              <span class="flex-1 text-xs font-semibold text-ink-strong truncate">{{ targetTitle(total.target) }}</span>
+              <span class="t-mono text-[11px] font-bold text-ink-body">{{ formatMinutes(total.secs) }}</span>
+            </div>
+            <div class="h-1 rounded-sm bg-line-soft overflow-hidden">
+              <div
+                class="h-full"
+                [style.width.%]="elapsedSec() > 0 ? (total.secs / elapsedSec()) * 100 : 0"
+                [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-ghost)'"
+              ></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (freeOnly()) {
+      <div class="rounded-xl border border-dashed border-line-strong p-4">
+        <div class="t-kicker mb-1.5">Attach this session?</div>
+        <div class="text-xs text-ink-faint leading-relaxed mb-3">
+          You focused without picking a target. Give it a home now, or leave it as pure focus time.
+        </div>
+        <button
+          type="button"
+          (click)="openAttachDialog()"
+          [disabled]="attaching()"
+          class="w-full px-4 py-2.5 rounded-lg text-xs font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 disabled:opacity-50 transition-colors"
+        >
+          {{ attaching() ? 'Attaching...' : 'Choose what this was' }}
+        </button>
+      </div>
+    }
+
+    @for (touched of touchedTargets(); track touched.key) {
+      <div class="rounded-xl border border-line-hairline p-4 flex flex-col gap-3">
+        <div class="flex items-start gap-3">
+          <div class="w-7 h-7 rounded-md bg-accent-wash flex items-center justify-center flex-shrink-0">
+            @if (touched.isStub) {
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-energy-medium)" stroke-width="2.2"><path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z" /></svg>
+            } @else {
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-ink)" stroke-width="2.2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h7" /></svg>
+            }
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-extrabold text-ink-strong truncate">{{ touched.label.title }}</div>
+            @if (touched.label.subtitle) {
+              <div class="text-xs text-ink-faint mt-0.5">{{ touched.label.subtitle }}</div>
+            }
+          </div>
+        </div>
+
+        @if (touched.isStub && !effectiveResourceId(touched)) {
+          <div class="flex flex-col gap-2.5 pt-1">
+            <div class="text-xs text-ink-dim leading-relaxed">
+              You spent <b class="text-energy-medium">{{ formatMinutes(touched.totalSecs) }}</b> on this step without a resource. Attach what you actually used.
+            </div>
+            <div class="flex gap-1 bg-surface-inset rounded-lg p-1 border border-line-soft">
+              <button type="button" (click)="selectPromoteTab(touched.key, 'link')" [class]="currentPromoteTab(touched.key) === 'link' ? 'bg-surface-raised text-energy-medium' : 'text-ink-faint'" class="flex-1 py-1.5 rounded-md text-xs font-semibold transition-colors">
+                Link existing
+              </button>
+              <button type="button" (click)="selectPromoteTab(touched.key, 'create')" [class]="currentPromoteTab(touched.key) === 'create' ? 'bg-surface-raised text-energy-medium' : 'text-ink-faint'" class="flex-1 py-1.5 rounded-md text-xs font-semibold transition-colors">
+                Create new
+              </button>
+            </div>
+
+            @if (currentPromoteTab(touched.key) === 'link') {
+              <label [for]="'promote-search-' + touched.key" class="sr-only">Search the library</label>
+              <input
+                [id]="'promote-search-' + touched.key"
+                type="text"
+                [ngModel]="promoteQuery()[touched.key] ?? ''"
+                (ngModelChange)="setPromoteQuery(touched.key, $event)"
+                placeholder="Search the library..."
+                class="w-full px-3 py-2 rounded-lg text-xs bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-ghost focus:outline-none focus:border-accent-line"
+              />
+              <div class="flex flex-col gap-1.5 max-h-56 overflow-y-auto rounded-lg border border-line-soft bg-surface-inset p-1.5">
+                @for (resource of filteredLibraryFor(touched.key); track resource.id) {
+                  <button
+                    type="button"
+                    (click)="selectPromoteResource(touched.key, resource.id)"
+                    [class]="promoteSelectedResourceId()[touched.key] === resource.id ? 'border-energy-medium bg-energy-medium/10' : 'border-line-hairline hover:border-line-soft'"
+                    class="flex items-center text-left px-3 py-2 rounded-lg border transition-colors"
+                  >
+                    <span class="text-xs text-ink-body truncate">{{ resource.title }}</span>
+                  </button>
+                } @empty {
+                  <div class="text-xs text-ink-faint px-1 py-2">Nothing matches.</div>
+                }
+              </div>
+              <button
+                type="button"
+                (click)="linkExistingResource(touched)"
+                [disabled]="!promoteSelectedResourceId()[touched.key]"
+                class="w-full px-4 py-2 rounded-lg text-xs font-semibold bg-energy-medium/15 border border-energy-medium/40 text-energy-medium disabled:opacity-40 transition-colors"
+              >
+                Link to this step
+              </button>
+            } @else {
+              <label [for]="'promote-title-' + touched.key" class="sr-only">Title</label>
+              <input
+                [id]="'promote-title-' + touched.key"
+                type="text"
+                [ngModel]="createTitle()[touched.key] ?? touched.label.title"
+                (ngModelChange)="setCreateTitle(touched.key, $event)"
+                class="w-full px-3 py-2 rounded-lg text-xs bg-surface-inset border border-line-soft text-ink-strong focus:outline-none focus:border-accent-line"
+              />
+              <label [for]="'promote-url-' + touched.key" class="sr-only">URL</label>
+              <input
+                [id]="'promote-url-' + touched.key"
+                type="text"
+                [ngModel]="createUrl()[touched.key] ?? ''"
+                (ngModelChange)="setCreateUrl(touched.key, $event)"
+                placeholder="https://..."
+                class="w-full px-3 py-2 rounded-lg text-xs bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-ghost focus:outline-none focus:border-accent-line"
+              />
+              <label [for]="'promote-type-' + touched.key" class="sr-only">Resource type</label>
+              <select
+                [id]="'promote-type-' + touched.key"
+                [ngModel]="createTypeId()[touched.key] ?? resourceTypes()[0]?.id"
+                (ngModelChange)="setCreateTypeId(touched.key, $event)"
+                class="w-full px-3 py-2 rounded-lg text-xs bg-surface-inset border border-line-soft text-ink-strong focus:outline-none focus:border-accent-line"
+              >
+                @for (type of resourceTypes(); track type.id) {
+                  <option [value]="type.id">{{ type.displayName }}</option>
+                }
+              </select>
+              <div>
+                <div class="t-kicker mb-1.5">Topics</div>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (topic of topics(); track topic.id) {
+                    <button
+                      type="button"
+                      (click)="toggleCreateTopic(touched.key, topic.id)"
+                      [class]="isCreateTopicSelected(touched.key, topic.id) ? 'border-energy-medium bg-energy-medium/15 text-energy-medium' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+                      class="px-2.5 py-1 rounded-full border text-[10.5px] font-semibold transition-colors"
+                    >
+                      {{ topic.name }}
+                    </button>
+                  } @empty {
+                    <div class="text-[10.5px] text-ink-faint">No topics yet.</div>
+                  }
+                </div>
+              </div>
+              <button
+                type="button"
+                (click)="createAndLinkResource(touched)"
+                [disabled]="createTopicIdsFor(touched.key).length === 0"
+                class="w-full px-4 py-2 rounded-lg text-xs font-semibold bg-energy-medium/15 border border-energy-medium/40 text-energy-medium disabled:opacity-40 transition-colors"
+              >
+                Create &amp; link
+              </button>
+              @if (createTopicIdsFor(touched.key).length === 0) {
+                <div class="text-[10.5px] text-ink-faint text-center -mt-1">Pick at least one topic.</div>
+              }
+            }
+          </div>
+        }
+
+        @if (touched.nodeId && promotedResource()[touched.nodeId]; as promoted) {
+          <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-status-done/10 border border-status-done/30">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-status-done)" stroke-width="3"><path d="M20 6L9 17l-5-5" /></svg>
+            <div class="text-xs text-ink-dim">
+              Stub promoted — now linked to <b class="text-ink-strong">{{ promoted.title }}</b>.
+            </div>
+          </div>
+        }
+
+        @if (touched.nodeId || effectiveResourceId(touched)) {
+          @if (!isAdjustOpen(touched.key)) {
+            <button type="button" (click)="toggleAdjust(touched.key)" class="self-start flex items-center gap-1.5 text-[11px] font-semibold text-ink-faint hover:text-ink-body">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6" /></svg>
+              Adjust progress
+            </button>
+          } @else {
+            <div class="flex flex-col gap-3 pt-1">
+              @if (touched.nodeId) {
+                <div>
+                  <div class="t-kicker mb-1.5">Step progress</div>
+                  <div class="flex gap-1.5">
+                    @for (option of NODE_PROGRESS_OPTIONS; track option) {
+                      <button
+                        type="button"
+                        (click)="setNodeProgress(touched, option)"
+                        [class]="currentNodeProgress(touched, storedNodeProgress(touched)) === option ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+                        class="flex-1 py-1.5 rounded-md text-[10.5px] font-bold border transition-colors"
+                      >
+                        {{ NODE_PROGRESS_LABELS[option] }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+              @if (effectiveResourceId(touched); as resourceId) {
+                <div>
+                  <div class="t-kicker mb-1.5">Resource status</div>
+                  <div class="flex gap-1.5">
+                    @for (option of RESOURCE_STATUS_OPTIONS; track option) {
+                      <button
+                        type="button"
+                        (click)="setResourceStatus(resourceId, option)"
+                        [class]="currentResourceStatus(resourceId, storedResourceStatus(resourceId)) === option ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+                        class="flex-1 py-1.5 rounded-md text-[10.5px] font-bold border transition-colors"
+                      >
+                        {{ RESOURCE_STATUS_LABELS[option] }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <div class="flex flex-col gap-2 mt-2">
+      <div class="flex gap-2.5">
+        <button type="button" (click)="discard()" [disabled]="saving()" class="flex-1 px-4 py-2.5 rounded-lg text-xs font-semibold border border-line-soft text-ink-faint hover:border-line-strong disabled:opacity-50 transition-colors">
+          Discard
+        </button>
+        <button type="button" (click)="saveAndClose()" [disabled]="saving()" class="flex-[2] px-4 py-2.5 rounded-lg text-xs font-semibold bg-accent hover:bg-accent-hover text-white disabled:opacity-50 transition-colors">
+          {{ saving() ? 'Saving...' : pendingCount() > 0 ? 'Save & close' : 'Log ' + elapsedLabel() + ' & close' }}
+        </button>
+      </div>
+      <div class="text-center text-[10.5px] text-ink-faint leading-relaxed">
+        @if (pendingCount() > 0) {
+          Saving applies <b class="text-ink-dim">{{ pendingCount() }} status change{{ pendingCount() === 1 ? '' : 's' }}</b>. Discarding keeps the recorded time and drops them.
+        } @else {
+          No status changes yet — either button just closes the session and keeps the recorded time.
+        }
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="p-6 text-sm text-ink-faint">No active session.</div>
+}

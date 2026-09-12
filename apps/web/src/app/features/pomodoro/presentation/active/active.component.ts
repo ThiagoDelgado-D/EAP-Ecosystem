@@ -7,15 +7,10 @@ import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-se
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
-import { describeTarget } from '@features/pomodoro/presentation/start/target-description';
+import { describeTarget, describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
 import { formatMinutes, segmentToTarget, segmentTotals, type SegmentTotal } from './segment-display';
 
 type RailTab = 'session' | 'segments';
-
-export interface ContextDisplay {
-  title: string;
-  subtitle?: string;
-}
 
 const RING_RADIUS = 134;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -87,7 +82,7 @@ export class ActiveComponent implements OnDestroy {
 
   readonly description = computed(() => describeTarget(this.currentTarget(), this.picker.allPaths()));
 
-  readonly contextDisplay = computed<ContextDisplay | null>(() => {
+  readonly contextDisplay = computed<TargetLabel | null>(() => {
     const target = this.currentTarget();
     return target ? this.resolveTargetDisplay(target) : null;
   });
@@ -100,15 +95,8 @@ export class ActiveComponent implements OnDestroy {
     return this.resolveTargetDisplay(target).title;
   }
 
-  private resolveTargetDisplay(target: SegmentTarget): ContextDisplay {
-    if (target.kind === 'free') return { title: 'Free focus', subtitle: 'No material attached' };
-    if (target.kind === 'resource') {
-      const resource = this.picker.library().find((r) => r.id === target.resourceId);
-      return { title: resource?.title ?? 'Resource' };
-    }
-    const group = this.picker.allPaths().find((g) => g.path.id === target.learningPathId);
-    const node = group?.nodes.find((n) => n.id === target.learningPathNodeId);
-    return { title: node?.title ?? 'Path step', subtitle: group?.path.title };
+  private resolveTargetDisplay(target: SegmentTarget): TargetLabel {
+    return describeTargetLabel(target, this.picker.allPaths(), this.picker.library());
   }
 
   readonly formatMinutes = formatMinutes;
@@ -151,9 +139,8 @@ export class ActiveComponent implements OnDestroy {
     await this.store.switchTarget(target);
   }
 
-  async endSession(): Promise<void> {
-    await this.store.end();
-    void this.router.navigateByUrl('/pomodoro');
+  endSession(): void {
+    void this.router.navigateByUrl('/pomodoro/end');
   }
 
   backToStart(): void {
