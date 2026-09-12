@@ -1,5 +1,4 @@
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
-import { SegmentTargetKind } from "@pomodoro/domain";
+import { BaseError, InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
   mockLearningPathMembershipPort,
@@ -7,14 +6,15 @@ import {
   createSessionLifecycleFixture,
   type SessionLifecycleFixture,
 } from "../../mocks/index.js";
-import { switchTarget } from "./switch-target.js";
+import { SegmentTargetKind } from "@pomodoro/domain";
+import { attachOpenSegment } from "./attach-open-segment.js";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
 import { SessionForbiddenError } from "../../errors/session-forbidden.js";
 import { SessionNotActiveError } from "../../errors/session-not-active.js";
 import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
 
-describe("switchTarget", () => {
+describe("attachOpenSegment", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
@@ -35,45 +35,34 @@ describe("switchTarget", () => {
 
   const deps = () => ({
     sessionRepository,
-    cryptoService,
     learningPathMembershipPort: membershipPort,
   });
 
-  test("Should close the open segment and open a new one for the resolved target", async () => {
+  test("Should retarget the open segment in place, without closing or opening a new one", async () => {
     const session = await startFreeSession();
     const reactDocsResourceId = await cryptoService.generateUUID();
+    const openSegmentBefore = await sessionRepository.findOpenSegmentBySessionId(session.id);
 
-    const result = await switchTarget(deps(), {
+    const result = await attachOpenSegment(deps(), {
       userId: requestingUserId,
       sessionId: session.id,
-      target: {
-        kind: SegmentTargetKind.RESOURCE,
-        resourceId: reactDocsResourceId,
-      },
+      target: { kind: SegmentTargetKind.RESOURCE, resourceId: reactDocsResourceId },
     });
 
-    expect(result).not.toBeInstanceOf(Error);
-    const { closedSegment, openedSegment } = result as Exclude<
-      typeof result,
-      Error
-    >;
+    if (result instanceof BaseError) throw result;
+    const { segment } = result;
 
-    expect(closedSegment.endSec).toBeDefined();
-    expect(closedSegment.targetKind).toBe(SegmentTargetKind.FREE);
+    expect(segment.id).toBe(openSegmentBefore!.id);
+    expect(segment.startSec).toBe(openSegmentBefore!.startSec);
+    expect(segment.endSec).toBeUndefined();
+    expect(segment.targetKind).toBe(SegmentTargetKind.RESOURCE);
 
-    expect(openedSegment.startSec).toBe(closedSegment.endSec);
-    expect(openedSegment.endSec).toBeUndefined();
-    expect(openedSegment.targetKind).toBe(SegmentTargetKind.RESOURCE);
-    expect(openedSegment.id).not.toBe(closedSegment.id);
-
-    const segments = sessionRepository.segments.filter(
-      (s) => s.sessionId === session.id,
-    );
-    expect(segments).toHaveLength(2);
+    const segments = sessionRepository.segments.filter((s) => s.sessionId === session.id);
+    expect(segments).toHaveLength(1);
   });
 
   test("Should return InvalidDataError when sessionId is missing", async () => {
-    const result = await switchTarget(deps(), {
+    const result = await attachOpenSegment(deps(), {
       userId: requestingUserId,
       target: { kind: SegmentTargetKind.FREE },
     } as any);
@@ -84,7 +73,7 @@ describe("switchTarget", () => {
   test("Should return SessionNotFoundError when the session does not exist", async () => {
     const nonExistentSessionId = await cryptoService.generateUUID();
 
-    const result = await switchTarget(deps(), {
+    const result = await attachOpenSegment(deps(), {
       userId: requestingUserId,
       sessionId: nonExistentSessionId,
       target: { kind: SegmentTargetKind.FREE },
@@ -97,7 +86,7 @@ describe("switchTarget", () => {
     const session = await startFreeSession();
     const otherUserId = await cryptoService.generateUUID();
 
-    const result = await switchTarget(deps(), {
+    const result = await attachOpenSegment(deps(), {
       userId: otherUserId,
       sessionId: session.id,
       target: { kind: SegmentTargetKind.FREE },
@@ -108,12 +97,10 @@ describe("switchTarget", () => {
 
   test("Should return SessionNotActiveError when the session already ended", async () => {
     const session = await startFreeSession();
-    const storedSession = sessionRepository.sessions.find(
-      (s) => s.id === session.id,
-    )!;
+    const storedSession = sessionRepository.sessions.find((s) => s.id === session.id)!;
     storedSession.completedAt = new Date();
 
-    const result = await switchTarget(deps(), {
+    const result = await attachOpenSegment(deps(), {
       userId: requestingUserId,
       sessionId: session.id,
       target: { kind: SegmentTargetKind.FREE },
@@ -124,15 +111,10 @@ describe("switchTarget", () => {
 
   test("Should return NoOpenSegmentError when the active session has no open segment", async () => {
     const session = await startFreeSession();
-    const openSegment = await sessionRepository.findOpenSegmentBySessionId(
-      session.id,
-    );
-    await sessionRepository.updateSegment({
-      ...openSegment!,
-      endSec: 120,
-    });
+    const openSegment = await sessionRepository.findOpenSegmentBySessionId(session.id);
+    await sessionRepository.updateSegment({ ...openSegment!, endSec: 120 });
 
-    const result = await switchTarget(deps(), {
+    const result = await attachOpenSegment(deps(), {
       userId: requestingUserId,
       sessionId: session.id,
       target: { kind: SegmentTargetKind.FREE },
@@ -144,20 +126,15 @@ describe("switchTarget", () => {
   test("Should return AmbiguousPathTargetError instead of guessing which path counts", async () => {
     const session = await startFreeSession();
 
-    const result = await switchTarget(deps(), {
+    const result = await attachOpenSegment(deps(), {
       userId: requestingUserId,
       sessionId: session.id,
-      target: {
-        kind: SegmentTargetKind.RESOURCE,
-        resourceId: cleanArchitectureResourceId,
-      },
+      target: { kind: SegmentTargetKind.RESOURCE, resourceId: cleanArchitectureResourceId },
     });
 
     expect(result).toBeInstanceOf(AmbiguousPathTargetError);
 
-    const segments = sessionRepository.segments.filter(
-      (s) => s.sessionId === session.id,
-    );
-    expect(segments).toHaveLength(1);
+    const segments = sessionRepository.segments.filter((s) => s.sessionId === session.id);
+    expect(segments[0]!.targetKind).toBe(SegmentTargetKind.FREE);
   });
 });

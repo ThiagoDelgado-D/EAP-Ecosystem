@@ -8,3 +8,4 @@ export * from "./get-last-session-target.js";
 export * from "./get-path-momentum.js";
 export * from "./suggest-session-target.js";
 export * from "./get-active-session.js";
+export * from "./attach-open-segment.js";

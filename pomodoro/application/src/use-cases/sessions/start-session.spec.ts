@@ -1,4 +1,4 @@
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
 import {
   SegmentTargetKind,
   type LearningPathMembership,
@@ -56,8 +56,8 @@ describe("startSession", () => {
       },
     );
 
-    expect(result).not.toBeInstanceOf(Error);
-    const session = result as Exclude<typeof result, Error>;
+    if (result instanceof BaseError) throw result;
+    const session = result;
     expect(session.userId).toBe(requestingUserId);
     expect(session.plannedMin).toBe(25);
     expect(session.completedAt).toBeUndefined();
