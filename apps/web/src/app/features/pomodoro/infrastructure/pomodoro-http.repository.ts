@@ -19,6 +19,7 @@ import type {
   EndSessionResponseDto,
   SegmentDto,
   SessionDto,
+  StartBreakResponseDto,
   SuggestedCandidateDto,
   SwitchTargetResponseDto,
 } from './pomodoro.dto';
@@ -69,8 +70,10 @@ export class PomodoroHttpRepository extends PomodoroRepository {
     };
   }
 
-  async startBreak(): Promise<void> {
-    await firstValueFrom(this.http.post(`${this.baseUrl}/breaks`, {}));
+  async startBreak(): Promise<{ durationSec: number }> {
+    return await firstValueFrom(
+      this.http.post<StartBreakResponseDto>(`${this.baseUrl}/breaks`, {}),
+    );
   }
 
   async getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]> {
