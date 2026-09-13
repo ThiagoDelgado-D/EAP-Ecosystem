@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push --force-with-lease*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "json=$(cat); cmd=$(echo \"$json\" | jq -r '.tool_input.command // empty'); sid=$(echo \"$json\" | jq -r '.session_id // \"unknown\"'); nums=$(echo \"$cmd\" | grep -oE '(^|[;&|(])[[:space:]]*gh pr view [0-9]+' | grep -oE '[0-9]+'); if [ -n \"$nums\" ]; then f=\"/tmp/claude-eap-pr-review-$sid.log\"; echo \"$nums\" >> \"$f\"; sort -u -o \"$f\" \"$f\"; fi"
+          },
+          {
+            "type": "command",
+            "command": "json=$(cat); cmd=$(echo \"$json\" | jq -r '.tool_input.command // empty'); sid=$(echo \"$json\" | jq -r '.session_id // \"unknown\"'); if echo \"$cmd\" | grep -qE '(^|[;&|(])[[:space:]]*gh pr create' || echo \"$cmd\" | grep -qE '(^|[;&|(])[[:space:]]*gh pr edit.*--body'; then count=0; f=\"/tmp/claude-eap-pr-review-$sid.log\"; [ -f \"$f\" ] && count=$(wc -l < \"$f\" | tr -d ' '); if [ \"$count\" -lt 5 ]; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Before creating or editing this PR body, pull at least 5 real historical PR bodies first via: gh pr view <n> --json body -q .body -- pick a spread of PR types and points in time (a big feature PR, a small fix or dedup PR, one from weeks back), not just the most recent ones. This project has a documented narrative PR body convention (see the pr_description_style memory file): a ## Title; an opening paragraph building general context BEFORE naming specifics; --- dividers with ### Layer headers when the change spans multiple layers; a bolded name on its own line followed by bulleted what-and-why points; closing verification written as prose with real numbers, never a checklist; and an optional trailing Follow-up section only for a genuine deferred item. Do not draft from memory of this shape, match it against the bodies just pulled. Checked %s of 5 PR bodies so far this session.\"}}\\n' \"$count\"; fi; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
