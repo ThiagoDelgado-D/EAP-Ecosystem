@@ -24,9 +24,10 @@ export class PomodoroMiniWidgetOrchestratorService {
   constructor() {
     effect(() => {
       const hasActiveSession = this.store.activeSession() !== null;
+      const onBreak = this.store.phase() === 'break';
       const onPomodoroRoute = this.currentUrl().startsWith('/pomodoro');
 
-      if (hasActiveSession && !onPomodoroRoute) {
+      if ((hasActiveSession || onBreak) && !onPomodoroRoute) {
         void this.showMiniWidget();
       } else {
         this.overlayHost.hide(MINI_WIDGET_KEY);
