@@ -97,6 +97,20 @@ describe('PomodoroMiniWidgetComponent', () => {
     expect(store.breakRemainingLabel()).toBe('10:00');
   });
 
+  test('should flag justExtended briefly when the break is extended', async () => {
+    vi.useFakeTimers();
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    await store.startBreak();
+
+    component.extendBreak();
+
+    expect(component.justExtended()).toBe(true);
+    vi.advanceTimersByTime(900);
+    expect(component.justExtended()).toBe(false);
+    vi.useRealTimers();
+  });
+
   test('should end the break and navigate back to start', async () => {
     const { component, store, navigateByUrl } = setup();
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
