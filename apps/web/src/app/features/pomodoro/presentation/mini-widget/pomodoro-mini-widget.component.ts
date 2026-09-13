@@ -30,6 +30,8 @@ export class PomodoroMiniWidgetComponent {
 
   readonly ringDashOffset = computed(() => RING_CIRCUMFERENCE * this.store.progressFraction());
 
+  readonly breakRingDashOffset = computed(() => RING_CIRCUMFERENCE * this.store.breakProgressFraction());
+
   readonly currentTarget = computed<SegmentTarget | null>(() => currentSegmentTarget(this.store.segments()));
 
   readonly contextDisplay = computed<TargetLabel | null>(() => {
@@ -61,5 +63,14 @@ export class PomodoroMiniWidgetComponent {
 
   endSession(): void {
     void this.router.navigateByUrl('/pomodoro/end');
+  }
+
+  extendBreak(): void {
+    this.store.extendBreak();
+  }
+
+  finishBreak(): void {
+    this.store.endBreak();
+    void this.router.navigateByUrl('/pomodoro');
   }
 }
