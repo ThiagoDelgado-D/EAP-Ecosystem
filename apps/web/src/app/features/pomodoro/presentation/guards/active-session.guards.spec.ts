@@ -59,6 +59,15 @@ describe('requireActiveSessionGuard', () => {
     expect(result).toBeInstanceOf(UrlTree);
     expect((result as UrlTree).toString()).toBe('/pomodoro');
   });
+
+  test('should allow activation while on break, even with no active session', async () => {
+    const { store } = setup();
+    store.phase.set('break');
+
+    const result = await runGuard(requireActiveSessionGuard);
+
+    expect(result).toBe(true);
+  });
 });
 
 describe('redirectIfActiveSessionGuard', () => {
@@ -98,5 +107,15 @@ describe('redirectIfActiveSessionGuard', () => {
     const result = await runGuard(redirectIfActiveSessionGuard);
 
     expect(result).toBe(true);
+  });
+
+  test('should redirect to the active screen while on break, even with no active session', async () => {
+    const { store } = setup();
+    store.phase.set('break');
+
+    const result = await runGuard(redirectIfActiveSessionGuard);
+
+    expect(result).toBeInstanceOf(UrlTree);
+    expect((result as UrlTree).toString()).toBe('/pomodoro/active');
   });
 });
