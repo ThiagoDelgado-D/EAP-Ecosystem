@@ -121,7 +121,7 @@ export class PomodoroController {
   @Post("breaks")
   @HttpCode(200)
   async startBreak() {
-    await startBreak({ notificationPort: this.notificationPort });
+    return await startBreak({ notificationPort: this.notificationPort });
   }
 
   @Get("suggestion")
