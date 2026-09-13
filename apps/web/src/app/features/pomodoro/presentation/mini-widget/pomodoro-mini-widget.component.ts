@@ -9,6 +9,7 @@ import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import { describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
 import { currentSegmentTarget } from '@features/pomodoro/presentation/active/segment-display';
+import { createTransientFlag } from '@shared/utils/transient-flag';
 
 const RING_RADIUS = 58;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -67,8 +68,12 @@ export class PomodoroMiniWidgetComponent {
     void this.router.navigateByUrl('/pomodoro/end');
   }
 
+  private readonly extendFlash = createTransientFlag();
+  readonly justExtended = this.extendFlash.active;
+
   extendBreak(): void {
     this.store.extendBreak();
+    this.extendFlash.trigger();
   }
 
   finishBreak(): void {
