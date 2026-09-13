@@ -32,9 +32,12 @@ function navigateTo(events: Subject<NavigationEnd>, url: string): void {
 }
 
 function waitForShown(overlayHost: PomodoroOverlayHostService, key: string, expected: boolean): Promise<void> {
-  return vi.waitFor(() => {
-    if (overlayHost.isShown(key) !== expected) throw new Error('not yet');
-  });
+  return vi.waitFor(
+    () => {
+      if (overlayHost.isShown(key) !== expected) throw new Error('not yet');
+    },
+    { timeout: 5000, interval: 50 },
+  );
 }
 
 describe('PomodoroMiniWidgetOrchestratorService', () => {
@@ -82,6 +85,28 @@ describe('PomodoroMiniWidgetOrchestratorService', () => {
     await waitForShown(overlayHost, MINI_WIDGET_KEY, true);
 
     await store.end();
+    appRef.tick();
+
+    expect(overlayHost.isShown(MINI_WIDGET_KEY)).toBe(false);
+  });
+
+  test('should show the mini widget while on break, even without an active session', async () => {
+    const { store, overlayHost, appRef } = setup('/library');
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    await store.startBreak();
+    appRef.tick();
+
+    await waitForShown(overlayHost, MINI_WIDGET_KEY, true);
+  });
+
+  test('should hide the widget once the break ends', async () => {
+    const { store, overlayHost, appRef } = setup('/library');
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    await store.startBreak();
+    appRef.tick();
+    await waitForShown(overlayHost, MINI_WIDGET_KEY, true);
+
+    store.endBreak();
     appRef.tick();
 
     expect(overlayHost.isShown(MINI_WIDGET_KEY)).toBe(false);

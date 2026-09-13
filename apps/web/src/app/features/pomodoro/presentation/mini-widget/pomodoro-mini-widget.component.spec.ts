@@ -76,4 +76,35 @@ describe('PomodoroMiniWidgetComponent', () => {
     expect(store.segments()).toHaveLength(2);
     expect(component.currentTarget()).toEqual({ kind: 'resource', resourceId });
   });
+
+  test('should show the break countdown once a break starts', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+    await store.startBreak();
+
+    expect(store.phase()).toBe('break');
+    expect(store.breakRemainingLabel()).toBe('05:00');
+  });
+
+  test('should add 5 minutes to the break when extended', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    await store.startBreak();
+
+    component.extendBreak();
+
+    expect(store.breakRemainingLabel()).toBe('10:00');
+  });
+
+  test('should end the break and navigate back to start', async () => {
+    const { component, store, navigateByUrl } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    await store.startBreak();
+
+    component.finishBreak();
+
+    expect(store.phase()).toBe('focus');
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
 });

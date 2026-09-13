@@ -1,4 +1,93 @@
-@if (store.activeSession(); as session) {
+<ng-template #headerButtons>
+  <button
+    type="button"
+    (click)="goFull()"
+    title="Full view"
+    class="w-6 h-6 rounded-md flex items-center justify-center text-ink-faint hover:text-ink-body hover:bg-surface-overlay transition-colors"
+  >
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+    </svg>
+  </button>
+  <button
+    type="button"
+    (click)="toggleCollapsed()"
+    title="Collapse"
+    class="w-6 h-6 rounded-md flex items-center justify-center text-ink-faint hover:text-ink-body hover:bg-surface-overlay transition-colors"
+  >
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M5 12h14" />
+    </svg>
+  </button>
+</ng-template>
+
+@if (store.phase() === 'break') {
+  @if (collapsed()) {
+    <button
+      type="button"
+      (click)="toggleCollapsed()"
+      title="Expand timer"
+      class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-surface-raised border border-line-soft shadow-xl hover:border-line-strong transition-colors"
+    >
+      <span class="w-1.5 h-1.5 rounded-full bg-status-done"></span>
+      <span class="t-mono font-mono text-[13px] font-medium text-ink-strong">{{ store.breakRemainingLabel() }}</span>
+    </button>
+  } @else {
+    <div class="w-[280px] rounded-2xl bg-surface-raised border border-line-soft shadow-xl overflow-hidden">
+      <div class="flex items-center gap-2 px-3 py-2.5 border-b border-line-hairline">
+        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-status-done"></span>
+        <span class="flex-1 text-[10px] font-bold tracking-wider uppercase text-status-done">Break</span>
+        <ng-container [ngTemplateOutlet]="headerButtons"></ng-container>
+      </div>
+
+      <div class="flex flex-col items-center gap-3 px-4 py-4">
+        <div class="relative" style="width: 132px; height: 132px">
+          <svg width="132" height="132" style="transform: rotate(-90deg)">
+            <circle cx="66" cy="66" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="5" fill="none" />
+            <circle
+              cx="66"
+              cy="66"
+              [attr.r]="RING_RADIUS"
+              stroke="var(--color-status-done)"
+              stroke-width="5"
+              fill="none"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
+              [attr.stroke-dashoffset]="breakRingDashOffset()"
+            />
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="t-num font-mono text-[22px] font-semibold text-ink-strong">{{ store.breakRemainingLabel() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-1.5 px-3 pb-3">
+        <button
+          type="button"
+          (click)="togglePause()"
+          class="flex-1 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
+        >
+          {{ store.paused() ? 'Resume' : 'Pause' }}
+        </button>
+        <button
+          type="button"
+          (click)="extendBreak()"
+          class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
+        >
+          +5
+        </button>
+        <button
+          type="button"
+          (click)="finishBreak()"
+          class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
+        >
+          Start next
+        </button>
+      </div>
+    </div>
+  }
+} @else if (store.activeSession(); as session) {
   @if (collapsed()) {
     <button
       type="button"
@@ -25,26 +114,7 @@
         >
           {{ store.paused() ? 'Paused' : 'Recording' }}
         </span>
-        <button
-          type="button"
-          (click)="goFull()"
-          title="Full view"
-          class="w-6 h-6 rounded-md flex items-center justify-center text-ink-faint hover:text-ink-body hover:bg-surface-overlay transition-colors"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          (click)="toggleCollapsed()"
-          title="Collapse"
-          class="w-6 h-6 rounded-md flex items-center justify-center text-ink-faint hover:text-ink-body hover:bg-surface-overlay transition-colors"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14" />
-          </svg>
-        </button>
+        <ng-container [ngTemplateOutlet]="headerButtons"></ng-container>
       </div>
 
       <div class="flex flex-col items-center gap-3 px-4 py-4">

@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
@@ -15,6 +16,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 @Component({
   selector: 'app-pomodoro-mini-widget',
   standalone: true,
+  imports: [NgTemplateOutlet],
   templateUrl: './pomodoro-mini-widget.component.html',
 })
 export class PomodoroMiniWidgetComponent {
@@ -29,6 +31,8 @@ export class PomodoroMiniWidgetComponent {
   readonly collapsed = signal(false);
 
   readonly ringDashOffset = computed(() => RING_CIRCUMFERENCE * this.store.progressFraction());
+
+  readonly breakRingDashOffset = computed(() => RING_CIRCUMFERENCE * this.store.breakProgressFraction());
 
   readonly currentTarget = computed<SegmentTarget | null>(() => currentSegmentTarget(this.store.segments()));
 
@@ -61,5 +65,14 @@ export class PomodoroMiniWidgetComponent {
 
   endSession(): void {
     void this.router.navigateByUrl('/pomodoro/end');
+  }
+
+  extendBreak(): void {
+    this.store.extendBreak();
+  }
+
+  finishBreak(): void {
+    this.store.endBreak();
+    void this.router.navigateByUrl('/pomodoro');
   }
 }
