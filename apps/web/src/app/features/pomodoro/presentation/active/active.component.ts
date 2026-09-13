@@ -35,11 +35,14 @@ export class ActiveComponent {
 
   readonly session = this.store.activeSession;
   readonly paused = this.store.paused;
+  readonly phase = this.store.phase;
   readonly elapsedSec = this.store.elapsedSec;
   readonly totalSec = this.store.totalSec;
-  readonly remainingSec = this.store.remainingSec;
   readonly remainingLabel = this.store.remainingLabel;
   readonly progressFraction = this.store.progressFraction;
+  readonly breakRemainingLabel = this.store.breakRemainingLabel;
+  readonly breakProgressFraction = this.store.breakProgressFraction;
+  readonly startingBreak = signal(false);
   readonly railOpen = signal(true);
   readonly activeTab = signal<RailTab>('session');
 
@@ -48,6 +51,8 @@ export class ActiveComponent {
   }
 
   readonly ringDashOffset = computed(() => RING_CIRCUMFERENCE * this.progressFraction());
+
+  readonly breakRingDashOffset = computed(() => RING_CIRCUMFERENCE * this.breakProgressFraction());
 
   readonly currentTarget = computed<SegmentTarget | null>(() => currentSegmentTarget(this.store.segments()));
 
@@ -80,11 +85,11 @@ export class ActiveComponent {
 
   @HostListener('window:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
-    if (!this.session()) return;
+    if (!this.session() && this.phase() !== 'break') return;
     if (event.code === 'Space') {
       event.preventDefault();
       this.togglePause();
-    } else if (event.key === 's' || event.key === 'S') {
+    } else if ((event.key === 's' || event.key === 'S') && this.phase() === 'focus') {
       void this.openSwitchDialog();
     }
   }
@@ -118,6 +123,24 @@ export class ActiveComponent {
 
   endSession(): void {
     void this.router.navigateByUrl('/pomodoro/end');
+  }
+
+  async takeBreak(): Promise<void> {
+    this.startingBreak.set(true);
+    try {
+      await this.store.startBreak();
+    } finally {
+      this.startingBreak.set(false);
+    }
+  }
+
+  extendBreak(): void {
+    this.store.extendBreak();
+  }
+
+  finishBreak(): void {
+    this.store.endBreak();
+    void this.router.navigateByUrl('/pomodoro');
   }
 
   minimize(): void {

@@ -144,4 +144,61 @@ describe('ActiveComponent', () => {
     expect(component.previousTarget()).toEqual({ kind: 'free' });
     expect(component.currentTarget()).toEqual({ kind: 'resource', resourceId });
   });
+
+  test('should end the session and switch to the break phase when taking a break', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+    await component.takeBreak();
+
+    expect(component.phase()).toBe('break');
+    expect(component.breakRemainingLabel()).toBe('05:00');
+    expect(component.startingBreak()).toBe(false);
+    expect(store.activeSession()).toBeNull();
+  });
+
+  test('should add 5 minutes to the break when extended', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    await component.takeBreak();
+
+    component.extendBreak();
+
+    expect(component.breakRemainingLabel()).toBe('10:00');
+  });
+
+  test('should let a break be taken mid-session, well before the focus timer runs out', async () => {
+    const { component, store, repository } = setup();
+    await store.start({ plannedMin: 45, target: { kind: 'free' } });
+    vi.advanceTimersByTime(30 * 60 * 1000);
+
+    await component.takeBreak();
+
+    expect(component.phase()).toBe('break');
+    expect(repository.sessions[0]?.completedAt).toBeDefined();
+  });
+
+  test('should not offer switching material by keyboard shortcut while on break', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    await component.takeBreak();
+    const openSwitchDialog = vi.spyOn(component, 'openSwitchDialog');
+
+    component.onKeydown(new KeyboardEvent('keydown', { key: 's' }));
+
+    expect(openSwitchDialog).not.toHaveBeenCalled();
+    expect(store.phase()).toBe('break');
+  });
+
+  test('should end the break and navigate back to start, ready for a new session', async () => {
+    const { component, store, navigateByUrl } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    await component.takeBreak();
+
+    component.finishBreak();
+
+    expect(component.phase()).toBe('focus');
+    expect(store.activeSession()).toBeNull();
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
 });
