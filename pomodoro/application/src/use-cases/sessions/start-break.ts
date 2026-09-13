@@ -9,9 +9,13 @@ export interface StartBreakDependencies {
   notificationPort: NotificationPort;
 }
 
+export interface StartBreakResult {
+  durationSec: number;
+}
+
 export const startBreak = async ({
   notificationPort,
-}: StartBreakDependencies): Promise<void> => {
+}: StartBreakDependencies): Promise<StartBreakResult> => {
   const minutes = Math.round(DEFAULT_BREAK_DURATION_SEC / 60);
   await notificationPort.notify({
     type: DomainNotificationType.BREAK_STARTED,
@@ -19,4 +23,5 @@ export const startBreak = async ({
     body: `Take a ${minutes} min break.`,
     occurredAt: new Date(),
   });
+  return { durationSec: DEFAULT_BREAK_DURATION_SEC };
 };
