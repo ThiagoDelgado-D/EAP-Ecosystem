@@ -51,6 +51,12 @@
           <span class="t-num text-[54px]">{{ breakRemainingLabel() }}</span>
           <span class="t-kicker">{{ store.breakRemainingSec() <= 0 ? 'break over' : 'rest' }}</span>
         </div>
+        @if (justExtended()) {
+          <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
+          <div class="absolute -top-3 left-1/2 pomodoro-extend-pop text-status-done font-mono font-bold text-base pointer-events-none">
+            +5:00
+          </div>
+        }
       </div>
 
       <p class="text-xs text-ink-faint text-center max-w-[280px] leading-relaxed">

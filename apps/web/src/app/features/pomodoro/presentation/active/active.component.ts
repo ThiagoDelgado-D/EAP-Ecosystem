@@ -11,6 +11,7 @@ import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/bro
 import { PomodoroZenViewComponent, POMODORO_ZEN_KEY } from '@features/pomodoro/presentation/zen-view/pomodoro-zen-view.component';
 import { describeTarget, describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
 import { currentSegmentTarget, formatMinutes, segmentToTarget, segmentTotals, type SegmentTotal } from './segment-display';
+import { createTransientFlag } from '@shared/utils/transient-flag';
 
 type RailTab = 'session' | 'segments';
 
@@ -134,8 +135,12 @@ export class ActiveComponent {
     }
   }
 
+  private readonly extendFlash = createTransientFlag();
+  readonly justExtended = this.extendFlash.active;
+
   extendBreak(): void {
     this.store.extendBreak();
+    this.extendFlash.trigger();
   }
 
   finishBreak(): void {

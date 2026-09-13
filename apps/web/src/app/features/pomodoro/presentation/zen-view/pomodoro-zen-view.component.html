@@ -1,4 +1,80 @@
-@if (store.activeSession(); as session) {
+<ng-template #pauseButton>
+  <button
+    type="button"
+    (click)="togglePause()"
+    class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-white/15 text-white/85 hover:border-white/30 transition-colors"
+  >
+    {{ store.paused() ? 'Resume' : 'Pause' }}
+  </button>
+</ng-template>
+
+<ng-template #exitZenButton>
+  <button
+    type="button"
+    (click)="exit()"
+    class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-white/15 text-white/85 hover:border-white/30 transition-colors"
+  >
+    Exit Zen · esc
+  </button>
+</ng-template>
+
+@if (store.phase() === 'break') {
+  <div class="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center">
+    <div class="mb-8 text-center opacity-65">
+      <p class="text-sm font-bold text-status-done tracking-tight">Break</p>
+    </div>
+
+    <div class="relative" style="width: 320px; height: 320px">
+      <svg width="320" height="320" style="transform: rotate(-90deg)">
+        <circle cx="160" cy="160" [attr.r]="RING_RADIUS" stroke="rgba(255,255,255,0.12)" stroke-width="3" fill="none" />
+        <circle
+          cx="160"
+          cy="160"
+          [attr.r]="RING_RADIUS"
+          stroke="var(--color-status-done)"
+          stroke-width="3"
+          fill="none"
+          stroke-linecap="round"
+          [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
+          [attr.stroke-dashoffset]="breakRingDashOffset()"
+        />
+      </svg>
+      <div class="absolute inset-0 flex flex-col items-center justify-center">
+        <span class="t-num font-mono text-[64px] text-white font-light">{{ store.breakRemainingLabel() }}</span>
+        <span class="text-[11px] uppercase tracking-widest text-white/40 mt-1">{{ store.breakRemainingSec() <= 0 ? 'break over' : 'rest' }}</span>
+      </div>
+      @if (justExtended()) {
+        <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
+        <div class="absolute -top-5 left-1/2 pomodoro-extend-pop text-status-done font-mono font-bold text-xl pointer-events-none">
+          +5:00
+        </div>
+      }
+    </div>
+
+    <p class="mt-8 max-w-[440px] text-center text-[13px] text-white/50 italic leading-relaxed">
+      Step away from the screen. Nothing is being recorded.
+    </p>
+
+    <div class="absolute bottom-11 flex items-center gap-2.5">
+      <ng-container [ngTemplateOutlet]="pauseButton"></ng-container>
+      <button
+        type="button"
+        (click)="extendBreak()"
+        class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-white/15 text-white/85 hover:border-white/30 transition-colors"
+      >
+        +5 min
+      </button>
+      <ng-container [ngTemplateOutlet]="exitZenButton"></ng-container>
+      <button
+        type="button"
+        (click)="finishBreak()"
+        class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
+      >
+        Start next session
+      </button>
+    </div>
+  </div>
+} @else if (store.activeSession(); as session) {
   <div class="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center">
     @if (contextDisplay(); as ctx) {
       <div class="mb-8 text-center opacity-65">
@@ -37,20 +113,8 @@
     }
 
     <div class="absolute bottom-11 flex items-center gap-2.5">
-      <button
-        type="button"
-        (click)="togglePause()"
-        class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-white/15 text-white/85 hover:border-white/30 transition-colors"
-      >
-        {{ store.paused() ? 'Resume' : 'Pause' }}
-      </button>
-      <button
-        type="button"
-        (click)="exit()"
-        class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-white/15 text-white/85 hover:border-white/30 transition-colors"
-      >
-        Exit Zen · esc
-      </button>
+      <ng-container [ngTemplateOutlet]="pauseButton"></ng-container>
+      <ng-container [ngTemplateOutlet]="exitZenButton"></ng-container>
       <button
         type="button"
         (click)="endSession()"

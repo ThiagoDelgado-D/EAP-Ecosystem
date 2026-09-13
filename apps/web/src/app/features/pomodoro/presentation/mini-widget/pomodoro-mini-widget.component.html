@@ -59,6 +59,12 @@
           <div class="absolute inset-0 flex items-center justify-center">
             <span class="t-num font-mono text-[22px] font-semibold text-ink-strong">{{ store.breakRemainingLabel() }}</span>
           </div>
+          @if (justExtended()) {
+            <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
+            <div class="absolute -top-1 left-1/2 pomodoro-extend-pop text-status-done font-mono font-bold text-[10px] pointer-events-none">
+              +5:00
+            </div>
+          }
         </div>
       </div>
 
