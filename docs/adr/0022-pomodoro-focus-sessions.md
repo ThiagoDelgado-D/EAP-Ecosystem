@@ -144,14 +144,70 @@ session instead of trusting `localStorage`; recovery always resumes into
 reload. A session ended under a to-be-tuned minimum threshold (~1 min,
 illustrative) is deleted server-side rather than finalized into history.
 
-### Break — kept deliberately flat for v0.9.5
+### Break — a first-class entity, not a stateless side effect
 
-Ending a focus segment offers "Take a break" for a **fixed default
-duration** — no short/long distinction, no cycle counting. The break
-creates no `Segment` row: it is time off, not attributed time. Cycle-aware
-break length and configurable durations are ADR-0024's problem, not this
-one — the session/segment architecture here does not depend on a `Settings`
-entity existing.
+**Revised 2026-09-13.** This section originally specified breaks as a
+stateless side effect: a fixed-duration notification with no persisted
+state and nothing to rehydrate. That shape broke down as soon as the
+feature was actually used — refreshing mid-break lost it entirely, since
+nothing about it outlived the browser tab. Rather than patch around the
+gap with client-only storage, `Break` becomes a real, server-persisted
+entity. This reopens a decision the ADR treated as settled, so the change
+and its reasoning are recorded here rather than silently overwritten.
+
+Two technical arguments drove persisting `Break` server-side instead of in
+browser storage:
+
+1. **A history view of past focus sessions and breaks is a planned
+   direction for this feature line**, even though it isn't scheduled to a
+   version yet. A `Break` row created now is already a history record —
+   nothing about it needs to be rebuilt or backfilled once that screen
+   exists. Client-only storage would fix today's refresh-loss bug and
+   then need replacing wholesale the moment history has to query past
+   breaks, since browser storage isn't server-queryable data and doesn't
+   survive a cleared browser or a different device.
+2. **The server-authoritative principle this ADR already applies to
+   `Session` extends cleanly to `Break` once it is recorded data.** The
+   original flat design left `Break` unpersisted specifically because
+   nothing about it was *attributed* time — there was nothing whose
+   integrity needed protecting. That reasoning stops holding the moment a
+   `Break` row exists and gets shown back to the user as history: at that
+   point it is a record like any other, and its `startedAt`/`durationSec`
+   should come from the same server-clock discipline
+   `Session.startedAt`/`completedAt` already follow, not from a
+   client-reported value sitting in `localStorage`.
+
+**`Break`**
+
+| Field         | Type                | Notes                                                                        |
+| ------------- | ------------------- | ----------------------------------------------------------------------------- |
+| `id`          | uuid                |                                                                               |
+| `userId`      | uuid                |                                                                               |
+| `startedAt`   | timestamp           | Server-set, at creation — same discipline as `Session.startedAt`             |
+| `durationSec` | int                 | Mutable — extending the break updates this in place, not an event log        |
+| `endedAt`     | timestamp, nullable | Set when the break finishes or is skipped; null = the active break           |
+
+At most one un-ended `Break` per user at a time, enforced at the
+application layer the same way `Session`'s "at most one active session per
+user" rule already is. No partial-unique-index backstop is needed here the
+way `Segment`'s open/closed toggle has one — there is no concurrent-write
+race on a single user's own break the way there is on segment boundaries.
+
+Lifecycle mirrors `Session`'s: `startBreak(userId)` creates the row (the
+server sets `startedAt`, and still fires the existing break-started
+notification); `extendBreak(userId, breakId, seconds)` adds to
+`durationSec` after an ownership check identical in shape to
+`verifySessionOwnership`; `endBreak(userId, breakId)` sets `endedAt` from
+the server's own clock. `getActiveBreak(userId)` is the break-side
+counterpart to `getActiveSession` — the client asks it on load instead of
+trusting any client-side record of being on break, the same
+refresh-recovery pattern `Session` already uses.
+
+`Break` still creates no `Segment` row and still does not touch `Session`
+— a break can now outlive a page refresh, but it remains entirely
+decoupled from session/segment attribution, matching this ADR's original
+point that break time is not attributed time. Cycle-aware break length and
+configurable durations remain ADR-0024's problem, not this one.
 
 ## Consequences
 
@@ -164,6 +220,9 @@ entity existing.
   wrong path when a resource is shared across paths.
 - Splitting Settings/cycle logic into ADR-0024 means this ADR doesn't block
   on designing a feature nothing in the current roadmap needs yet.
+- A `Break` row is a ready-made history record — a future history view of
+  past sessions and breaks needs no separate backfill or migration for
+  breaks taken after this shipped.
 
 **Negative**
 
@@ -175,6 +234,10 @@ entity existing.
   under concurrent requests.
 - Flat break duration in v0.9.5 means no short/long distinction at all
   until ADR-0024 ships.
+- `extendBreak`/`endBreak` are now real network calls where they were
+  previously instant client-side updates — a break carries the same
+  latency and failure surface as any other Pomodoro action, which the
+  original flat design had deliberately avoided.
 
 ## Deferred
 
@@ -190,6 +253,9 @@ entity existing.
   service vs. CDK overlay) — implementation detail, not architecture.
 - Exact minimum-duration-discard threshold value (prototype uses 1 min as
   illustrative).
+- A history screen surfacing past `Session`s and `Break`s to the user —
+  the data model now supports it, but the screen itself is not built or
+  scheduled to a version.
 
 ## Rejected alternatives
 
@@ -212,6 +278,13 @@ entity existing.
 - **Silently picking the first matching path when a resource is
   ambiguous** — rejected: this is exactly the case with no derivable
   answer; picking one silently would misattribute progress.
+- **Client-only persistence (`localStorage`) for `Break`, to survive a
+  refresh without any backend change** — fixes the immediate refresh-loss
+  bug on its own, but doesn't survive a cleared browser or work
+  cross-device, and would need replacing entirely once a history view
+  needs to query past breaks as real, server-held data. Rejected once the
+  history direction made clear this data needs to exist server-side
+  regardless of when the history screen itself gets built.
 
 ## References
 
