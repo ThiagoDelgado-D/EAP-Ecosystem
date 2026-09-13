@@ -1,4 +1,5 @@
 import { Component, HostListener, computed, inject } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
@@ -6,6 +7,7 @@ import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomod
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
 import { currentSegmentTarget } from '@features/pomodoro/presentation/active/segment-display';
+import { createTransientFlag } from '@shared/utils/transient-flag';
 
 export const POMODORO_ZEN_KEY = 'pomodoro-zen';
 
@@ -15,6 +17,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 @Component({
   selector: 'app-pomodoro-zen-view',
   standalone: true,
+  imports: [NgTemplateOutlet],
   templateUrl: './pomodoro-zen-view.component.html',
 })
 export class PomodoroZenViewComponent {
@@ -27,6 +30,8 @@ export class PomodoroZenViewComponent {
   readonly RING_CIRCUMFERENCE = RING_CIRCUMFERENCE;
 
   readonly ringDashOffset = computed(() => RING_CIRCUMFERENCE * this.store.progressFraction());
+
+  readonly breakRingDashOffset = computed(() => RING_CIRCUMFERENCE * this.store.breakProgressFraction());
 
   readonly currentTarget = computed<SegmentTarget | null>(() => currentSegmentTarget(this.store.segments()));
 
@@ -52,5 +57,19 @@ export class PomodoroZenViewComponent {
   endSession(): void {
     this.overlayHost.hide(POMODORO_ZEN_KEY);
     void this.router.navigateByUrl('/pomodoro/end');
+  }
+
+  private readonly extendFlash = createTransientFlag();
+  readonly justExtended = this.extendFlash.active;
+
+  extendBreak(): void {
+    this.store.extendBreak();
+    this.extendFlash.trigger();
+  }
+
+  finishBreak(): void {
+    this.overlayHost.hide(POMODORO_ZEN_KEY);
+    this.store.endBreak();
+    void this.router.navigateByUrl('/pomodoro');
   }
 }
