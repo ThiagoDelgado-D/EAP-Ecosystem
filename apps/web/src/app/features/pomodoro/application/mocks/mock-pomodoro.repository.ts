@@ -1,13 +1,14 @@
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
-import type {
-  ActiveSessionSnapshot,
-  EndSessionResult,
-  Segment,
-  SegmentTarget,
-  Session,
-  StartSessionPayload,
-  SuggestedCandidate,
-  SwitchTargetResult,
+import {
+  DEFAULT_BREAK_DURATION_SEC,
+  type ActiveSessionSnapshot,
+  type EndSessionResult,
+  type Segment,
+  type SegmentTarget,
+  type Session,
+  type StartSessionPayload,
+  type SuggestedCandidate,
+  type SwitchTargetResult,
 } from '@features/pomodoro/domain/pomodoro.model';
 
 export interface MockedPomodoroRepository extends PomodoroRepository {
@@ -87,7 +88,9 @@ export function mockPomodoroRepository(
       return { discarded: false, session: completed, segments: [] };
     },
 
-    async startBreak(): Promise<void> {},
+    async startBreak(): Promise<{ durationSec: number }> {
+      return { durationSec: DEFAULT_BREAK_DURATION_SEC };
+    },
 
     async getSuggestion(): Promise<SuggestedCandidate[]> {
       return this.suggestions;

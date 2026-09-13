@@ -15,7 +15,7 @@ export abstract class PomodoroRepository {
   abstract switchTarget(sessionId: string, target: SegmentTarget): Promise<SwitchTargetResult>;
   abstract attachOpenSegment(sessionId: string, target: SegmentTarget): Promise<Segment>;
   abstract endSession(sessionId: string): Promise<EndSessionResult>;
-  abstract startBreak(): Promise<void>;
+  abstract startBreak(): Promise<{ durationSec: number }>;
   abstract getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]>;
   abstract getActiveSession(): Promise<ActiveSessionSnapshot | null>;
 }

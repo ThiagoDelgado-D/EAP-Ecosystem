@@ -207,4 +207,69 @@ describe('PomodoroSessionStore', () => {
       expect(store.elapsedSec()).toBe(30);
     });
   });
+
+  describe('break', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    test('should end the active session immediately when a break starts', async () => {
+      await store.start({ plannedMin: 45, target: { kind: 'free' } });
+      vi.advanceTimersByTime(30 * 60 * 1000);
+
+      await store.startBreak();
+
+      expect(store.activeSession()).toBeNull();
+      expect(store.segments()).toEqual([]);
+      expect(repository.sessions[0]?.completedAt).toBeDefined();
+    });
+
+    test('should switch to the break phase with the duration the repository returns', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+      await store.startBreak();
+
+      expect(store.phase()).toBe('break');
+      expect(store.breakRemainingLabel()).toBe('05:00');
+    });
+
+    test('should add 5 minutes to the break when extended', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      await store.startBreak();
+      vi.advanceTimersByTime(4 * 60 * 1000);
+
+      store.extendBreak();
+
+      expect(store.breakRemainingLabel()).toBe('06:00');
+    });
+
+    test('should start the break unpaused even if focus was paused beforehand', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      store.togglePause();
+
+      await store.startBreak();
+      vi.advanceTimersByTime(30 * 1000);
+
+      expect(store.paused()).toBe(false);
+      expect(store.breakRemainingLabel()).toBe('04:30');
+    });
+
+    test('should return to idle, with no session, once the break ends', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      await store.startBreak();
+      vi.advanceTimersByTime(60 * 1000);
+
+      store.endBreak();
+      vi.advanceTimersByTime(5 * 1000);
+
+      expect(store.phase()).toBe('focus');
+      expect(store.activeSession()).toBeNull();
+      expect(store.elapsedSec()).toBe(0);
+      expect(store.breakRemainingSec()).toBe(0);
+    });
+  });
 });

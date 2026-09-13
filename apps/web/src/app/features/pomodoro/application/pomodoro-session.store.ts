@@ -10,6 +10,16 @@ import type {
   SuggestedCandidate,
 } from '@features/pomodoro/domain/pomodoro.model';
 
+export type PomodoroPhase = 'focus' | 'break';
+
+function formatClock(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
 function syntheticInitialSegment(sessionId: string, target: SegmentTarget): Segment {
   const base = { id: 'initial', sessionId, startSec: 0 };
   if (target.kind === 'node') {
@@ -44,8 +54,13 @@ export class PomodoroSessionStore {
   readonly error = signal<string | null>(null);
 
   readonly paused = signal(false);
+  readonly phase = signal<PomodoroPhase>('focus');
   private readonly now = signal(new Date());
   private intervalId: ReturnType<typeof setInterval> | null = null;
+
+  private readonly breakDurationSec = signal(0);
+  private readonly breakStartedAt = signal<Date | null>(null);
+  private readonly breakNow = signal(new Date());
 
   readonly elapsedSec = computed(() => {
     const session = this.activeSession();
@@ -57,20 +72,54 @@ export class PomodoroSessionStore {
 
   readonly remainingSec = computed(() => Math.max(0, this.totalSec() - this.elapsedSec()));
 
-  readonly remainingLabel = computed(() => {
-    const total = this.remainingSec();
-    const minutes = Math.floor(total / 60).toString().padStart(2, '0');
-    const seconds = (total % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds}`;
-  });
+  readonly remainingLabel = computed(() => formatClock(this.remainingSec()));
 
   readonly progressFraction = computed(() => {
     const total = this.totalSec();
     return total > 0 ? Math.min(1, this.elapsedSec() / total) : 0;
   });
 
+  readonly breakElapsedSec = computed(() => {
+    const startedAt = this.breakStartedAt();
+    if (!startedAt) return 0;
+    return Math.max(0, Math.floor((this.breakNow().getTime() - startedAt.getTime()) / 1000));
+  });
+
+  readonly breakRemainingSec = computed(() =>
+    Math.max(0, this.breakDurationSec() - this.breakElapsedSec()),
+  );
+
+  readonly breakRemainingLabel = computed(() => formatClock(this.breakRemainingSec()));
+
+  readonly breakProgressFraction = computed(() => {
+    const total = this.breakDurationSec();
+    return total > 0 ? Math.min(1, this.breakElapsedSec() / total) : 0;
+  });
+
   togglePause(): void {
     this.paused.update((v) => !v);
+  }
+
+  async startBreak(): Promise<void> {
+    if (this.activeSession()) await this.end();
+    const { durationSec } = await this.repository.startBreak();
+    this.breakDurationSec.set(durationSec);
+    this.breakStartedAt.set(new Date());
+    this.breakNow.set(new Date());
+    this.phase.set('break');
+    this.startTicking();
+  }
+
+  extendBreak(seconds = 300): void {
+    this.breakDurationSec.update((d) => d + seconds);
+  }
+
+  endBreak(): void {
+    this.stopTicking();
+    this.phase.set('focus');
+    this.breakStartedAt.set(null);
+    this.breakDurationSec.set(0);
+    this.paused.set(false);
   }
 
   private startTicking(): void {
@@ -78,7 +127,9 @@ export class PomodoroSessionStore {
     this.paused.set(false);
     this.now.set(new Date());
     this.intervalId = setInterval(() => {
-      if (!this.paused()) this.now.set(new Date());
+      if (this.paused()) return;
+      if (this.phase() === 'break') this.breakNow.set(new Date());
+      else this.now.set(new Date());
     }, 1000);
     this.ensureMiniWidgetOrchestrator();
   }
@@ -105,6 +156,7 @@ export class PomodoroSessionStore {
       if (!snapshot) return null;
       this.activeSession.set(snapshot.session);
       this.segments.set(snapshot.segments);
+      this.phase.set('focus');
       this.startTicking();
       return snapshot.session;
     } catch {
@@ -134,6 +186,7 @@ export class PomodoroSessionStore {
       const session = await this.repository.startSession(payload);
       this.activeSession.set(session);
       this.segments.set([syntheticInitialSegment(session.id, payload.target)]);
+      this.phase.set('focus');
       this.startTicking();
       return session;
     } catch {
@@ -149,7 +202,10 @@ export class PomodoroSessionStore {
     if (!session) return;
     this.switchingTarget.set(true);
     try {
-      const { closedSegment, openedSegment } = await this.repository.switchTarget(session.id, target);
+      const { closedSegment, openedSegment } = await this.repository.switchTarget(
+        session.id,
+        target,
+      );
       this.segments.update((segs) => [...segs.slice(0, -1), closedSegment, openedSegment]);
     } finally {
       this.switchingTarget.set(false);
@@ -170,6 +226,8 @@ export class PomodoroSessionStore {
     this.stopTicking();
     this.activeSession.set(null);
     this.segments.set([]);
+    this.phase.set('focus');
+    this.breakStartedAt.set(null);
     return result;
   }
 }
