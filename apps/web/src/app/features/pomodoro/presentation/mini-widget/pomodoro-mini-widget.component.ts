@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
@@ -15,6 +16,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 @Component({
   selector: 'app-pomodoro-mini-widget',
   standalone: true,
+  imports: [NgTemplateOutlet],
   templateUrl: './pomodoro-mini-widget.component.html',
 })
 export class PomodoroMiniWidgetComponent {
