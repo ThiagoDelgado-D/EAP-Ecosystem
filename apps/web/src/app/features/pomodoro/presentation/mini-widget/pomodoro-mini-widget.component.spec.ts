@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
+import { expectExtendBreakFlash } from '@features/pomodoro/application/mocks/expect-extend-break-flash';
 import { PomodoroMiniWidgetComponent } from './pomodoro-mini-widget.component';
 
 function setup() {
@@ -98,17 +99,8 @@ describe('PomodoroMiniWidgetComponent', () => {
   });
 
   test('should flag justExtended briefly when the break is extended', async () => {
-    vi.useFakeTimers();
     const { component, store } = setup();
-    await store.start({ plannedMin: 25, target: { kind: 'free' } });
-    await store.startBreak();
-
-    component.extendBreak();
-
-    expect(component.justExtended()).toBe(true);
-    vi.advanceTimersByTime(900);
-    expect(component.justExtended()).toBe(false);
-    vi.useRealTimers();
+    await expectExtendBreakFlash(component, store);
   });
 
   test('should end the break and navigate back to start', async () => {
