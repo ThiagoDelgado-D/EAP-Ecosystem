@@ -20,4 +20,10 @@ describe("startBreak", () => {
       `${DEFAULT_BREAK_DURATION_SEC / 60}`,
     );
   });
+
+  test("Should return the default break duration", async () => {
+    const result = await startBreak({ notificationPort });
+
+    expect(result).toEqual({ durationSec: DEFAULT_BREAK_DURATION_SEC });
+  });
 });

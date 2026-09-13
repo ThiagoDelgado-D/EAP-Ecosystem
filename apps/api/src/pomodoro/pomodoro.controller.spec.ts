@@ -4,6 +4,7 @@ import {
   mockNotificationPort,
   mockSessionRepository,
   MIN_SESSION_DURATION_SEC,
+  DEFAULT_BREAK_DURATION_SEC,
 } from "@pomodoro/application";
 import {
   CandidateNodeEnergyLevel,
@@ -460,8 +461,8 @@ describe("PomodoroController (integration)", () => {
   });
 
   describe("Breaks", () => {
-    test("fires a break-started notification", async () => {
-      await request(app.getHttpServer())
+    test("fires a break-started notification and returns the default duration", async () => {
+      const response = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/breaks")
         .set(authHeader())
         .expect(200);
@@ -470,6 +471,7 @@ describe("PomodoroController (integration)", () => {
       expect(notificationPort.notifications[0]!.type).toBe(
         DomainNotificationType.BREAK_STARTED,
       );
+      expect(response.body.durationSec).toBe(DEFAULT_BREAK_DURATION_SEC);
     });
   });
 
