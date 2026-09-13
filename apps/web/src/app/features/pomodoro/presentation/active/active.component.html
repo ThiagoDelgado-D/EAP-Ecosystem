@@ -1,5 +1,75 @@
 <div class="flex h-full min-h-[calc(100vh-56px)] [&_button]:focus:outline-none [&_button]:focus-visible:ring-2 [&_button]:focus-visible:ring-accent-line [&_button]:focus-visible:ring-offset-2 [&_button]:focus-visible:ring-offset-surface-base">
-  @if (session(); as session) {
+  @if (phase() === 'break') {
+    <div class="flex-1 flex flex-col items-center justify-center gap-7 px-6 py-10 relative">
+      <div class="absolute top-4 right-4 flex items-center gap-1">
+        <button
+          type="button"
+          (click)="minimize()"
+          title="Minimize"
+          class="w-7 h-7 rounded-md flex items-center justify-center text-ink-dim hover:text-ink-body hover:bg-surface-overlay transition-colors"
+          aria-label="Minimize to floating timer"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          (click)="openZen()"
+          title="Zen"
+          class="w-7 h-7 rounded-md flex items-center justify-center text-ink-dim hover:text-ink-body hover:bg-surface-overlay transition-colors"
+          aria-label="Enter zen view"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3a9 9 0 109 9 7 7 0 01-9-9z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-status-done"></span>
+        <span class="t-kicker text-status-done">Break</span>
+      </div>
+
+      <div class="relative" style="width: 300px; height: 300px">
+        <svg width="300" height="300" style="transform: rotate(-90deg)">
+          <circle cx="150" cy="150" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="6" fill="none" />
+          <circle
+            cx="150"
+            cy="150"
+            [attr.r]="RING_RADIUS"
+            stroke="var(--color-status-done)"
+            stroke-width="6"
+            fill="none"
+            stroke-linecap="round"
+            [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
+            [attr.stroke-dashoffset]="breakRingDashOffset()"
+            style="transition: stroke-dashoffset 1s linear"
+          />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+          <span class="t-num text-[54px]">{{ breakRemainingLabel() }}</span>
+          <span class="t-kicker">{{ store.breakRemainingSec() <= 0 ? 'break over' : 'rest' }}</span>
+        </div>
+      </div>
+
+      <p class="text-xs text-ink-faint text-center max-w-[280px] leading-relaxed">
+        Step away from the screen. Nothing is being recorded — breaks are not segments.
+      </p>
+
+      <div class="flex items-center gap-2.5 flex-wrap justify-center">
+        <button type="button" (click)="togglePause()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors">
+          {{ paused() ? 'Resume' : 'Pause' }}
+        </button>
+        <button type="button" (click)="extendBreak()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors">
+          +5 min
+        </button>
+        <button type="button" (click)="finishBreak()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors">
+          Start next session
+        </button>
+      </div>
+    </div>
+  } @else if (session(); as session) {
     <div class="flex-1 flex flex-col items-center justify-center px-6 py-10 relative min-w-0">
       <div class="absolute top-4 right-4 flex items-center gap-1">
         <button
@@ -84,6 +154,14 @@
         </button>
         <button type="button" (click)="openSwitchDialog()" [disabled]="store.switchingTarget()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 disabled:opacity-50 transition-colors">
           {{ store.switchingTarget() ? 'Switching...' : 'Switch material' }}
+        </button>
+        <button
+          type="button"
+          (click)="takeBreak()"
+          [disabled]="startingBreak()"
+          class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors"
+        >
+          {{ startingBreak() ? 'Starting...' : 'Take a break' }}
         </button>
         <button type="button" (click)="endSession()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-energy-high/10 border border-energy-high/30 text-energy-high hover:opacity-80 transition-colors">
           End session
