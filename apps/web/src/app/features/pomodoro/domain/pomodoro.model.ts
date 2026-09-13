@@ -1,3 +1,5 @@
+export const DEFAULT_BREAK_DURATION_SEC = 300;
+
 export const SEGMENT_TARGET_KIND = {
   FREE: 'free',
   RESOURCE: 'resource',
