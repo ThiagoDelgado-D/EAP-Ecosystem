@@ -2,8 +2,10 @@ import { Module } from "@nestjs/common";
 import { getRepositoryToken, TypeOrmModule } from "@nestjs/typeorm";
 import { PomodoroController } from "./pomodoro.controller.js";
 import {
+  BreakEntity,
   SegmentEntity,
   SessionEntity,
+  TypeOrmBreakRepository,
   TypeOrmSessionRepository,
 } from "@pomodoro/infrastructure";
 import {
@@ -23,6 +25,7 @@ import { EnvironmentService } from "../config/environment.service.js";
     TypeOrmModule.forFeature([
       SessionEntity,
       SegmentEntity,
+      BreakEntity,
       LearningPathNodeEntity,
       LearningPathEntity,
       LearningPathEdgeEntity,
@@ -39,6 +42,11 @@ import { EnvironmentService } from "../config/environment.service.js";
         getRepositoryToken(SessionEntity),
         getRepositoryToken(SegmentEntity),
       ],
+    },
+    {
+      provide: "IPomodoroBreakRepository",
+      useFactory: (breakRepo) => new TypeOrmBreakRepository(breakRepo),
+      inject: [getRepositoryToken(BreakEntity)],
     },
     {
       provide: "ILearningPathMembershipPort",

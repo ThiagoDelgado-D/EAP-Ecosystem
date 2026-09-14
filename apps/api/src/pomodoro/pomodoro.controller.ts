@@ -1,8 +1,9 @@
-import { Body, Controller, Get, HttpCode, Inject, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Inject, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import type {
   CandidateNodesPort,
   CandidateNodeEnergyLevel,
+  IBreakRepository,
   ISessionRepository,
   LearningPathMembershipPort,
   NotificationPort,
@@ -28,6 +29,8 @@ export class PomodoroController {
   constructor(
     @Inject("IPomodoroSessionRepository")
     private readonly sessionRepository: ISessionRepository,
+    @Inject("IPomodoroBreakRepository")
+    private readonly breakRepository: IBreakRepository,
     @Inject("ICryptoService")
     private readonly cryptoService: CryptoService,
     @Inject("ILearningPathMembershipPort")
@@ -119,9 +122,17 @@ export class PomodoroController {
   }
 
   @Post("breaks")
-  @HttpCode(200)
-  async startBreak() {
-    return await startBreak({ notificationPort: this.notificationPort });
+  async startBreak(@CurrentUserId() userId: UUID) {
+    const result = await startBreak(
+      {
+        breakRepository: this.breakRepository,
+        cryptoService: this.cryptoService,
+        notificationPort: this.notificationPort,
+      },
+      { userId },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
   }
 
   @Get("suggestion")
