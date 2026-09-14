@@ -13,32 +13,28 @@ import {
   type UUID,
 } from "domain-lib";
 import { BreakAlreadyActiveError } from "../../errors/break-already-active.js";
-import { DEFAULT_BREAK_DURATION_SEC } from "./start-break.js";
 
-export interface StartBreakPersistedDependencies {
+export const DEFAULT_BREAK_DURATION_SEC = 300;
+
+export interface StartBreakDependencies {
   breakRepository: IBreakRepository;
   cryptoService: CryptoService;
   notificationPort: NotificationPort;
 }
 
-export interface StartBreakPersistedRequestModel {
+export interface StartBreakRequestModel {
   userId: UUID;
 }
 
-const startBreakPersistedSchema =
-  createValidationSchema<StartBreakPersistedRequestModel>({
-    userId: uuidField("UserId", { required: true }),
-  });
+const startBreakSchema = createValidationSchema<StartBreakRequestModel>({
+  userId: uuidField("UserId", { required: true }),
+});
 
-export const startBreakPersisted = async (
-  {
-    breakRepository,
-    cryptoService,
-    notificationPort,
-  }: StartBreakPersistedDependencies,
-  request: StartBreakPersistedRequestModel,
+export const startBreak = async (
+  { breakRepository, cryptoService, notificationPort }: StartBreakDependencies,
+  request: StartBreakRequestModel,
 ): Promise<Break | InvalidDataError | BreakAlreadyActiveError> => {
-  const validationResult = startBreakPersistedSchema(request);
+  const validationResult = startBreakSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
   }

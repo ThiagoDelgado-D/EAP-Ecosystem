@@ -6,10 +6,9 @@ import {
   mockNotificationPort,
 } from "../../mocks/index.js";
 import { BreakAlreadyActiveError } from "../../errors/break-already-active.js";
-import { DEFAULT_BREAK_DURATION_SEC } from "./start-break.js";
-import { startBreakPersisted } from "./start-break-persisted.js";
+import { DEFAULT_BREAK_DURATION_SEC, startBreak } from "./start-break.js";
 
-describe("startBreakPersisted", () => {
+describe("startBreak", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let breakRepository: ReturnType<typeof mockBreakRepository>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
@@ -23,7 +22,7 @@ describe("startBreakPersisted", () => {
   });
 
   test("Should persist a break with the default duration", async () => {
-    const result = await startBreakPersisted(
+    const result = await startBreak(
       { breakRepository, cryptoService, notificationPort },
       { userId: requestingUserId },
     );
@@ -36,7 +35,7 @@ describe("startBreakPersisted", () => {
   });
 
   test("Should notify that a break started with the default duration", async () => {
-    await startBreakPersisted(
+    await startBreak(
       { breakRepository, cryptoService, notificationPort },
       { userId: requestingUserId },
     );
@@ -48,12 +47,12 @@ describe("startBreakPersisted", () => {
   });
 
   test("Should return BreakAlreadyActiveError when the user already has an active break", async () => {
-    const activeBreak = await startBreakPersisted(
+    const activeBreak = await startBreak(
       { breakRepository, cryptoService, notificationPort },
       { userId: requestingUserId },
     );
 
-    const result = await startBreakPersisted(
+    const result = await startBreak(
       { breakRepository, cryptoService, notificationPort },
       { userId: requestingUserId },
     );
