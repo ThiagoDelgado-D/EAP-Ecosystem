@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { BaseError, mockCryptoService, type UUID } from "domain-lib";
-import { mockBreakRepository, mockNotificationPort } from "../../mocks/index.js";
-import { startBreak } from "./start-break.js";
+import { BaseError } from "domain-lib";
+import { createBreakLifecycleFixture, type BreakLifecycleFixture } from "../../mocks/index.js";
 import { endBreak } from "./end-break.js";
 import { getActiveBreak } from "./get-active-break.js";
 import { BreakNotFoundError } from "../../errors/break-not-found.js";
@@ -9,24 +8,15 @@ import { BreakForbiddenError } from "../../errors/break-forbidden.js";
 import { BreakNotActiveError } from "../../errors/break-not-active.js";
 
 describe("endBreak", () => {
-  let cryptoService: ReturnType<typeof mockCryptoService>;
-  let breakRepository: ReturnType<typeof mockBreakRepository>;
-  let notificationPort: ReturnType<typeof mockNotificationPort>;
-  let requestingUserId: UUID;
+  let fixture: BreakLifecycleFixture;
 
   beforeEach(async () => {
-    cryptoService = mockCryptoService();
-    breakRepository = mockBreakRepository();
-    notificationPort = mockNotificationPort();
-    requestingUserId = await cryptoService.generateUUID();
+    fixture = await createBreakLifecycleFixture();
   });
 
   test("should set endedAt and clear the active break", async () => {
-    const activeBreak = await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
-    if (activeBreak instanceof BaseError) throw activeBreak;
+    const { breakRepository, requestingUserId, startActiveBreak } = fixture;
+    const activeBreak = await startActiveBreak();
 
     const result = await endBreak(
       { breakRepository },
@@ -45,6 +35,7 @@ describe("endBreak", () => {
   });
 
   test("should return BreakNotFoundError when the break does not exist", async () => {
+    const { breakRepository, cryptoService, requestingUserId } = fixture;
     const nonExistentBreakId = await cryptoService.generateUUID();
 
     const result = await endBreak(
@@ -56,11 +47,8 @@ describe("endBreak", () => {
   });
 
   test("should return BreakForbiddenError when the break belongs to another user", async () => {
-    const activeBreak = await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
-    if (activeBreak instanceof BaseError) throw activeBreak;
+    const { breakRepository, cryptoService, startActiveBreak } = fixture;
+    const activeBreak = await startActiveBreak();
     const intruderId = await cryptoService.generateUUID();
 
     const result = await endBreak(
@@ -72,11 +60,8 @@ describe("endBreak", () => {
   });
 
   test("should return BreakNotActiveError when the break already ended", async () => {
-    const activeBreak = await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
-    if (activeBreak instanceof BaseError) throw activeBreak;
+    const { breakRepository, requestingUserId, startActiveBreak } = fixture;
+    const activeBreak = await startActiveBreak();
     await endBreak(
       { breakRepository },
       { userId: requestingUserId, breakId: activeBreak.id },
