@@ -10,6 +10,7 @@ import type {
 } from "@pomodoro/domain";
 import {
   attachOpenSegment,
+  endBreak,
   endSession,
   extendBreak,
   getActiveBreak,
@@ -156,6 +157,16 @@ export class PomodoroController {
     const result = await extendBreak(
       { breakRepository: this.breakRepository },
       { userId, breakId: id, seconds: dto.seconds },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Post("breaks/:id/end")
+  async endBreak(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
+    const result = await endBreak(
+      { breakRepository: this.breakRepository },
+      { userId, breakId: id },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
