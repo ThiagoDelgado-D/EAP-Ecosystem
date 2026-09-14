@@ -11,6 +11,7 @@ import type {
 import {
   attachOpenSegment,
   endSession,
+  getActiveBreak,
   getActiveSession,
   startBreak,
   startSession,
@@ -116,6 +117,16 @@ export class PomodoroController {
         notificationPort: this.notificationPort,
       },
       { userId, sessionId: id },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Get("breaks/active")
+  async getActiveBreak(@CurrentUserId() userId: UUID) {
+    const result = await getActiveBreak(
+      { breakRepository: this.breakRepository },
+      { userId },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
