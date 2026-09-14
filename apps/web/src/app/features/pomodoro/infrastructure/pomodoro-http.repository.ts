@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { PomodoroRepository } from '../domain/pomodoro.repository';
 import type {
   ActiveSessionSnapshot,
+  Break,
   CandidateEnergyLevel,
   EndSessionResult,
   Segment,
@@ -16,10 +17,10 @@ import type {
 import type {
   ActiveSessionResponseDto,
   AttachOpenSegmentResponseDto,
+  BreakDto,
   EndSessionResponseDto,
   SegmentDto,
   SessionDto,
-  StartBreakResponseDto,
   SuggestedCandidateDto,
   SwitchTargetResponseDto,
 } from './pomodoro.dto';
@@ -70,10 +71,33 @@ export class PomodoroHttpRepository extends PomodoroRepository {
     };
   }
 
-  async startBreak(): Promise<{ durationSec: number }> {
-    return await firstValueFrom(
-      this.http.post<StartBreakResponseDto>(`${this.baseUrl}/breaks`, {}),
+  async startBreak(): Promise<Break> {
+    const dto = await firstValueFrom(
+      this.http.post<BreakDto>(`${this.baseUrl}/breaks`, {}),
     );
+    return this.toBreakDomain(dto);
+  }
+
+  async getActiveBreak(): Promise<Break | null> {
+    const dto = await firstValueFrom(
+      this.http.get<BreakDto | null>(`${this.baseUrl}/breaks/active`),
+    );
+    if (!dto) return null;
+    return this.toBreakDomain(dto);
+  }
+
+  async extendBreak(breakId: string, seconds: number): Promise<Break> {
+    const dto = await firstValueFrom(
+      this.http.patch<BreakDto>(`${this.baseUrl}/breaks/${breakId}/extend`, { seconds }),
+    );
+    return this.toBreakDomain(dto);
+  }
+
+  async endBreak(breakId: string): Promise<Break> {
+    const dto = await firstValueFrom(
+      this.http.post<BreakDto>(`${this.baseUrl}/breaks/${breakId}/end`, {}),
+    );
+    return this.toBreakDomain(dto);
   }
 
   async getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]> {
@@ -111,6 +135,16 @@ export class PomodoroHttpRepository extends PomodoroRepository {
       completedAt: this.parseDate(dto.completedAt),
       intent: dto.intent,
       plannedMin: dto.plannedMin,
+    };
+  }
+
+  private toBreakDomain(dto: BreakDto): Break {
+    return {
+      id: dto.id,
+      userId: dto.userId,
+      startedAt: this.parseDate(dto.startedAt) ?? new Date(),
+      durationSec: dto.durationSec,
+      endedAt: this.parseDate(dto.endedAt),
     };
   }
 

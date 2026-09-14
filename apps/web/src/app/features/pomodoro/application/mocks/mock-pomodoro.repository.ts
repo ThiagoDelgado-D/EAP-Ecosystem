@@ -2,6 +2,7 @@ import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repositor
 import {
   DEFAULT_BREAK_DURATION_SEC,
   type ActiveSessionSnapshot,
+  type Break,
   type EndSessionResult,
   type Segment,
   type SegmentTarget,
@@ -15,6 +16,7 @@ export interface MockedPomodoroRepository extends PomodoroRepository {
   sessions: Session[];
   segments: Segment[];
   suggestions: SuggestedCandidate[];
+  breaks: Break[];
   reset(): void;
 }
 
@@ -37,12 +39,18 @@ function buildOpenedSegment(sessionId: string, startSec: number, target: Segment
 }
 
 export function mockPomodoroRepository(
-  initial: { sessions?: Session[]; segments?: Segment[]; suggestions?: SuggestedCandidate[] } = {},
+  initial: {
+    sessions?: Session[];
+    segments?: Segment[];
+    suggestions?: SuggestedCandidate[];
+    breaks?: Break[];
+  } = {},
 ): MockedPomodoroRepository {
   return {
     sessions: [...(initial.sessions ?? [])],
     segments: [...(initial.segments ?? [])],
     suggestions: [...(initial.suggestions ?? [])],
+    breaks: [...(initial.breaks ?? [])],
 
     async startSession(payload: StartSessionPayload): Promise<Session> {
       const session: Session = {
@@ -88,8 +96,35 @@ export function mockPomodoroRepository(
       return { discarded: false, session: completed, segments: [] };
     },
 
-    async startBreak(): Promise<{ durationSec: number }> {
-      return { durationSec: DEFAULT_BREAK_DURATION_SEC };
+    async startBreak(): Promise<Break> {
+      const activeBreak: Break = {
+        id: crypto.randomUUID(),
+        userId: crypto.randomUUID(),
+        startedAt: new Date(),
+        durationSec: DEFAULT_BREAK_DURATION_SEC,
+      };
+      this.breaks.push(activeBreak);
+      return activeBreak;
+    },
+
+    async getActiveBreak(): Promise<Break | null> {
+      return this.breaks.find((b) => !b.endedAt) ?? null;
+    },
+
+    async extendBreak(breakId: string, seconds: number): Promise<Break> {
+      const index = this.breaks.findIndex((b) => b.id === breakId);
+      if (index < 0) throw new Error(`Break not found: ${breakId}`);
+      const extended = { ...this.breaks[index]!, durationSec: this.breaks[index]!.durationSec + seconds };
+      this.breaks[index] = extended;
+      return extended;
+    },
+
+    async endBreak(breakId: string): Promise<Break> {
+      const index = this.breaks.findIndex((b) => b.id === breakId);
+      if (index < 0) throw new Error(`Break not found: ${breakId}`);
+      const ended = { ...this.breaks[index]!, endedAt: new Date() };
+      this.breaks[index] = ended;
+      return ended;
     },
 
     async getSuggestion(): Promise<SuggestedCandidate[]> {
@@ -109,6 +144,7 @@ export function mockPomodoroRepository(
       this.sessions = [];
       this.segments = [];
       this.suggestions = [];
+      this.breaks = [];
     },
   };
 }

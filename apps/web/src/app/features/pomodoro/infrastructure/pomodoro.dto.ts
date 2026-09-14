@@ -50,8 +50,12 @@ export interface ActiveSessionResponseDto {
   segments: SegmentDto[];
 }
 
-export interface StartBreakResponseDto {
+export interface BreakDto {
+  id: string;
+  userId: string;
+  startedAt: string;
   durationSec: number;
+  endedAt?: string;
 }
 
 export interface SuggestedCandidateDto {
