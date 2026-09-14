@@ -5,6 +5,8 @@ export * from "./switch-target.js";
 export * from "./end-session.js";
 export * from "./start-break.js";
 export * from "./get-active-break.js";
+export * from "./verify-break-ownership.js";
+export * from "./extend-break.js";
 export * from "./get-last-session-target.js";
 export * from "./get-path-momentum.js";
 export * from "./suggest-session-target.js";
