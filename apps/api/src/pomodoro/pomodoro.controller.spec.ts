@@ -560,21 +560,25 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader())
         .expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch(`/api/v1/pomodoro/breaks/${startResponse.body.id}/extend`)
         .set(authHeader(intruderToken))
         .send({ seconds: 60 })
         .expect(403);
+
+      expect(response.body).toEqual({});
     });
 
     test("rejects extending a break that does not exist", async () => {
       const nonExistentBreakId = await cryptoService.generateUUID();
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch(`/api/v1/pomodoro/breaks/${nonExistentBreakId}/extend`)
         .set(authHeader())
         .send({ seconds: 60 })
         .expect(404);
+
+      expect(response.body).toEqual({});
     });
   });
 
