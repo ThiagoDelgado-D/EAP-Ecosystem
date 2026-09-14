@@ -19,7 +19,11 @@ import request from "supertest";
 import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { BreakEntity, SegmentEntity, SessionEntity } from "@pomodoro/infrastructure";
+import {
+  BreakEntity,
+  SegmentEntity,
+  SessionEntity,
+} from "@pomodoro/infrastructure";
 import {
   LearningPathEdgeEntity,
   LearningPathEntity,
@@ -389,7 +393,11 @@ describe("PomodoroController (integration)", () => {
         .patch(`/api/v1/pomodoro/sessions/${sessionId}/attach`)
         .set(authHeader())
         .send({
-          target: { kind: "node", learningPathId: pathId, learningPathNodeId: nodeId },
+          target: {
+            kind: "node",
+            learningPathId: pathId,
+            learningPathNodeId: nodeId,
+          },
         })
         .expect(200);
 
@@ -438,7 +446,11 @@ describe("PomodoroController (integration)", () => {
       const startResponse = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/sessions")
         .set(authHeader())
-        .send({ plannedMin: 25, intent: "Rehydrate me", target: { kind: "free" } })
+        .send({
+          plannedMin: 25,
+          intent: "Rehydrate me",
+          target: { kind: "free" },
+        })
         .expect(201);
 
       const response = await request(app.getHttpServer())
@@ -449,7 +461,10 @@ describe("PomodoroController (integration)", () => {
       expect(response.body.session.id).toBe(startResponse.body.id);
       expect(response.body.session.intent).toBe("Rehydrate me");
       expect(response.body.segments).toHaveLength(1);
-      expect(response.body.segments[0]).toMatchObject({ targetKind: "free", startSec: 0 });
+      expect(response.body.segments[0]).toMatchObject({
+        targetKind: "free",
+        startSec: 0,
+      });
     });
 
     test("does not return another user's active session", async () => {
@@ -522,6 +537,44 @@ describe("PomodoroController (integration)", () => {
         .expect(200);
 
       expect(response.body).toEqual({});
+    });
+
+    test("extends the break's duration", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/breaks/${startResponse.body.id}/extend`)
+        .set(authHeader())
+        .send({ seconds: 60 })
+        .expect(200);
+
+      expect(response.body.durationSec).toBe(DEFAULT_BREAK_DURATION_SEC + 60);
+    });
+
+    test("rejects extending another user's break", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/breaks/${startResponse.body.id}/extend`)
+        .set(authHeader(intruderToken))
+        .send({ seconds: 60 })
+        .expect(403);
+    });
+
+    test("rejects extending a break that does not exist", async () => {
+      const nonExistentBreakId = await cryptoService.generateUUID();
+
+      await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/breaks/${nonExistentBreakId}/extend`)
+        .set(authHeader())
+        .send({ seconds: 60 })
+        .expect(404);
     });
   });
 
