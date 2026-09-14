@@ -17,6 +17,20 @@ export function mockBreakRepository(
       return newBreak;
     },
 
+    async update(updatedBreak: Break): Promise<Break> {
+      const index = this.breaks.findIndex((b) => b.id === updatedBreak.id);
+      if (index === -1) {
+        this.breaks.push(updatedBreak);
+      } else {
+        this.breaks[index] = updatedBreak;
+      }
+      return updatedBreak;
+    },
+
+    async findById(breakId: UUID): Promise<Break | null> {
+      return this.breaks.find((b) => b.id === breakId) ?? null;
+    },
+
     async findActiveByUserId(userId: UUID): Promise<Break | null> {
       return (
         this.breaks.find((b) => b.userId === userId && !b.endedAt) ?? null
