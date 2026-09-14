@@ -17,6 +17,14 @@ export interface Session {
   plannedMin: number;
 }
 
+export interface Break {
+  id: string;
+  userId: string;
+  startedAt: Date;
+  durationSec: number;
+  endedAt?: Date;
+}
+
 interface BaseSegment {
   id: string;
   sessionId: string;
