@@ -1,4 +1,5 @@
 import {
+  mockBreakRepository,
   mockCandidateNodesPort,
   mockLearningPathMembershipPort,
   mockNotificationPort,
@@ -18,7 +19,7 @@ import request from "supertest";
 import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { SegmentEntity, SessionEntity } from "@pomodoro/infrastructure";
+import { BreakEntity, SegmentEntity, SessionEntity } from "@pomodoro/infrastructure";
 import {
   LearningPathEdgeEntity,
   LearningPathEntity,
@@ -31,6 +32,7 @@ import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
 describe("PomodoroController (integration)", () => {
   let app: INestApplication;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
+  let breakRepository: ReturnType<typeof mockBreakRepository>;
   let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
   let candidateNodesPort: ReturnType<typeof mockCandidateNodesPort>;
@@ -48,6 +50,7 @@ describe("PomodoroController (integration)", () => {
     intruderId = await cryptoService.generateUUID();
 
     sessionRepository = mockSessionRepository();
+    breakRepository = mockBreakRepository();
     membershipPort = mockLearningPathMembershipPort();
     notificationPort = mockNotificationPort();
     candidateNodesPort = mockCandidateNodesPort();
@@ -60,6 +63,8 @@ describe("PomodoroController (integration)", () => {
       .useValue({})
       .overrideProvider(getRepositoryToken(SegmentEntity))
       .useValue({})
+      .overrideProvider(getRepositoryToken(BreakEntity))
+      .useValue({})
       .overrideProvider(getRepositoryToken(LearningPathNodeEntity))
       .useValue({})
       .overrideProvider(getRepositoryToken(LearningPathEntity))
@@ -70,6 +75,8 @@ describe("PomodoroController (integration)", () => {
       .useValue({})
       .overrideProvider("IPomodoroSessionRepository")
       .useValue(sessionRepository)
+      .overrideProvider("IPomodoroBreakRepository")
+      .useValue(breakRepository)
       .overrideProvider("ILearningPathMembershipPort")
       .useValue(membershipPort)
       .overrideProvider("INotificationPort")
@@ -101,6 +108,7 @@ describe("PomodoroController (integration)", () => {
 
   afterEach(() => {
     sessionRepository.reset();
+    breakRepository.reset();
     membershipPort.reset();
     notificationPort.reset();
     candidateNodesPort.reset();
@@ -461,17 +469,31 @@ describe("PomodoroController (integration)", () => {
   });
 
   describe("Breaks", () => {
-    test("fires a break-started notification and returns the default duration", async () => {
+    test("persists a break, fires a break-started notification and returns it", async () => {
       const response = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/breaks")
         .set(authHeader())
-        .expect(200);
+        .expect(201);
 
       expect(notificationPort.notifications).toHaveLength(1);
       expect(notificationPort.notifications[0]!.type).toBe(
         DomainNotificationType.BREAK_STARTED,
       );
       expect(response.body.durationSec).toBe(DEFAULT_BREAK_DURATION_SEC);
+      expect(response.body.id).toBeDefined();
+      expect(response.body.endedAt).toBeUndefined();
+    });
+
+    test("rejects starting a break when the user already has one active", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(409);
     });
   });
 
