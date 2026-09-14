@@ -1,4 +1,4 @@
-import { mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, mockCryptoService, type UUID } from "domain-lib";
 import { DomainNotificationType } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
@@ -51,6 +51,7 @@ describe("startBreak", () => {
       { breakRepository, cryptoService, notificationPort },
       { userId: requestingUserId },
     );
+    if (activeBreak instanceof BaseError) throw activeBreak;
 
     const result = await startBreak(
       { breakRepository, cryptoService, notificationPort },
@@ -58,8 +59,7 @@ describe("startBreak", () => {
     );
 
     expect(result).toBeInstanceOf(BreakAlreadyActiveError);
-    expect((result as BreakAlreadyActiveError).context).toEqual({
-      activeBreakId: (activeBreak as { id: UUID }).id,
-    });
+    if (!(result instanceof BreakAlreadyActiveError)) throw result;
+    expect(result.context).toEqual({ activeBreakId: activeBreak.id });
   });
 });

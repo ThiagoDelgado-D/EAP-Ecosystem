@@ -11,6 +11,18 @@ export class TypeOrmBreakRepository implements IBreakRepository {
     return newBreak;
   }
 
+  async update(updatedBreak: Break): Promise<Break> {
+    await this.breakRepository.save(this.toEntity(updatedBreak));
+    return updatedBreak;
+  }
+
+  async findById(breakId: UUID): Promise<Break | null> {
+    const entity = await this.breakRepository.findOne({
+      where: { id: breakId },
+    });
+    return entity ? this.toDomain(entity) : null;
+  }
+
   async findActiveByUserId(userId: UUID): Promise<Break | null> {
     const entity = await this.breakRepository.findOne({
       where: { userId, endedAt: IsNull() },

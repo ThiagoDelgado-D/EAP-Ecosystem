@@ -5,3 +5,6 @@ export * from "./session-forbidden.js";
 export * from "./session-not-active.js";
 export * from "./no-open-segment.js";
 export * from "./break-already-active.js";
+export * from "./break-not-found.js";
+export * from "./break-forbidden.js";
+export * from "./break-not-active.js";
