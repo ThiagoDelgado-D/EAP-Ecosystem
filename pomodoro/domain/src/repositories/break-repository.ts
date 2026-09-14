@@ -3,5 +3,7 @@ import type { Break } from "../entities/break.js";
 
 export interface IBreakRepository {
   save(activeBreak: Break): Promise<Break>;
+  update(activeBreak: Break): Promise<Break>;
+  findById(breakId: UUID): Promise<Break | null>;
   findActiveByUserId(userId: UUID): Promise<Break | null>;
 }
