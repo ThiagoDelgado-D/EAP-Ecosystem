@@ -11,6 +11,7 @@ import type {
 import {
   attachOpenSegment,
   endSession,
+  extendBreak,
   getActiveBreak,
   getActiveSession,
   startBreak,
@@ -19,7 +20,7 @@ import {
   switchTarget,
   type SegmentTargetInput,
 } from "@pomodoro/application";
-import { StartSessionDto, SwitchTargetDto } from "./dto/request/index.js";
+import { ExtendBreakDto, StartSessionDto, SwitchTargetDto } from "./dto/request/index.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { CurrentUserId } from "../auth/current-user-id.decorator.js";
@@ -141,6 +142,20 @@ export class PomodoroController {
         notificationPort: this.notificationPort,
       },
       { userId },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Patch("breaks/:id/extend")
+  async extendBreak(
+    @Param("id") id: UUID,
+    @Body() dto: ExtendBreakDto,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const result = await extendBreak(
+      { breakRepository: this.breakRepository },
+      { userId, breakId: id, seconds: dto.seconds },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;

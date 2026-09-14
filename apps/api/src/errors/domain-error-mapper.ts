@@ -37,6 +37,9 @@ const httpStatusMap: Record<ErrorName, number> = {
   NO_OPEN_SEGMENT_ERROR: 409,
   SESSION_FORBIDDEN_ERROR: 403,
   BREAK_ALREADY_ACTIVE_ERROR: 409,
+  BREAK_NOT_FOUND_ERROR: 404,
+  BREAK_FORBIDDEN_ERROR: 403,
+  BREAK_NOT_ACTIVE_ERROR: 409,
 };
 
 export function toHttpException(error: AppDomainError): never {
