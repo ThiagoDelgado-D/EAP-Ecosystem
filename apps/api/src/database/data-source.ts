@@ -19,6 +19,7 @@ import {
 import {
   SessionEntity as PomodoroSessionEntity,
   SegmentEntity as PomodoroSegmentEntity,
+  BreakEntity as PomodoroBreakEntity,
 } from "@pomodoro/infrastructure";
 
 config({ path: "../../apps/api/.env" });
@@ -44,6 +45,7 @@ export const AppDataSource = new DataSource({
     SessionEntity,
     PomodoroSessionEntity,
     PomodoroSegmentEntity,
+    PomodoroBreakEntity,
   ],
   migrations: ["src/database/migrations/*.ts"],
   synchronize: false,
