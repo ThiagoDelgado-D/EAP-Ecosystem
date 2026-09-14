@@ -580,6 +580,58 @@ describe("PomodoroController (integration)", () => {
 
       expect(response.body).toEqual({});
     });
+
+    test("ends the break", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/breaks/${startResponse.body.id}/end`)
+        .set(authHeader())
+        .expect(201);
+
+      expect(response.body.endedAt).toBeDefined();
+
+      const activeAfterEnd = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/breaks/active")
+        .set(authHeader())
+        .expect(200);
+      expect(activeAfterEnd.body).toEqual({});
+    });
+
+    test("rejects ending an already-ended break", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(201);
+      await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/breaks/${startResponse.body.id}/end`)
+        .set(authHeader())
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/breaks/${startResponse.body.id}/end`)
+        .set(authHeader())
+        .expect(409);
+
+      expect(response.body).toEqual({ breakId: startResponse.body.id });
+    });
+
+    test("rejects ending another user's break", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/breaks/${startResponse.body.id}/end`)
+        .set(authHeader(intruderToken))
+        .expect(403);
+
+      expect(response.body).toEqual({});
+    });
   });
 
   describe("Suggestion", () => {
