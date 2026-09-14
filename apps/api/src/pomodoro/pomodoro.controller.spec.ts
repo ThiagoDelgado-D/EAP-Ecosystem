@@ -495,6 +495,34 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader())
         .expect(409);
     });
+
+    test("rehydrates the user's active break", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/breaks/active")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body.id).toBe(startResponse.body.id);
+    });
+
+    test("does not return another user's active break", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/breaks")
+        .set(authHeader())
+        .expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/breaks/active")
+        .set(authHeader(intruderToken))
+        .expect(200);
+
+      expect(response.body).toEqual({});
+    });
   });
 
   describe("Suggestion", () => {
