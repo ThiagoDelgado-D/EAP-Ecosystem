@@ -40,8 +40,7 @@ export function mockSessionRepository(
 
     async findActiveByUserId(userId: UUID): Promise<Session | null> {
       return (
-        this.sessions.find((s) => s.userId === userId && !s.completedAt) ??
-        null
+        this.sessions.find((s) => s.userId === userId && !s.completedAt) ?? null
       );
     },
 
@@ -67,9 +66,7 @@ export function mockSessionRepository(
       return segment;
     },
 
-    async findOpenSegmentBySessionId(
-      sessionId: UUID,
-    ): Promise<Segment | null> {
+    async findOpenSegmentBySessionId(sessionId: UUID): Promise<Segment | null> {
       return (
         this.segments.find(
           (s) => s.sessionId === sessionId && s.endSec === undefined,
@@ -81,16 +78,35 @@ export function mockSessionRepository(
       return this.segments.filter((s) => s.sessionId === sessionId);
     },
 
-    async findSegmentsByUserIdSince(
+    async findSegmentsByUserIdBetween(
       userId: UUID,
       since: Date,
+      until?: Date,
     ): Promise<Segment[]> {
       const sessionIds = new Set(
         this.sessions
-          .filter((s) => s.userId === userId && s.startedAt >= since)
+          .filter(
+            (s) =>
+              s.userId === userId &&
+              s.startedAt >= since &&
+              (!until || s.startedAt < until),
+          )
           .map((s) => s.id),
       );
       return this.segments.filter((s) => sessionIds.has(s.sessionId));
+    },
+
+    async findByUserIdBetween(
+      userId: UUID,
+      since: Date,
+      until?: Date,
+    ): Promise<Session[]> {
+      return this.sessions.filter(
+        (s) =>
+          s.userId === userId &&
+          s.startedAt >= since &&
+          (!until || s.startedAt < until),
+      );
     },
 
     reset(): void {
