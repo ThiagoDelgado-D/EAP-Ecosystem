@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { BaseError, mockCryptoService, type UUID } from "domain-lib";
-import { mockBreakRepository } from "../../mocks/index.js";
+import { mockBreakRepository, seedBreak } from "../../mocks/index.js";
 import { getBreakHistory } from "./get-break-history.js";
 
 describe("getBreakHistory", () => {
@@ -14,22 +14,11 @@ describe("getBreakHistory", () => {
     requestingUserId = await cryptoService.generateUUID();
   });
 
-  const seedBreak = async (userId: UUID, startedAt: Date) => {
-    const breakId = await cryptoService.generateUUID();
-    await breakRepository.save({
-      id: breakId,
-      userId,
-      startedAt,
-      durationSec: 300,
-    });
-    return breakId;
-  };
-
   test("should return breaks on or after since", async () => {
-    const inRangeId = await seedBreak(
-      requestingUserId,
-      new Date("2026-09-10T10:00:00Z"),
-    );
+    const inRangeBreak = seedBreak(breakRepository, {
+      userId: requestingUserId,
+      startedAt: new Date("2026-09-10T10:00:00Z"),
+    });
 
     const result = await getBreakHistory(
       { breakRepository },
@@ -37,11 +26,14 @@ describe("getBreakHistory", () => {
     );
     if (result instanceof BaseError) throw result;
 
-    expect(result.map((b) => b.id)).toEqual([inRangeId]);
+    expect(result.map((b) => b.id)).toEqual([inRangeBreak.id]);
   });
 
   test("should exclude breaks started before since", async () => {
-    await seedBreak(requestingUserId, new Date("2026-09-01T10:00:00Z"));
+    seedBreak(breakRepository, {
+      userId: requestingUserId,
+      startedAt: new Date("2026-09-01T10:00:00Z"),
+    });
 
     const result = await getBreakHistory(
       { breakRepository },
@@ -53,11 +45,14 @@ describe("getBreakHistory", () => {
   });
 
   test("should exclude breaks on or after until when given", async () => {
-    await seedBreak(requestingUserId, new Date("2026-09-15T10:00:00Z"));
-    const inRangeId = await seedBreak(
-      requestingUserId,
-      new Date("2026-09-10T10:00:00Z"),
-    );
+    seedBreak(breakRepository, {
+      userId: requestingUserId,
+      startedAt: new Date("2026-09-15T10:00:00Z"),
+    });
+    const inRangeBreak = seedBreak(breakRepository, {
+      userId: requestingUserId,
+      startedAt: new Date("2026-09-10T10:00:00Z"),
+    });
 
     const result = await getBreakHistory(
       { breakRepository },
@@ -69,12 +64,15 @@ describe("getBreakHistory", () => {
     );
     if (result instanceof BaseError) throw result;
 
-    expect(result.map((b) => b.id)).toEqual([inRangeId]);
+    expect(result.map((b) => b.id)).toEqual([inRangeBreak.id]);
   });
 
   test("should not return another user's breaks", async () => {
     const intruderId = await cryptoService.generateUUID();
-    await seedBreak(intruderId, new Date("2026-09-10T10:00:00Z"));
+    seedBreak(breakRepository, {
+      userId: intruderId,
+      startedAt: new Date("2026-09-10T10:00:00Z"),
+    });
 
     const result = await getBreakHistory(
       { breakRepository },
