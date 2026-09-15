@@ -1,6 +1,7 @@
 import { EnvironmentInjector, Injectable, computed, inject, signal } from '@angular/core';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
+  Break,
   CandidateEnergyLevel,
   EndSessionResult,
   Segment,
@@ -58,8 +59,7 @@ export class PomodoroSessionStore {
   private readonly now = signal(new Date());
   private intervalId: ReturnType<typeof setInterval> | null = null;
 
-  private readonly breakDurationSec = signal(0);
-  private readonly breakStartedAt = signal<Date | null>(null);
+  readonly activeBreak = signal<Break | null>(null);
   private readonly breakNow = signal(new Date());
 
   readonly elapsedSec = computed(() => {
@@ -80,19 +80,19 @@ export class PomodoroSessionStore {
   });
 
   readonly breakElapsedSec = computed(() => {
-    const startedAt = this.breakStartedAt();
+    const startedAt = this.activeBreak()?.startedAt;
     if (!startedAt) return 0;
     return Math.max(0, Math.floor((this.breakNow().getTime() - startedAt.getTime()) / 1000));
   });
 
   readonly breakRemainingSec = computed(() =>
-    Math.max(0, this.breakDurationSec() - this.breakElapsedSec()),
+    Math.max(0, (this.activeBreak()?.durationSec ?? 0) - this.breakElapsedSec()),
   );
 
   readonly breakRemainingLabel = computed(() => formatClock(this.breakRemainingSec()));
 
   readonly breakProgressFraction = computed(() => {
-    const total = this.breakDurationSec();
+    const total = this.activeBreak()?.durationSec ?? 0;
     return total > 0 ? Math.min(1, this.breakElapsedSec() / total) : 0;
   });
 
@@ -102,23 +102,27 @@ export class PomodoroSessionStore {
 
   async startBreak(): Promise<void> {
     if (this.activeSession()) await this.end();
-    const { durationSec } = await this.repository.startBreak();
-    this.breakDurationSec.set(durationSec);
-    this.breakStartedAt.set(new Date());
+    const activeBreak = await this.repository.startBreak();
+    this.activeBreak.set(activeBreak);
     this.breakNow.set(new Date());
     this.phase.set('break');
     this.startTicking();
   }
 
-  extendBreak(seconds = 300): void {
-    this.breakDurationSec.update((d) => d + seconds);
+  async extendBreak(seconds = 300): Promise<void> {
+    const activeBreak = this.activeBreak();
+    if (!activeBreak) return;
+    const extended = await this.repository.extendBreak(activeBreak.id, seconds);
+    this.activeBreak.set(extended);
   }
 
-  endBreak(): void {
+  async endBreak(): Promise<void> {
+    const activeBreak = this.activeBreak();
+    if (!activeBreak) return;
+    await this.repository.endBreak(activeBreak.id);
     this.stopTicking();
     this.phase.set('focus');
-    this.breakStartedAt.set(null);
-    this.breakDurationSec.set(0);
+    this.activeBreak.set(null);
     this.paused.set(false);
   }
 
@@ -153,12 +157,22 @@ export class PomodoroSessionStore {
     this.rehydrating.set(true);
     try {
       const snapshot = await this.repository.getActiveSession();
-      if (!snapshot) return null;
-      this.activeSession.set(snapshot.session);
-      this.segments.set(snapshot.segments);
-      this.phase.set('focus');
-      this.startTicking();
-      return snapshot.session;
+      if (snapshot) {
+        this.activeSession.set(snapshot.session);
+        this.segments.set(snapshot.segments);
+        this.phase.set('focus');
+        this.startTicking();
+        return snapshot.session;
+      }
+
+      const activeBreak = await this.repository.getActiveBreak();
+      if (activeBreak) {
+        this.activeBreak.set(activeBreak);
+        this.breakNow.set(new Date());
+        this.phase.set('break');
+        this.startTicking();
+      }
+      return null;
     } catch {
       return null;
     } finally {
@@ -227,7 +241,7 @@ export class PomodoroSessionStore {
     this.activeSession.set(null);
     this.segments.set([]);
     this.phase.set('focus');
-    this.breakStartedAt.set(null);
+    this.activeBreak.set(null);
     return result;
   }
 }

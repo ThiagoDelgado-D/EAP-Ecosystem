@@ -1,14 +1,12 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
-import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
-import { describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
-import { currentSegmentTarget } from '@features/pomodoro/presentation/active/segment-display';
+import { createPomodoroRingDisplay } from '@features/pomodoro/presentation/active/pomodoro-ring-display';
 import { createTransientFlag } from '@shared/utils/transient-flag';
 
 const RING_RADIUS = 58;
@@ -31,17 +29,11 @@ export class PomodoroMiniWidgetComponent {
 
   readonly collapsed = signal(false);
 
-  readonly ringDashOffset = computed(() => RING_CIRCUMFERENCE * this.store.progressFraction());
-
-  readonly breakRingDashOffset = computed(() => RING_CIRCUMFERENCE * this.store.breakProgressFraction());
-
-  readonly currentTarget = computed<SegmentTarget | null>(() => currentSegmentTarget(this.store.segments()));
-
-  readonly contextDisplay = computed<TargetLabel | null>(() => {
-    const target = this.currentTarget();
-    if (!target) return null;
-    return describeTargetLabel(target, this.picker.allPaths(), this.picker.library());
-  });
+  private readonly ringDisplay = createPomodoroRingDisplay(this.store, this.picker, RING_CIRCUMFERENCE);
+  readonly ringDashOffset = this.ringDisplay.ringDashOffset;
+  readonly breakRingDashOffset = this.ringDisplay.breakRingDashOffset;
+  readonly currentTarget = this.ringDisplay.currentTarget;
+  readonly contextDisplay = this.ringDisplay.contextDisplay;
 
   toggleCollapsed(): void {
     this.collapsed.update((v) => !v);
@@ -71,13 +63,13 @@ export class PomodoroMiniWidgetComponent {
   private readonly extendFlash = createTransientFlag();
   readonly justExtended = this.extendFlash.active;
 
-  extendBreak(): void {
-    this.store.extendBreak();
+  async extendBreak(): Promise<void> {
     this.extendFlash.trigger();
+    await this.store.extendBreak();
   }
 
-  finishBreak(): void {
-    this.store.endBreak();
+  async finishBreak(): Promise<void> {
+    await this.store.endBreak();
     void this.router.navigateByUrl('/pomodoro');
   }
 }

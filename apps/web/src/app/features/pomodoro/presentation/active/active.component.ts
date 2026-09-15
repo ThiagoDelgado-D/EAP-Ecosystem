@@ -8,9 +8,22 @@ import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-p
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
-import { PomodoroZenViewComponent, POMODORO_ZEN_KEY } from '@features/pomodoro/presentation/zen-view/pomodoro-zen-view.component';
-import { describeTarget, describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
-import { currentSegmentTarget, formatMinutes, segmentToTarget, segmentTotals, type SegmentTotal } from './segment-display';
+import {
+  PomodoroZenViewComponent,
+  POMODORO_ZEN_KEY,
+} from '@features/pomodoro/presentation/zen-view/pomodoro-zen-view.component';
+import {
+  describeTarget,
+  describeTargetLabel,
+  type TargetLabel,
+} from '@features/pomodoro/presentation/start/target-description';
+import {
+  currentSegmentTarget,
+  formatMinutes,
+  segmentToTarget,
+  segmentTotals,
+  type SegmentTotal,
+} from './segment-display';
 import { createTransientFlag } from '@shared/utils/transient-flag';
 
 type RailTab = 'session' | 'segments';
@@ -55,7 +68,9 @@ export class ActiveComponent {
 
   readonly breakRingDashOffset = computed(() => RING_CIRCUMFERENCE * this.breakProgressFraction());
 
-  readonly currentTarget = computed<SegmentTarget | null>(() => currentSegmentTarget(this.store.segments()));
+  readonly currentTarget = computed<SegmentTarget | null>(() =>
+    currentSegmentTarget(this.store.segments()),
+  );
 
   readonly previousTarget = computed<SegmentTarget | null>(() => {
     const segs = this.store.segments();
@@ -63,7 +78,9 @@ export class ActiveComponent {
     return previous ? segmentToTarget(previous) : null;
   });
 
-  readonly description = computed(() => describeTarget(this.currentTarget(), this.picker.allPaths()));
+  readonly description = computed(() =>
+    describeTarget(this.currentTarget(), this.picker.allPaths()),
+  );
 
   readonly contextDisplay = computed<TargetLabel | null>(() => {
     const target = this.currentTarget();
@@ -138,13 +155,13 @@ export class ActiveComponent {
   private readonly extendFlash = createTransientFlag();
   readonly justExtended = this.extendFlash.active;
 
-  extendBreak(): void {
-    this.store.extendBreak();
+  async extendBreak(): Promise<void> {
     this.extendFlash.trigger();
+    await this.store.extendBreak();
   }
 
-  finishBreak(): void {
-    this.store.endBreak();
+  async finishBreak(): Promise<void> {
+    await this.store.endBreak();
     void this.router.navigateByUrl('/pomodoro');
   }
 

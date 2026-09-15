@@ -31,7 +31,11 @@ function navigateTo(events: Subject<NavigationEnd>, url: string): void {
   events.next(new NavigationEnd(1, url, url));
 }
 
-function waitForShown(overlayHost: PomodoroOverlayHostService, key: string, expected: boolean): Promise<void> {
+function waitForShown(
+  overlayHost: PomodoroOverlayHostService,
+  key: string,
+  expected: boolean,
+): Promise<void> {
   return vi.waitFor(
     () => {
       if (overlayHost.isShown(key) !== expected) throw new Error('not yet');
@@ -103,10 +107,11 @@ describe('PomodoroMiniWidgetOrchestratorService', () => {
     const { store, overlayHost, appRef } = setup('/library');
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
     await store.startBreak();
+
     appRef.tick();
     await waitForShown(overlayHost, MINI_WIDGET_KEY, true);
 
-    store.endBreak();
+    await store.endBreak();
     appRef.tick();
 
     expect(overlayHost.isShown(MINI_WIDGET_KEY)).toBe(false);

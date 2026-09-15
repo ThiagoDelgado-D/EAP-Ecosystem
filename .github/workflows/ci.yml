@@ -54,6 +54,7 @@ jobs:
           - user/application
           - user/infrastructure
           - apps/api
+          - apps/web
 
     steps:
       - name: Checkout code
