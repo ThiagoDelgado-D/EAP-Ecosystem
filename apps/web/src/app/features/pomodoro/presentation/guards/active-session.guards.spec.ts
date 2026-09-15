@@ -37,7 +37,7 @@ describe('requireActiveSessionGuard', () => {
     expect(result).toBe(true);
   });
 
-  test('should allow activation after rehydrating finds an active session', async () => {
+  test('should redirect to the dashboard, not the active screen, when rehydrating finds an active session', async () => {
     const { repository } = setup();
     repository.sessions.push({
       id: crypto.randomUUID(),
@@ -48,7 +48,8 @@ describe('requireActiveSessionGuard', () => {
 
     const result = await runGuard(requireActiveSessionGuard);
 
-    expect(result).toBe(true);
+    expect(result).toBeInstanceOf(UrlTree);
+    expect((result as UrlTree).toString()).toBe('/dashboard');
   });
 
   test('should redirect to the start screen when there is no active session', async () => {
@@ -60,7 +61,7 @@ describe('requireActiveSessionGuard', () => {
     expect((result as UrlTree).toString()).toBe('/pomodoro');
   });
 
-  test('should allow activation after rehydrating finds an active break', async () => {
+  test('should redirect to the dashboard, not the active screen, when rehydrating finds an active break', async () => {
     const { repository } = setup();
     repository.breaks.push({
       id: crypto.randomUUID(),
@@ -71,7 +72,8 @@ describe('requireActiveSessionGuard', () => {
 
     const result = await runGuard(requireActiveSessionGuard);
 
-    expect(result).toBe(true);
+    expect(result).toBeInstanceOf(UrlTree);
+    expect((result as UrlTree).toString()).toBe('/dashboard');
   });
 
   test('should allow activation while on break, even with no active session', async () => {
@@ -100,7 +102,7 @@ describe('redirectIfActiveSessionGuard', () => {
     expect((result as UrlTree).toString()).toBe('/pomodoro/active');
   });
 
-  test('should redirect to the active screen after rehydrating finds an active session', async () => {
+  test('should redirect to the dashboard, not the active screen, when rehydrating finds an active session', async () => {
     const { repository } = setup();
     repository.sessions.push({
       id: crypto.randomUUID(),
@@ -112,7 +114,7 @@ describe('redirectIfActiveSessionGuard', () => {
     const result = await runGuard(redirectIfActiveSessionGuard);
 
     expect(result).toBeInstanceOf(UrlTree);
-    expect((result as UrlTree).toString()).toBe('/pomodoro/active');
+    expect((result as UrlTree).toString()).toBe('/dashboard');
   });
 
   test('should allow activation when there is no active session', async () => {
@@ -123,7 +125,7 @@ describe('redirectIfActiveSessionGuard', () => {
     expect(result).toBe(true);
   });
 
-  test('should redirect to the active screen after rehydrating finds an active break', async () => {
+  test('should redirect to the dashboard, not the active screen, when rehydrating finds an active break', async () => {
     const { repository } = setup();
     repository.breaks.push({
       id: crypto.randomUUID(),
@@ -135,7 +137,7 @@ describe('redirectIfActiveSessionGuard', () => {
     const result = await runGuard(redirectIfActiveSessionGuard);
 
     expect(result).toBeInstanceOf(UrlTree);
-    expect((result as UrlTree).toString()).toBe('/pomodoro/active');
+    expect((result as UrlTree).toString()).toBe('/dashboard');
   });
 
   test('should redirect to the active screen while on break, even with no active session', async () => {
