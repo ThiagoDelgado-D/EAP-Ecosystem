@@ -6,14 +6,23 @@ import { ActiveComponent } from './active.component';
 
 function setup() {
   const navigateByUrl = vi.fn();
-  const { providers, pomodoroRepository, learningPathRepository } = createPomodoroComponentTestProviders(navigateByUrl);
+  const { providers, pomodoroRepository, learningPathRepository } =
+    createPomodoroComponentTestProviders(navigateByUrl);
 
   TestBed.configureTestingModule({ providers });
 
   const store = TestBed.inject(PomodoroSessionStore);
   const overlayHost = TestBed.inject(PomodoroOverlayHostService);
   const fixture = TestBed.createComponent(ActiveComponent);
-  return { component: fixture.componentInstance, fixture, store, overlayHost, repository: pomodoroRepository, learningPathRepository, navigateByUrl };
+  return {
+    component: fixture.componentInstance,
+    fixture,
+    store,
+    overlayHost,
+    repository: pomodoroRepository,
+    learningPathRepository,
+    navigateByUrl,
+  };
 }
 
 describe('ActiveComponent', () => {
@@ -51,7 +60,10 @@ describe('ActiveComponent', () => {
     const { component, store } = setup();
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
 
-    expect(component.contextDisplay()).toEqual({ title: 'Free focus', subtitle: 'No material attached' });
+    expect(component.contextDisplay()).toEqual({
+      title: 'Free focus',
+      subtitle: 'No material attached',
+    });
     expect(component.description().isFree).toBe(true);
   });
 
@@ -72,18 +84,49 @@ describe('ActiveComponent', () => {
     const gitNodeId = crypto.randomUUID();
     const dockerNodeId = crypto.randomUUID();
     learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'Frontend desde cero', mode: 'sequential', source: 'manual', createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: pathId,
+        userId: crypto.randomUUID(),
+        title: 'Frontend desde cero',
+        mode: 'sequential',
+        source: 'manual',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ];
     learningPathRepository.nodes = [
-      { id: gitNodeId, pathId, title: 'Git y control de versiones', progress: 'in_progress', createdAt: new Date(), updatedAt: new Date() },
-      { id: dockerNodeId, pathId, title: '¿Qué es Docker?', progress: 'pending', createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: gitNodeId,
+        pathId,
+        title: 'Git y control de versiones',
+        progress: 'in_progress',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: dockerNodeId,
+        pathId,
+        title: '¿Qué es Docker?',
+        progress: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ];
     await component.picker.load();
-    await store.start({ plannedMin: 25, target: { kind: 'node', learningPathId: pathId, learningPathNodeId: gitNodeId } });
+    await store.start({
+      plannedMin: 25,
+      target: { kind: 'node', learningPathId: pathId, learningPathNodeId: gitNodeId },
+    });
 
-    await component.applySwitchedTarget({ kind: 'node', learningPathId: pathId, learningPathNodeId: dockerNodeId });
+    await component.applySwitchedTarget({
+      kind: 'node',
+      learningPathId: pathId,
+      learningPathNodeId: dockerNodeId,
+    });
 
-    const labels = component.segmentTotals().map((total) => component.segmentTargetLabel(total.target));
+    const labels = component
+      .segmentTotals()
+      .map((total) => component.segmentTargetLabel(total.target));
     expect(labels).toContain('Git y control de versiones');
     expect(labels).toContain('¿Qué es Docker?');
   });
@@ -162,7 +205,7 @@ describe('ActiveComponent', () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
     await component.takeBreak();
 
-    component.extendBreak();
+    await component.extendBreak();
 
     expect(component.breakRemainingLabel()).toBe('10:00');
   });
@@ -207,7 +250,7 @@ describe('ActiveComponent', () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
     await component.takeBreak();
 
-    component.finishBreak();
+    await component.finishBreak();
 
     expect(component.phase()).toBe('focus');
     expect(store.activeSession()).toBeNull();
