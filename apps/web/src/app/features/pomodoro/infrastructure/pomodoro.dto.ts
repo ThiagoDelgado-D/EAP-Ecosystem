@@ -58,6 +58,12 @@ export interface BreakDto {
   endedAt?: string;
 }
 
+export interface HistoryResponseDto {
+  sessions: SessionDto[];
+  segments: SegmentDto[];
+  breaks: BreakDto[];
+}
+
 export interface SuggestedCandidateDto {
   pathId: string;
   pathTitle: string;
