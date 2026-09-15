@@ -862,4 +862,72 @@ describe("PomodoroController (integration)", () => {
       expect(notificationPort.notifications).toHaveLength(0);
     });
   });
+
+  describe("History", () => {
+    test("returns sessions, segments, and breaks within the given range", async () => {
+      sessionRepository.sessions.push({
+        id: await cryptoService.generateUUID(),
+        userId: ownerId,
+        startedAt: new Date("2026-09-10T10:00:00Z"),
+        plannedMin: 25,
+      });
+      breakRepository.breaks.push({
+        id: await cryptoService.generateUUID(),
+        userId: ownerId,
+        startedAt: new Date("2026-09-10T11:00:00Z"),
+        durationSec: 300,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/history")
+        .query({ since: "2026-09-08T00:00:00Z" })
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body.sessions).toHaveLength(1);
+      expect(response.body.breaks).toHaveLength(1);
+    });
+
+    test("excludes rows outside the given range", async () => {
+      sessionRepository.sessions.push({
+        id: await cryptoService.generateUUID(),
+        userId: ownerId,
+        startedAt: new Date("2026-09-01T10:00:00Z"),
+        plannedMin: 25,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/history")
+        .query({ since: "2026-09-08T00:00:00Z" })
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body.sessions).toHaveLength(0);
+    });
+
+    test("does not return another user's sessions or breaks", async () => {
+      sessionRepository.sessions.push({
+        id: await cryptoService.generateUUID(),
+        userId: ownerId,
+        startedAt: new Date("2026-09-10T10:00:00Z"),
+        plannedMin: 25,
+      });
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/history")
+        .query({ since: "2026-09-08T00:00:00Z" })
+        .set(authHeader(intruderToken))
+        .expect(200);
+
+      expect(response.body.sessions).toHaveLength(0);
+      expect(response.body.breaks).toHaveLength(0);
+    });
+
+    test("rejects a request missing since", async () => {
+      await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/history")
+        .set(authHeader())
+        .expect(400);
+    });
+  });
 });

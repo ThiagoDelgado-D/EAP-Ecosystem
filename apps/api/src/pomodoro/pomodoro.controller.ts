@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import { BaseError, type CryptoService, type UUID } from "domain-lib";
 import type {
   CandidateNodesPort,
@@ -15,13 +25,20 @@ import {
   extendBreak,
   getActiveBreak,
   getActiveSession,
+  getBreakHistory,
+  getSessionHistory,
   startBreak,
   startSession,
   suggestSessionTarget,
   switchTarget,
   type SegmentTargetInput,
 } from "@pomodoro/application";
-import { ExtendBreakDto, StartSessionDto, SwitchTargetDto } from "./dto/request/index.js";
+import {
+  ExtendBreakDto,
+  GetHistoryDto,
+  StartSessionDto,
+  SwitchTargetDto,
+} from "./dto/request/index.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { CurrentUserId } from "../auth/current-user-id.decorator.js";
@@ -186,5 +203,35 @@ export class PomodoroController {
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
+  }
+
+  @Get("history")
+  async getHistory(
+    @Query() query: GetHistoryDto,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const since = new Date(query.since);
+    const until = query.until ? new Date(query.until) : undefined;
+
+    const [sessionResult, breakResult] = await Promise.all([
+      getSessionHistory(
+        { sessionRepository: this.sessionRepository },
+        { userId, since, until },
+      ),
+      getBreakHistory(
+        { breakRepository: this.breakRepository },
+        { userId, since, until },
+      ),
+    ]);
+
+    if (sessionResult instanceof BaseError)
+      throw toHttpException(sessionResult);
+    if (breakResult instanceof BaseError) throw toHttpException(breakResult);
+
+    return {
+      sessions: sessionResult.sessions,
+      segments: sessionResult.segments,
+      breaks: breakResult,
+    };
   }
 }
