@@ -10,10 +10,7 @@ describe('PomodoroSessionStore', () => {
   beforeEach(() => {
     repository = mockPomodoroRepository();
     TestBed.configureTestingModule({
-      providers: [
-        PomodoroSessionStore,
-        { provide: PomodoroRepository, useValue: repository },
-      ],
+      providers: [PomodoroSessionStore, { provide: PomodoroRepository, useValue: repository }],
     });
     store = TestBed.inject(PomodoroSessionStore);
   });
@@ -94,10 +91,21 @@ describe('PomodoroSessionStore', () => {
     const pathId = crypto.randomUUID();
     const nodeId = crypto.randomUUID();
 
-    await store.start({ plannedMin: 25, target: { kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId } });
+    await store.start({
+      plannedMin: 25,
+      target: { kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId },
+    });
 
     expect(store.segments()).toEqual([
-      { id: 'initial', sessionId: store.activeSession()!.id, startSec: 0, targetKind: 'node', learningPathId: pathId, learningPathNodeId: nodeId, resourceId: undefined },
+      {
+        id: 'initial',
+        sessionId: store.activeSession()!.id,
+        startSec: 0,
+        targetKind: 'node',
+        learningPathId: pathId,
+        learningPathNodeId: nodeId,
+        resourceId: undefined,
+      },
     ]);
   });
 
@@ -124,8 +132,18 @@ describe('PomodoroSessionStore', () => {
 
   test('should populate the active session and its segments on rehydrate', async () => {
     const sessionId = crypto.randomUUID();
-    const session = { id: sessionId, userId: crypto.randomUUID(), startedAt: new Date(), plannedMin: 50 };
-    const segment = { id: crypto.randomUUID(), sessionId, startSec: 0, targetKind: 'free' as const };
+    const session = {
+      id: sessionId,
+      userId: crypto.randomUUID(),
+      startedAt: new Date(),
+      plannedMin: 50,
+    };
+    const segment = {
+      id: crypto.randomUUID(),
+      sessionId,
+      startSec: 0,
+      targetKind: 'free' as const,
+    };
     repository.sessions.push(session);
     repository.segments.push(segment);
 
@@ -144,16 +162,40 @@ describe('PomodoroSessionStore', () => {
     expect(store.activeSession()).toBeNull();
   });
 
+  test('should populate the active break on rehydrate when there is no active session', async () => {
+    repository.breaks.push({
+      id: crypto.randomUUID(),
+      userId: crypto.randomUUID(),
+      startedAt: new Date(),
+      durationSec: 300,
+    });
+
+    const result = await store.rehydrate();
+
+    expect(result).toBeNull();
+    expect(store.phase()).toBe('break');
+    expect(store.breakRemainingLabel()).toBe('05:00');
+  });
+
   test('should retarget the open segment in place when attaching, keeping a single segment', async () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
     const pathId = crypto.randomUUID();
     const nodeId = crypto.randomUUID();
 
-    await store.attachOpenSegment({ kind: 'node', learningPathId: pathId, learningPathNodeId: nodeId });
+    await store.attachOpenSegment({
+      kind: 'node',
+      learningPathId: pathId,
+      learningPathNodeId: nodeId,
+    });
 
     const segments = store.segments();
+
     expect(segments).toHaveLength(1);
-    expect(segments[0]).toMatchObject({ targetKind: 'node', learningPathId: pathId, learningPathNodeId: nodeId });
+    expect(segments[0]).toMatchObject({
+      targetKind: 'node',
+      learningPathId: pathId,
+      learningPathNodeId: nodeId,
+    });
   });
 
   describe('timer', () => {
@@ -197,7 +239,12 @@ describe('PomodoroSessionStore', () => {
 
     test('should resume ticking on rehydrate with paused reset to false', async () => {
       repository.sessions = [
-        { id: crypto.randomUUID(), userId: crypto.randomUUID(), startedAt: new Date(), plannedMin: 25 },
+        {
+          id: crypto.randomUUID(),
+          userId: crypto.randomUUID(),
+          startedAt: new Date(),
+          plannedMin: 25,
+        },
       ];
 
       await store.rehydrate();
@@ -242,7 +289,7 @@ describe('PomodoroSessionStore', () => {
       await store.startBreak();
       vi.advanceTimersByTime(4 * 60 * 1000);
 
-      store.extendBreak();
+      await store.extendBreak();
 
       expect(store.breakRemainingLabel()).toBe('06:00');
     });
@@ -263,7 +310,7 @@ describe('PomodoroSessionStore', () => {
       await store.startBreak();
       vi.advanceTimersByTime(60 * 1000);
 
-      store.endBreak();
+      await store.endBreak();
       vi.advanceTimersByTime(5 * 1000);
 
       expect(store.phase()).toBe('focus');
