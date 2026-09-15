@@ -46,7 +46,7 @@ export const getPathMomentum = async (
     Date.now() - (days ?? DEFAULT_MOMENTUM_WINDOW_DAYS) * 24 * 60 * 60 * 1000,
   );
 
-  const segments = await sessionRepository.findSegmentsByUserIdSince(
+  const segments = await sessionRepository.findSegmentsByUserIdBetween(
     userId,
     since,
   );
