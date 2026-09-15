@@ -5,3 +5,4 @@ export * from "./mock-notification-port.js";
 export * from "./mock-candidate-nodes-port.js";
 export * from "./session-lifecycle-fixture.js";
 export * from "./break-lifecycle-fixture.js";
+export * from "./factories.js";

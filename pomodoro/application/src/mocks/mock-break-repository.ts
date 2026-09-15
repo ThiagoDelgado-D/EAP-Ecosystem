@@ -32,8 +32,19 @@ export function mockBreakRepository(
     },
 
     async findActiveByUserId(userId: UUID): Promise<Break | null> {
-      return (
-        this.breaks.find((b) => b.userId === userId && !b.endedAt) ?? null
+      return this.breaks.find((b) => b.userId === userId && !b.endedAt) ?? null;
+    },
+
+    async findByUserIdBetween(
+      userId: UUID,
+      since: Date,
+      until?: Date,
+    ): Promise<Break[]> {
+      return this.breaks.filter(
+        (b) =>
+          b.userId === userId &&
+          b.startedAt >= since &&
+          (!until || b.startedAt < until),
       );
     },
 

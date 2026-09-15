@@ -15,5 +15,14 @@ export interface ISessionRepository {
   updateSegment(segment: Segment): Promise<Segment>;
   findOpenSegmentBySessionId(sessionId: UUID): Promise<Segment | null>;
   findSegmentsBySessionId(sessionId: UUID): Promise<Segment[]>;
-  findSegmentsByUserIdSince(userId: UUID, since: Date): Promise<Segment[]>;
+  findSegmentsByUserIdBetween(
+    userId: UUID,
+    since: Date,
+    until?: Date,
+  ): Promise<Segment[]>;
+  findByUserIdBetween(
+    userId: UUID,
+    since: Date,
+    until?: Date,
+  ): Promise<Session[]>;
 }

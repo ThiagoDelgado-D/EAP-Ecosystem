@@ -73,14 +73,29 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     return entities.map((entity) => this.toSegmentDomain(entity));
   }
 
-  async findSegmentsByUserIdSince(userId: UUID, since: Date): Promise<Segment[]> {
-    const entities = await this.segmentRepository
+  async findSegmentsByUserIdBetween(
+    userId: UUID,
+    since: Date,
+    until?: Date,
+  ): Promise<Segment[]> {
+    const query = this.segmentRepository
       .createQueryBuilder("segment")
       .innerJoin(SessionEntity, "session", "session.id = segment.sessionId")
       .where("session.userId = :userId", { userId })
-      .andWhere("session.startedAt >= :since", { since })
-      .getMany();
+      .andWhere("session.startedAt >= :since", { since });
+    if (until) query.andWhere("session.startedAt < :until", { until });
+    const entities = await query.getMany();
     return entities.map((entity) => this.toSegmentDomain(entity));
+  }
+
+  async findByUserIdBetween(userId: UUID, since: Date, until?: Date): Promise<Session[]> {
+    const query = this.sessionRepository
+      .createQueryBuilder("session")
+      .where("session.userId = :userId", { userId })
+      .andWhere("session.startedAt >= :since", { since });
+    if (until) query.andWhere("session.startedAt < :until", { until });
+    const entities = await query.getMany();
+    return entities.map((entity) => this.toSessionDomain(entity));
   }
 
   private toSessionEntity(session: Session): SessionEntity {

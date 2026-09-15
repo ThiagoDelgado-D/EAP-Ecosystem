@@ -1,6 +1,6 @@
 import type { UUID } from "domain-lib";
 import type { Break, IBreakRepository } from "@pomodoro/domain";
-import { IsNull, type Repository } from "typeorm";
+import { And, IsNull, LessThan, MoreThanOrEqual, type Repository } from "typeorm";
 import { BreakEntity } from "../entities/break.entity.js";
 
 export class TypeOrmBreakRepository implements IBreakRepository {
@@ -29,6 +29,17 @@ export class TypeOrmBreakRepository implements IBreakRepository {
       order: { startedAt: "DESC" },
     });
     return entity ? this.toDomain(entity) : null;
+  }
+
+  async findByUserIdBetween(userId: UUID, since: Date, until?: Date): Promise<Break[]> {
+    const entities = await this.breakRepository.find({
+      where: {
+        userId,
+        startedAt: until ? And(MoreThanOrEqual(since), LessThan(until)) : MoreThanOrEqual(since),
+      },
+      order: { startedAt: "ASC" },
+    });
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   private toEntity(activeBreak: Break): BreakEntity {
