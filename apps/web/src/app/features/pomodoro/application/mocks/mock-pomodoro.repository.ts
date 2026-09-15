@@ -4,6 +4,7 @@ import {
   type ActiveSessionSnapshot,
   type Break,
   type EndSessionResult,
+  type HistorySnapshot,
   type Segment,
   type SegmentTarget,
   type Session,
@@ -137,6 +138,19 @@ export function mockPomodoroRepository(
       return {
         session,
         segments: this.segments.filter((segment) => segment.sessionId === session.id),
+      };
+    },
+
+    async getHistory(since: Date, until?: Date): Promise<HistorySnapshot> {
+      const inRange = (startedAt: Date) => startedAt >= since && (!until || startedAt < until);
+      return {
+        sessions: this.sessions.filter((session) => inRange(session.startedAt)),
+        segments: this.segments.filter((segment) =>
+          this.sessions.some(
+            (session) => session.id === segment.sessionId && inRange(session.startedAt),
+          ),
+        ),
+        breaks: this.breaks.filter((activeBreak) => inRange(activeBreak.startedAt)),
       };
     },
 
