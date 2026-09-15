@@ -9,7 +9,7 @@ export const requireActiveSessionGuard: CanActivateFn = async () => {
   if (store.activeSession() || store.phase() === 'break') return true;
 
   const session = await store.rehydrate();
-  return session ? true : router.createUrlTree(['/pomodoro']);
+  return session || store.activeBreak() ? true : router.createUrlTree(['/pomodoro']);
 };
 
 export const redirectIfActiveSessionGuard: CanActivateFn = async () => {
@@ -19,5 +19,5 @@ export const redirectIfActiveSessionGuard: CanActivateFn = async () => {
   if (store.activeSession() || store.phase() === 'break') return router.createUrlTree(['/pomodoro/active']);
 
   const session = await store.rehydrate();
-  return session ? router.createUrlTree(['/pomodoro/active']) : true;
+  return session || store.activeBreak() ? router.createUrlTree(['/pomodoro/active']) : true;
 };
