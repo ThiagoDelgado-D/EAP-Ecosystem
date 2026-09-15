@@ -76,6 +76,12 @@ export interface ActiveSessionSnapshot {
   segments: Segment[];
 }
 
+export interface HistorySnapshot {
+  sessions: Session[];
+  segments: Segment[];
+  breaks: Break[];
+}
+
 export type EndSessionResult =
   | { discarded: true }
   | { discarded: false; session: Session; segments: Segment[] };
@@ -92,7 +98,8 @@ export const CANDIDATE_ENERGY_LEVEL = {
   HIGH: 'high',
 } as const;
 
-export type CandidateEnergyLevel = (typeof CANDIDATE_ENERGY_LEVEL)[keyof typeof CANDIDATE_ENERGY_LEVEL];
+export type CandidateEnergyLevel =
+  (typeof CANDIDATE_ENERGY_LEVEL)[keyof typeof CANDIDATE_ENERGY_LEVEL];
 
 export interface SuggestedCandidate {
   pathId: string;

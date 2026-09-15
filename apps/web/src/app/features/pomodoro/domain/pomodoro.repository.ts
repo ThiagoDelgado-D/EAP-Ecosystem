@@ -3,6 +3,7 @@ import type {
   Break,
   CandidateEnergyLevel,
   EndSessionResult,
+  HistorySnapshot,
   Segment,
   SegmentTarget,
   Session,
@@ -24,4 +25,5 @@ export abstract class PomodoroRepository {
   abstract getActiveSession(): Promise<ActiveSessionSnapshot | null>;
   abstract endSession(sessionId: string): Promise<EndSessionResult>;
   abstract getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]>;
+  abstract getHistory(since: Date, until?: Date): Promise<HistorySnapshot>;
 }

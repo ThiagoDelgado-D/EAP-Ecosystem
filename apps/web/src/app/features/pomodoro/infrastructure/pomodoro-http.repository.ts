@@ -7,6 +7,7 @@ import type {
   Break,
   CandidateEnergyLevel,
   EndSessionResult,
+  HistorySnapshot,
   Segment,
   SegmentTarget,
   Session,
@@ -19,6 +20,7 @@ import type {
   AttachOpenSegmentResponseDto,
   BreakDto,
   EndSessionResponseDto,
+  HistoryResponseDto,
   SegmentDto,
   SessionDto,
   SuggestedCandidateDto,
@@ -117,6 +119,22 @@ export class PomodoroHttpRepository extends PomodoroRepository {
     return {
       session: this.toSessionDomain(dto.session),
       segments: dto.segments.map((segment) => this.toSegmentDomain(segment)),
+    };
+  }
+
+  async getHistory(since: Date, until?: Date): Promise<HistorySnapshot> {
+    const dto = await firstValueFrom(
+      this.http.get<HistoryResponseDto>(`${this.baseUrl}/history`, {
+        params: {
+          since: since.toISOString(),
+          ...(until ? { until: until.toISOString() } : {}),
+        },
+      }),
+    );
+    return {
+      sessions: dto.sessions.map((session) => this.toSessionDomain(session)),
+      segments: dto.segments.map((segment) => this.toSegmentDomain(segment)),
+      breaks: dto.breaks.map((activeBreak) => this.toBreakDomain(activeBreak)),
     };
   }
 
