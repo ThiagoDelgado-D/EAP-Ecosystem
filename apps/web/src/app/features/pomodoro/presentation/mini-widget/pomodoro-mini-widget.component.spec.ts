@@ -93,7 +93,7 @@ describe('PomodoroMiniWidgetComponent', () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
     await store.startBreak();
 
-    component.extendBreak();
+    await component.extendBreak();
 
     expect(store.breakRemainingLabel()).toBe('10:00');
   });
@@ -108,7 +108,7 @@ describe('PomodoroMiniWidgetComponent', () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
     await store.startBreak();
 
-    component.finishBreak();
+    await component.finishBreak();
 
     expect(store.phase()).toBe('focus');
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
