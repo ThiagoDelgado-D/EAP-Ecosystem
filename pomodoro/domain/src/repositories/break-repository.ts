@@ -6,4 +6,5 @@ export interface IBreakRepository {
   update(activeBreak: Break): Promise<Break>;
   findById(breakId: UUID): Promise<Break | null>;
   findActiveByUserId(userId: UUID): Promise<Break | null>;
+  findByUserIdBetween(userId: UUID, since: Date, until?: Date): Promise<Break[]>;
 }
