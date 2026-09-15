@@ -83,7 +83,7 @@ describe('PomodoroZenViewComponent', () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
     await store.startBreak();
 
-    component.extendBreak();
+    await component.extendBreak();
 
     expect(store.breakRemainingLabel()).toBe('10:00');
   });
@@ -93,7 +93,7 @@ describe('PomodoroZenViewComponent', () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
     await store.startBreak();
 
-    component.finishBreak();
+    await component.finishBreak();
 
     expect(hide).toHaveBeenCalledWith(POMODORO_ZEN_KEY);
     expect(store.phase()).toBe('focus');
