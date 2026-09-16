@@ -3,6 +3,8 @@ export * from "./ambiguous-path-target.js";
 export * from "./session-not-found.js";
 export * from "./session-forbidden.js";
 export * from "./session-not-active.js";
+export * from "./session-not-completed.js";
+export * from "./segments-already-attributed.js";
 export * from "./no-open-segment.js";
 export * from "./break-already-active.js";
 export * from "./break-not-found.js";
