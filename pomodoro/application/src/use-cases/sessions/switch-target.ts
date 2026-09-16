@@ -1,11 +1,4 @@
-import {
-  createValidationSchema,
-  uuidField,
-  ValidationError,
-  InvalidDataError,
-  type CryptoService,
-  type UUID,
-} from "domain-lib";
+import { InvalidDataError, type CryptoService, type UUID } from "domain-lib";
 import type {
   ISessionRepository,
   LearningPathMembershipPort,
@@ -20,7 +13,7 @@ import {
   resolveSegmentTarget,
   type SegmentTargetInput,
 } from "./resolve-segment-target.js";
-import { verifySessionOwnership } from "./verify-session-ownership.js";
+import { validateAndVerifySessionOwnership } from "./verify-session-ownership.js";
 
 export interface SwitchTargetDependencies {
   sessionRepository: ISessionRepository;
@@ -39,13 +32,6 @@ export interface SwitchTargetResponseModel {
   openedSegment: Segment;
 }
 
-const switchTargetSchema = createValidationSchema<
-  Pick<SwitchTargetRequestModel, "userId" | "sessionId">
->({
-  userId: uuidField("UserId", { required: true }),
-  sessionId: uuidField("SessionId", { required: true }),
-});
-
 export const switchTarget = async (
   {
     sessionRepository,
@@ -62,19 +48,13 @@ export const switchTarget = async (
   | NoOpenSegmentError
   | AmbiguousPathTargetError
 > => {
-  const validationResult = switchTargetSchema(request);
-  if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
-  }
-  const validatedData = validationResult;
-
-  const session = await verifySessionOwnership(
+  const session = await validateAndVerifySessionOwnership(
     sessionRepository,
-    validatedData.sessionId,
-    validatedData.userId,
+    request,
   );
 
   if (
+    session instanceof InvalidDataError ||
     session instanceof SessionNotFoundError ||
     session instanceof SessionForbiddenError
   ) {
