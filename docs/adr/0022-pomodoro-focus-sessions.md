@@ -6,7 +6,7 @@
 ## Context
 
 Pomodoro is the piece that starts to close the loop on EAP's general
-study-session lifecycle. Learning Paths and Resources already model *what*
+study-session lifecycle. Learning Paths and Resources already model _what_
 to study and in what order; nothing yet models the actual act of sitting
 down and studying — starting a focus block, staying in it, and knowing
 afterward where that time actually went.
@@ -61,12 +61,12 @@ Post-MVP. This ADR's `Session`/`Segment` model does not depend on a
 
 **`Session`**
 
-| Field         | Type                | Notes                                                                                                         |
-| ------------- | ------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `id`          | uuid                |                                                                                                               |
-| `startedAt`   | timestamp           | Server-set, at creation (see Lifecycle below)                                                                 |
-| `completedAt` | timestamp, nullable | Server-computed at `Ended`, from the server's own clock                                                       |
-| `intent`      | text, nullable      | Free-text "session goal" (e.g. "Understand conditional types…"), shown as a quote in zen mode                 |
+| Field         | Type                | Notes                                                                                                                                                                                                                                        |
+| ------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`          | uuid                |                                                                                                                                                                                                                                              |
+| `startedAt`   | timestamp           | Server-set, at creation (see Lifecycle below)                                                                                                                                                                                                |
+| `completedAt` | timestamp, nullable | Server-computed at `Ended`, from the server's own clock                                                                                                                                                                                      |
+| `intent`      | text, nullable      | Free-text "session goal" (e.g. "Understand conditional types…"), shown as a quote in zen mode                                                                                                                                                |
 | `plannedMin`  | int                 | Duration chosen at start (15 / 25 / 50 / 90 in the v0.9.5 prototype — a placeholder default, not a fixed business rule; becomes per-user via `Settings.durationPresets` once ADR-0024 ships); a snapshot, not a live pointer to any settings |
 
 **`Segment`** (belongs to `Session`, one-to-many, ordered by `startSec`)
@@ -130,7 +130,17 @@ out in the design mock:
   create one); free-only sessions get a retroactive attach. `LearningPathNode`
   status and `LearningResource` status are edited **independently** at this
   screen — neither implies the other, and both default to unchanged unless
-  the user opens "Adjust progress."
+  the user opens "Adjust progress." A session closed by the safety-net below
+  is marked distinctly here (auto-completed vs. user-ended) — the duration
+  shown is honest either way, but how it ended is still worth surfacing.
+- **Today panel**: a side panel, in the same rail as the Session/Segments/
+  Notes tabs, showing today's total focused and break time plus a vertical
+  timeline below it — one colored block per session and break that
+  happened today, in chronological order, sized by its actual duration,
+  with the in-progress one visually distinct. Two colors only (focus vs.
+  break) — this feature has no meeting concept the way Rize's timeline
+  does. This is a same-day slice of the history direction already noted as
+  Deferred, not the full multi-day history screen.
 
 ### Lifecycle — server-authoritative writes
 
@@ -143,6 +153,55 @@ session instead of trusting `localStorage`; recovery always resumes into
 **mini** view, never back into whatever full/zen mode was active before the
 reload. A session ended under a to-be-tuned minimum threshold (~1 min,
 illustrative) is deleted server-side rather than finalized into history.
+
+**Revised 2026-09-16.** This section originally left a session's upper
+bound entirely open — "sustained focus... up to 90 minutes or more" was
+read as "the session keeps accumulating time for as long as the row stays
+open," with no mechanism at all for what happens once `plannedMin` is
+reached. That gap surfaced as a real defect: a session left open overnight
+(tab never closed, "End session" never clicked) accumulated over 15 hours
+of client-visible elapsed time before being closed manually the next day —
+time that was never actually spent focusing, just clock drift while
+unsupervised. The fix keeps this ADR's core principle (a sustained block
+should never be cut short while the user is genuinely still in it) but
+stops treating "the row is still open" as evidence that the user still is.
+
+No session may report more time than `plannedMin` without a live
+confirmation. Reaching `plannedMin` becomes a decision point, not silent
+continuation:
+
+- **Client responds while it's actually there.** When the countdown
+  reaches zero with the tab open, an audio/notification cue fires and the UI presents
+  "Keep going" / "End session." _Keep going_ closes the current session
+  cleanly at `startedAt + plannedMin` and immediately starts a new session
+  against the same target — visually seamless (looks like one continuous
+  block to the user), but each underlying `Session` row stays honestly
+  bounded to one confirmed block. _End session_ runs the existing
+  manual-end flow.
+- **Nobody responds.** This is the overnight case. The next time the
+  server touches that session on any existing read path
+  (`getActiveSession`, already called on reload — no new polling or
+  scheduler introduced), if `now > startedAt + plannedMin` and no response
+  was given, the session is finalized automatically. Critically,
+  `completedAt` is always set to `startedAt + plannedMin`, never to the
+  detection time — the recorded duration is a deterministic function of
+  the plan, not a guess based on when someone happened to notice. This
+  reuses `plannedMin`, which already exists on every session; no new
+  column, heartbeat, or scheduler is introduced.
+
+A lightweight audio cue accompanies the "Keep going / End session" prompt —
+an in-page sound the user can toggle on/off, independent of ADR-0023's
+`WebNotificationAdapter` (browser permission prompt, OS-level
+notifications). That heavier mechanism, and any broader
+notification-preferences surface, remain deferred to ADR-0024/Settings.
+The existing `NotificationPort`/`SESSION_COMPLETED` event already fires at
+this same point and is unaffected; this only adds a client-side sound
+alongside it. The on/off toggle ships now as a minimal control with its
+state kept client-side (there is no `Settings` entity yet to hold it);
+once ADR-0024's `Settings` entity exists, it becomes one more per-user
+setting there, and choosing among a small set of alert sounds — not just
+muting the one default — belongs in that same surface rather than being
+designed ahead of it here.
 
 ### Break — a first-class entity, not a stateless side effect
 
@@ -169,7 +228,7 @@ browser storage:
 2. **The server-authoritative principle this ADR already applies to
    `Session` extends cleanly to `Break` once it is recorded data.** The
    original flat design left `Break` unpersisted specifically because
-   nothing about it was *attributed* time — there was nothing whose
+   nothing about it was _attributed_ time — there was nothing whose
    integrity needed protecting. That reasoning stops holding the moment a
    `Break` row exists and gets shown back to the user as history: at that
    point it is a record like any other, and its `startedAt`/`durationSec`
@@ -179,13 +238,13 @@ browser storage:
 
 **`Break`**
 
-| Field         | Type                | Notes                                                                        |
-| ------------- | ------------------- | ----------------------------------------------------------------------------- |
-| `id`          | uuid                |                                                                               |
-| `userId`      | uuid                |                                                                               |
-| `startedAt`   | timestamp           | Server-set, at creation — same discipline as `Session.startedAt`             |
-| `durationSec` | int                 | Mutable — extending the break updates this in place, not an event log        |
-| `endedAt`     | timestamp, nullable | Set when the break finishes or is skipped; null = the active break           |
+| Field         | Type                | Notes                                                                 |
+| ------------- | ------------------- | --------------------------------------------------------------------- |
+| `id`          | uuid                |                                                                       |
+| `userId`      | uuid                |                                                                       |
+| `startedAt`   | timestamp           | Server-set, at creation — same discipline as `Session.startedAt`      |
+| `durationSec` | int                 | Mutable — extending the break updates this in place, not an event log |
+| `endedAt`     | timestamp, nullable | Set when the break finishes or is skipped; null = the active break    |
 
 At most one un-ended `Break` per user at a time, enforced at the
 application layer the same way `Session`'s "at most one active session per
@@ -223,6 +282,12 @@ configurable durations remain ADR-0024's problem, not this one.
 - A `Break` row is a ready-made history record — a future history view of
   past sessions and breaks needs no separate backfill or migration for
   breaks taken after this shipped.
+- A session's recorded duration can never exceed `plannedMin` without an
+  explicit, live confirmation — an abandoned session can no longer report
+  fabricated hours of "focus" that never happened.
+- The safety-net check reuses the existing `getActiveSession` read path;
+  no scheduler, cron, or new persisted field was needed to close the
+  honesty gap.
 
 **Negative**
 
@@ -238,6 +303,14 @@ configurable durations remain ADR-0024's problem, not this one.
   previously instant client-side updates — a break carries the same
   latency and failure surface as any other Pomodoro action, which the
   original flat design had deliberately avoided.
+- A single long sitting that keeps confirming "Keep going" now produces
+  several chained `Session` rows instead of one — more accurate, but
+  anything that summed "one session = one sitting" has to instead sum
+  chained sessions on the same target back-to-back.
+- Reaching `plannedMin` while genuinely absorbed in the material now
+  requires one explicit tap to keep going, where previously the session
+  simply kept running unattended — a small, deliberate amount of friction
+  traded for the guarantee that unattended time is never counted.
 
 ## Deferred
 
@@ -245,6 +318,10 @@ configurable durations remain ADR-0024's problem, not this one.
   Post-MVP). Includes making the quick-pick duration list itself per-user
   (`Settings.durationPresets`) instead of the hardcoded 15/25/50/90 this ADR
   ships with — that list reflects one person's habits, not every user's.
+  Also includes persisting the "Keep going" alert sound toggle as a real
+  per-user setting and letting the user choose among a small set of alert
+  sounds, instead of the client-side-only on/off toggle this ADR ships
+  with.
 - **Cross-device session sync** — requires the WebSocket gateway (ADR-0014).
   CHANGELOG lists this as Post-MVP, not scheduled; ADR-0017's ambiguous
   wording on this point was corrected (2026-09-05) to match.
@@ -253,9 +330,14 @@ configurable durations remain ADR-0024's problem, not this one.
   service vs. CDK overlay) — implementation detail, not architecture.
 - Exact minimum-duration-discard threshold value (prototype uses 1 min as
   illustrative).
-- A history screen surfacing past `Session`s and `Break`s to the user —
-  the data model now supports it, but the screen itself is not built or
-  scheduled to a version.
+- Exact grace window, if any, between `plannedMin` elapsing and the
+  safety-net treating a session as unattended (e.g. a few seconds' slack
+  for the "Keep going" tap to land) — implementation detail, not an
+  architectural value.
+- A full history screen surfacing past `Session`s and `Break`s across
+  multiple days — the Today panel above covers the current day only; the
+  data model supports the multi-day view, but that screen itself is not
+  built or scheduled to a version.
 
 ## Rejected alternatives
 
@@ -301,3 +383,8 @@ configurable durations remain ADR-0024's problem, not this one.
   records — v0.9.5"
 - Duration picker pattern (quick-pick presets + custom-duration input at
   session start): Rize
+- "Keep going / End session" prompt at the planned duration, and the
+  same-day timeline-of-blocks panel: adapted from Rize's session-end
+  choice and Home-tab timeline (Rize tracks screen/app activity to detect
+  presence; this ADR has no such signal, so presence is instead a single
+  explicit confirmation)
