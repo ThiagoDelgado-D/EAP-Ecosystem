@@ -19,6 +19,7 @@ import {
 import {
   SessionEntity as PomodoroSessionEntity,
   SegmentEntity as PomodoroSegmentEntity,
+  BreakEntity as PomodoroBreakEntity,
 } from "@pomodoro/infrastructure";
 
 @Module({
@@ -47,6 +48,7 @@ import {
             SessionEntity,
             PomodoroSessionEntity,
             PomodoroSegmentEntity,
+            PomodoroBreakEntity,
           ],
           synchronize: false,
         };
