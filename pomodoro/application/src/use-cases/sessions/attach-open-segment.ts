@@ -1,10 +1,4 @@
-import {
-  createValidationSchema,
-  uuidField,
-  ValidationError,
-  InvalidDataError,
-  type UUID,
-} from "domain-lib";
+import { InvalidDataError, type UUID } from "domain-lib";
 import type {
   ISessionRepository,
   LearningPathMembershipPort,
@@ -19,7 +13,7 @@ import {
   resolveSegmentTarget,
   type SegmentTargetInput,
 } from "./resolve-segment-target.js";
-import { verifySessionOwnership } from "./verify-session-ownership.js";
+import { validateAndVerifySessionOwnership } from "./verify-session-ownership.js";
 
 export interface AttachOpenSegmentDependencies {
   sessionRepository: ISessionRepository;
@@ -36,15 +30,11 @@ export interface AttachOpenSegmentResponseModel {
   segment: Segment;
 }
 
-const attachOpenSegmentSchema = createValidationSchema<
-  Pick<AttachOpenSegmentRequestModel, "userId" | "sessionId">
->({
-  userId: uuidField("UserId", { required: true }),
-  sessionId: uuidField("SessionId", { required: true }),
-});
-
 export const attachOpenSegment = async (
-  { sessionRepository, learningPathMembershipPort }: AttachOpenSegmentDependencies,
+  {
+    sessionRepository,
+    learningPathMembershipPort,
+  }: AttachOpenSegmentDependencies,
   request: AttachOpenSegmentRequestModel,
 ): Promise<
   | AttachOpenSegmentResponseModel
@@ -55,17 +45,12 @@ export const attachOpenSegment = async (
   | NoOpenSegmentError
   | AmbiguousPathTargetError
 > => {
-  const validationResult = attachOpenSegmentSchema(request);
-  if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
-  }
-
-  const session = await verifySessionOwnership(
+  const session = await validateAndVerifySessionOwnership(
     sessionRepository,
-    request.sessionId,
-    request.userId,
+    request,
   );
   if (
+    session instanceof InvalidDataError ||
     session instanceof SessionNotFoundError ||
     session instanceof SessionForbiddenError
   ) {
