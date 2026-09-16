@@ -101,8 +101,8 @@ export class PomodoroSessionStore {
   }
 
   async startBreak(): Promise<void> {
-    if (this.activeSession()) await this.end();
     const activeBreak = await this.repository.startBreak();
+    if (this.activeSession()) await this.end();
     this.activeBreak.set(activeBreak);
     this.breakNow.set(new Date());
     this.phase.set('break');

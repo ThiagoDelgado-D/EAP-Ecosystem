@@ -275,6 +275,16 @@ describe('PomodoroSessionStore', () => {
       expect(repository.sessions[0]?.completedAt).toBeDefined();
     });
 
+    test('should keep the session active if starting the break fails', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      repository.startBreak = async () => Promise.reject(new Error('network down'));
+
+      await expect(store.startBreak()).rejects.toThrow('network down');
+
+      expect(store.activeSession()).not.toBeNull();
+      expect(store.phase()).toBe('focus');
+    });
+
     test('should switch to the break phase with the duration the repository returns', async () => {
       await store.start({ plannedMin: 25, target: { kind: 'free' } });
 
