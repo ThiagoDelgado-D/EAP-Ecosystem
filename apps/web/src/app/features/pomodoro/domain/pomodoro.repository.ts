@@ -26,4 +26,5 @@ export abstract class PomodoroRepository {
   abstract endSession(sessionId: string): Promise<EndSessionResult>;
   abstract getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]>;
   abstract getHistory(since: Date, until?: Date): Promise<HistorySnapshot>;
+  abstract attributeSession(sessionId: string, target: SegmentTarget): Promise<Segment[]>;
 }
