@@ -1,11 +1,6 @@
-import { BaseError, InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
-import { beforeEach, describe, expect, test } from "vitest";
-import {
-  mockLearningPathMembershipPort,
-  mockSessionRepository,
-  createSessionLifecycleFixture,
-  type SessionLifecycleFixture,
-} from "../../mocks/index.js";
+import { BaseError, InvalidDataError } from "domain-lib";
+import { describe, expect, test } from "vitest";
+import { useSessionLifecycleFixture } from "../../mocks/index.js";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { attachOpenSegment } from "./attach-open-segment.js";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
@@ -15,36 +10,20 @@ import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
 
 describe("attachOpenSegment", () => {
-  let cryptoService: ReturnType<typeof mockCryptoService>;
-  let sessionRepository: ReturnType<typeof mockSessionRepository>;
-  let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
-  let requestingUserId: UUID;
-  let cleanArchitectureResourceId: UUID;
-  let startFreeSession: SessionLifecycleFixture["startFreeSession"];
-
-  beforeEach(async () => {
-    ({
-      cryptoService,
-      sessionRepository,
-      membershipPort,
-      requestingUserId,
-      cleanArchitectureResourceId,
-      startFreeSession,
-    } = await createSessionLifecycleFixture());
-  });
+  const fixture = useSessionLifecycleFixture();
 
   const deps = () => ({
-    sessionRepository,
-    learningPathMembershipPort: membershipPort,
+    sessionRepository: fixture.sessionRepository,
+    learningPathMembershipPort: fixture.membershipPort,
   });
 
   test("Should retarget the open segment in place, without closing or opening a new one", async () => {
-    const session = await startFreeSession();
-    const reactDocsResourceId = await cryptoService.generateUUID();
-    const openSegmentBefore = await sessionRepository.findOpenSegmentBySessionId(session.id);
+    const session = await fixture.startFreeSession();
+    const reactDocsResourceId = await fixture.cryptoService.generateUUID();
+    const openSegmentBefore = await fixture.sessionRepository.findOpenSegmentBySessionId(session.id);
 
     const result = await attachOpenSegment(deps(), {
-      userId: requestingUserId,
+      userId: fixture.requestingUserId,
       sessionId: session.id,
       target: { kind: SegmentTargetKind.RESOURCE, resourceId: reactDocsResourceId },
     });
@@ -57,13 +36,13 @@ describe("attachOpenSegment", () => {
     expect(segment.endSec).toBeUndefined();
     expect(segment.targetKind).toBe(SegmentTargetKind.RESOURCE);
 
-    const segments = sessionRepository.segments.filter((s) => s.sessionId === session.id);
+    const segments = fixture.sessionRepository.segments.filter((s) => s.sessionId === session.id);
     expect(segments).toHaveLength(1);
   });
 
   test("Should return InvalidDataError when sessionId is missing", async () => {
     const result = await attachOpenSegment(deps(), {
-      userId: requestingUserId,
+      userId: fixture.requestingUserId,
       target: { kind: SegmentTargetKind.FREE },
     } as any);
 
@@ -71,10 +50,10 @@ describe("attachOpenSegment", () => {
   });
 
   test("Should return SessionNotFoundError when the session does not exist", async () => {
-    const nonExistentSessionId = await cryptoService.generateUUID();
+    const nonExistentSessionId = await fixture.cryptoService.generateUUID();
 
     const result = await attachOpenSegment(deps(), {
-      userId: requestingUserId,
+      userId: fixture.requestingUserId,
       sessionId: nonExistentSessionId,
       target: { kind: SegmentTargetKind.FREE },
     });
@@ -83,8 +62,8 @@ describe("attachOpenSegment", () => {
   });
 
   test("Should return SessionForbiddenError when the session belongs to another user", async () => {
-    const session = await startFreeSession();
-    const otherUserId = await cryptoService.generateUUID();
+    const session = await fixture.startFreeSession();
+    const otherUserId = await fixture.cryptoService.generateUUID();
 
     const result = await attachOpenSegment(deps(), {
       userId: otherUserId,
@@ -96,12 +75,12 @@ describe("attachOpenSegment", () => {
   });
 
   test("Should return SessionNotActiveError when the session already ended", async () => {
-    const session = await startFreeSession();
-    const storedSession = sessionRepository.sessions.find((s) => s.id === session.id)!;
+    const session = await fixture.startFreeSession();
+    const storedSession = fixture.sessionRepository.sessions.find((s) => s.id === session.id)!;
     storedSession.completedAt = new Date();
 
     const result = await attachOpenSegment(deps(), {
-      userId: requestingUserId,
+      userId: fixture.requestingUserId,
       sessionId: session.id,
       target: { kind: SegmentTargetKind.FREE },
     });
@@ -110,12 +89,12 @@ describe("attachOpenSegment", () => {
   });
 
   test("Should return NoOpenSegmentError when the active session has no open segment", async () => {
-    const session = await startFreeSession();
-    const openSegment = await sessionRepository.findOpenSegmentBySessionId(session.id);
-    await sessionRepository.updateSegment({ ...openSegment!, endSec: 120 });
+    const session = await fixture.startFreeSession();
+    const openSegment = await fixture.sessionRepository.findOpenSegmentBySessionId(session.id);
+    await fixture.sessionRepository.updateSegment({ ...openSegment!, endSec: 120 });
 
     const result = await attachOpenSegment(deps(), {
-      userId: requestingUserId,
+      userId: fixture.requestingUserId,
       sessionId: session.id,
       target: { kind: SegmentTargetKind.FREE },
     });
@@ -124,17 +103,17 @@ describe("attachOpenSegment", () => {
   });
 
   test("Should return AmbiguousPathTargetError instead of guessing which path counts", async () => {
-    const session = await startFreeSession();
+    const session = await fixture.startFreeSession();
 
     const result = await attachOpenSegment(deps(), {
-      userId: requestingUserId,
+      userId: fixture.requestingUserId,
       sessionId: session.id,
-      target: { kind: SegmentTargetKind.RESOURCE, resourceId: cleanArchitectureResourceId },
+      target: { kind: SegmentTargetKind.RESOURCE, resourceId: fixture.cleanArchitectureResourceId },
     });
 
     expect(result).toBeInstanceOf(AmbiguousPathTargetError);
 
-    const segments = sessionRepository.segments.filter((s) => s.sessionId === session.id);
+    const segments = fixture.sessionRepository.segments.filter((s) => s.sessionId === session.id);
     expect(segments[0]!.targetKind).toBe(SegmentTargetKind.FREE);
   });
 });
