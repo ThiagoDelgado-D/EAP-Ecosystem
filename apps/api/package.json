@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "nest start",
-    "start:dev": "TS_NODE_TRANSPILE_ONLY=true node -r reflect-metadata/lite -r tsconfig-paths/register --loader ts-node/esm --watch src/main.ts",
+    "start:dev": "node -r reflect-metadata/lite -r tsconfig-paths/register --loader ts-node/esm --watch src/main.ts",
     "start:prod": "node dist/apps/api/src/main.js",
     "build": "nest build && tsc-alias -p tsconfig.build.json",
     "type-check": "tsc --noEmit -p tsconfig.json",
