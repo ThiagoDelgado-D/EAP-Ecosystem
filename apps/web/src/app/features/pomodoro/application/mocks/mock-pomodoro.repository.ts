@@ -141,6 +141,26 @@ export function mockPomodoroRepository(
       };
     },
 
+    async attributeSession(sessionId: string, target: SegmentTarget): Promise<Segment[]> {
+      const session = this.sessions.find((s) => s.id === sessionId);
+      if (!session) throw new Error(`Session not found: ${sessionId}`);
+      if (!session.completedAt) throw new Error(`Session not completed: ${sessionId}`);
+
+      const sessionSegments = this.segments.filter((segment) => segment.sessionId === sessionId);
+      if (sessionSegments.some((segment) => segment.targetKind !== 'free')) {
+        throw new Error(`Segments already attributed for session: ${sessionId}`);
+      }
+
+      const attributed = sessionSegments.map((segment) => {
+        const retargeted = buildOpenedSegment(sessionId, segment.startSec, target);
+        return { ...retargeted, id: segment.id, endSec: segment.endSec };
+      });
+      this.segments = this.segments.map(
+        (segment) => attributed.find((updated) => updated.id === segment.id) ?? segment,
+      );
+      return attributed;
+    },
+
     async getHistory(since: Date, until?: Date): Promise<HistorySnapshot> {
       const inRange = (startedAt: Date) => startedAt >= since && (!until || startedAt < until);
       return {
