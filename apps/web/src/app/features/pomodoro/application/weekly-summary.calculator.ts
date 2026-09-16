@@ -1,7 +1,9 @@
 import type { Break, HistorySnapshot, Segment, Session } from '@features/pomodoro/domain/pomodoro.model';
-import { DELTA_METRIC, type DeltaMetric, type MetricDelta, type WeeklyDelta, type WeeklySummary, type WeekTotals } from './weekly-summary.model';
+import { DELTA_METRIC, type DayLog, type DeltaMetric, type MetricDelta, type WeeklyDelta, type WeeklySummary, type WeekTotals } from './weekly-summary.model';
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const WEEK_MS = 7 * DAY_MS;
+const DAYS_PER_WEEK = 7;
 const PRIOR_WEEKS = 4;
 const RELATIVE_OBSERVATION_THRESHOLD = 0.1;
 const ACTIVE_DAYS_OBSERVATION_THRESHOLD = 1;
@@ -172,4 +174,64 @@ export function computeWeeklySummary(history: HistorySnapshot, now: Date = new D
     .map((candidate) => observationSentence(candidate, weeksAveraged));
 
   return { thisWeek, delta, observations };
+}
+
+function startOfDay(date: Date): Date {
+  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+function dayIndex(date: Date, weekStart: Date): number {
+  return Math.round((startOfDay(date).getTime() - weekStart.getTime()) / DAY_MS);
+}
+
+export function rollingWindowStart(now: Date): Date {
+  const start = startOfDay(now);
+  start.setDate(start.getDate() - (DAYS_PER_WEEK - 1));
+  return start;
+}
+
+export function buildWeekDayLog(history: HistorySnapshot, now: Date = new Date()): DayLog[] {
+  const windowStart = rollingWindowStart(now);
+  const days: DayLog[] = Array.from({ length: DAYS_PER_WEEK }, (_, index) => {
+    const date = new Date(windowStart);
+    date.setDate(date.getDate() + index);
+    return { date, focusSec: 0, breakSec: 0, sessionCount: 0, sessions: [] };
+  });
+
+  const segmentsBySession = new Map<string, Segment[]>();
+  for (const segment of history.segments) {
+    const list = segmentsBySession.get(segment.sessionId) ?? [];
+    list.push(segment);
+    segmentsBySession.set(segment.sessionId, list);
+  }
+
+  for (const session of history.sessions) {
+    const index = dayIndex(session.startedAt, windowStart);
+    if (index < 0 || index >= DAYS_PER_WEEK) continue;
+
+    const segments = (segmentsBySession.get(session.id) ?? []).sort((a, b) => a.startSec - b.startSec);
+    const focusSec = segments.reduce((sum, segment) => sum + segmentDurationSec(segment), 0);
+    const day = days[index]!;
+    day.sessionCount += 1;
+    day.focusSec += focusSec;
+    day.sessions.push({ session, segments, focusSec });
+  }
+
+  for (const activeBreak of history.breaks) {
+    const index = dayIndex(activeBreak.startedAt, windowStart);
+    if (index < 0 || index >= DAYS_PER_WEEK) continue;
+
+    days[index]!.breakSec += Math.max(
+      0,
+      ((activeBreak.endedAt ?? now).getTime() - activeBreak.startedAt.getTime()) / 1000,
+    );
+  }
+
+  for (const day of days) {
+    day.sessions.sort((a, b) => a.session.startedAt.getTime() - b.session.startedAt.getTime());
+  }
+
+  return days;
 }
