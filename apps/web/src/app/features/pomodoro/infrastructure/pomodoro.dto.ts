@@ -41,6 +41,10 @@ export interface AttachOpenSegmentResponseDto {
   segment: SegmentDto;
 }
 
+export interface AttributeSessionResponseDto {
+  segments: SegmentDto[];
+}
+
 export type EndSessionResponseDto =
   | { discarded: true }
   | { discarded: false; session: SessionDto; segments: SegmentDto[] };
