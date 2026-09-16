@@ -6,6 +6,7 @@ import { PomodoroSessionStore } from './pomodoro-session.store';
 import { PomodoroOverlayHostService } from './pomodoro-overlay-host.service';
 
 const MINI_WIDGET_KEY = 'pomodoro-mini';
+const SESSION_UI_ROUTES = ['/pomodoro', '/pomodoro/active', '/pomodoro/end'];
 
 @Injectable({ providedIn: 'root' })
 export class PomodoroMiniWidgetOrchestratorService {
@@ -25,9 +26,9 @@ export class PomodoroMiniWidgetOrchestratorService {
     effect(() => {
       const hasActiveSession = this.store.activeSession() !== null;
       const onBreak = this.store.phase() === 'break';
-      const onPomodoroRoute = this.currentUrl().startsWith('/pomodoro');
+      const onSessionUiRoute = SESSION_UI_ROUTES.includes(this.currentUrl());
 
-      if ((hasActiveSession || onBreak) && !onPomodoroRoute) {
+      if ((hasActiveSession || onBreak) && !onSessionUiRoute) {
         void this.showMiniWidget();
       } else {
         this.overlayHost.hide(MINI_WIDGET_KEY);

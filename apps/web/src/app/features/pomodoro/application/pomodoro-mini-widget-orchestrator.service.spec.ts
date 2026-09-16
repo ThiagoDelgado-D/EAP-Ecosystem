@@ -67,6 +67,15 @@ describe('PomodoroMiniWidgetOrchestratorService', () => {
     expect(overlayHost.isShown(MINI_WIDGET_KEY)).toBe(false);
   });
 
+  test('should show the mini widget on /pomodoro/summary, which is not part of the session UI', async () => {
+    const { store, overlayHost, appRef } = setup('/pomodoro/summary');
+
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    appRef.tick();
+
+    await waitForShown(overlayHost, MINI_WIDGET_KEY, true);
+  });
+
   test('should show and hide the widget as the user navigates in and out of /pomodoro', async () => {
     const { store, overlayHost, appRef, events } = setup('/pomodoro/active');
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
