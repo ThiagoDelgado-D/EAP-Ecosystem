@@ -20,6 +20,7 @@ import type {
 } from "@pomodoro/domain";
 import {
   attachOpenSegment,
+  attributeSession,
   endBreak,
   endSession,
   extendBreak,
@@ -118,6 +119,23 @@ export class PomodoroController {
     @CurrentUserId() userId: UUID,
   ) {
     const result = await attachOpenSegment(
+      {
+        sessionRepository: this.sessionRepository,
+        learningPathMembershipPort: this.learningPathMembershipPort,
+      },
+      { userId, sessionId: id, target: dto.target as SegmentTargetInput },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Patch("sessions/:id/attribute")
+  async attributeSession(
+    @Param("id") id: UUID,
+    @Body() dto: SwitchTargetDto,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const result = await attributeSession(
       {
         sessionRepository: this.sessionRepository,
         learningPathMembershipPort: this.learningPathMembershipPort,
