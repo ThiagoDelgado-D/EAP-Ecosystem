@@ -1,7 +1,7 @@
 import { InvalidDataError } from "domain-lib";
 import { SegmentTargetKind } from "@pomodoro/domain";
-import { describe, expect, test } from "vitest";
-import { useSessionLifecycleFixture } from "../../mocks/index.js";
+import { beforeEach, describe, expect, test } from "vitest";
+import { createSessionLifecycleFixture, type SessionLifecycleFixture } from "../../mocks/index.js";
 import { switchTarget } from "./switch-target.js";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
 import { SessionForbiddenError } from "../../errors/session-forbidden.js";
@@ -10,7 +10,11 @@ import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
 
 describe("switchTarget", () => {
-  const fixture = useSessionLifecycleFixture();
+  let fixture: SessionLifecycleFixture;
+
+  beforeEach(async () => {
+    fixture = await createSessionLifecycleFixture();
+  });
 
   const deps = () => ({
     sessionRepository: fixture.sessionRepository,

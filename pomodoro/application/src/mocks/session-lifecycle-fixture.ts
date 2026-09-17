@@ -1,4 +1,3 @@
-import { beforeEach } from "vitest";
 import { BaseError, mockCryptoService, type UUID } from "domain-lib";
 import { SegmentTargetKind, type LearningPathMembership, type Session } from "@pomodoro/domain";
 import { mockLearningPathMembershipPort } from "./mock-learning-path-membership-port.js";
@@ -53,12 +52,4 @@ export async function createSessionLifecycleFixture(): Promise<SessionLifecycleF
     cleanArchitectureResourceId,
     startFreeSession,
   };
-}
-
-export function useSessionLifecycleFixture(): SessionLifecycleFixture {
-  const fixture = {} as SessionLifecycleFixture;
-  beforeEach(async () => {
-    Object.assign(fixture, await createSessionLifecycleFixture());
-  });
-  return fixture;
 }

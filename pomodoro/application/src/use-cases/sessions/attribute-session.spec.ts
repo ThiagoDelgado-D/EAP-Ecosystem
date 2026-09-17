@@ -1,6 +1,6 @@
 import { BaseError, InvalidDataError } from "domain-lib";
-import { describe, expect, test } from "vitest";
-import { useSessionLifecycleFixture } from "../../mocks/index.js";
+import { beforeEach, describe, expect, test } from "vitest";
+import { createSessionLifecycleFixture, type SessionLifecycleFixture } from "../../mocks/index.js";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { attributeSession } from "./attribute-session.js";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
@@ -10,7 +10,11 @@ import { SegmentsAlreadyAttributedError } from "../../errors/segments-already-at
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
 
 describe("attributeSession", () => {
-  const fixture = useSessionLifecycleFixture();
+  let fixture: SessionLifecycleFixture;
+
+  beforeEach(async () => {
+    fixture = await createSessionLifecycleFixture();
+  });
 
   const deps = () => ({
     sessionRepository: fixture.sessionRepository,
