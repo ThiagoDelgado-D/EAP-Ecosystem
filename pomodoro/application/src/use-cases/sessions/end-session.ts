@@ -1,4 +1,5 @@
 import {
+  BaseError,
   createValidationSchema,
   uuidField,
   ValidationError,
@@ -12,11 +13,11 @@ import {
   type Segment,
   type Session,
 } from "@pomodoro/domain";
-import { SessionNotFoundError } from "../../errors/session-not-found.js";
-import { SessionForbiddenError } from "../../errors/session-forbidden.js";
-import { SessionNotActiveError } from "../../errors/session-not-active.js";
-import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
-import { verifySessionOwnership } from "./verify-session-ownership.js";
+import type { SessionNotFoundError } from "../../errors/session-not-found.js";
+import type { SessionForbiddenError } from "../../errors/session-forbidden.js";
+import type { SessionNotActiveError } from "../../errors/session-not-active.js";
+import type { NoOpenSegmentError } from "../../errors/no-open-segment.js";
+import { requireActiveSessionWithOpenSegment } from "./verify-session-ownership.js";
 
 export const MIN_SESSION_DURATION_SEC = 60;
 
@@ -54,32 +55,14 @@ export const endSession = async (
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
   }
-  const validatedData = validationResult;
 
-  const session = await verifySessionOwnership(
+  const guard = await requireActiveSessionWithOpenSegment(
     sessionRepository,
-    validatedData.sessionId,
-    validatedData.userId,
+    validationResult.sessionId,
+    validationResult.userId,
   );
-
-  if (
-    session instanceof SessionNotFoundError ||
-    session instanceof SessionForbiddenError
-  ) {
-    return session;
-  }
-
-  if (session.completedAt) {
-    return new SessionNotActiveError(session.id);
-  }
-
-  const openSegment = await sessionRepository.findOpenSegmentBySessionId(
-    session.id,
-  );
-
-  if (!openSegment) {
-    return new NoOpenSegmentError(session.id);
-  }
+  if (guard instanceof BaseError) return guard;
+  const { session, openSegment } = guard;
 
   const now = new Date();
   const elapsedSec = Math.floor(

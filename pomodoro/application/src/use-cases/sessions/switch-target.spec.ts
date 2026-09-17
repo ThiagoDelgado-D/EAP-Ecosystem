@@ -124,6 +124,28 @@ describe("switchTarget", () => {
     expect(result).toBeInstanceOf(NoOpenSegmentError);
   });
 
+  test("Should return NoOpenSegmentError before resolving the target, even when that target would also be ambiguous", async () => {
+    const session = await fixture.startFreeSession();
+    const openSegment = await fixture.sessionRepository.findOpenSegmentBySessionId(
+      session.id,
+    );
+    await fixture.sessionRepository.updateSegment({
+      ...openSegment!,
+      endSec: 120,
+    });
+
+    const result = await switchTarget(deps(), {
+      userId: fixture.requestingUserId,
+      sessionId: session.id,
+      target: {
+        kind: SegmentTargetKind.RESOURCE,
+        resourceId: fixture.cleanArchitectureResourceId,
+      },
+    });
+
+    expect(result).toBeInstanceOf(NoOpenSegmentError);
+  });
+
   test("Should return AmbiguousPathTargetError instead of guessing which path counts", async () => {
     const session = await fixture.startFreeSession();
 

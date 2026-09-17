@@ -106,6 +106,7 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     entity.completedAt = session.completedAt ?? null;
     entity.intent = session.intent ?? null;
     entity.plannedMin = session.plannedMin;
+    entity.autoCompleted = session.autoCompleted ?? false;
     return entity;
   }
 
@@ -117,6 +118,7 @@ export class TypeOrmSessionRepository implements ISessionRepository {
       completedAt: entity.completedAt ?? undefined,
       intent: entity.intent ?? undefined,
       plannedMin: entity.plannedMin,
+      autoCompleted: entity.autoCompleted,
     };
   }
 

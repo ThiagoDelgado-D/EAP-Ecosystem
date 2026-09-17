@@ -1,19 +1,19 @@
-import { InvalidDataError, type CryptoService, type UUID } from "domain-lib";
+import { BaseError, InvalidDataError, type CryptoService, type UUID } from "domain-lib";
 import type {
   ISessionRepository,
   LearningPathMembershipPort,
   Segment,
 } from "@pomodoro/domain";
-import { SessionNotFoundError } from "../../errors/session-not-found.js";
-import { SessionForbiddenError } from "../../errors/session-forbidden.js";
-import { SessionNotActiveError } from "../../errors/session-not-active.js";
-import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
+import type { SessionNotFoundError } from "../../errors/session-not-found.js";
+import type { SessionForbiddenError } from "../../errors/session-forbidden.js";
+import type { SessionNotActiveError } from "../../errors/session-not-active.js";
+import type { NoOpenSegmentError } from "../../errors/no-open-segment.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
 import {
   resolveSegmentTarget,
   type SegmentTargetInput,
 } from "./resolve-segment-target.js";
-import { validateAndVerifySessionOwnership } from "./verify-session-ownership.js";
+import { validateAndRequireActiveSessionWithOpenSegment } from "./verify-session-ownership.js";
 
 export interface SwitchTargetDependencies {
   sessionRepository: ISessionRepository;
@@ -48,22 +48,12 @@ export const switchTarget = async (
   | NoOpenSegmentError
   | AmbiguousPathTargetError
 > => {
-  const session = await validateAndVerifySessionOwnership(
+  const guard = await validateAndRequireActiveSessionWithOpenSegment(
     sessionRepository,
     request,
   );
-
-  if (
-    session instanceof InvalidDataError ||
-    session instanceof SessionNotFoundError ||
-    session instanceof SessionForbiddenError
-  ) {
-    return session;
-  }
-
-  if (session.completedAt) {
-    return new SessionNotActiveError(session.id);
-  }
+  if (guard instanceof BaseError) return guard;
+  const { session, openSegment } = guard;
 
   const resolvedTarget = await resolveSegmentTarget(
     { learningPathMembershipPort },
@@ -72,13 +62,6 @@ export const switchTarget = async (
 
   if (resolvedTarget instanceof AmbiguousPathTargetError) {
     return resolvedTarget;
-  }
-
-  const openSegment = await sessionRepository.findOpenSegmentBySessionId(
-    session.id,
-  );
-  if (!openSegment) {
-    return new NoOpenSegmentError(session.id);
   }
 
   const elapsedSec = Math.floor(
