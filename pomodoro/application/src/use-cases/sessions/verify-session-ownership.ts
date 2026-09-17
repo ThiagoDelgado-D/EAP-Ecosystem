@@ -83,3 +83,25 @@ export const requireActiveSessionWithOpenSegment = async (
 
   return { session, openSegment };
 };
+
+export const validateAndRequireActiveSessionWithOpenSegment = async (
+  sessionRepository: ISessionRepository,
+  request: { userId: UUID; sessionId: UUID },
+): Promise<
+  | { session: Session; openSegment: Segment }
+  | InvalidDataError
+  | SessionNotFoundError
+  | SessionForbiddenError
+  | SessionNotActiveError
+  | NoOpenSegmentError
+> => {
+  const validationResult = sessionIdentitySchema(request);
+  if (validationResult instanceof ValidationError) {
+    return new InvalidDataError(validationResult.errors);
+  }
+  return requireActiveSessionWithOpenSegment(
+    sessionRepository,
+    validationResult.sessionId,
+    validationResult.userId,
+  );
+};
