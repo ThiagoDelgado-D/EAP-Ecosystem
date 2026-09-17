@@ -19,4 +19,7 @@ export class SessionEntity {
 
   @Column("int")
   plannedMin!: number;
+
+  @Column({ type: "boolean", default: false })
+  autoCompleted!: boolean;
 }
