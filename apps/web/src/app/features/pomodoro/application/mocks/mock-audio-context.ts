@@ -50,9 +50,9 @@ export function mockAudioContext(): MockedAudioContext {
   return { AudioContextCtor: FakeAudioContext, oscillator, gain, instances };
 }
 
+function ThrowingAudioContext(): void {
+  throw new Error('autoplay blocked');
+}
 export function mockThrowingAudioContext(): new () => unknown {
-  function ThrowingAudioContext(): void {
-    throw new Error('autoplay blocked');
-  }
   return ThrowingAudioContext as unknown as new () => unknown;
 }
