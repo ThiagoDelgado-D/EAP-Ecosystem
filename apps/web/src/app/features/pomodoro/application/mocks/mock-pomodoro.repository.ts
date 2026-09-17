@@ -1,9 +1,10 @@
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import {
   DEFAULT_BREAK_DURATION_SEC,
-  type ActiveSessionSnapshot,
   type Break,
+  type ContinueSessionResult,
   type EndSessionResult,
+  type GetActiveSessionResult,
   type HistorySnapshot,
   type Segment,
   type SegmentTarget,
@@ -19,6 +20,21 @@ export interface MockedPomodoroRepository extends PomodoroRepository {
   suggestions: SuggestedCandidate[];
   breaks: Break[];
   reset(): void;
+}
+
+function segmentToTarget(segment: Segment): SegmentTarget {
+  if (segment.targetKind === 'node') {
+    return {
+      kind: 'node',
+      learningPathId: segment.learningPathId,
+      learningPathNodeId: segment.learningPathNodeId,
+      resourceId: segment.resourceId,
+    };
+  }
+  if (segment.targetKind === 'resource') {
+    return { kind: 'resource', resourceId: segment.resourceId };
+  }
+  return { kind: 'free' };
 }
 
 function buildOpenedSegment(sessionId: string, startSec: number, target: SegmentTarget): Segment {
@@ -132,7 +148,7 @@ export function mockPomodoroRepository(
       return this.suggestions;
     },
 
-    async getActiveSession(): Promise<ActiveSessionSnapshot | null> {
+    async getActiveSession(): Promise<GetActiveSessionResult | null> {
       const session = this.sessions.find((s) => !s.completedAt);
       if (!session) return null;
       return {
@@ -159,6 +175,34 @@ export function mockPomodoroRepository(
         (segment) => attributed.find((updated) => updated.id === segment.id) ?? segment,
       );
       return attributed;
+    },
+
+    async continueSession(sessionId: string): Promise<ContinueSessionResult> {
+      const index = this.sessions.findIndex((s) => s.id === sessionId);
+      if (index < 0) throw new Error(`Session not found: ${sessionId}`);
+      const closedSession = this.sessions[index]!;
+      const closed: Session = { ...closedSession, completedAt: new Date(), autoCompleted: false };
+      this.sessions[index] = closed;
+
+      const openIndex = this.segments.findIndex((s) => s.sessionId === sessionId && s.endSec === undefined);
+      const target: SegmentTarget =
+        openIndex >= 0 ? segmentToTarget(this.segments[openIndex]!) : { kind: 'free' };
+      if (openIndex >= 0) {
+        this.segments[openIndex] = { ...this.segments[openIndex]!, endSec: closedSession.plannedMin * 60 };
+      }
+
+      const newSession: Session = {
+        id: crypto.randomUUID(),
+        userId: closedSession.userId,
+        startedAt: new Date(),
+        intent: closedSession.intent,
+        plannedMin: closedSession.plannedMin,
+      };
+      this.sessions.push(newSession);
+      const newSegment = buildOpenedSegment(newSession.id, 0, target);
+      this.segments.push(newSegment);
+
+      return { closedSession: closed, session: newSession, segments: [newSegment] };
     },
 
     async getHistory(since: Date, until?: Date): Promise<HistorySnapshot> {
