@@ -1,12 +1,19 @@
 import { Component, ElementRef, afterNextRender, computed, inject, signal } from '@angular/core';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
-import type { Break, Session } from '@features/pomodoro/domain/pomodoro.model';
-import { formatMinutes } from './segment-display';
+import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
+import type { Break, Segment, Session } from '@features/pomodoro/domain/pomodoro.model';
+import { formatMinutes, segmentTotals } from './segment-display';
+import { describeTargetLabel } from '@features/pomodoro/presentation/start/target-description';
 
 const MINUTE_PX = 1;
 const DAY_MINUTES = 24 * 60;
 const MIN_BLOCK_PX = 14;
 const HOUR_GUTTER_PX = 40;
+
+interface BlockBreakdownEntry {
+  label: string;
+  secs: number;
+}
 
 interface TimelineBlock {
   key: string;
@@ -15,6 +22,7 @@ interface TimelineBlock {
   topPx: number;
   heightPx: number;
   ongoing: boolean;
+  breakdown: BlockBreakdownEntry[];
 }
 
 interface HourMark {
@@ -49,10 +57,15 @@ function minutesSinceMidnight(date: Date): number {
 export class TodayPanelComponent {
   private readonly repository = inject(PomodoroRepository);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly picker = inject(PomodoroPickerService);
 
+  readonly formatMinutes = formatMinutes;
   readonly loading = signal(true);
   private readonly sessions = signal<Session[]>([]);
   private readonly breaks = signal<Break[]>([]);
+  private readonly segments = signal<Segment[]>([]);
+
+  readonly hoveredBlock = signal<{ key: string; top: number; left: number } | null>(null);
 
   readonly HOUR_GUTTER_PX = HOUR_GUTTER_PX;
   readonly dayHeightPx = DAY_MINUTES * MINUTE_PX;
@@ -77,6 +90,7 @@ export class TodayPanelComponent {
         session.startedAt,
         this.sessionDurationSec(session),
         !session.completedAt,
+        this.sessionBreakdown(session),
       ),
     );
     const breakBlocks = this.breaks().map((activeBreak) =>
@@ -86,6 +100,7 @@ export class TodayPanelComponent {
         activeBreak.startedAt,
         this.breakDurationSec(activeBreak),
         !activeBreak.endedAt,
+        [{ label: 'Break', secs: this.breakDurationSec(activeBreak) }],
       ),
     );
     return [...sessionBlocks, ...breakBlocks].sort((a, b) => a.topPx - b.topPx);
@@ -104,10 +119,25 @@ export class TodayPanelComponent {
       const snapshot = await this.repository.getHistory(startOfToday());
       this.sessions.set(snapshot.sessions);
       this.breaks.set(snapshot.breaks);
+      this.segments.set(snapshot.segments);
     } finally {
       this.loading.set(false);
       this.scrollToDayStart();
     }
+  }
+
+  showBreakdown(block: TimelineBlock, event: MouseEvent): void {
+    if (block.breakdown.length === 0) return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this.hoveredBlock.set({ key: block.key, top: rect.top, left: rect.left - 8 });
+  }
+
+  hideBreakdown(): void {
+    this.hoveredBlock.set(null);
+  }
+
+  breakdownFor(key: string): BlockBreakdownEntry[] {
+    return this.blocks().find((block) => block.key === key)?.breakdown ?? [];
   }
 
   private scrollToDayStart(): void {
@@ -124,6 +154,7 @@ export class TodayPanelComponent {
     startedAt: Date,
     durationSec: number,
     ongoing: boolean,
+    breakdown: BlockBreakdownEntry[],
   ): TimelineBlock {
     return {
       key,
@@ -132,7 +163,17 @@ export class TodayPanelComponent {
       topPx: minutesSinceMidnight(startedAt) * MINUTE_PX,
       heightPx: Math.max(MIN_BLOCK_PX, (durationSec / 60) * MINUTE_PX),
       ongoing,
+      breakdown,
     };
+  }
+
+  private sessionBreakdown(session: Session): BlockBreakdownEntry[] {
+    const sessionSegments = this.segments().filter((segment) => segment.sessionId === session.id);
+    const elapsedSec = this.sessionDurationSec(session);
+    return segmentTotals(sessionSegments, elapsedSec).map((total) => ({
+      label: describeTargetLabel(total.target, this.picker.allPaths(), this.picker.library()).title,
+      secs: total.secs,
+    }));
   }
 
   private sessionDurationSec(session: Session): number {

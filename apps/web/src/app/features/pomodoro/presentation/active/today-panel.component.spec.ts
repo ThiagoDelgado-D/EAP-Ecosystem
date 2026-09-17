@@ -1,29 +1,32 @@
 import { TestBed } from '@angular/core/testing';
-import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
-import { mockPomodoroRepository } from '@features/pomodoro/application/mocks/mock-pomodoro.repository';
+import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
+import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { TodayPanelComponent } from './today-panel.component';
 
 describe('TodayPanelComponent', () => {
-  function setup(repository: ReturnType<typeof mockPomodoroRepository>) {
-    TestBed.configureTestingModule({
-      providers: [{ provide: PomodoroRepository, useValue: repository }],
-    });
+  function createProviders() {
+    return createPomodoroComponentTestProviders(() => {});
+  }
+
+  function mount(providers: ReturnType<typeof createProviders>['providers']) {
+    TestBed.configureTestingModule({ providers });
     const fixture = TestBed.createComponent(TodayPanelComponent);
     fixture.detectChanges();
     return fixture.componentInstance;
   }
 
+  const todayAt = (hours: number, minutes: number) => {
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+  };
+
   test('should total only sessions, ordered chronologically alongside breaks', async () => {
-    const repository = mockPomodoroRepository();
+    const { providers, pomodoroRepository } = createProviders();
     const userId = crypto.randomUUID();
     const earlierSessionId = crypto.randomUUID();
     const laterSessionId = crypto.randomUUID();
-    const todayAt = (hours: number, minutes: number) => {
-      const date = new Date();
-      date.setHours(hours, minutes, 0, 0);
-      return date;
-    };
-    repository.sessions.push(
+    pomodoroRepository.sessions.push(
       {
         id: laterSessionId,
         userId,
@@ -39,7 +42,7 @@ describe('TodayPanelComponent', () => {
         plannedMin: 25,
       },
     );
-    repository.breaks.push({
+    pomodoroRepository.breaks.push({
       id: crypto.randomUUID(),
       userId,
       startedAt: todayAt(9, 25),
@@ -47,7 +50,7 @@ describe('TodayPanelComponent', () => {
       endedAt: todayAt(9, 30),
     });
 
-    const component = setup(repository);
+    const component = mount(providers);
     await Promise.resolve();
 
     expect(component.loading()).toBe(false);
@@ -61,11 +64,118 @@ describe('TodayPanelComponent', () => {
   });
 
   test('should show nothing yet when there is no history for today', async () => {
-    const component = setup(mockPomodoroRepository());
+    const { providers } = createProviders();
+    const component = mount(providers);
     await Promise.resolve();
 
     expect(component.loading()).toBe(false);
     expect(component.blocks()).toEqual([]);
     expect(component.totalLabel()).toBe('<1m');
+  });
+
+  test('should compose a session block from its segments, real resource titles included, sorted by time spent', async () => {
+    const { providers, pomodoroRepository, learningResourceRepository } = createProviders();
+    const userId = crypto.randomUUID();
+    const sessionId = crypto.randomUUID();
+    const reactDocsResourceId = crypto.randomUUID();
+    learningResourceRepository.resources = [
+      {
+        id: reactDocsResourceId,
+        title: 'React Docs',
+        difficulty: 'Medium',
+        energyLevel: 'Medium',
+        status: 'Pending',
+        estimatedDuration: { value: 30, isEstimated: true },
+        topicIds: [],
+        typeId: crypto.randomUUID(),
+        createdAt: todayAt(9, 0),
+        updatedAt: todayAt(9, 0),
+      },
+    ];
+    pomodoroRepository.sessions.push({
+      id: sessionId,
+      userId,
+      startedAt: todayAt(9, 0),
+      completedAt: todayAt(9, 25),
+      plannedMin: 25,
+    });
+    pomodoroRepository.segments.push(
+      {
+        id: crypto.randomUUID(),
+        sessionId,
+        startSec: 0,
+        endSec: 900,
+        targetKind: 'resource',
+        resourceId: reactDocsResourceId,
+      },
+      {
+        id: crypto.randomUUID(),
+        sessionId,
+        startSec: 900,
+        endSec: 1500,
+        targetKind: 'free',
+      },
+    );
+
+    const component = mount(providers);
+    await Promise.resolve();
+    // In the real app, the parent ActiveComponent triggers this load before the Today tab is ever opened.
+    await TestBed.inject(PomodoroPickerService).load();
+
+    const [block] = component.blocks();
+    expect(block!.breakdown).toEqual([
+      { label: 'React Docs', secs: 900 },
+      { label: 'Free focus', secs: 600 },
+    ]);
+  });
+
+  test('should give a break block a single "Break" breakdown entry, since breaks have no segments to compose', async () => {
+    const { providers, pomodoroRepository } = createProviders();
+    const userId = crypto.randomUUID();
+    pomodoroRepository.breaks.push({
+      id: crypto.randomUUID(),
+      userId,
+      startedAt: todayAt(9, 25),
+      durationSec: 300,
+      endedAt: todayAt(9, 30),
+    });
+
+    const component = mount(providers);
+    await Promise.resolve();
+
+    const [block] = component.blocks();
+    expect(block!.breakdown).toEqual([{ label: 'Break', secs: 300 }]);
+  });
+
+  test('showBreakdown/hideBreakdown should track the hovered block for the popup', async () => {
+    const { providers, pomodoroRepository } = createProviders();
+    const userId = crypto.randomUUID();
+    const sessionId = crypto.randomUUID();
+    pomodoroRepository.sessions.push({
+      id: sessionId,
+      userId,
+      startedAt: todayAt(9, 0),
+      completedAt: todayAt(9, 25),
+      plannedMin: 25,
+    });
+    pomodoroRepository.segments.push({
+      id: crypto.randomUUID(),
+      sessionId,
+      startSec: 0,
+      endSec: 1500,
+      targetKind: 'free',
+    });
+
+    const component = mount(providers);
+    await Promise.resolve();
+    const [block] = component.blocks();
+    const target = { getBoundingClientRect: () => ({ top: 120, left: 200 }) } as unknown as HTMLElement;
+
+    component.showBreakdown(block!, { currentTarget: target } as unknown as MouseEvent);
+    expect(component.hoveredBlock()).toEqual({ key: block!.key, top: 120, left: 192 });
+    expect(component.breakdownFor(block!.key)).toEqual([{ label: 'Free focus', secs: 1500 }]);
+
+    component.hideBreakdown();
+    expect(component.hoveredBlock()).toBeNull();
   });
 });
