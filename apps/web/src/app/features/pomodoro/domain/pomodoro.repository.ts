@@ -1,8 +1,9 @@
 import type {
-  ActiveSessionSnapshot,
   Break,
   CandidateEnergyLevel,
+  ContinueSessionResult,
   EndSessionResult,
+  GetActiveSessionResult,
   HistorySnapshot,
   Segment,
   SegmentTarget,
@@ -22,8 +23,9 @@ export abstract class PomodoroRepository {
   abstract endBreak(breakId: string): Promise<Break>;
 
   abstract startSession(payload: StartSessionPayload): Promise<Session>;
-  abstract getActiveSession(): Promise<ActiveSessionSnapshot | null>;
+  abstract getActiveSession(): Promise<GetActiveSessionResult | null>;
   abstract endSession(sessionId: string): Promise<EndSessionResult>;
+  abstract continueSession(sessionId: string): Promise<ContinueSessionResult>;
   abstract getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]>;
   abstract getHistory(since: Date, until?: Date): Promise<HistorySnapshot>;
   abstract attributeSession(sessionId: string, target: SegmentTarget): Promise<Segment[]>;
