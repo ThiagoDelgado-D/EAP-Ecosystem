@@ -18,8 +18,24 @@ function setup() {
   return { repository, store };
 }
 
-function runGuard(guard: typeof requireActiveSessionGuard) {
-  return TestBed.runInInjectionContext(() => guard({} as never, {} as never));
+function runGuard(guard: typeof requireActiveSessionGuard, path?: string) {
+  const route = path ? ({ routeConfig: { path } } as never) : ({} as never);
+  return TestBed.runInInjectionContext(() => guard(route, {} as never));
+}
+
+function pushAutoClosedSession(repository: ReturnType<typeof mockPomodoroRepository>) {
+  repository.getActiveSession = async () => ({
+    autoClosed: true,
+    session: {
+      id: crypto.randomUUID(),
+      userId: crypto.randomUUID(),
+      startedAt: new Date(Date.now() - 3600 * 1000),
+      completedAt: new Date(),
+      plannedMin: 25,
+      autoCompleted: true,
+    },
+    segments: [],
+  });
 }
 
 describe('requireActiveSessionGuard', () => {
@@ -81,6 +97,25 @@ describe('requireActiveSessionGuard', () => {
     store.phase.set('break');
 
     const result = await runGuard(requireActiveSessionGuard);
+
+    expect(result).toBe(true);
+  });
+
+  test('should redirect to the end screen when rehydrating finds an auto-closed session', async () => {
+    const { repository } = setup();
+    pushAutoClosedSession(repository);
+
+    const result = await runGuard(requireActiveSessionGuard, 'active');
+
+    expect(result).toBeInstanceOf(UrlTree);
+    expect((result as UrlTree).toString()).toBe('/pomodoro/end');
+  });
+
+  test('should allow activation when already targeting the end screen for an auto-closed session', async () => {
+    const { repository } = setup();
+    pushAutoClosedSession(repository);
+
+    const result = await runGuard(requireActiveSessionGuard, 'end');
 
     expect(result).toBe(true);
   });
@@ -148,5 +183,15 @@ describe('redirectIfActiveSessionGuard', () => {
 
     expect(result).toBeInstanceOf(UrlTree);
     expect((result as UrlTree).toString()).toBe('/pomodoro/active');
+  });
+
+  test('should redirect to the end screen when rehydrating finds an auto-closed session', async () => {
+    const { repository } = setup();
+    pushAutoClosedSession(repository);
+
+    const result = await runGuard(redirectIfActiveSessionGuard);
+
+    expect(result).toBeInstanceOf(UrlTree);
+    expect((result as UrlTree).toString()).toBe('/pomodoro/end');
   });
 });

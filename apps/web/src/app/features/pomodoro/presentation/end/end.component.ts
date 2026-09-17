@@ -68,7 +68,10 @@ export class EndComponent {
   readonly RESOURCE_STATUS_LABELS = RESOURCE_STATUS_LABELS;
   readonly formatMinutes = formatMinutes;
 
-  readonly session = this.store.activeSession;
+  readonly session = computed(() => this.store.activeSession() ?? this.store.justAutoClosed()?.session ?? null);
+  readonly segments = computed(() =>
+    this.store.activeSession() ? this.store.segments() : this.store.justAutoClosed()?.segments ?? [],
+  );
   private readonly startedAt = signal<Date | null>(null);
   private readonly endedAt = signal<Date | null>(null);
   readonly resourceTypes = signal<ResourceType[]>([]);
@@ -97,11 +100,11 @@ export class EndComponent {
 
   readonly elapsedLabel = computed(() => formatMinutes(this.elapsedSec()));
 
-  readonly totals = computed(() => segmentTotals(this.store.segments(), this.elapsedSec()));
+  readonly totals = computed(() => segmentTotals(this.segments(), this.elapsedSec()));
 
   readonly touchedKeysInOrder = computed<string[]>(() => {
     const seen: string[] = [];
-    for (const segment of this.store.segments()) {
+    for (const segment of this.segments()) {
       const key = targetKey(segmentToTarget(segment));
       if (!seen.includes(key)) seen.push(key);
     }
@@ -144,6 +147,7 @@ export class EndComponent {
   constructor() {
     const session = this.session();
     this.startedAt.set(session?.startedAt ?? new Date());
+    if (session?.completedAt) this.endedAt.set(session.completedAt);
     void this.picker.load();
     void this.resourceTypeRepository.getAll().then((types) => this.resourceTypes.set(types));
     void this.topicRepository.getAll().then((topics) => this.topics.set(topics));
@@ -321,8 +325,12 @@ export class EndComponent {
   }
 
   private async finish(): Promise<void> {
-    this.endedAt.set(new Date());
-    await this.store.end();
+    if (this.store.activeSession()) {
+      this.endedAt.set(new Date());
+      await this.store.end();
+    } else {
+      this.store.clearAutoClosed();
+    }
     void this.router.navigateByUrl('/pomodoro');
   }
 }

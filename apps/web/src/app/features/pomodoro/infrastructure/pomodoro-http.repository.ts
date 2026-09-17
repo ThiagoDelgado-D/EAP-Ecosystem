@@ -3,10 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroRepository } from '../domain/pomodoro.repository';
 import type {
-  ActiveSessionSnapshot,
   Break,
   CandidateEnergyLevel,
+  ContinueSessionResult,
   EndSessionResult,
+  GetActiveSessionResult,
   HistorySnapshot,
   Segment,
   SegmentTarget,
@@ -16,11 +17,12 @@ import type {
   SwitchTargetResult,
 } from '../domain/pomodoro.model';
 import type {
-  ActiveSessionResponseDto,
   AttachOpenSegmentResponseDto,
   AttributeSessionResponseDto,
   BreakDto,
+  ContinueSessionResponseDto,
   EndSessionResponseDto,
+  GetActiveSessionResponseDto,
   HistoryResponseDto,
   SegmentDto,
   SessionDto,
@@ -112,12 +114,30 @@ export class PomodoroHttpRepository extends PomodoroRepository {
     return dtos.map((dto) => ({ ...dto }));
   }
 
-  async getActiveSession(): Promise<ActiveSessionSnapshot | null> {
+  async getActiveSession(): Promise<GetActiveSessionResult | null> {
     const dto = await firstValueFrom(
-      this.http.get<ActiveSessionResponseDto | null>(`${this.baseUrl}/sessions/active`),
+      this.http.get<GetActiveSessionResponseDto | null>(`${this.baseUrl}/sessions/active`),
     );
     if (!dto) return null;
+    if ('autoClosed' in dto) {
+      return {
+        autoClosed: true,
+        session: this.toSessionDomain(dto.session),
+        segments: dto.segments.map((segment) => this.toSegmentDomain(segment)),
+      };
+    }
     return {
+      session: this.toSessionDomain(dto.session),
+      segments: dto.segments.map((segment) => this.toSegmentDomain(segment)),
+    };
+  }
+
+  async continueSession(sessionId: string): Promise<ContinueSessionResult> {
+    const dto = await firstValueFrom(
+      this.http.post<ContinueSessionResponseDto>(`${this.baseUrl}/sessions/${sessionId}/continue`, {}),
+    );
+    return {
+      closedSession: this.toSessionDomain(dto.closedSession),
       session: this.toSessionDomain(dto.session),
       segments: dto.segments.map((segment) => this.toSegmentDomain(segment)),
     };
@@ -163,6 +183,7 @@ export class PomodoroHttpRepository extends PomodoroRepository {
       completedAt: this.parseDate(dto.completedAt),
       intent: dto.intent,
       plannedMin: dto.plannedMin,
+      autoCompleted: dto.autoCompleted,
     };
   }
 

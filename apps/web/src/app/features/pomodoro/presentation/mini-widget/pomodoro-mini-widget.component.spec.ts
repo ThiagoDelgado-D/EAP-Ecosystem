@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { expectExtendBreakFlash } from '@features/pomodoro/application/mocks/expect-extend-break-flash';
+import { expectPlannedTimeReachedFlow } from '@features/pomodoro/application/mocks/expect-planned-time-reached-flow';
 import { PomodoroMiniWidgetComponent } from './pomodoro-mini-widget.component';
 
 function setup() {
@@ -112,5 +113,20 @@ describe('PomodoroMiniWidgetComponent', () => {
 
     expect(store.phase()).toBe('focus');
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
+
+  describe('planned time reached', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    test('should mirror the store prompt and let keepGoing clear it', async () => {
+      const { component, store } = setup();
+      await expectPlannedTimeReachedFlow(component, store);
+    });
   });
 });

@@ -30,6 +30,7 @@ export interface SessionDto {
   completedAt?: string;
   intent?: string;
   plannedMin: number;
+  autoCompleted?: boolean;
 }
 
 export interface SwitchTargetResponseDto {
@@ -50,6 +51,22 @@ export type EndSessionResponseDto =
   | { discarded: false; session: SessionDto; segments: SegmentDto[] };
 
 export interface ActiveSessionResponseDto {
+  session: SessionDto;
+  segments: SegmentDto[];
+}
+
+export interface AutoClosedSessionResponseDto {
+  autoClosed: true;
+  session: SessionDto;
+  segments: SegmentDto[];
+}
+
+export type GetActiveSessionResponseDto =
+  | ActiveSessionResponseDto
+  | AutoClosedSessionResponseDto;
+
+export interface ContinueSessionResponseDto {
+  closedSession: SessionDto;
   session: SessionDto;
   segments: SegmentDto[];
 }

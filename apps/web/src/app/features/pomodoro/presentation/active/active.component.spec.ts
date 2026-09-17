@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
+import { expectPlannedTimeReachedFlow } from '@features/pomodoro/application/mocks/expect-planned-time-reached-flow';
 import { ActiveComponent } from './active.component';
 
 function setup() {
@@ -43,6 +44,21 @@ describe('ActiveComponent', () => {
     vi.advanceTimersByTime(90 * 1000);
 
     expect(component.remainingLabel()).toBe('23:30');
+  });
+
+  test('should show the planned-time-reached prompt and let keepGoing clear it', async () => {
+    const { component, store } = setup();
+    await expectPlannedTimeReachedFlow(component, store);
+  });
+
+  test('toggleSound should flip the store sound preference', async () => {
+    const { component } = setup();
+
+    expect(component.soundEnabled()).toBe(true);
+
+    component.toggleSound();
+
+    expect(component.soundEnabled()).toBe(false);
   });
 
   test('should freeze the countdown while paused', async () => {

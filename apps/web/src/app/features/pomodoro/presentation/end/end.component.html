@@ -3,11 +3,16 @@
     <div class="text-center pt-6">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-status-done/10 border border-status-done/30 mb-4">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-status-done)" stroke-width="3"><path d="M20 6L9 17l-5-5" /></svg>
-        <span class="t-kicker text-status-done">Session complete</span>
+        <span class="t-kicker text-status-done">{{ session.autoCompleted ? 'Auto-completed' : 'Session complete' }}</span>
       </div>
+      @if (session.autoCompleted) {
+        <div class="text-[11px] text-energy-medium mb-2 max-w-sm mx-auto leading-relaxed">
+          Reached its planned time with no response, and closed itself — nothing beyond that was counted.
+        </div>
+      }
       <div class="t-num text-5xl font-extralight text-ink-strong tracking-tight">{{ elapsedLabel() }}</div>
       <div class="text-xs text-ink-faint mt-2">
-        {{ session.startedAt | date: 'shortTime' }} → {{ (endedAtOrNow()) | date: 'shortTime' }} · {{ store.segments().length }} segment{{ store.segments().length === 1 ? '' : 's' }}
+        {{ session.startedAt | date: 'shortTime' }} → {{ (endedAtOrNow()) | date: 'shortTime' }} · {{ segments().length }} segment{{ segments().length === 1 ? '' : 's' }}
       </div>
       @if (session.intent) {
         <div class="text-xs text-ink-faint italic mt-3 max-w-sm mx-auto leading-relaxed">"{{ session.intent }}"</div>

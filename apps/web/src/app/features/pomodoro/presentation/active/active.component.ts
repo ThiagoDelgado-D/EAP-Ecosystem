@@ -25,8 +25,9 @@ import {
   type SegmentTotal,
 } from './segment-display';
 import { createTransientFlag } from '@shared/utils/transient-flag';
+import { TodayPanelComponent } from './today-panel.component';
 
-type RailTab = 'session' | 'segments';
+type RailTab = 'session' | 'segments' | 'today';
 
 const RING_RADIUS = 134;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -34,7 +35,7 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 @Component({
   selector: 'app-pomodoro-active',
   standalone: true,
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, TodayPanelComponent],
   templateUrl: './active.component.html',
 })
 export class ActiveComponent {
@@ -56,6 +57,8 @@ export class ActiveComponent {
   readonly progressFraction = this.store.progressFraction;
   readonly breakRemainingLabel = this.store.breakRemainingLabel;
   readonly breakProgressFraction = this.store.breakProgressFraction;
+  readonly plannedTimeReached = this.store.plannedTimeReached;
+  readonly soundEnabled = this.store.soundEnabled;
   readonly startingBreak = signal(false);
   readonly railOpen = signal(true);
   readonly activeTab = signal<RailTab>('session');
@@ -141,6 +144,14 @@ export class ActiveComponent {
 
   endSession(): void {
     void this.router.navigateByUrl('/pomodoro/end');
+  }
+
+  toggleSound(): void {
+    this.store.toggleSound();
+  }
+
+  async keepGoing(): Promise<void> {
+    await this.store.continueAtPlannedTime();
   }
 
   async takeBreak(): Promise<void> {

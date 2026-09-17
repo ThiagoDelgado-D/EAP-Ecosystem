@@ -15,6 +15,7 @@ export interface Session {
   completedAt?: Date;
   intent?: string;
   plannedMin: number;
+  autoCompleted?: boolean;
 }
 
 export interface Break {
@@ -72,6 +73,20 @@ export interface SwitchTargetResult {
 }
 
 export interface ActiveSessionSnapshot {
+  session: Session;
+  segments: Segment[];
+}
+
+export interface AutoClosedSessionResult {
+  autoClosed: true;
+  session: Session;
+  segments: Segment[];
+}
+
+export type GetActiveSessionResult = ActiveSessionSnapshot | AutoClosedSessionResult;
+
+export interface ContinueSessionResult {
+  closedSession: Session;
   session: Session;
   segments: Segment[];
 }

@@ -181,4 +181,39 @@ describe('EndComponent', () => {
     expect(createdResource.topicIds).toEqual([topicId]);
     expect(learningPathRepository.nodes.find((n) => n.id === nodeId)?.learningResourceId).toBe(createdResource.id);
   });
+
+  test('should fall back to the auto-closed session when nothing is actively running', async () => {
+    const { component, store } = setup();
+    const overnightSession = {
+      id: crypto.randomUUID(),
+      userId: crypto.randomUUID(),
+      startedAt: new Date(now.getTime() - 25 * 60 * 1000),
+      completedAt: now,
+      plannedMin: 25,
+      autoCompleted: true,
+    };
+    store.justAutoClosed.set({ session: overnightSession, segments: [] });
+
+    expect(component.session()).toEqual(overnightSession);
+  });
+
+  test('should clear the auto-closed session instead of ending it again on close', async () => {
+    const { component, store, navigateByUrl } = setup();
+    store.justAutoClosed.set({
+      session: {
+        id: crypto.randomUUID(),
+        userId: crypto.randomUUID(),
+        startedAt: now,
+        completedAt: now,
+        plannedMin: 25,
+        autoCompleted: true,
+      },
+      segments: [],
+    });
+
+    await component.discard();
+
+    expect(store.justAutoClosed()).toBeNull();
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
 });

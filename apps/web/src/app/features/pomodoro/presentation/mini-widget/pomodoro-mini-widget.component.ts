@@ -60,6 +60,12 @@ export class PomodoroMiniWidgetComponent {
     void this.router.navigateByUrl('/pomodoro/end');
   }
 
+  readonly plannedTimeReached = this.store.plannedTimeReached;
+
+  async keepGoing(): Promise<void> {
+    await this.store.continueAtPlannedTime();
+  }
+
   private readonly extendFlash = createTransientFlag();
   readonly justExtended = this.extendFlash.active;
 

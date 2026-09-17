@@ -142,6 +142,25 @@
           <div class="absolute inset-0 flex items-center justify-center">
             <span class="t-num font-mono text-[22px] font-semibold text-ink-strong">{{ store.remainingLabel() }}</span>
           </div>
+          @if (plannedTimeReached()) {
+            <div class="absolute inset-0 rounded-full bg-surface-raised/95 flex flex-col items-center justify-center gap-1.5 px-3">
+              <span class="text-[9px] font-bold uppercase tracking-wider text-energy-medium">Time's up</span>
+              <button
+                type="button"
+                (click)="keepGoing()"
+                class="w-full px-2 py-1 rounded-md text-[10px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
+              >
+                Keep going
+              </button>
+              <button
+                type="button"
+                (click)="endSession()"
+                class="w-full px-2 py-1 rounded-md text-[10px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
+              >
+                End
+              </button>
+            </div>
+          }
         </div>
 
         @if (contextDisplay(); as ctx) {
