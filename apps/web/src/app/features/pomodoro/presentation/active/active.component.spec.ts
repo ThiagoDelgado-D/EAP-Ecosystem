@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
+import { expectPlannedTimeReachedFlow } from '@features/pomodoro/application/mocks/expect-planned-time-reached-flow';
 import { ActiveComponent } from './active.component';
 
 function setup() {
@@ -45,28 +46,9 @@ describe('ActiveComponent', () => {
     expect(component.remainingLabel()).toBe('23:30');
   });
 
-  test('should show the planned-time-reached prompt once the countdown hits zero', async () => {
+  test('should show the planned-time-reached prompt and let keepGoing clear it', async () => {
     const { component, store } = setup();
-    await store.start({ plannedMin: 25, target: { kind: 'free' } });
-
-    expect(component.plannedTimeReached()).toBe(false);
-
-    vi.advanceTimersByTime(25 * 60 * 1000);
-    TestBed.tick();
-
-    expect(component.plannedTimeReached()).toBe(true);
-  });
-
-  test('keepGoing should replace the session and clear the prompt', async () => {
-    const { component, store } = setup();
-    const session = await store.start({ plannedMin: 25, target: { kind: 'free' } });
-    vi.advanceTimersByTime(25 * 60 * 1000);
-    TestBed.tick();
-
-    await component.keepGoing();
-
-    expect(component.plannedTimeReached()).toBe(false);
-    expect(store.activeSession()?.id).not.toBe(session!.id);
+    await expectPlannedTimeReachedFlow(component, store);
   });
 
   test('toggleSound should flip the store sound preference', async () => {

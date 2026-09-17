@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { expectExtendBreakFlash } from '@features/pomodoro/application/mocks/expect-extend-break-flash';
+import { expectPlannedTimeReachedFlow } from '@features/pomodoro/application/mocks/expect-planned-time-reached-flow';
 import { PomodoroMiniWidgetComponent } from './pomodoro-mini-widget.component';
 
 function setup() {
@@ -123,28 +124,9 @@ describe('PomodoroMiniWidgetComponent', () => {
       vi.useRealTimers();
     });
 
-    test('should mirror the store prompt once the countdown hits zero', async () => {
+    test('should mirror the store prompt and let keepGoing clear it', async () => {
       const { component, store } = setup();
-      await store.start({ plannedMin: 25, target: { kind: 'free' } });
-
-      expect(component.plannedTimeReached()).toBe(false);
-
-      vi.advanceTimersByTime(25 * 60 * 1000);
-      TestBed.tick();
-
-      expect(component.plannedTimeReached()).toBe(true);
-    });
-
-    test('keepGoing should replace the session and clear the prompt', async () => {
-      const { component, store } = setup();
-      const session = await store.start({ plannedMin: 25, target: { kind: 'free' } });
-      vi.advanceTimersByTime(25 * 60 * 1000);
-      TestBed.tick();
-
-      await component.keepGoing();
-
-      expect(component.plannedTimeReached()).toBe(false);
-      expect(store.activeSession()?.id).not.toBe(session!.id);
+      await expectPlannedTimeReachedFlow(component, store);
     });
   });
 });
