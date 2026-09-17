@@ -6,8 +6,8 @@ import type {
 } from "@pomodoro/domain";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
 import { SessionForbiddenError } from "../../errors/session-forbidden.js";
-import { SessionNotActiveError } from "../../errors/session-not-active.js";
-import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
+import { SessionNotCompletedError } from "../../errors/session-not-completed.js";
+import { SegmentsAlreadyAttributedError } from "../../errors/segments-already-attributed.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
 import {
   resolveSegmentTarget,
@@ -15,34 +15,31 @@ import {
 } from "./resolve-segment-target.js";
 import { validateAndVerifySessionOwnership } from "./verify-session-ownership.js";
 
-export interface AttachOpenSegmentDependencies {
+export interface AttributeSessionDependencies {
   sessionRepository: ISessionRepository;
   learningPathMembershipPort: LearningPathMembershipPort;
 }
 
-export interface AttachOpenSegmentRequestModel {
+export interface AttributeSessionRequestModel {
   userId: UUID;
   sessionId: UUID;
   target: SegmentTargetInput;
 }
 
-export interface AttachOpenSegmentResponseModel {
-  segment: Segment;
+export interface AttributeSessionResponseModel {
+  segments: Segment[];
 }
 
-export const attachOpenSegment = async (
-  {
-    sessionRepository,
-    learningPathMembershipPort,
-  }: AttachOpenSegmentDependencies,
-  request: AttachOpenSegmentRequestModel,
+export const attributeSession = async (
+  { sessionRepository, learningPathMembershipPort }: AttributeSessionDependencies,
+  request: AttributeSessionRequestModel,
 ): Promise<
-  | AttachOpenSegmentResponseModel
+  | AttributeSessionResponseModel
   | InvalidDataError
   | SessionNotFoundError
   | SessionForbiddenError
-  | SessionNotActiveError
-  | NoOpenSegmentError
+  | SessionNotCompletedError
+  | SegmentsAlreadyAttributedError
   | AmbiguousPathTargetError
 > => {
   const session = await validateAndVerifySessionOwnership(
@@ -56,15 +53,14 @@ export const attachOpenSegment = async (
   ) {
     return session;
   }
-  if (session.completedAt) {
-    return new SessionNotActiveError(session.id);
+  if (!session.completedAt) {
+    return new SessionNotCompletedError(session.id);
   }
 
-  const openSegment = await sessionRepository.findOpenSegmentBySessionId(
-    session.id,
-  );
-  if (!openSegment) {
-    return new NoOpenSegmentError(session.id);
+  const segments = await sessionRepository.findSegmentsBySessionId(session.id);
+  const allLoose = segments.every((segment) => segment.targetKind === "free");
+  if (!allLoose) {
+    return new SegmentsAlreadyAttributedError(session.id);
   }
 
   const resolvedTarget = await resolveSegmentTarget(
@@ -75,12 +71,17 @@ export const attachOpenSegment = async (
     return resolvedTarget;
   }
 
-  const segment = await sessionRepository.updateSegment({
-    id: openSegment.id,
-    sessionId: openSegment.sessionId,
-    startSec: openSegment.startSec,
-    ...resolvedTarget,
-  });
+  const updated = await Promise.all(
+    segments.map((segment) =>
+      sessionRepository.updateSegment({
+        id: segment.id,
+        sessionId: segment.sessionId,
+        startSec: segment.startSec,
+        endSec: segment.endSec,
+        ...resolvedTarget,
+      }),
+    ),
+  );
 
-  return { segment };
+  return { segments: updated };
 };
