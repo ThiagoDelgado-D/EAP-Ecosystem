@@ -6,4 +6,5 @@ export interface Session extends Entity {
   completedAt?: Date;
   intent?: string;
   plannedMin: number;
+  autoCompleted?: boolean;
 }
