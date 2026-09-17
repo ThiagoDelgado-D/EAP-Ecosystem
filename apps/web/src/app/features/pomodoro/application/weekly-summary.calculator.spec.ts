@@ -1,5 +1,5 @@
 import type { Break, HistorySnapshot, Session } from '@features/pomodoro/domain/pomodoro.model';
-import { computeWeeklySummary, startOfWeek, summaryWindowSince } from './weekly-summary.calculator';
+import { buildWeekDayLog, computeWeeklySummary, startOfWeek, summaryWindowSince } from './weekly-summary.calculator';
 
 const now = new Date('2026-09-16T18:00:00'); // a Wednesday
 
@@ -170,5 +170,57 @@ describe('computeWeeklySummary', () => {
 
     const summary = computeWeeklySummary(history, now);
     expect(summary.observations.length).toBe(2);
+  });
+});
+
+describe('buildWeekDayLog', () => {
+  test('should return the last 7 days ending today, oldest first, even with no history', () => {
+    const days = buildWeekDayLog(emptyHistory(), now);
+
+    expect(days).toHaveLength(7);
+    expect(days[0]!.date).toEqual(new Date('2026-09-10T00:00:00'));
+    expect(days[6]!.date).toEqual(new Date('2026-09-16T00:00:00'));
+    expect(days.every((day) => day.sessionCount === 0 && day.sessions.length === 0)).toBe(true);
+  });
+
+  test('should bucket a session and its segments under the day it started', () => {
+    const yesterdaySession = buildSession(daysBefore(now, 1));
+    const history: HistorySnapshot = {
+      sessions: [yesterdaySession],
+      segments: [
+        { id: crypto.randomUUID(), sessionId: yesterdaySession.id, startSec: 0, endSec: 900, targetKind: 'free' },
+        { id: crypto.randomUUID(), sessionId: yesterdaySession.id, startSec: 900, endSec: 1500, targetKind: 'free' },
+      ],
+      breaks: [],
+    };
+
+    const days = buildWeekDayLog(history, now);
+    const yesterday = days[5]!;
+
+    expect(yesterday.sessionCount).toBe(1);
+    expect(yesterday.focusSec).toBe(1500);
+    expect(yesterday.sessions[0]!.segments).toHaveLength(2);
+    expect(days.filter((day) => day.sessionCount > 0)).toHaveLength(1);
+  });
+
+  test('should exclude sessions and breaks from before the rolling 7-day window', () => {
+    const eightDaysAgoSession = buildSession(daysBefore(now, 8));
+    const eightDaysAgoBreak = buildBreak(daysBefore(now, 8), 300);
+    const history: HistorySnapshot = { sessions: [eightDaysAgoSession], segments: [], breaks: [eightDaysAgoBreak] };
+
+    const days = buildWeekDayLog(history, now);
+
+    expect(days.every((day) => day.sessionCount === 0 && day.breakSec === 0)).toBe(true);
+  });
+
+  test('should order same-day sessions chronologically regardless of input order', () => {
+    const morning = buildSession(new Date('2026-09-16T08:00:00'));
+    const evening = buildSession(new Date('2026-09-16T20:00:00'));
+    const history: HistorySnapshot = { sessions: [evening, morning], segments: [], breaks: [] };
+
+    const days = buildWeekDayLog(history, now);
+    const today = days[6]!;
+
+    expect(today.sessions.map((entry) => entry.session.id)).toEqual([morning.id, evening.id]);
   });
 });

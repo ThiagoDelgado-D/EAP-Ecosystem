@@ -18,6 +18,7 @@ import type {
 import type {
   ActiveSessionResponseDto,
   AttachOpenSegmentResponseDto,
+  AttributeSessionResponseDto,
   BreakDto,
   EndSessionResponseDto,
   HistoryResponseDto,
@@ -136,6 +137,15 @@ export class PomodoroHttpRepository extends PomodoroRepository {
       segments: dto.segments.map((segment) => this.toSegmentDomain(segment)),
       breaks: dto.breaks.map((activeBreak) => this.toBreakDomain(activeBreak)),
     };
+  }
+
+  async attributeSession(sessionId: string, target: SegmentTarget): Promise<Segment[]> {
+    const dto = await firstValueFrom(
+      this.http.patch<AttributeSessionResponseDto>(`${this.baseUrl}/sessions/${sessionId}/attribute`, {
+        target,
+      }),
+    );
+    return dto.segments.map((segment) => this.toSegmentDomain(segment));
   }
 
   private parseDate(value: string | null | undefined): Date | undefined {

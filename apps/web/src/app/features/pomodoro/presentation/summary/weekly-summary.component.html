@@ -1,10 +1,10 @@
-<div class="p-4 sm:p-5 lg:p-6 max-w-2xl mx-auto flex flex-col gap-5">
+<div class="p-4 sm:p-5 lg:p-6 max-w-6xl mx-auto flex flex-col gap-5">
   <div>
     <a routerLink="/pomodoro" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">
       ← Back
     </a>
-    <h1 class="text-xl font-extrabold text-ink-strong tracking-tight mt-2">Weekly summary</h1>
-    <div class="text-[12.5px] text-ink-dim mt-1.5">
+    <h1 class="text-2xl font-extrabold text-ink-strong tracking-tight mt-2">Weekly summary</h1>
+    <div class="text-sm text-ink-dim mt-1.5">
       Week of {{ weekStart | date: 'MMM d' }}
     </div>
   </div>
@@ -32,70 +32,254 @@
     }
 
     <div class="rounded-xl border border-line-hairline p-4">
-      <div class="t-kicker mb-3">Focus</div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <div class="t-num text-2xl font-extralight text-ink-strong">{{ formatMinutes(summary.thisWeek.focus.totalSec) }}</div>
-          <div class="text-[11px] text-ink-faint mt-0.5">
-            total time
-            @if (summary.delta; as delta) {
-              <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.focusTotalSec) }}</span>
-            }
+      <div class="t-kicker mb-3">This week</div>
+      <div class="flex items-end justify-between gap-6 flex-wrap">
+        <div class="flex gap-9 flex-wrap">
+          <div>
+            <div class="t-num text-3xl font-extralight text-ink-strong">{{ formatMinutes(summary.thisWeek.focus.totalSec) }}</div>
+            <div class="t-kicker mt-1.5">
+              focus
+              @if (summary.delta; as delta) {
+                <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.focusTotalSec) }}</span>
+              }
+            </div>
+          </div>
+          <div>
+            <div class="t-num text-3xl font-extralight text-ink-strong">{{ summary.thisWeek.focus.sessionCount }}</div>
+            <div class="t-kicker mt-1.5">sessions</div>
+          </div>
+          <div>
+            <div class="t-num text-3xl font-extralight text-ink-strong">{{ formatMinutes(summary.thisWeek.focus.avgSessionSec) }}</div>
+            <div class="t-kicker mt-1.5">
+              avg.
+              @if (summary.delta; as delta) {
+                <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.avgSessionSec) }}</span>
+              }
+            </div>
+          </div>
+          <div>
+            <div class="t-num text-3xl font-extralight text-ink-strong">{{ summary.thisWeek.focus.activeDays }}/7</div>
+            <div class="t-kicker mt-1.5">
+              active days
+              @if (summary.delta; as delta) {
+                <span class="t-mono ml-1 text-ink-dim">{{ formatDayDelta(delta.activeDays) }}</span>
+              }
+            </div>
+          </div>
+          @if (summary.thisWeek.focus.unattributedSec > 0) {
+            <div>
+              <div class="t-num text-3xl font-extralight text-energy-medium">{{ formatMinutes(summary.thisWeek.focus.unattributedSec) }}</div>
+              <div class="t-kicker mt-1.5">unattributed</div>
+            </div>
+          }
+          <div class="pl-9 border-l border-line-strong">
+            <div class="t-num text-3xl font-extralight text-ink-strong">{{ formatMinutes(summary.thisWeek.break.totalSec) }}</div>
+            <div class="t-kicker mt-1.5">
+              break
+              @if (summary.delta; as delta) {
+                <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.breakTotalSec) }}</span>
+              }
+            </div>
+          </div>
+          <div>
+            <div class="t-num text-3xl font-extralight text-ink-strong">{{ summary.thisWeek.break.breakCount }}</div>
+            <div class="t-kicker mt-1.5">breaks</div>
           </div>
         </div>
-        <div>
-          <div class="t-num text-2xl font-extralight text-ink-strong">{{ summary.thisWeek.focus.sessionCount }}</div>
-          <div class="text-[11px] text-ink-faint mt-0.5">sessions</div>
-        </div>
-        <div>
-          <div class="t-num text-2xl font-extralight text-ink-strong">{{ formatMinutes(summary.thisWeek.focus.avgSessionSec) }}</div>
-          <div class="text-[11px] text-ink-faint mt-0.5">
-            avg. session
-            @if (summary.delta; as delta) {
-              <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.avgSessionSec) }}</span>
-            }
-          </div>
-        </div>
-        <div>
-          <div class="t-num text-2xl font-extralight text-ink-strong">{{ summary.thisWeek.focus.activeDays }}/7</div>
-          <div class="text-[11px] text-ink-faint mt-0.5">
-            active days
-            @if (summary.delta; as delta) {
-              <span class="t-mono ml-1 text-ink-dim">{{ formatDayDelta(delta.activeDays) }}</span>
-            }
-          </div>
+
+        <div class="flex items-end gap-1.5 h-11 flex-shrink-0">
+          @for (day of dayLog(); track day.date.getTime()) {
+            <div class="flex flex-col items-center gap-1.5" [title]="(day.date | date: 'EEE') + ' · ' + dayFocusLabel(day)">
+              <div
+                class="w-[9px] rounded-sm"
+                [style.height.px]="dayBarHeightPx(day)"
+                [style.background]="isToday(day.date) ? 'var(--color-accent-hover)' : day.focusSec > 0 ? 'var(--color-line-strong)' : 'var(--color-line-hairline)'"
+              ></div>
+              <span class="t-mono text-[8.5px]" [class.text-accent-ink]="isToday(day.date)" [class.font-semibold]="isToday(day.date)" [class.text-ink-faint]="!isToday(day.date)">
+                {{ isToday(day.date) ? 'today' : dayLetter(day.date) }}
+              </span>
+            </div>
+          }
         </div>
       </div>
-      @if (summary.thisWeek.focus.unattributedSec > 0) {
+
+      @if (!summary.delta) {
         <div class="text-[11px] text-ink-faint mt-3 pt-3 border-t border-line-hairline">
-          {{ formatMinutes(summary.thisWeek.focus.unattributedSec) }} unattributed (free focus, no resource attached)
+          Comparisons show up once a prior week has data.
         </div>
       }
     </div>
 
     <div class="rounded-xl border border-line-hairline p-4">
-      <div class="t-kicker mb-3">Break</div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <div class="t-num text-2xl font-extralight text-ink-strong">{{ formatMinutes(summary.thisWeek.break.totalSec) }}</div>
-          <div class="text-[11px] text-ink-faint mt-0.5">
-            total time
-            @if (summary.delta; as delta) {
-              <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.breakTotalSec) }}</span>
+      <div class="flex items-center justify-between mb-3">
+        <div class="t-kicker">Day by day</div>
+        <div class="flex gap-1">
+          <button
+            type="button"
+            (click)="setScope(WEEK_LOG_SCOPE.ALL)"
+            [class]="scope() === WEEK_LOG_SCOPE.ALL ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-colors"
+          >
+            all <span>{{ allCount() }}</span>
+          </button>
+          <button
+            type="button"
+            (click)="setScope(WEEK_LOG_SCOPE.UNATTRIBUTED)"
+            [class]="scope() === WEEK_LOG_SCOPE.UNATTRIBUTED ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-colors"
+          >
+            unattributed <span>{{ unattributedCount() }}</span>
+          </button>
+          <button
+            type="button"
+            (click)="setScope(WEEK_LOG_SCOPE.ADVANCED)"
+            [class]="scope() === WEEK_LOG_SCOPE.ADVANCED ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-colors"
+          >
+            advanced <span>{{ advancedCount() }}</span>
+          </button>
+        </div>
+      </div>
+
+      @if (picker.loading()) {
+        <div class="text-[11px] text-ink-faint mb-3">Loading path and resource names…</div>
+      }
+
+      <div class="flex flex-col">
+        @for (day of dayLogNewestFirst(); track day.date.getTime()) {
+          <div class="py-3 border-b border-line-hairline last:border-b-0 last:pb-0 first:pt-0">
+            <div class="flex items-baseline justify-between mb-1">
+              <span class="t-kicker" [class.text-accent-ink]="isToday(day.date)">{{ day.date | date: 'EEE, MMM d' }}</span>
+              <span class="t-mono text-xs text-ink-faint">
+                {{ day.sessionCount }} · {{ dayFocusLabel(day) }}
+              </span>
+            </div>
+
+            @if (visibleSessions(day).length === 0) {
+              <div class="text-xs text-ink-faint py-1">
+                {{ day.sessionCount === 0 ? 'No sessions' : 'Nothing in this filter' }}
+              </div>
+            }
+
+            @for (daySession of visibleSessions(day); track daySession.session.id) {
+              <div class="border-t border-line-hairline">
+                <button
+                  type="button"
+                  (click)="toggleSession(daySession.session.id)"
+                  class="w-full flex items-center gap-3 py-2.5 text-left"
+                >
+                  <span class="t-mono text-xs text-ink-faint w-12 flex-shrink-0">{{ daySession.session.startedAt | date: 'shortTime' }}</span>
+
+                  <span class="flex-1 min-w-0">
+                    <span class="flex items-center gap-2 flex-wrap">
+                      @if (primaryTarget(daySession); as primary) {
+                        <span class="text-sm font-semibold truncate" [class.text-ink-faint]="primary.target.kind === 'free'" [class.text-ink-strong]="primary.target.kind !== 'free'">
+                          {{ targetLabel(primary).title }}
+                        </span>
+                        @if (targetsForSession(daySession).length > 1) {
+                          <span class="t-kicker text-ink-faint">+{{ targetsForSession(daySession).length - 1 }} more</span>
+                        }
+                        @if (isStub(primary)) {
+                          <span class="badge badge--unset">Stub</span>
+                        }
+                      }
+                    </span>
+                    @if (daySession.session.intent) {
+                      <span class="block text-xs text-ink-faint truncate mt-0.5">{{ daySession.session.intent }}</span>
+                    }
+                  </span>
+
+                  <span class="w-28 h-[5px] rounded-sm overflow-hidden flex flex-shrink-0 border border-line-hairline">
+                    @for (total of targetsForSession(daySession); track total.key) {
+                      <span
+                        class="h-full"
+                        [style.width.%]="targetWidthPercent(total, daySession)"
+                        [style.background]="segmentBackground(total)"
+                      ></span>
+                    }
+                  </span>
+
+                  <span class="t-mono text-xs w-11 text-right flex-shrink-0" [class.text-energy-medium]="endedShort(daySession)" [class.text-ink-dim]="!endedShort(daySession)">
+                    {{ sessionMinutes(daySession) }}m
+                  </span>
+
+                  <span class="w-4 flex-shrink-0"></span>
+
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" [attr.stroke]="isOpen(daySession.session.id) ? 'var(--color-accent-ink)' : 'var(--color-ink-ghost)'" stroke-width="2.4" class="flex-shrink-0" [style.transform]="isOpen(daySession.session.id) ? 'rotate(180deg)' : 'none'">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+
+                @if (isOpen(daySession.session.id)) {
+                  <div class="pb-3 pl-14 flex flex-col gap-3">
+                    <div>
+                      <div class="t-kicker mb-2">Time per target</div>
+                      <div class="flex flex-col gap-2">
+                        @for (total of targetsForSession(daySession); track total.key) {
+                          <div>
+                            <div class="flex items-center gap-2 mb-1">
+                              <span
+                                class="w-1.5 h-1.5 rounded-sm flex-shrink-0"
+                                [style.background]="segmentColor(total)"
+                                [class.border]="total.target.kind === 'free'"
+                                [class.border-dashed]="total.target.kind === 'free'"
+                                [class.border-line-strong]="total.target.kind === 'free'"
+                              ></span>
+                              <span class="flex-1 text-sm text-ink-body truncate">{{ targetLabel(total).title }}</span>
+                              @if (targetLabel(total).subtitle) {
+                                <span class="text-[11px] text-ink-faint truncate">{{ targetLabel(total).subtitle }}</span>
+                              }
+                              <span class="t-mono text-[11px] text-ink-faint">{{ targetPercent(total, daySession) }}%</span>
+                              <span class="t-mono text-xs text-ink-body">{{ formatMinutes(total.secs) }}</span>
+                            </div>
+                            <div class="h-[3px] rounded-sm bg-line-hairline overflow-hidden">
+                              <div class="h-full" [style.width.%]="targetWidthPercent(total, daySession)" [style.background]="segmentBackground(total)"></div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+
+                    @if (daySession.session.intent) {
+                      <div>
+                        <div class="t-kicker mb-1.5">Intent</div>
+                        <div class="text-sm text-ink-dim leading-relaxed p-2.5 rounded-lg bg-surface-inset border border-line-hairline">
+                          {{ daySession.session.intent }}
+                        </div>
+                      </div>
+                    }
+
+                    @if (endedShort(daySession)) {
+                      <div class="text-xs text-energy-medium flex items-center gap-1.5">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="flex-shrink-0">
+                          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0" />
+                        </svg>
+                        Ended before the planned {{ daySession.session.plannedMin }}m
+                      </div>
+                    }
+
+                    @if (isLoose(daySession)) {
+                      <div class="p-2.5 rounded-lg bg-energy-medium/5 border border-dashed border-energy-medium/40 flex flex-col gap-2.5">
+                        <div class="text-sm text-ink-dim leading-relaxed">
+                          These <b class="text-energy-medium">{{ formatMinutes(daySession.focusSec) }}</b> aren't attributed. You can give them a home now — the time is already logged either way.
+                        </div>
+                        <button
+                          type="button"
+                          (click)="attributeSession(daySession)"
+                          [disabled]="attributing() === daySession.session.id"
+                          class="self-start px-3 py-1.5 rounded-md text-[11px] font-semibold border border-line-strong text-ink-dim hover:text-ink-strong disabled:opacity-50 transition-colors"
+                        >
+                          {{ attributing() === daySession.session.id ? 'Attributing…' : 'Attribute' }}
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
             }
           </div>
-        </div>
-        <div>
-          <div class="t-num text-2xl font-extralight text-ink-strong">{{ summary.thisWeek.break.breakCount }}</div>
-          <div class="text-[11px] text-ink-faint mt-0.5">breaks</div>
-        </div>
+        }
       </div>
     </div>
-
-    @if (!summary.delta) {
-      <div class="text-[11px] text-ink-faint text-center">
-        Comparisons show up once a prior week has data.
-      </div>
-    }
   }
 </div>

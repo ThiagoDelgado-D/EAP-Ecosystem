@@ -1,3 +1,5 @@
+import type { Segment, Session } from '@features/pomodoro/domain/pomodoro.model';
+
 export interface FocusTotals {
   totalSec: number;
   sessionCount: number;
@@ -44,4 +46,18 @@ export interface WeeklySummary {
   thisWeek: WeekTotals;
   delta: WeeklyDelta | null;
   observations: string[];
+}
+
+export interface DaySession {
+  session: Session;
+  segments: Segment[];
+  focusSec: number;
+}
+
+export interface DayLog {
+  date: Date;
+  focusSec: number;
+  breakSec: number;
+  sessionCount: number;
+  sessions: DaySession[];
 }
