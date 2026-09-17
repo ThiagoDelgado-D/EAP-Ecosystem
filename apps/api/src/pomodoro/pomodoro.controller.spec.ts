@@ -481,6 +481,75 @@ describe("PomodoroController (integration)", () => {
 
       expect(response.body).toEqual({});
     });
+
+    test("auto-closes a session left open past plannedMin and notifies", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+      const sessionId = startResponse.body.id;
+      backdateSession(sessionId, 25 * 60 + 60);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/sessions/active")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body.autoClosed).toBe(true);
+      expect(response.body.session).toMatchObject({
+        id: sessionId,
+        autoCompleted: true,
+      });
+      expect(response.body.segments[0]).toMatchObject({ endSec: 25 * 60 });
+      expect(notificationPort.notifications).toHaveLength(1);
+      expect(notificationPort.notifications[0]!.type).toBe(
+        DomainNotificationType.SESSION_COMPLETED,
+      );
+    });
+  });
+
+  describe("Continue session", () => {
+    test("closes the session at its boundary and starts a new one against the same target", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+      const sessionId = startResponse.body.id;
+      backdateSession(sessionId, 25 * 60 + 60);
+
+      const continueResponse = await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/sessions/${sessionId}/continue`)
+        .set(authHeader())
+        .expect(201);
+
+      expect(continueResponse.body.closedSession).toMatchObject({
+        id: sessionId,
+        autoCompleted: false,
+      });
+      expect(continueResponse.body.session.id).not.toBe(sessionId);
+      expect(continueResponse.body.segments).toHaveLength(1);
+      expect(continueResponse.body.segments[0]).toMatchObject({
+        targetKind: "free",
+        startSec: 0,
+      });
+    });
+
+    test("Should return 403 when a different user tries to continue", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+
+      const forbiddenContinueResponse = await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/sessions/${startResponse.body.id}/continue`)
+        .set(authHeader(intruderToken))
+        .expect(403);
+
+      expect(forbiddenContinueResponse.body).toEqual({});
+    });
   });
 
   describe("Breaks", () => {

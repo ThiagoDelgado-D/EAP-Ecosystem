@@ -21,6 +21,7 @@ import type {
 import {
   attachOpenSegment,
   attributeSession,
+  continueSession,
   endBreak,
   endSession,
   extendBreak,
@@ -65,7 +66,10 @@ export class PomodoroController {
   @Get("sessions/active")
   async getActiveSession(@CurrentUserId() userId: UUID) {
     const result = await getActiveSession(
-      { sessionRepository: this.sessionRepository },
+      {
+        sessionRepository: this.sessionRepository,
+        notificationPort: this.notificationPort,
+      },
       { userId },
     );
     if (result instanceof BaseError) throw toHttpException(result);
@@ -152,6 +156,19 @@ export class PomodoroController {
       {
         sessionRepository: this.sessionRepository,
         notificationPort: this.notificationPort,
+      },
+      { userId, sessionId: id },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Post("sessions/:id/continue")
+  async continueSession(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
+    const result = await continueSession(
+      {
+        sessionRepository: this.sessionRepository,
+        cryptoService: this.cryptoService,
       },
       { userId, sessionId: id },
     );
