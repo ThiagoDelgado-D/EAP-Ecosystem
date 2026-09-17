@@ -1,4 +1,4 @@
-import { EnvironmentInjector, Injectable, computed, inject, signal } from '@angular/core';
+import { EnvironmentInjector, Injectable, computed, effect, inject, signal } from '@angular/core';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
   Break,
@@ -10,6 +10,7 @@ import type {
   StartSessionPayload,
   SuggestedCandidate,
 } from '@features/pomodoro/domain/pomodoro.model';
+import { playBoundaryChime, readSoundPreference, writeSoundPreference } from './pomodoro-sound';
 
 export type PomodoroPhase = 'focus' | 'break';
 
@@ -46,6 +47,10 @@ export class PomodoroSessionStore {
 
   readonly activeSession = signal<Session | null>(null);
   readonly segments = signal<Segment[]>([]);
+  readonly justAutoClosed = signal<{ session: Session; segments: Segment[] } | null>(null);
+  readonly plannedTimeReached = signal(false);
+  readonly soundEnabled = signal(readSoundPreference());
+  private plannedTimeReachedHandledForSessionId: string | null = null;
   readonly suggestions = signal<SuggestedCandidate[]>([]);
   readonly suggestionsLoading = signal(false);
   readonly suggestionsError = signal(false);
@@ -96,8 +101,42 @@ export class PomodoroSessionStore {
     return total > 0 ? Math.min(1, this.breakElapsedSec() / total) : 0;
   });
 
+  private readonly hasReachedPlannedTime = computed(
+    () => this.phase() === 'focus' && !this.paused() && this.remainingSec() === 0,
+  );
+
+  constructor() {
+    effect(() => {
+      const session = this.activeSession();
+      if (!session || !this.hasReachedPlannedTime()) return;
+      if (this.plannedTimeReachedHandledForSessionId === session.id) return;
+
+      this.plannedTimeReachedHandledForSessionId = session.id;
+      this.plannedTimeReached.set(true);
+      playBoundaryChime();
+    });
+  }
+
   togglePause(): void {
     this.paused.update((v) => !v);
+  }
+
+  toggleSound(): void {
+    this.soundEnabled.update((v) => !v);
+    writeSoundPreference(this.soundEnabled());
+  }
+
+  clearAutoClosed(): void {
+    this.justAutoClosed.set(null);
+  }
+
+  async continueAtPlannedTime(): Promise<void> {
+    const session = this.activeSession();
+    if (!session) return;
+    const result = await this.repository.continueSession(session.id);
+    this.activeSession.set(result.session);
+    this.segments.set(result.segments);
+    this.plannedTimeReached.set(false);
   }
 
   async startBreak(): Promise<void> {
@@ -157,6 +196,10 @@ export class PomodoroSessionStore {
     this.rehydrating.set(true);
     try {
       const snapshot = await this.repository.getActiveSession();
+      if (snapshot && 'autoClosed' in snapshot) {
+        this.justAutoClosed.set({ session: snapshot.session, segments: snapshot.segments });
+        return null;
+      }
       if (snapshot) {
         this.activeSession.set(snapshot.session);
         this.segments.set(snapshot.segments);

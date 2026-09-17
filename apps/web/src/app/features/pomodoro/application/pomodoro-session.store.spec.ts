@@ -253,6 +253,84 @@ describe('PomodoroSessionStore', () => {
       vi.advanceTimersByTime(30 * 1000);
       expect(store.elapsedSec()).toBe(30);
     });
+
+    test('should show the boundary prompt once remaining time hits zero', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+      expect(store.plannedTimeReached()).toBe(false);
+
+      vi.advanceTimersByTime(25 * 60 * 1000);
+      TestBed.tick();
+
+      expect(store.plannedTimeReached()).toBe(true);
+    });
+
+    test('continueAtPlannedTime should replace the active session and clear the prompt', async () => {
+      const session = await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      vi.advanceTimersByTime(25 * 60 * 1000);
+      TestBed.tick();
+
+      await store.continueAtPlannedTime();
+
+      expect(store.plannedTimeReached()).toBe(false);
+      expect(store.activeSession()?.id).not.toBe(session!.id);
+      expect(store.activeSession()?.completedAt).toBeUndefined();
+    });
+  });
+
+  describe('auto-close safety net', () => {
+    test('should populate justAutoClosed and leave activeSession null when the snapshot reports autoClosed', async () => {
+      const closedSession = {
+        id: crypto.randomUUID(),
+        userId: crypto.randomUUID(),
+        startedAt: new Date(Date.now() - 3600 * 1000),
+        completedAt: new Date(),
+        plannedMin: 25,
+        autoCompleted: true,
+      };
+      repository.getActiveSession = async () => ({
+        autoClosed: true,
+        session: closedSession,
+        segments: [],
+      });
+
+      const result = await store.rehydrate();
+
+      expect(result).toBeNull();
+      expect(store.activeSession()).toBeNull();
+      expect(store.justAutoClosed()).toEqual({ session: closedSession, segments: [] });
+    });
+
+    test('clearAutoClosed should reset justAutoClosed to null', async () => {
+      repository.getActiveSession = async () => ({
+        autoClosed: true,
+        session: {
+          id: crypto.randomUUID(),
+          userId: crypto.randomUUID(),
+          startedAt: new Date(),
+          completedAt: new Date(),
+          plannedMin: 25,
+        },
+        segments: [],
+      });
+      await store.rehydrate();
+
+      store.clearAutoClosed();
+
+      expect(store.justAutoClosed()).toBeNull();
+    });
+  });
+
+  describe('sound preference', () => {
+    test('should default to enabled and flip when toggled', () => {
+      expect(store.soundEnabled()).toBe(true);
+
+      store.toggleSound();
+      expect(store.soundEnabled()).toBe(false);
+
+      store.toggleSound();
+      expect(store.soundEnabled()).toBe(true);
+    });
   });
 
   describe('break', () => {
