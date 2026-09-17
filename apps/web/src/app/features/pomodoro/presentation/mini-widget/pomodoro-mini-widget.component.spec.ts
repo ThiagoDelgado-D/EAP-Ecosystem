@@ -113,4 +113,38 @@ describe('PomodoroMiniWidgetComponent', () => {
     expect(store.phase()).toBe('focus');
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
   });
+
+  describe('planned time reached', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    test('should mirror the store prompt once the countdown hits zero', async () => {
+      const { component, store } = setup();
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+      expect(component.plannedTimeReached()).toBe(false);
+
+      vi.advanceTimersByTime(25 * 60 * 1000);
+      TestBed.tick();
+
+      expect(component.plannedTimeReached()).toBe(true);
+    });
+
+    test('keepGoing should replace the session and clear the prompt', async () => {
+      const { component, store } = setup();
+      const session = await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      vi.advanceTimersByTime(25 * 60 * 1000);
+      TestBed.tick();
+
+      await component.keepGoing();
+
+      expect(component.plannedTimeReached()).toBe(false);
+      expect(store.activeSession()?.id).not.toBe(session!.id);
+    });
+  });
 });

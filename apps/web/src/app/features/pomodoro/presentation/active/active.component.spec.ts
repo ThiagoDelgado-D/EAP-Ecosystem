@@ -45,6 +45,40 @@ describe('ActiveComponent', () => {
     expect(component.remainingLabel()).toBe('23:30');
   });
 
+  test('should show the planned-time-reached prompt once the countdown hits zero', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+    expect(component.plannedTimeReached()).toBe(false);
+
+    vi.advanceTimersByTime(25 * 60 * 1000);
+    TestBed.tick();
+
+    expect(component.plannedTimeReached()).toBe(true);
+  });
+
+  test('keepGoing should replace the session and clear the prompt', async () => {
+    const { component, store } = setup();
+    const session = await store.start({ plannedMin: 25, target: { kind: 'free' } });
+    vi.advanceTimersByTime(25 * 60 * 1000);
+    TestBed.tick();
+
+    await component.keepGoing();
+
+    expect(component.plannedTimeReached()).toBe(false);
+    expect(store.activeSession()?.id).not.toBe(session!.id);
+  });
+
+  test('toggleSound should flip the store sound preference', async () => {
+    const { component } = setup();
+
+    expect(component.soundEnabled()).toBe(true);
+
+    component.toggleSound();
+
+    expect(component.soundEnabled()).toBe(false);
+  });
+
   test('should freeze the countdown while paused', async () => {
     const { component, store } = setup();
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
