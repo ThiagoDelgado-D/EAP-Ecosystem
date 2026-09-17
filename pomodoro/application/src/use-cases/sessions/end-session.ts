@@ -65,8 +65,12 @@ export const endSession = async (
   const { session, openSegment } = guard;
 
   const now = new Date();
+  const boundaryAt = new Date(
+    session.startedAt.getTime() + session.plannedMin * 60 * 1000,
+  );
+  const completedAt = now > boundaryAt ? boundaryAt : now;
   const elapsedSec = Math.floor(
-    (now.getTime() - session.startedAt.getTime()) / 1000,
+    (completedAt.getTime() - session.startedAt.getTime()) / 1000,
   );
 
   await sessionRepository.updateSegment({
@@ -79,7 +83,7 @@ export const endSession = async (
     return { discarded: true };
   }
 
-  const completedSession: Session = { ...session, completedAt: now };
+  const completedSession: Session = { ...session, completedAt };
   await sessionRepository.update(completedSession);
 
   const segments = await sessionRepository.findSegmentsBySessionId(session.id);
@@ -89,7 +93,7 @@ export const endSession = async (
     type: DomainNotificationType.SESSION_COMPLETED,
     title: "Focus session complete",
     body: `You focused for ${minutes} min.`,
-    occurredAt: now,
+    occurredAt: completedAt,
   });
 
   return { discarded: false, session: completedSession, segments };

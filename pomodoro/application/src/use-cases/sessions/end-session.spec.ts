@@ -76,6 +76,27 @@ describe("endSession", () => {
     );
   });
 
+  test("Should clamp the recorded duration to plannedMin when ending after the boundary was already reached", async () => {
+    const boundarySec = 25 * 60;
+    const session = await startSessionStartedSecondsAgo(boundarySec + 600);
+
+    const result = await endSession(deps(), {
+      userId: requestingUserId,
+      sessionId: session.id,
+    });
+
+    if (result instanceof Error) throw result;
+    if (result.discarded) throw new Error("expected a finalized session");
+
+    const storedSession = sessionRepository.sessions.find(
+      (s) => s.id === session.id,
+    )!;
+    expect(result.session.completedAt).toEqual(
+      new Date(storedSession.startedAt.getTime() + boundarySec * 1000),
+    );
+    expect(result.segments[0]!.endSec).toBe(boundarySec);
+  });
+
   test("Should discard a session shorter than the minimum duration, without notifying", async () => {
     const session = await startSessionStartedSecondsAgo(
       MIN_SESSION_DURATION_SEC - 1,
