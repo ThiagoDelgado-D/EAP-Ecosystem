@@ -92,8 +92,10 @@ export class TodayPanelComponent {
   });
 
   constructor() {
-    void this.load();
-    afterNextRender(() => this.scrollToDayStart());
+    afterNextRender(() => {
+      this.scrollToDayStart();
+      void this.load();
+    });
   }
 
   private async load(): Promise<void> {
