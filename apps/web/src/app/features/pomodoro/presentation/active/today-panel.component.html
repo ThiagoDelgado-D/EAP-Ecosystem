@@ -21,43 +21,44 @@
 
       @for (block of blocks(); track block.key) {
         <div
-          class="group absolute"
+          class="absolute rounded-md px-1.5 py-0.5 overflow-hidden border"
+          [class]="block.kind === 'focus' ? 'bg-accent-wash border-accent-line' : 'bg-status-done/15 border-status-done/40'"
           [style.top.px]="block.topPx"
           [style.height.px]="block.heightPx"
           [style.left.px]="HOUR_GUTTER_PX + 8"
           [style.right.px]="4"
+          [style.opacity]="block.ongoing ? 0.7 : 1"
+          (mouseenter)="showBreakdown(block, $event)"
+          (mouseleave)="hideBreakdown()"
         >
-          <div
-            class="h-full rounded-md px-1.5 py-0.5 overflow-hidden border"
-            [class]="block.kind === 'focus' ? 'bg-accent-wash border-accent-line' : 'bg-status-done/15 border-status-done/40'"
-            [title]="block.breakdown.length > 0 ? '' : block.label"
-            [style.opacity]="block.ongoing ? 0.7 : 1"
-          >
-            @if (block.heightPx >= 20) {
-              <span
-                class="text-[9px] font-semibold leading-tight"
-                [class]="block.kind === 'focus' ? 'text-accent-ink' : 'text-status-done'"
-              >
-                {{ block.label }}
-              </span>
-            }
-          </div>
-
-          @if (block.breakdown.length > 0) {
-            <div
-              class="hidden group-hover:flex flex-col gap-1 absolute z-20 top-0 left-full ml-2 min-w-[160px] max-w-[220px] rounded-md border border-line-hairline bg-surface-raised px-2.5 py-2 shadow-lg"
+          @if (block.heightPx >= 20) {
+            <span
+              class="text-[9px] font-semibold leading-tight"
+              [class]="block.kind === 'focus' ? 'text-accent-ink' : 'text-status-done'"
             >
-              <span class="t-kicker text-ink-faint">Composed of</span>
-              @for (entry of block.breakdown; track entry.label) {
-                <div class="flex items-center justify-between gap-3 text-[10px]">
-                  <span class="text-ink-body truncate">{{ entry.label }}</span>
-                  <span class="text-ink-faint font-mono shrink-0">{{ formatMinutes(entry.secs) }}</span>
-                </div>
-              }
-            </div>
+              {{ block.label }}
+            </span>
           }
         </div>
       }
     </div>
   }
 </div>
+
+@if (hoveredBlock(); as hovered) {
+  <div
+    class="fixed z-50 -translate-x-full flex flex-col gap-1 min-w-[160px] max-w-[220px] rounded-md border border-line-hairline bg-surface-raised px-2.5 py-2 shadow-lg"
+    [style.top.px]="hovered.top"
+    [style.left.px]="hovered.left"
+  >
+    @if (breakdownFor(hovered.key).length > 1) {
+      <span class="t-kicker text-ink-faint">Composed of</span>
+    }
+    @for (entry of breakdownFor(hovered.key); track entry.label) {
+      <div class="flex items-center justify-between gap-3 text-[10px]">
+        <span class="text-ink-body truncate">{{ entry.label }}</span>
+        <span class="text-ink-faint font-mono shrink-0">{{ formatMinutes(entry.secs) }}</span>
+      </div>
+    }
+  </div>
+}

@@ -128,4 +128,54 @@ describe('TodayPanelComponent', () => {
       { label: 'Free focus', secs: 600 },
     ]);
   });
+
+  test('should give a break block a single "Break" breakdown entry, since breaks have no segments to compose', async () => {
+    const { providers, pomodoroRepository } = createProviders();
+    const userId = crypto.randomUUID();
+    pomodoroRepository.breaks.push({
+      id: crypto.randomUUID(),
+      userId,
+      startedAt: todayAt(9, 25),
+      durationSec: 300,
+      endedAt: todayAt(9, 30),
+    });
+
+    const component = mount(providers);
+    await Promise.resolve();
+
+    const [block] = component.blocks();
+    expect(block!.breakdown).toEqual([{ label: 'Break', secs: 300 }]);
+  });
+
+  test('showBreakdown/hideBreakdown should track the hovered block for the popup', async () => {
+    const { providers, pomodoroRepository } = createProviders();
+    const userId = crypto.randomUUID();
+    const sessionId = crypto.randomUUID();
+    pomodoroRepository.sessions.push({
+      id: sessionId,
+      userId,
+      startedAt: todayAt(9, 0),
+      completedAt: todayAt(9, 25),
+      plannedMin: 25,
+    });
+    pomodoroRepository.segments.push({
+      id: crypto.randomUUID(),
+      sessionId,
+      startSec: 0,
+      endSec: 1500,
+      targetKind: 'free',
+    });
+
+    const component = mount(providers);
+    await Promise.resolve();
+    const [block] = component.blocks();
+    const target = { getBoundingClientRect: () => ({ top: 120, left: 200 }) } as unknown as HTMLElement;
+
+    component.showBreakdown(block!, { currentTarget: target } as unknown as MouseEvent);
+    expect(component.hoveredBlock()).toEqual({ key: block!.key, top: 120, left: 192 });
+    expect(component.breakdownFor(block!.key)).toEqual([{ label: 'Free focus', secs: 1500 }]);
+
+    component.hideBreakdown();
+    expect(component.hoveredBlock()).toBeNull();
+  });
 });

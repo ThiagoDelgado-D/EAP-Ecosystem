@@ -65,6 +65,8 @@ export class TodayPanelComponent {
   private readonly breaks = signal<Break[]>([]);
   private readonly segments = signal<Segment[]>([]);
 
+  readonly hoveredBlock = signal<{ key: string; top: number; left: number } | null>(null);
+
   readonly HOUR_GUTTER_PX = HOUR_GUTTER_PX;
   readonly dayHeightPx = DAY_MINUTES * MINUTE_PX;
   readonly nowTopPx = minutesSinceMidnight(new Date()) * MINUTE_PX;
@@ -98,7 +100,7 @@ export class TodayPanelComponent {
         activeBreak.startedAt,
         this.breakDurationSec(activeBreak),
         !activeBreak.endedAt,
-        [],
+        [{ label: 'Break', secs: this.breakDurationSec(activeBreak) }],
       ),
     );
     return [...sessionBlocks, ...breakBlocks].sort((a, b) => a.topPx - b.topPx);
@@ -122,6 +124,20 @@ export class TodayPanelComponent {
       this.loading.set(false);
       this.scrollToDayStart();
     }
+  }
+
+  showBreakdown(block: TimelineBlock, event: MouseEvent): void {
+    if (block.breakdown.length === 0) return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this.hoveredBlock.set({ key: block.key, top: rect.top, left: rect.left - 8 });
+  }
+
+  hideBreakdown(): void {
+    this.hoveredBlock.set(null);
+  }
+
+  breakdownFor(key: string): BlockBreakdownEntry[] {
+    return this.blocks().find((block) => block.key === key)?.breakdown ?? [];
   }
 
   private scrollToDayStart(): void {
