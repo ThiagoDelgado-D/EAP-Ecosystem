@@ -2,10 +2,14 @@ import { mockCryptoService, type UUID } from "domain-lib";
 import {
   SegmentTargetKind,
   type LearningPathMembership,
+  type Segment,
 } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockLearningPathMembershipPort } from "../../mocks/index.js";
-import { resolveSegmentTarget } from "./resolve-segment-target.js";
+import {
+  resolveSegmentTarget,
+  segmentToResolvedTarget,
+} from "./resolve-segment-target.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
 
 describe("resolveSegmentTarget", () => {
@@ -150,6 +154,66 @@ describe("resolveSegmentTarget", () => {
       learningPathId: secondCandidatePathId,
       learningPathNodeId: secondCandidateNodeId,
       resourceId: multiPathResourceId,
+    });
+  });
+});
+
+describe("segmentToResolvedTarget", () => {
+  let cryptoService: ReturnType<typeof mockCryptoService>;
+  let sessionId: UUID;
+
+  beforeEach(async () => {
+    cryptoService = mockCryptoService();
+    sessionId = await cryptoService.generateUUID();
+  });
+
+  test("Should reduce a free segment to a free target", async () => {
+    const freeSegment: Segment = {
+      id: await cryptoService.generateUUID(),
+      sessionId,
+      startSec: 0,
+      targetKind: SegmentTargetKind.FREE,
+    };
+
+    expect(segmentToResolvedTarget(freeSegment)).toEqual({
+      targetKind: SegmentTargetKind.FREE,
+    });
+  });
+
+  test("Should reduce a resource segment to its resourceId, dropping session-specific fields", async () => {
+    const resourceId = await cryptoService.generateUUID();
+    const resourceSegment: Segment = {
+      id: await cryptoService.generateUUID(),
+      sessionId,
+      startSec: 300,
+      endSec: 600,
+      targetKind: SegmentTargetKind.RESOURCE,
+      resourceId,
+    };
+
+    expect(segmentToResolvedTarget(resourceSegment)).toEqual({
+      targetKind: SegmentTargetKind.RESOURCE,
+      resourceId,
+    });
+  });
+
+  test("Should reduce a stub node segment (no resource attached) to its path and node fields", async () => {
+    const learningPathId = await cryptoService.generateUUID();
+    const learningPathNodeId = await cryptoService.generateUUID();
+    const stubNodeSegment: Segment = {
+      id: await cryptoService.generateUUID(),
+      sessionId,
+      startSec: 0,
+      targetKind: SegmentTargetKind.NODE,
+      learningPathId,
+      learningPathNodeId,
+    };
+
+    expect(segmentToResolvedTarget(stubNodeSegment)).toEqual({
+      targetKind: SegmentTargetKind.NODE,
+      learningPathId,
+      learningPathNodeId,
+      resourceId: undefined,
     });
   });
 });

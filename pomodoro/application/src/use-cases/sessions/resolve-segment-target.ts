@@ -2,6 +2,7 @@ import type { UUID } from "domain-lib";
 import {
   SegmentTargetKind,
   type LearningPathMembershipPort,
+  type Segment,
 } from "@pomodoro/domain";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
 
@@ -28,6 +29,21 @@ export type ResolvedSegmentTarget =
       learningPathNodeId: UUID;
       resourceId?: UUID;
     };
+
+export function segmentToResolvedTarget(segment: Segment): ResolvedSegmentTarget {
+  if (segment.targetKind === SegmentTargetKind.NODE) {
+    return {
+      targetKind: SegmentTargetKind.NODE,
+      learningPathId: segment.learningPathId,
+      learningPathNodeId: segment.learningPathNodeId,
+      resourceId: segment.resourceId,
+    };
+  }
+  if (segment.targetKind === SegmentTargetKind.RESOURCE) {
+    return { targetKind: SegmentTargetKind.RESOURCE, resourceId: segment.resourceId };
+  }
+  return { targetKind: SegmentTargetKind.FREE };
+}
 
 export interface ResolveSegmentTargetDependencies {
   learningPathMembershipPort: LearningPathMembershipPort;
