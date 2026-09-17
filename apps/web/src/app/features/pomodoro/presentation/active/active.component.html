@@ -80,6 +80,19 @@
       <div class="absolute top-4 right-4 flex items-center gap-1">
         <button
           type="button"
+          (click)="toggleSound()"
+          [title]="soundEnabled() ? 'Mute boundary alert' : 'Unmute boundary alert'"
+          class="w-7 h-7 rounded-md flex items-center justify-center text-ink-dim hover:text-ink-body hover:bg-surface-overlay transition-colors"
+          [attr.aria-label]="soundEnabled() ? 'Mute boundary alert' : 'Unmute boundary alert'"
+        >
+          @if (soundEnabled()) {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z" /><path d="M15.5 8.5a5 5 0 010 7" /></svg>
+          } @else {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>
+          }
+        </button>
+        <button
+          type="button"
           (click)="minimize()"
           title="Minimize"
           class="w-7 h-7 rounded-md flex items-center justify-center text-ink-dim hover:text-ink-body hover:bg-surface-overlay transition-colors"
@@ -152,6 +165,27 @@
           <span class="t-num text-[54px]">{{ remainingLabel() }}</span>
           <span class="t-kicker">remaining</span>
         </div>
+        @if (plannedTimeReached()) {
+          <div class="absolute inset-0 rounded-full bg-surface-base/95 flex flex-col items-center justify-center gap-3 px-6 text-center">
+            <span class="t-kicker text-energy-medium">Planned time reached</span>
+            <div class="flex flex-col gap-1.5 w-full">
+              <button
+                type="button"
+                (click)="keepGoing()"
+                class="font-mono px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
+              >
+                Keep going
+              </button>
+              <button
+                type="button"
+                (click)="endSession()"
+                class="font-mono px-3 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
+              >
+                End session
+              </button>
+            </div>
+          </div>
+        }
       </div>
 
       <div class="flex items-center gap-2.5 mt-7 flex-wrap justify-center">
@@ -209,17 +243,20 @@
     </div>
 
     @if (railOpen()) {
-      <aside class="w-[330px] flex-shrink-0 border-l border-line-hairline flex flex-col">
-        <div class="flex border-b border-line-hairline px-4 pt-4">
+      <aside class="w-[330px] flex-shrink-0 border-l border-line-hairline flex flex-col h-[calc(100vh-56px)] sticky top-0">
+        <div class="flex border-b border-line-hairline px-4 pt-4 flex-shrink-0">
           <button type="button" (click)="selectTab('session')" [class]="activeTab() === 'session' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent'" class="px-3 py-2 text-sm font-medium border-b-2 transition-colors">
             Session
           </button>
           <button type="button" (click)="selectTab('segments')" [class]="activeTab() === 'segments' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent'" class="px-3 py-2 text-sm font-medium border-b-2 transition-colors">
             Segments
           </button>
+          <button type="button" (click)="selectTab('today')" [class]="activeTab() === 'today' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent'" class="px-3 py-2 text-sm font-medium border-b-2 transition-colors">
+            Today
+          </button>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-4.5">
+        <div class="flex-1 min-h-0 overflow-y-auto p-4.5" data-today-scroll-host>
           @if (activeTab() === 'session') {
             <div class="flex flex-col gap-4">
               @if (session.intent) {
@@ -270,6 +307,8 @@
                 </div>
               </div>
             </div>
+          } @else if (activeTab() === 'today') {
+            <app-pomodoro-today-panel />
           } @else {
             <div class="flex flex-col gap-3.5">
               <p class="text-[11px] text-ink-faint leading-relaxed">
