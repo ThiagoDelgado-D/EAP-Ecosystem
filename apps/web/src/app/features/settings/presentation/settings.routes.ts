@@ -35,6 +35,13 @@ export const settingsRoutes: Routes = [
           import('./widgets/widgets.component').then((m) => m.WidgetsComponent),
       },
       {
+        path: 'pomodoro',
+        loadComponent: () =>
+          import('@features/pomodoro/presentation/settings/pomodoro-settings.component').then(
+            (m) => m.PomodoroSettingsComponent,
+          ),
+      },
+      {
         path: 'sessions',
         loadComponent: () =>
           import('./sessions/sessions.component').then((m) => m.SessionsComponent),

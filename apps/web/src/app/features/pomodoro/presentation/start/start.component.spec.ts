@@ -4,6 +4,8 @@ import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repositor
 import { mockPomodoroRepository } from '@features/pomodoro/application/mocks/mock-pomodoro.repository';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
+import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
+import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
@@ -18,6 +20,7 @@ function setup() {
   const learningPathRepository = mockLearningPathRepository();
   const learningResourceRepository = mockLearningResourceRepository();
   const navigateByUrl = vi.fn();
+  const showOverlay = vi.fn();
 
   TestBed.configureTestingModule({
     providers: [
@@ -27,14 +30,26 @@ function setup() {
       { provide: LearningPathRepository, useValue: learningPathRepository },
       { provide: LearningResourceRepository, useValue: learningResourceRepository },
       { provide: Router, useValue: { navigateByUrl } },
+      { provide: PomodoroOverlayHostService, useValue: { show: showOverlay, hide: vi.fn(), isShown: vi.fn() } },
     ],
   });
 
   const component = TestBed.createComponent(StartComponent).componentInstance;
-  return { component, pomodoroRepository, learningPathRepository, learningResourceRepository, navigateByUrl };
+  return {
+    component,
+    pomodoroRepository,
+    learningPathRepository,
+    learningResourceRepository,
+    navigateByUrl,
+    showOverlay,
+  };
 }
 
 describe('StartComponent', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   test('should re-load suggestions when the energy level changes', async () => {
     const { component, pomodoroRepository } = setup();
     pomodoroRepository.getSuggestion = vi.fn(async () => []);
@@ -207,6 +222,31 @@ describe('StartComponent', () => {
     expect(component.selectedTarget()).toEqual({ kind: 'free' });
     expect(component.store.activeSession()?.plannedMin).toBe(50);
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
+  test('should navigate straight to the dashboard when the default view is mini', async () => {
+    vi.stubGlobal('localStorage', mockLocalStorage('mini'));
+    const { component, navigateByUrl, showOverlay } = setup();
+    component.pickDuration(25);
+    component.pickFree();
+
+    await component.start();
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
+    expect(navigateByUrl).not.toHaveBeenCalledWith('/pomodoro/active');
+    expect(showOverlay).not.toHaveBeenCalled();
+  });
+
+  test('should land on the active screen and open the zen overlay when the default view is zen', async () => {
+    vi.stubGlobal('localStorage', mockLocalStorage('zen'));
+    const { component, navigateByUrl, showOverlay } = setup();
+    component.pickDuration(25);
+    component.pickFree();
+
+    await component.start();
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+    expect(showOverlay).toHaveBeenCalledWith('pomodoro-zen', expect.anything(), 'fullscreen');
   });
 
   test('should flag when there is no path or resource to suggest from', async () => {

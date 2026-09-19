@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
+import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { expectPlannedTimeReachedFlow } from '@features/pomodoro/application/mocks/expect-planned-time-reached-flow';
 import { ActiveComponent } from './active.component';
@@ -33,6 +34,7 @@ describe('ActiveComponent', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   test('should count down remaining time from the planned duration', async () => {
@@ -59,6 +61,20 @@ describe('ActiveComponent', () => {
     component.toggleSound();
 
     expect(component.soundEnabled()).toBe(false);
+  });
+
+  test('hideShortcutHints should default to false so hints are shown', () => {
+    const { component } = setup();
+
+    expect(component.hideShortcutHints()).toBe(false);
+  });
+
+  test('hideShortcutHints should reflect a stored preference to hide the hints', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage('true'));
+
+    const { component } = setup();
+
+    expect(component.hideShortcutHints()).toBe(true);
   });
 
   test('should freeze the countdown while paused', async () => {

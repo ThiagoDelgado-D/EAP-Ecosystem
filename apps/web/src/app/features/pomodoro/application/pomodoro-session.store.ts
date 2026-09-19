@@ -10,7 +10,16 @@ import type {
   StartSessionPayload,
   SuggestedCandidate,
 } from '@features/pomodoro/domain/pomodoro.model';
-import { playBoundaryChime, readSoundPreference, writeSoundPreference } from './pomodoro-sound';
+import {
+  playBoundaryChime,
+  readSoundId,
+  readSoundPreference,
+  readVolume,
+  writeSoundId,
+  writeSoundPreference,
+  writeVolume,
+  type SoundId,
+} from './pomodoro-sound';
 
 export type PomodoroPhase = 'focus' | 'break';
 
@@ -50,6 +59,8 @@ export class PomodoroSessionStore {
   readonly justAutoClosed = signal<{ session: Session; segments: Segment[] } | null>(null);
   readonly plannedTimeReached = signal(false);
   readonly soundEnabled = signal(readSoundPreference());
+  readonly soundId = signal<SoundId>(readSoundId());
+  readonly volume = signal(readVolume());
   private plannedTimeReachedHandledForSessionId: string | null = null;
   readonly suggestions = signal<SuggestedCandidate[]>([]);
   readonly suggestionsLoading = signal(false);
@@ -113,7 +124,7 @@ export class PomodoroSessionStore {
 
       this.plannedTimeReachedHandledForSessionId = session.id;
       this.plannedTimeReached.set(true);
-      playBoundaryChime();
+      if (this.soundEnabled()) playBoundaryChime(this.soundId(), this.volume());
     });
   }
 
@@ -124,6 +135,17 @@ export class PomodoroSessionStore {
   toggleSound(): void {
     this.soundEnabled.update((v) => !v);
     writeSoundPreference(this.soundEnabled());
+  }
+
+  setSoundId(id: SoundId): void {
+    this.soundId.set(id);
+    writeSoundId(id);
+  }
+
+  setVolume(volume: number): void {
+    const clamped = Math.min(1, Math.max(0, volume));
+    this.volume.set(clamped);
+    writeVolume(clamped);
   }
 
   clearAutoClosed(): void {

@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
+import { readHideShortcutHints } from '@features/pomodoro/application/pomodoro-view-preferences';
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import {
@@ -59,6 +60,7 @@ export class ActiveComponent {
   readonly breakProgressFraction = this.store.breakProgressFraction;
   readonly plannedTimeReached = this.store.plannedTimeReached;
   readonly soundEnabled = this.store.soundEnabled;
+  readonly hideShortcutHints = signal(readHideShortcutHints());
   readonly startingBreak = signal(false);
   readonly railOpen = signal(true);
   readonly activeTab = signal<RailTab>('session');
