@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { mockPomodoroRepository } from './mocks/mock-pomodoro.repository';
+import { mockAudio } from './mocks/mock-audio-element';
 import { PomodoroSessionStore } from './pomodoro-session.store';
 
 describe('PomodoroSessionStore', () => {
@@ -330,6 +331,66 @@ describe('PomodoroSessionStore', () => {
 
       store.toggleSound();
       expect(store.soundEnabled()).toBe(true);
+    });
+
+    test('should default the boundary sound to chime and allow choosing another one', () => {
+      expect(store.soundId()).toBe('chime');
+
+      store.setSoundId('kitchen');
+
+      expect(store.soundId()).toBe('kitchen');
+    });
+
+    test('should default the volume to 0.6 and clamp out-of-range values', () => {
+      expect(store.volume()).toBe(0.6);
+
+      store.setVolume(0.2);
+      expect(store.volume()).toBe(0.2);
+
+      store.setVolume(5);
+      expect(store.volume()).toBe(1);
+
+      store.setVolume(-1);
+      expect(store.volume()).toBe(0);
+    });
+
+    describe('boundary chime playback', () => {
+      beforeEach(() => {
+        vi.useFakeTimers();
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+        vi.unstubAllGlobals();
+      });
+
+      test('should play the chosen sound at the chosen volume once the planned time is reached', async () => {
+        const { AudioCtor, instances } = mockAudio();
+        vi.stubGlobal('Audio', AudioCtor);
+        store.setSoundId('digital');
+        store.setVolume(0.3);
+
+        await store.start({ plannedMin: 25, target: { kind: 'free' } });
+        vi.advanceTimersByTime(25 * 60 * 1000);
+        TestBed.tick();
+
+        expect(instances).toHaveLength(1);
+        expect(instances[0].src).toBe('/sounds/digital.mp3');
+        expect(instances[0].volume).toBe(0.3);
+        expect(instances[0].play).toHaveBeenCalled();
+      });
+
+      test('should not play a sound when muted', async () => {
+        const { AudioCtor, instances } = mockAudio();
+        vi.stubGlobal('Audio', AudioCtor);
+        store.toggleSound();
+
+        await store.start({ plannedMin: 25, target: { kind: 'free' } });
+        vi.advanceTimersByTime(25 * 60 * 1000);
+        TestBed.tick();
+
+        expect(instances).toHaveLength(0);
+      });
     });
   });
 
