@@ -3,6 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
+import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
+import { POMODORO_VIEW_MODE, readDefaultViewMode } from '@features/pomodoro/application/pomodoro-view-preferences';
+import {
+  PomodoroZenViewComponent,
+  POMODORO_ZEN_KEY,
+} from '@features/pomodoro/presentation/zen-view/pomodoro-zen-view.component';
 import { filterLibraryResources, filterPickerNodes, filterPickerPathGroups, firstTabWithResults } from '@features/pomodoro/application/picker-search';
 import type { PickerPathNode } from '@features/pomodoro/application/pomodoro-picker.model';
 import type { LearningPathNode } from '@features/learning-path/domain/learning-path.model';
@@ -39,6 +45,7 @@ interface TargetLabel {
 })
 export class StartComponent {
   private readonly router = inject(Router);
+  private readonly overlayHost = inject(PomodoroOverlayHostService);
   readonly store = inject(PomodoroSessionStore);
   readonly picker = inject(PomodoroPickerService);
 
@@ -291,7 +298,19 @@ export class StartComponent {
     if (plannedMin === null || target === null) return;
 
     const session = await this.store.start({ plannedMin, target, intent: this.intent().trim() || undefined });
-    if (session) void this.router.navigateByUrl('/pomodoro/active');
+    if (session) this.enterDefaultView();
+  }
+
+  private enterDefaultView(): void {
+    const mode = readDefaultViewMode();
+    if (mode === POMODORO_VIEW_MODE.MINI) {
+      void this.router.navigateByUrl('/dashboard');
+      return;
+    }
+    void this.router.navigateByUrl('/pomodoro/active');
+    if (mode === POMODORO_VIEW_MODE.ZEN) {
+      this.overlayHost.show(POMODORO_ZEN_KEY, PomodoroZenViewComponent, 'fullscreen');
+    }
   }
 
   async startFree(): Promise<void> {
