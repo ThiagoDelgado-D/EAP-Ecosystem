@@ -3,6 +3,7 @@ import { startSession } from "./use-cases/sessions/start-session.js";
 import { switchTarget } from "./use-cases/sessions/switch-target.js";
 import { endSession } from "./use-cases/sessions/end-session.js";
 import { continueSession } from "./use-cases/sessions/continue-session.js";
+import { extendSession } from "./use-cases/sessions/extend-session.js";
 import { startBreak } from "./use-cases/sessions/start-break.js";
 import { getActiveBreak } from "./use-cases/sessions/get-active-break.js";
 import { extendBreak } from "./use-cases/sessions/extend-break.js";
@@ -21,6 +22,7 @@ export const pomodoroUseCaseMap = {
   switchTarget,
   endSession,
   continueSession,
+  extendSession,
   startBreak,
   getActiveBreak,
   extendBreak,
