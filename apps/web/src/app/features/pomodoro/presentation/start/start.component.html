@@ -92,6 +92,18 @@
                 {{ minutes }}
               </button>
             }
+            <input
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              [attr.maxlength]="maxDurationDigits"
+              [value]="customDurationInput()"
+              (input)="onCustomDurationInput($any($event.target).value)"
+              placeholder="Custom"
+              aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
+              [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+              class="t-mono w-16 px-2 py-1.5 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-ghost placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-inset transition-colors"
+            />
           </div>
           <div class="ml-auto flex items-center gap-2">
             @if (canStart() && !store.starting()) {
@@ -418,6 +430,18 @@
                 </button>
               }
             </div>
+            <input
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              [attr.maxlength]="maxDurationDigits"
+              [value]="customDurationInput()"
+              (input)="onCustomDurationInput($any($event.target).value)"
+              placeholder="Custom minutes"
+              aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
+              [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+              class="t-mono w-full mt-1.5 px-3 py-2 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-ghost placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-inset transition-colors"
+            />
           </div>
 
           <div>
