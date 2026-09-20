@@ -278,6 +278,29 @@ describe('PomodoroSessionStore', () => {
       expect(store.activeSession()?.id).not.toBe(session!.id);
       expect(store.activeSession()?.completedAt).toBeUndefined();
     });
+
+    test('extendFocusSession should grow the same session in place instead of starting a new one', async () => {
+      const session = await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+      await store.extendFocusSession(10);
+
+      expect(store.activeSession()?.id).toBe(session!.id);
+      expect(store.activeSession()?.plannedMin).toBe(35);
+    });
+
+    test('extendFocusSession should clear the boundary prompt and let it fire again later', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      vi.advanceTimersByTime(25 * 60 * 1000);
+      TestBed.tick();
+      expect(store.plannedTimeReached()).toBe(true);
+
+      await store.extendFocusSession(5);
+      expect(store.plannedTimeReached()).toBe(false);
+
+      vi.advanceTimersByTime(5 * 60 * 1000);
+      TestBed.tick();
+      expect(store.plannedTimeReached()).toBe(true);
+    });
   });
 
   describe('auto-close safety net', () => {
