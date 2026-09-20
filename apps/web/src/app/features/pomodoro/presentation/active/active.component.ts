@@ -88,6 +88,16 @@ export class ActiveComponent {
     describeTarget(this.currentTarget(), this.picker.allPaths()),
   );
 
+  readonly ringAccentColor = computed(() =>
+    this.paused() || this.description().isStub ? 'var(--color-energy-medium)' : 'var(--color-accent-hover)',
+  );
+  readonly ringGlow = computed(
+    () => `drop-shadow(0 0 14px color-mix(in srgb, ${this.ringAccentColor()} 65%, transparent))`,
+  );
+  readonly accentGlowShadow = computed(
+    () => `0 0 10px color-mix(in srgb, ${this.ringAccentColor()} 60%, transparent)`,
+  );
+
   readonly contextDisplay = computed<TargetLabel | null>(() => {
     const target = this.currentTarget();
     return target ? this.resolveTargetDisplay(target) : null;

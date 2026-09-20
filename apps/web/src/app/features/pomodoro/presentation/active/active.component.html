@@ -131,6 +131,7 @@
           <span
             [class]="description().caseNo === 1 ? 'text-ink-body bg-surface-overlay' : description().caseNo === 2 ? 'text-status-in-progress bg-status-in-progress/10' : description().caseNo === 4 ? 'text-energy-medium bg-energy-medium/10' : 'text-accent-ink bg-accent-wash'"
             class="t-kicker px-2 py-0.5 rounded text-[10.5px] font-semibold"
+            [style.boxShadow]="accentGlowShadow()"
           >
             Case {{ description().caseNo }} · {{ description().label }}
           </span>
@@ -152,12 +153,13 @@
             cx="220"
             cy="220"
             [attr.r]="RING_RADIUS"
-            [attr.stroke]="paused() ? 'var(--color-energy-medium)' : description().isStub ? 'var(--color-energy-medium)' : 'var(--color-accent-hover)'"
+            [attr.stroke]="ringAccentColor()"
             stroke-width="7"
             fill="none"
             stroke-linecap="round"
             [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
             [attr.stroke-dashoffset]="ringDashOffset()"
+            [style.filter]="ringGlow()"
             style="transition: stroke-dashoffset 1s linear"
           />
         </svg>
@@ -265,9 +267,9 @@
       </div>
 
       @if (!hideShortcutHints()) {
-        <div class="mt-3.5 text-[10px] text-ink-ghost flex gap-3.5">
-          <span><b class="text-ink-faint font-bold">space</b> pause</span>
-          <span><b class="text-ink-faint font-bold">S</b> switch</span>
+        <div class="mt-3.5 text-[10px] text-ink-faint flex gap-3.5">
+          <span><b class="text-ink-dim font-bold">space</b> pause</span>
+          <span><b class="text-ink-dim font-bold">S</b> switch</span>
         </div>
       }
 
@@ -280,6 +282,7 @@
               [style.background]="segment.targetKind === 'node' ? 'var(--color-accent-hover)' : segment.targetKind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-faint)'"
               [style.opacity]="last ? 1 : 0.5"
               [style.borderRight]="last ? 'none' : '1px solid var(--color-surface-overlay)'"
+              [style.boxShadow]="last ? accentGlowShadow() : 'none'"
             ></div>
           }
         </div>
