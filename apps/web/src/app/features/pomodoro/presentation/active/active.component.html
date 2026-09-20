@@ -129,8 +129,8 @@
       <div class="flex flex-col items-center gap-2.5 mb-7">
         @if (currentTarget(); as target) {
           <span
-            [class]="description().caseNo === 1 ? 'text-ink-dim bg-surface-overlay' : description().caseNo === 2 ? 'text-status-in-progress bg-status-in-progress/10' : description().caseNo === 4 ? 'text-energy-medium bg-energy-medium/10' : 'text-accent-ink bg-accent-wash'"
-            class="t-kicker px-2 py-0.5 rounded"
+            [class]="description().caseNo === 1 ? 'text-ink-body bg-surface-overlay' : description().caseNo === 2 ? 'text-status-in-progress bg-status-in-progress/10' : description().caseNo === 4 ? 'text-energy-medium bg-energy-medium/10' : 'text-accent-ink bg-accent-wash'"
+            class="t-kicker px-2 py-0.5 rounded text-[10.5px] font-semibold"
           >
             Case {{ description().caseNo }} · {{ description().label }}
           </span>
