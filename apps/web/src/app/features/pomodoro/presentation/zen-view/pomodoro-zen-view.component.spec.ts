@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
@@ -50,6 +51,17 @@ describe('PomodoroZenViewComponent', () => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
 
     expect(hide).toHaveBeenCalledWith(POMODORO_ZEN_KEY);
+  });
+
+  test('should leave the zen overlay open when Escape closes a dialog stacked on top, like the switch-material picker', () => {
+    const { fixture, hide } = setup();
+    fixture.detectChanges();
+    const dialog = TestBed.inject(MatDialog);
+    vi.spyOn(dialog, 'openDialogs', 'get').mockReturnValue([{} as MatDialogRef<unknown>]);
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    expect(hide).not.toHaveBeenCalled();
   });
 
   test('should hide the overlay and navigate to the end screen instead of ending directly', async () => {
