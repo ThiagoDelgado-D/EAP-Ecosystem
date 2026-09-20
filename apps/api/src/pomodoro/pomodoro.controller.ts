@@ -25,6 +25,7 @@ import {
   endBreak,
   endSession,
   extendBreak,
+  extendSession,
   getActiveBreak,
   getActiveSession,
   getBreakHistory,
@@ -37,6 +38,7 @@ import {
 } from "@pomodoro/application";
 import {
   ExtendBreakDto,
+  ExtendSessionDto,
   GetHistoryDto,
   StartSessionDto,
   SwitchTargetDto,
@@ -171,6 +173,20 @@ export class PomodoroController {
         cryptoService: this.cryptoService,
       },
       { userId, sessionId: id },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Patch("sessions/:id/extend")
+  async extendSession(
+    @Param("id") id: UUID,
+    @Body() dto: ExtendSessionDto,
+    @CurrentUserId() userId: UUID,
+  ) {
+    const result = await extendSession(
+      { sessionRepository: this.sessionRepository },
+      { userId, sessionId: id, minutes: dto.minutes },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
