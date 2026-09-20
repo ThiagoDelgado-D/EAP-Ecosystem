@@ -24,6 +24,7 @@ import type { LearningResource } from '@features/learning-resource/domain/learni
 import { pathColor } from './path-color';
 import { pathProgress, type PathProgress } from './path-progress';
 import { describeTarget, pathsForResource, type ResourcePathMembership } from './target-description';
+import { LibraryResourceRowComponent } from '@features/pomodoro/presentation/library-resource-row/library-resource-row.component';
 
 const DURATION_PRESETS: readonly number[] = [15, 25, 50, 90];
 type BrowseTab = 'ready' | 'going' | 'paths' | 'library';
@@ -41,7 +42,7 @@ interface TargetLabel {
 @Component({
   selector: 'app-pomodoro-start',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, LibraryResourceRowComponent],
   templateUrl: './start.component.html',
 })
 export class StartComponent {
@@ -176,6 +177,10 @@ export class StartComponent {
 
   pathColor(pathId: string): string {
     return pathColor(pathId);
+  }
+
+  pathCountFor(resourceId: string): number {
+    return pathsForResource(this.picker.allPaths(), resourceId).length;
   }
 
   pathProgress(nodes: LearningPathNode[]): PathProgress {
