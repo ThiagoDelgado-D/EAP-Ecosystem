@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterNextRender, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, signal } from '@angular/core';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import type { Break, Segment, Session } from '@features/pomodoro/domain/pomodoro.model';
@@ -9,6 +9,8 @@ const MINUTE_PX = 1;
 const DAY_MINUTES = 24 * 60;
 const MIN_BLOCK_PX = 14;
 const HOUR_GUTTER_PX = 40;
+const NOW_LINE_REFRESH_MS = 30_000;
+const SCROLL_MARGIN_PX = 90;
 
 interface BlockBreakdownEntry {
   label: string;
@@ -58,6 +60,7 @@ export class TodayPanelComponent {
   private readonly repository = inject(PomodoroRepository);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly picker = inject(PomodoroPickerService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly formatMinutes = formatMinutes;
   readonly loading = signal(true);
@@ -69,7 +72,7 @@ export class TodayPanelComponent {
 
   readonly HOUR_GUTTER_PX = HOUR_GUTTER_PX;
   readonly dayHeightPx = DAY_MINUTES * MINUTE_PX;
-  readonly nowTopPx = minutesSinceMidnight(new Date()) * MINUTE_PX;
+  readonly nowTopPx = signal(minutesSinceMidnight(new Date()) * MINUTE_PX);
 
   readonly hourMarks: HourMark[] = Array.from({ length: 24 }, (_, hour) => ({
     label: formatClock12h(new Date(2000, 0, 1, hour), false),
@@ -88,7 +91,7 @@ export class TodayPanelComponent {
         `session:${session.id}`,
         'focus',
         session.startedAt,
-        this.sessionDurationSec(session),
+        this.sessionBlockDurationSec(session),
         !session.completedAt,
         this.sessionBreakdown(session),
       ),
@@ -108,9 +111,15 @@ export class TodayPanelComponent {
 
   constructor() {
     afterNextRender(() => {
-      this.scrollToDayStart();
+      this.scrollToNow();
       void this.load();
     });
+
+    const intervalId = setInterval(
+      () => this.nowTopPx.set(minutesSinceMidnight(new Date()) * MINUTE_PX),
+      NOW_LINE_REFRESH_MS,
+    );
+    this.destroyRef.onDestroy(() => clearInterval(intervalId));
   }
 
   private async load(): Promise<void> {
@@ -122,7 +131,7 @@ export class TodayPanelComponent {
       this.segments.set(snapshot.segments);
     } finally {
       this.loading.set(false);
-      this.scrollToDayStart();
+      this.scrollToNow();
     }
   }
 
@@ -140,12 +149,10 @@ export class TodayPanelComponent {
     return this.blocks().find((block) => block.key === key)?.breakdown ?? [];
   }
 
-  private scrollToDayStart(): void {
+  private scrollToNow(): void {
     const scrollHost = this.elementRef.nativeElement.closest('[data-today-scroll-host]') as HTMLElement | null;
     if (!scrollHost) return;
-    const blocks = this.blocks();
-    const anchorPx = blocks.length > 0 ? Math.min(...blocks.map((block) => block.topPx)) : this.nowTopPx;
-    scrollHost.scrollTop = Math.max(0, anchorPx - 24);
+    scrollHost.scrollTop = Math.max(0, this.nowTopPx() - SCROLL_MARGIN_PX);
   }
 
   private toBlock(
@@ -179,6 +186,10 @@ export class TodayPanelComponent {
   private sessionDurationSec(session: Session): number {
     const end = session.completedAt ?? new Date();
     return Math.max(0, Math.floor((end.getTime() - session.startedAt.getTime()) / 1000));
+  }
+
+  private sessionBlockDurationSec(session: Session): number {
+    return session.completedAt ? this.sessionDurationSec(session) : session.plannedMin * 60;
   }
 
   private breakDurationSec(activeBreak: Break): number {
