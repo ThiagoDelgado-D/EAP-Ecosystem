@@ -54,6 +54,7 @@ describe('ActiveComponent', () => {
   });
 
   test('toggleSound should flip the store sound preference', async () => {
+    vi.stubGlobal('localStorage', mockLocalStorage(null));
     const { component } = setup();
 
     expect(component.soundEnabled()).toBe(true);
