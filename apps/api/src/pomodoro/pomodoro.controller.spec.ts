@@ -552,6 +552,42 @@ describe("PomodoroController (integration)", () => {
     });
   });
 
+  describe("Extend session", () => {
+    test("extends the running session's plannedMin in place", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+      const sessionId = startResponse.body.id;
+
+      const extendResponse = await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/sessions/${sessionId}/extend`)
+        .set(authHeader())
+        .send({ minutes: 5 })
+        .expect(200);
+
+      expect(extendResponse.body.id).toBe(sessionId);
+      expect(extendResponse.body.plannedMin).toBe(30);
+    });
+
+    test("Should return 403 when a different user tries to extend", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+
+      const forbiddenExtendResponse = await request(app.getHttpServer())
+        .patch(`/api/v1/pomodoro/sessions/${startResponse.body.id}/extend`)
+        .set(authHeader(intruderToken))
+        .send({ minutes: 5 })
+        .expect(403);
+
+      expect(forbiddenExtendResponse.body).toEqual({});
+    });
+  });
+
   describe("Breaks", () => {
     test("persists a break, fires a break-started notification and returns it", async () => {
       const response = await request(app.getHttpServer())
