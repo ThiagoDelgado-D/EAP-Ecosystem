@@ -4,21 +4,19 @@
     <p class="text-xl font-extrabold text-ink-strong">{{ totalLabel() }} focused</p>
   </div>
 
-  @if (loading()) {
-    <div class="text-xs text-ink-faint">Loading...</div>
-  } @else {
-    <div class="relative" [style.height.px]="dayHeightPx">
-      @for (mark of hourMarks; track mark.label) {
-        <div class="absolute left-0 right-0 flex items-start gap-2" [style.top.px]="mark.topPx">
-          <span class="text-[9px] text-ink-ghost font-semibold -translate-y-1/2" [style.width.px]="HOUR_GUTTER_PX">{{ mark.label }}</span>
-          <div class="flex-1 border-t border-line-hairline"></div>
-        </div>
-      }
-
-      <div class="absolute right-0 border-t-2 border-energy-high z-10" [style.top.px]="nowTopPx" [style.left.px]="HOUR_GUTTER_PX + 8">
-        <span class="absolute -left-1 -top-[3px] w-1.5 h-1.5 rounded-full bg-energy-high"></span>
+  <div class="relative" [style.height.px]="dayHeightPx">
+    @for (mark of hourMarks; track mark.label) {
+      <div class="absolute left-0 right-0 flex items-start gap-2" [style.top.px]="mark.topPx">
+        <span class="text-[10px] text-ink-dim font-semibold -translate-y-1/2" [style.width.px]="HOUR_GUTTER_PX">{{ mark.label }}</span>
+        <div class="flex-1 border-t border-line-hairline"></div>
       </div>
+    }
 
+    <div class="absolute right-0 border-t-2 border-energy-high z-10" [style.top.px]="nowTopPx()" [style.left.px]="HOUR_GUTTER_PX + 8">
+      <span class="absolute -left-1 -top-[3px] w-1.5 h-1.5 rounded-full bg-energy-high"></span>
+    </div>
+
+    @if (!loading()) {
       @for (block of blocks(); track block.key) {
         <div
           class="absolute rounded-md px-1.5 py-0.5 overflow-hidden border"
@@ -41,8 +39,8 @@
           }
         </div>
       }
-    </div>
-  }
+    }
+  </div>
 </div>
 
 @if (hoveredBlock(); as hovered) {
@@ -52,12 +50,12 @@
     [style.left.px]="hovered.left"
   >
     @if (breakdownFor(hovered.key).length > 1) {
-      <span class="t-kicker text-ink-faint">Composed of</span>
+      <span class="t-kicker text-ink-dim">Composed of</span>
     }
     @for (entry of breakdownFor(hovered.key); track entry.label) {
       <div class="flex items-center justify-between gap-3 text-[10px]">
         <span class="text-ink-body truncate">{{ entry.label }}</span>
-        <span class="text-ink-faint font-mono shrink-0">{{ formatMinutes(entry.secs) }}</span>
+        <span class="text-ink-dim font-mono shrink-0">{{ formatMinutes(entry.secs) }}</span>
       </div>
     }
   </div>

@@ -30,7 +30,7 @@ import { TodayPanelComponent } from './today-panel.component';
 
 type RailTab = 'session' | 'segments' | 'today';
 
-const RING_RADIUS = 134;
+const RING_RADIUS = 190;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 @Component({
@@ -64,6 +64,7 @@ export class ActiveComponent {
   readonly startingBreak = signal(false);
   readonly railOpen = signal(true);
   readonly activeTab = signal<RailTab>('session');
+  readonly moreMenuOpen = signal(false);
 
   constructor() {
     void this.picker.load();
@@ -115,6 +116,26 @@ export class ActiveComponent {
     } else if ((event.key === 's' || event.key === 'S') && this.phase() === 'focus') {
       void this.openSwitchDialog();
     }
+  }
+
+  @HostListener('document:click')
+  closeMoreMenu(): void {
+    this.moreMenuOpen.set(false);
+  }
+
+  toggleMoreMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.moreMenuOpen.update((v) => !v);
+  }
+
+  async chooseSwitchMaterial(): Promise<void> {
+    this.moreMenuOpen.set(false);
+    await this.openSwitchDialog();
+  }
+
+  async chooseTakeBreak(): Promise<void> {
+    this.moreMenuOpen.set(false);
+    await this.takeBreak();
   }
 
   togglePause(): void {

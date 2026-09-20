@@ -129,8 +129,8 @@
       <div class="flex flex-col items-center gap-2.5 mb-7">
         @if (currentTarget(); as target) {
           <span
-            [class]="description().caseNo === 1 ? 'text-ink-dim bg-surface-overlay' : description().caseNo === 2 ? 'text-status-in-progress bg-status-in-progress/10' : description().caseNo === 4 ? 'text-energy-medium bg-energy-medium/10' : 'text-accent-ink bg-accent-wash'"
-            class="t-kicker px-2 py-0.5 rounded"
+            [class]="description().caseNo === 1 ? 'text-ink-body bg-surface-overlay' : description().caseNo === 2 ? 'text-status-in-progress bg-status-in-progress/10' : description().caseNo === 4 ? 'text-energy-medium bg-energy-medium/10' : 'text-accent-ink bg-accent-wash'"
+            class="t-kicker px-2 py-0.5 rounded text-[10.5px] font-semibold"
           >
             Case {{ description().caseNo }} · {{ description().label }}
           </span>
@@ -139,21 +139,21 @@
           <div class="text-center">
             <p class="text-lg font-extrabold text-ink-strong tracking-tight">{{ ctx.title }}</p>
             @if (ctx.subtitle) {
-              <p class="text-xs text-ink-faint mt-0.5">{{ ctx.subtitle }}</p>
+              <p class="text-xs text-ink-dim mt-0.5">{{ ctx.subtitle }}</p>
             }
           </div>
         }
       </div>
 
-      <div class="relative" style="width: 300px; height: 300px">
-        <svg width="300" height="300" style="transform: rotate(-90deg)">
-          <circle cx="150" cy="150" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="6" fill="none" />
+      <div class="relative" style="width: 440px; height: 440px">
+        <svg width="440" height="440" style="transform: rotate(-90deg)">
+          <circle cx="220" cy="220" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="7" fill="none" />
           <circle
-            cx="150"
-            cy="150"
+            cx="220"
+            cy="220"
             [attr.r]="RING_RADIUS"
             [attr.stroke]="paused() ? 'var(--color-energy-medium)' : description().isStub ? 'var(--color-energy-medium)' : 'var(--color-accent-hover)'"
-            stroke-width="6"
+            stroke-width="7"
             fill="none"
             stroke-linecap="round"
             [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
@@ -161,9 +161,79 @@
             style="transition: stroke-dashoffset 1s linear"
           />
         </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-          <span class="t-num text-[54px]">{{ remainingLabel() }}</span>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
+          <span class="t-num text-[80px]">{{ remainingLabel() }}</span>
           <span class="t-kicker">remaining</span>
+          <div class="relative mt-5">
+            <div class="flex items-center gap-6">
+              <button
+                type="button"
+                (click)="togglePause()"
+                [attr.aria-label]="paused() ? 'Resume' : 'Pause'"
+                [title]="paused() ? 'Resume' : 'Pause'"
+                class="text-ink-faint hover:text-ink-strong transition-colors"
+              >
+                @if (paused()) {
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5z" /></svg>
+                } @else {
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+                }
+              </button>
+              <button
+                type="button"
+                (click)="endSession()"
+                aria-label="End session"
+                title="End session"
+                class="text-ink-faint hover:text-ink-strong transition-colors"
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="1.5" /></svg>
+              </button>
+              <button
+                type="button"
+                (click)="extendFocusSession()"
+                aria-label="Extend five minutes"
+                title="Extend +5 min"
+                class="text-ink-faint hover:text-ink-strong transition-colors"
+              >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+              <button
+                type="button"
+                (click)="toggleMoreMenu($event)"
+                aria-label="More actions"
+                title="More actions"
+                [class]="moreMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
+                class="transition-colors"
+              >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+              </button>
+            </div>
+
+            @if (moreMenuOpen()) {
+              <div
+                class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+                (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
+              >
+                <button
+                  type="button"
+                  (click)="chooseSwitchMaterial()"
+                  [disabled]="store.switchingTarget()"
+                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 disabled:opacity-50 transition-colors text-left"
+                >
+                  {{ store.switchingTarget() ? 'Switching...' : 'Switch material' }}
+                </button>
+                <button
+                  type="button"
+                  (click)="chooseTakeBreak()"
+                  [disabled]="startingBreak()"
+                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors text-left"
+                >
+                  {{ startingBreak() ? 'Starting...' : 'Take a break' }}
+                </button>
+              </div>
+            }
+          </div>
         </div>
         @if (justExtended()) {
           <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
@@ -194,29 +264,6 @@
         }
       </div>
 
-      <div class="flex items-center gap-2.5 mt-7 flex-wrap justify-center">
-        <button type="button" (click)="togglePause()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors">
-          {{ paused() ? 'Resume' : 'Pause' }}
-        </button>
-        <button type="button" (click)="extendFocusSession()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors">
-          +5 min
-        </button>
-        <button type="button" (click)="openSwitchDialog()" [disabled]="store.switchingTarget()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 disabled:opacity-50 transition-colors">
-          {{ store.switchingTarget() ? 'Switching...' : 'Switch material' }}
-        </button>
-        <button
-          type="button"
-          (click)="takeBreak()"
-          [disabled]="startingBreak()"
-          class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors"
-        >
-          {{ startingBreak() ? 'Starting...' : 'Take a break' }}
-        </button>
-        <button type="button" (click)="endSession()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-energy-high/10 border border-energy-high/30 text-energy-high hover:opacity-80 transition-colors">
-          End session
-        </button>
-      </div>
-
       @if (!hideShortcutHints()) {
         <div class="mt-3.5 text-[10px] text-ink-ghost flex gap-3.5">
           <span><b class="text-ink-faint font-bold">space</b> pause</span>
@@ -230,19 +277,19 @@
             <div
               class="h-full"
               [style.width.%]="totalSec() > 0 ? (segment.endSec ?? elapsedSec()) - segment.startSec > 0 ? (((segment.endSec ?? elapsedSec()) - segment.startSec) / totalSec()) * 100 : 0 : 0"
-              [style.background]="segment.targetKind === 'node' ? 'var(--color-accent-hover)' : segment.targetKind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-ghost)'"
+              [style.background]="segment.targetKind === 'node' ? 'var(--color-accent-hover)' : segment.targetKind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-faint)'"
               [style.opacity]="last ? 1 : 0.5"
               [style.borderRight]="last ? 'none' : '1px solid var(--color-surface-overlay)'"
             ></div>
           }
         </div>
         <div class="flex justify-between mt-1.5">
-          <span class="text-[9.5px] text-ink-faint font-semibold">{{ store.segments().length }} segment{{ store.segments().length === 1 ? '' : 's' }}</span>
-          <span class="t-mono text-[9.5px] text-ink-faint font-semibold">{{ formatMinutes(elapsedSec()) }} / {{ formatMinutes(totalSec()) }}</span>
+          <span class="text-[10px] text-ink-dim font-semibold">{{ store.segments().length }} segment{{ store.segments().length === 1 ? '' : 's' }}</span>
+          <span class="t-mono text-[10px] text-ink-dim font-semibold">{{ formatMinutes(elapsedSec()) }} / {{ formatMinutes(totalSec()) }}</span>
         </div>
       </div>
 
-      <div class="mt-4 text-[11px] text-ink-faint">
+      <div class="mt-4 text-[11px] text-ink-dim">
         Started {{ session.startedAt | date: 'shortTime' }}
         ·
         @if (paused()) {
@@ -289,7 +336,7 @@
                       </div>
                       <div class="min-w-0">
                         <p class="text-xs font-semibold text-ink-strong">Focus time only</p>
-                        <p class="text-[10px] text-ink-faint mt-0.5">Nothing is linked. You can attach it when you finish.</p>
+                        <p class="text-[10px] text-ink-dim mt-0.5">Nothing is linked. You can attach it when you finish.</p>
                       </div>
                     </div>
                   }
@@ -300,7 +347,7 @@
                       </div>
                       <div class="min-w-0">
                         <p class="text-xs font-semibold text-ink-strong truncate">{{ contextDisplay()?.title }}</p>
-                        <p class="text-[10px] text-ink-faint mt-0.5">{{ description().label }}</p>
+                        <p class="text-[10px] text-ink-dim mt-0.5">{{ description().label }}</p>
                       </div>
                     </div>
                   }
@@ -311,7 +358,7 @@
                       </div>
                       <div class="min-w-0">
                         <p class="text-xs font-semibold text-ink-strong">Promote the stub</p>
-                        <p class="text-[10px] text-ink-faint mt-0.5">Offered at the end, with whatever you actually used.</p>
+                        <p class="text-[10px] text-ink-dim mt-0.5">Offered at the end, with whatever you actually used.</p>
                       </div>
                     </div>
                   }
@@ -322,7 +369,7 @@
             <app-pomodoro-today-panel />
           } @else {
             <div class="flex flex-col gap-3.5">
-              <p class="text-[11px] text-ink-faint leading-relaxed">
+              <p class="text-[11px] text-ink-dim leading-relaxed">
                 Real time per target. Nothing is split evenly — each segment is measured.
               </p>
               <div class="flex flex-col gap-2">
@@ -331,7 +378,7 @@
                     <div class="flex items-center gap-2 mb-1.5">
                       <span
                         class="w-1.5 h-1.5 rounded-sm flex-shrink-0"
-                        [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-ghost)'"
+                        [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-faint)'"
                       ></span>
                       <span class="flex-1 text-xs font-semibold text-ink-strong truncate">
                         {{ segmentTargetLabel(total.target) }}
@@ -342,10 +389,10 @@
                       <div
                         class="h-full"
                         [style.width.%]="elapsedSec() > 0 ? (total.secs / elapsedSec()) * 100 : 0"
-                        [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-ghost)'"
+                        [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-faint)'"
                       ></div>
                     </div>
-                    <p class="text-[9.5px] text-ink-faint mt-1">
+                    <p class="text-[10px] text-ink-dim mt-1">
                       {{ elapsedSec() > 0 ? ((total.secs / elapsedSec()) * 100 | number: '1.0-0') : 0 }}% of session · {{ total.parts }} segment{{ total.parts === 1 ? '' : 's' }}
                     </p>
                   </div>

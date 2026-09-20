@@ -1,6 +1,7 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
@@ -18,24 +19,35 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
   imports: [NgTemplateOutlet],
   templateUrl: './pomodoro-zen-view.component.html',
 })
-export class PomodoroZenViewComponent {
+export class PomodoroZenViewComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly overlayHost = inject(PomodoroOverlayHostService);
+  private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
   readonly store = inject(PomodoroSessionStore);
   readonly picker = inject(PomodoroPickerService);
 
   readonly RING_RADIUS = RING_RADIUS;
   readonly RING_CIRCUMFERENCE = RING_CIRCUMFERENCE;
 
-  private readonly ringDisplay = createPomodoroRingDisplay(this.store, this.picker, RING_CIRCUMFERENCE);
+  private readonly ringDisplay = createPomodoroRingDisplay(
+    this.store,
+    this.picker,
+    RING_CIRCUMFERENCE,
+  );
   readonly ringDashOffset = this.ringDisplay.ringDashOffset;
   readonly breakRingDashOffset = this.ringDisplay.breakRingDashOffset;
   readonly currentTarget = this.ringDisplay.currentTarget;
   readonly contextDisplay = this.ringDisplay.contextDisplay;
 
-  @HostListener('window:keydown.escape')
-  onEscape(): void {
-    this.exit();
+  ngOnInit(): void {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (this.dialog.openDialogs.length > 0) return;
+      this.exit();
+    };
+    window.addEventListener('keydown', onEscape, true);
+    this.destroyRef.onDestroy(() => window.removeEventListener('keydown', onEscape, true));
   }
 
   togglePause(): void {
