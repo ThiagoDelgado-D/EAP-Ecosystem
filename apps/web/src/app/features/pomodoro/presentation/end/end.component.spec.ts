@@ -91,6 +91,21 @@ describe('EndComponent', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
   });
 
+  test('should save pending changes, end the session, and go straight into a break', async () => {
+    const ctx = setup();
+    const { component, store, learningPathRepository, navigateByUrl } = ctx;
+    const { nodeId } = await startPathNodeSession(ctx, { pathTitle: 'Rust for Backend Engineers', nodeTitle: 'Trait Objects' });
+    const [touched] = component.touchedTargets();
+    component.setNodeProgress(touched, 'done');
+
+    await component.saveAndBreak();
+
+    expect(learningPathRepository.nodes.find((n) => n.id === nodeId)?.progress).toBe('done');
+    expect(store.activeSession()).toBeNull();
+    expect(store.phase()).toBe('break');
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
   test('should discard pending changes without applying them, but still end the session', async () => {
     const ctx = setup();
     const { component, learningPathRepository, navigateByUrl } = ctx;

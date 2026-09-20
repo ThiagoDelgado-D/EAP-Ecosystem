@@ -308,6 +308,18 @@ export class EndComponent {
   }
 
   async saveAndClose(): Promise<void> {
+    await this.withPendingUpdatesSaved(() => this.finish());
+  }
+
+  async saveAndBreak(): Promise<void> {
+    await this.withPendingUpdatesSaved(async () => {
+      await this.closeSession();
+      await this.store.startBreak();
+      void this.router.navigateByUrl('/pomodoro/active');
+    });
+  }
+
+  private async withPendingUpdatesSaved(next: () => Promise<void>): Promise<void> {
     this.saving.set(true);
     try {
       const nodeUpdates = Object.entries(this.pendingNodeProgress());
@@ -318,19 +330,23 @@ export class EndComponent {
         ),
         ...resourceUpdates.map(([resourceId, status]) => this.learningResourceRepository.toggleStatus(resourceId, status)),
       ]);
-      await this.finish();
+      await next();
     } finally {
       this.saving.set(false);
     }
   }
 
-  private async finish(): Promise<void> {
+  private async closeSession(): Promise<void> {
     if (this.store.activeSession()) {
       this.endedAt.set(new Date());
       await this.store.end();
     } else {
       this.store.clearAutoClosed();
     }
+  }
+
+  private async finish(): Promise<void> {
+    await this.closeSession();
     void this.router.navigateByUrl('/pomodoro');
   }
 }
