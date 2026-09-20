@@ -161,6 +161,15 @@ export class PomodoroSessionStore {
     this.plannedTimeReached.set(false);
   }
 
+  async extendFocusSession(minutes = 5): Promise<void> {
+    const session = this.activeSession();
+    if (!session) return;
+    const extended = await this.repository.extendSession(session.id, minutes);
+    this.activeSession.set(extended);
+    this.plannedTimeReached.set(false);
+    this.plannedTimeReachedHandledForSessionId = null;
+  }
+
   async startBreak(): Promise<void> {
     const activeBreak = await this.repository.startBreak();
     if (this.activeSession()) await this.end();

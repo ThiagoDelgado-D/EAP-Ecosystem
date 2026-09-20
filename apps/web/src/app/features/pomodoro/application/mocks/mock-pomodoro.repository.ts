@@ -205,6 +205,14 @@ export function mockPomodoroRepository(
       return { closedSession: closed, session: newSession, segments: [newSegment] };
     },
 
+    async extendSession(sessionId: string, minutes: number): Promise<Session> {
+      const index = this.sessions.findIndex((s) => s.id === sessionId);
+      if (index < 0) throw new Error(`Session not found: ${sessionId}`);
+      const extended = { ...this.sessions[index]!, plannedMin: this.sessions[index]!.plannedMin + minutes };
+      this.sessions[index] = extended;
+      return extended;
+    },
+
     async getHistory(since: Date, until?: Date): Promise<HistorySnapshot> {
       const inRange = (startedAt: Date) => startedAt >= since && (!until || startedAt < until);
       return {

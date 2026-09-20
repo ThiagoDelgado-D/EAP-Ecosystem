@@ -143,6 +143,13 @@ export class PomodoroHttpRepository extends PomodoroRepository {
     };
   }
 
+  async extendSession(sessionId: string, minutes: number): Promise<Session> {
+    const dto = await firstValueFrom(
+      this.http.patch<SessionDto>(`${this.baseUrl}/sessions/${sessionId}/extend`, { minutes }),
+    );
+    return this.toSessionDomain(dto);
+  }
+
   async getHistory(since: Date, until?: Date): Promise<HistorySnapshot> {
     const dto = await firstValueFrom(
       this.http.get<HistoryResponseDto>(`${this.baseUrl}/history`, {

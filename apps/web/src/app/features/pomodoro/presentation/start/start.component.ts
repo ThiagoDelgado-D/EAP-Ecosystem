@@ -14,6 +14,7 @@ import type { PickerPathNode } from '@features/pomodoro/application/pomodoro-pic
 import type { LearningPathNode } from '@features/learning-path/domain/learning-path.model';
 import {
   CANDIDATE_ENERGY_LEVEL,
+  MAX_PLANNED_DURATION_MIN,
   SEGMENT_TARGET_KIND,
   type CandidateEnergyLevel,
   type SegmentTarget,
@@ -50,6 +51,8 @@ export class StartComponent {
   readonly picker = inject(PomodoroPickerService);
 
   readonly DURATION_PRESETS = DURATION_PRESETS;
+  readonly MAX_PLANNED_DURATION_MIN = MAX_PLANNED_DURATION_MIN;
+  readonly maxDurationDigits = String(MAX_PLANNED_DURATION_MIN).length;
   readonly ENERGIES: readonly CandidateEnergyLevel[] = [
     CANDIDATE_ENERGY_LEVEL.LOW,
     CANDIDATE_ENERGY_LEVEL.MEDIUM,
@@ -95,6 +98,9 @@ export class StartComponent {
     return suggestion ? { title: suggestion.nodeTitle, subtitle: suggestion.pathTitle } : null;
   });
   readonly canStart = computed(() => this.selectedDuration() !== null && this.effectiveTarget() !== null);
+  readonly isCustomDurationActive = computed(
+    () => this.selectedDuration() !== null && !DURATION_PRESETS.includes(this.selectedDuration()!),
+  );
   readonly hasNoMaterial = computed(
     () => !this.picker.loading() && this.picker.allPaths().length === 0 && this.picker.library().length === 0,
   );
@@ -194,10 +200,20 @@ export class StartComponent {
     this.customDurationInput.set('');
   }
 
+  onCustomDurationInput(value: string): void {
+    this.customDurationInput.set(value.replace(/\D/g, ''));
+    this.applyCustomDuration();
+  }
+
   applyCustomDuration(): void {
-    const minutes = Number(this.customDurationInput());
+    const raw = this.customDurationInput().trim();
+    if (raw === '') {
+      if (this.isCustomDurationActive()) this.selectedDuration.set(null);
+      return;
+    }
+    const minutes = Number(raw);
     if (!Number.isFinite(minutes) || minutes <= 0) return;
-    this.selectedDuration.set(Math.round(minutes));
+    this.selectedDuration.set(Math.min(MAX_PLANNED_DURATION_MIN, Math.round(minutes)));
   }
 
   toggleIntentInput(): void {
