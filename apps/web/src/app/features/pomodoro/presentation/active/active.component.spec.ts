@@ -53,6 +53,18 @@ describe('ActiveComponent', () => {
     await expectPlannedTimeReachedFlow(component, store);
   });
 
+  test('extendFocusSession should grow the running session in place and flash the ring', async () => {
+    const { component, store } = setup();
+    await store.start({ plannedMin: 25, target: { kind: 'free' } });
+
+    await component.extendFocusSession();
+
+    expect(store.activeSession()?.plannedMin).toBe(30);
+    expect(component.justExtended()).toBe(true);
+    vi.advanceTimersByTime(900);
+    expect(component.justExtended()).toBe(false);
+  });
+
   test('toggleSound should flip the store sound preference', async () => {
     vi.stubGlobal('localStorage', mockLocalStorage(null));
     const { component } = setup();

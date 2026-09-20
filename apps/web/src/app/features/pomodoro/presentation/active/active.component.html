@@ -165,6 +165,12 @@
           <span class="t-num text-[54px]">{{ remainingLabel() }}</span>
           <span class="t-kicker">remaining</span>
         </div>
+        @if (justExtended()) {
+          <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
+          <div class="absolute -top-3 left-1/2 pomodoro-extend-pop text-accent-ink font-mono font-bold text-base pointer-events-none">
+            +5:00
+          </div>
+        }
         @if (plannedTimeReached()) {
           <div class="absolute inset-0 rounded-full bg-surface-base/95 flex flex-col items-center justify-center gap-3 px-6 text-center">
             <span class="t-kicker text-energy-medium">Planned time reached</span>
@@ -191,6 +197,9 @@
       <div class="flex items-center gap-2.5 mt-7 flex-wrap justify-center">
         <button type="button" (click)="togglePause()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors">
           {{ paused() ? 'Resume' : 'Pause' }}
+        </button>
+        <button type="button" (click)="extendFocusSession()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors">
+          +5 min
         </button>
         <button type="button" (click)="openSwitchDialog()" [disabled]="store.switchingTarget()" class="font-mono px-4 py-2 rounded-lg text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 disabled:opacity-50 transition-colors">
           {{ store.switchingTarget() ? 'Switching...' : 'Switch material' }}

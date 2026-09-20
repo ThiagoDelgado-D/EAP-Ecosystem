@@ -168,6 +168,11 @@ export class ActiveComponent {
   private readonly extendFlash = createTransientFlag();
   readonly justExtended = this.extendFlash.active;
 
+  async extendFocusSession(): Promise<void> {
+    this.extendFlash.trigger();
+    await this.store.extendFocusSession();
+  }
+
   async extendBreak(): Promise<void> {
     this.extendFlash.trigger();
     await this.store.extendBreak();
