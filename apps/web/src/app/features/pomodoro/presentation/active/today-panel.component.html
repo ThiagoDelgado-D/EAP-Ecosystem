@@ -7,7 +7,7 @@
   <div class="relative" [style.height.px]="dayHeightPx">
     @for (mark of hourMarks; track mark.label) {
       <div class="absolute left-0 right-0 flex items-start gap-2" [style.top.px]="mark.topPx">
-        <span class="text-[10px] text-ink-faint font-semibold -translate-y-1/2" [style.width.px]="HOUR_GUTTER_PX">{{ mark.label }}</span>
+        <span class="text-[10px] text-ink-dim font-semibold -translate-y-1/2" [style.width.px]="HOUR_GUTTER_PX">{{ mark.label }}</span>
         <div class="flex-1 border-t border-line-hairline"></div>
       </div>
     }
@@ -50,12 +50,12 @@
     [style.left.px]="hovered.left"
   >
     @if (breakdownFor(hovered.key).length > 1) {
-      <span class="t-kicker text-ink-faint">Composed of</span>
+      <span class="t-kicker text-ink-dim">Composed of</span>
     }
     @for (entry of breakdownFor(hovered.key); track entry.label) {
       <div class="flex items-center justify-between gap-3 text-[10px]">
         <span class="text-ink-body truncate">{{ entry.label }}</span>
-        <span class="text-ink-faint font-mono shrink-0">{{ formatMinutes(entry.secs) }}</span>
+        <span class="text-ink-dim font-mono shrink-0">{{ formatMinutes(entry.secs) }}</span>
       </div>
     }
   </div>
