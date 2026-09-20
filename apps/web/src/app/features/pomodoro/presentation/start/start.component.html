@@ -102,7 +102,7 @@
               placeholder="Custom"
               aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
               [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
-              class="t-mono w-16 px-2 py-1.5 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-ghost placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-inset transition-colors"
+              class="t-mono w-16 px-2 py-1.5 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-faint placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-inset transition-colors"
             />
           </div>
           <div class="ml-auto flex items-center gap-2">
@@ -144,7 +144,7 @@
               [ngModel]="intent()"
               (ngModelChange)="intent.set($event)"
               placeholder="What do you want to walk away with?"
-              class="w-full px-3 py-2 rounded-lg text-sm bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-ghost focus:outline-none focus:border-accent-line"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line"
             />
           }
         </div>
@@ -252,7 +252,7 @@
           [class]="query() ? 'border-accent-line' : 'border-line-soft'"
           class="flex items-center gap-2 px-3 py-2 rounded-lg border focus-within:border-accent-line transition-colors"
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" [attr.stroke]="query() ? 'var(--color-accent-ink)' : 'var(--color-ink-ghost)'" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" [attr.stroke]="query() ? 'var(--color-accent-ink)' : 'var(--color-ink-faint)'" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
           <label for="browse-search-input" class="sr-only">Search steps, paths, resources</label>
           <input
             id="browse-search-input"
@@ -260,7 +260,7 @@
             [ngModel]="query()"
             (ngModelChange)="query.set($event)"
             placeholder="Search steps, paths, resources..."
-            class="flex-1 min-w-0 bg-transparent text-sm text-ink-strong placeholder:text-ink-ghost focus:outline-none"
+            class="flex-1 min-w-0 bg-transparent text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none"
           />
           @if (query()) {
             <button type="button" (click)="clearQuery()" class="text-ink-faint hover:text-ink-body flex-shrink-0" aria-label="Clear search">
@@ -361,11 +361,12 @@
             @case ('library') {
               @for (resource of filteredLibrary(); track resource.id) {
                 <div>
-                  <button type="button" (click)="pickResource(resource)" [class]="isResourceSelected(resource.id) ? 'border-accent-line bg-accent-wash' : 'border-line-hairline hover:border-line-soft'" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors">
-                    <div class="flex-1 min-w-0">
-                      <div class="text-sm text-ink-strong truncate">{{ resource.title }}</div>
-                    </div>
-                  </button>
+                  <app-library-resource-row
+                    [resource]="resource"
+                    [selected]="isResourceSelected(resource.id)"
+                    [pathCount]="pathCountFor(resource.id)"
+                    (rowClick)="pickResource(resource)"
+                  />
                   @if (pendingResourcePick()?.resource?.id === resource.id) {
                     <div class="mt-1.5 p-3 rounded-lg bg-energy-medium/5 border border-dashed border-energy-medium/40">
                       <div class="text-xs font-bold text-energy-medium mb-1">This resource is a step in {{ pendingResourcePick()!.options.length }} paths</div>
@@ -440,7 +441,7 @@
               placeholder="Custom minutes"
               aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
               [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
-              class="t-mono w-full mt-1.5 px-3 py-2 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-ghost placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-inset transition-colors"
+              class="t-mono w-full mt-1.5 px-3 py-2 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-faint placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-inset transition-colors"
             />
           </div>
 
@@ -452,7 +453,7 @@
               [ngModel]="intent()"
               (ngModelChange)="intent.set($event)"
               placeholder="What do you want to walk away with?"
-              class="w-full px-3 py-2 rounded-lg text-sm bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-ghost focus:outline-none focus:border-accent-line resize-none"
+              class="w-full px-3 py-2 rounded-lg text-sm bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line resize-none"
             ></textarea>
           </div>
         </div>
