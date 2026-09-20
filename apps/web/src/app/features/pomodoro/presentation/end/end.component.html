@@ -27,7 +27,7 @@
             <div class="flex items-center gap-2 mb-1.5">
               <span
                 class="w-1.5 h-1.5 rounded-sm flex-shrink-0"
-                [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-ghost)'"
+                [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-faint)'"
               ></span>
               <span class="flex-1 text-xs font-semibold text-ink-strong truncate">{{ targetTitle(total.target) }}</span>
               <span class="t-mono text-[11px] font-bold text-ink-body">{{ formatMinutes(total.secs) }}</span>
@@ -36,7 +36,7 @@
               <div
                 class="h-full"
                 [style.width.%]="elapsedSec() > 0 ? (total.secs / elapsedSec()) * 100 : 0"
-                [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-ghost)'"
+                [style.background]="total.target.kind === 'node' ? 'var(--color-accent-hover)' : total.target.kind === 'resource' ? 'var(--color-status-in-progress)' : 'var(--color-ink-faint)'"
               ></div>
             </div>
           </div>
@@ -101,7 +101,7 @@
                 [ngModel]="promoteQuery()[touched.key] ?? ''"
                 (ngModelChange)="setPromoteQuery(touched.key, $event)"
                 placeholder="Search the library..."
-                class="w-full px-3 py-2 rounded-lg text-xs bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-ghost focus:outline-none focus:border-accent-line"
+                class="w-full px-3 py-2 rounded-lg text-xs bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line"
               />
               <div class="flex flex-col gap-1.5 max-h-56 overflow-y-auto rounded-lg border border-line-soft bg-surface-inset p-1.5">
                 @for (resource of filteredLibraryFor(touched.key); track resource.id) {
@@ -141,7 +141,7 @@
                 [ngModel]="createUrl()[touched.key] ?? ''"
                 (ngModelChange)="setCreateUrl(touched.key, $event)"
                 placeholder="https://..."
-                class="w-full px-3 py-2 rounded-lg text-xs bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-ghost focus:outline-none focus:border-accent-line"
+                class="w-full px-3 py-2 rounded-lg text-xs bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line"
               />
               <label [for]="'promote-type-' + touched.key" class="sr-only">Resource type</label>
               <select
