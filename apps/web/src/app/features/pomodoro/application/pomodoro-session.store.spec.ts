@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { mockPomodoroRepository } from './mocks/mock-pomodoro.repository';
 import { mockAudio } from './mocks/mock-audio-element';
-import { mockLocalStorage } from './mocks/mock-local-storage';
 import { PomodoroSessionStore } from './pomodoro-session.store';
 
 describe('PomodoroSessionStore', () => {
@@ -324,14 +323,6 @@ describe('PomodoroSessionStore', () => {
   });
 
   describe('sound preference', () => {
-    beforeEach(() => {
-      vi.stubGlobal('localStorage', mockLocalStorage(null));
-    });
-
-    afterEach(() => {
-      vi.unstubAllGlobals();
-    });
-
     test('should default to enabled and flip when toggled', () => {
       expect(store.soundEnabled()).toBe(true);
 

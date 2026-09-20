@@ -23,7 +23,6 @@ describe('PomodoroSettingsComponent', () => {
   });
 
   test('should default to sound enabled with the chime selected', () => {
-    vi.stubGlobal('localStorage', mockLocalStorage(null));
     const { component } = setup();
 
     expect(component.soundEnabled()).toBe(true);
@@ -55,7 +54,6 @@ describe('PomodoroSettingsComponent', () => {
   test('previewSound should play the requested sound regardless of the enabled toggle', () => {
     const { AudioCtor, instances } = mockAudio();
     vi.stubGlobal('Audio', AudioCtor);
-    vi.stubGlobal('localStorage', mockLocalStorage(null));
     const { component } = setup();
     component.toggleSoundEnabled();
 
@@ -66,7 +64,6 @@ describe('PomodoroSettingsComponent', () => {
   });
 
   test('should default the volume to 60%', () => {
-    vi.stubGlobal('localStorage', mockLocalStorage(null));
     const { component } = setup();
 
     expect(component.volumePercent()).toBe(60);
@@ -86,7 +83,6 @@ describe('PomodoroSettingsComponent', () => {
   test('previewSound should play at the currently selected volume', () => {
     const { AudioCtor, instances } = mockAudio();
     vi.stubGlobal('Audio', AudioCtor);
-    vi.stubGlobal('localStorage', mockLocalStorage(null));
     const { component } = setup();
     component.setVolumePercent(40);
 
@@ -96,7 +92,6 @@ describe('PomodoroSettingsComponent', () => {
   });
 
   test('should default the view mode to full', () => {
-    vi.stubGlobal('localStorage', mockLocalStorage(null));
     const { component } = setup();
 
     expect(component.defaultViewMode()).toBe('full');
@@ -114,7 +109,6 @@ describe('PomodoroSettingsComponent', () => {
   });
 
   test('should default to showing the keyboard shortcut hints', () => {
-    vi.stubGlobal('localStorage', mockLocalStorage(null));
     const { component } = setup();
 
     expect(component.showShortcutHints()).toBe(true);
