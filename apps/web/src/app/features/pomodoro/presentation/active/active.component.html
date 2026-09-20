@@ -210,7 +210,11 @@
             </div>
 
             @if (moreMenuOpen()) {
-              <div class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10" (click)="$event.stopPropagation()">
+              <div
+                class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+                (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
+              >
                 <button
                   type="button"
                   (click)="chooseSwitchMaterial()"
