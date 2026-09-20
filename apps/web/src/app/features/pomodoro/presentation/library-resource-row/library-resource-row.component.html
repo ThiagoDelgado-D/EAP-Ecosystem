@@ -1,0 +1,15 @@
+<button
+  type="button"
+  (click)="rowClick.emit()"
+  [class]="selected ? 'border-accent-line bg-accent-wash' : 'border-line-hairline hover:border-line-soft'"
+  class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors"
+>
+  <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="typeColor()"></span>
+  <div class="flex-1 min-w-0">
+    <div class="text-sm text-ink-strong truncate">{{ resource.title }}</div>
+    <div class="text-[10.5px] text-ink-dim truncate mt-0.5">{{ subtitle() }}</div>
+  </div>
+  <span class="flex-shrink-0">
+    <app-enum-badge [value]="resource.status" [options]="statusOptions" [readonly]="true" />
+  </span>
+</button>
