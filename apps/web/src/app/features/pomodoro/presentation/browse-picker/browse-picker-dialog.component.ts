@@ -7,13 +7,14 @@ import { LearningPathHttpRepository } from '@features/learning-path/infrastructu
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
 import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
-import { RESOURCE_STATUS_LABELS } from '@features/learning-resource/domain/learning-resource.constants';
 import { SEGMENT_TARGET_KIND, type SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { filterLibraryResources, filterPickerNodes, filterPickerPathGroups, firstTabWithResults } from '@features/pomodoro/application/picker-search';
 import type { PickerPathNode } from '@features/pomodoro/application/pomodoro-picker.model';
 import type { LearningPathNode, NodeProgress } from '@features/learning-path/domain/learning-path.model';
 import { pathColor } from '../start/path-color';
+import { pathsForResource } from '../start/target-description';
+import { LibraryResourceRowComponent } from '../library-resource-row/library-resource-row.component';
 
 export type BrowsePickerTab = 'ready' | 'in-progress' | 'all-paths' | 'library';
 
@@ -31,7 +32,7 @@ export const NODE_PROGRESS_LABELS: Record<NodeProgress, string> = {
 @Component({
   selector: 'app-browse-picker-dialog',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet],
+  imports: [FormsModule, NgTemplateOutlet, LibraryResourceRowComponent],
   providers: [
     PomodoroPickerService,
     { provide: LearningPathRepository, useClass: LearningPathHttpRepository },
@@ -46,7 +47,6 @@ export class BrowsePickerDialogComponent {
 
   readonly activeTab = signal<BrowsePickerTab>('ready');
   readonly query = signal('');
-  readonly RESOURCE_STATUS_LABELS = RESOURCE_STATUS_LABELS;
 
   readonly filteredReady = computed(() => filterPickerNodes(this.picker.readyToLearn(), this.query()));
   readonly filteredInProgress = computed(() => filterPickerNodes(this.picker.inProgress(), this.query()));
@@ -78,6 +78,10 @@ export class BrowsePickerDialogComponent {
 
   pathColor(pathId: string): string {
     return pathColor(pathId);
+  }
+
+  pathCountFor(resourceId: string): number {
+    return pathsForResource(this.picker.allPaths(), resourceId).length;
   }
 
   isStub(node: LearningPathNode): boolean {

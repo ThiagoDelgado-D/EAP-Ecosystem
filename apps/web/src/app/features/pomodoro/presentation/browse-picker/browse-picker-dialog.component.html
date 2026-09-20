@@ -41,7 +41,7 @@
 
   <div class="px-6 pt-4">
     <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-line-soft focus-within:border-accent-line">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-ghost)" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-faint)" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
       <label for="switch-material-search" class="sr-only">Search resources</label>
       <input
         id="switch-material-search"
@@ -49,7 +49,7 @@
         [ngModel]="query()"
         (ngModelChange)="query.set($event)"
         placeholder="Search resources..."
-        class="flex-1 min-w-0 bg-transparent text-sm text-ink-strong placeholder:text-ink-ghost focus:outline-none"
+        class="flex-1 min-w-0 bg-transparent text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none"
       />
       @if (query()) {
         <button type="button" (click)="clearQuery()" class="text-ink-faint hover:text-ink-body flex-shrink-0" aria-label="Clear search">
@@ -178,20 +178,11 @@
         }
         @case ('library') {
           @for (resource of filteredLibrary(); track resource.id) {
-            <button
-              type="button"
-              (click)="pickResource(resource)"
-              class="text-left flex items-center gap-3 px-3 py-2.5 rounded-lg border border-line-hairline hover:border-line-soft transition-colors"
-            >
-              <div class="flex-1 min-w-0">
-                <div class="text-sm text-ink-strong truncate">{{ resource.title }}</div>
-                <div class="text-[10.5px] text-ink-faint truncate mt-0.5">{{ resource.estimatedDuration.value }}min</div>
-              </div>
-              <span
-                [class]="progressPillClass(resource.status)"
-                class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
-              >{{ RESOURCE_STATUS_LABELS[resource.status] }}</span>
-            </button>
+            <app-library-resource-row
+              [resource]="resource"
+              [pathCount]="pathCountFor(resource.id)"
+              (rowClick)="pickResource(resource)"
+            />
           } @empty {
             <div class="text-sm text-ink-faint px-1 py-4">
               {{ query() ? 'Nothing matches "' + query() + '".' : 'Your resource library is empty.' }}
