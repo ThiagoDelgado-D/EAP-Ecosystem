@@ -130,4 +130,50 @@ describe('PomodoroSettingsComponent', () => {
     expect(component.showShortcutHints()).toBe(false);
     expect(storage.setItem).toHaveBeenCalledWith('pomodoro_hide_shortcut_hints', 'true');
   });
+
+  test('should default the default duration to 25 minutes', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage(null));
+    const { component } = setup();
+
+    expect(component.defaultDurationMin()).toBe(25);
+    expect(component.isCustomDefaultDuration()).toBe(false);
+  });
+
+  test('selectDefaultDuration should update and persist a preset', () => {
+    const storage = mockLocalStorage();
+    vi.stubGlobal('localStorage', storage);
+    const { component } = setup();
+
+    component.selectDefaultDuration(50);
+
+    expect(component.defaultDurationMin()).toBe(50);
+    expect(component.isCustomDefaultDuration()).toBe(false);
+    expect(storage.setItem).toHaveBeenCalledWith('pomodoro_default_duration_min', '50');
+  });
+
+  test('onCustomDefaultDurationInput should update and persist a custom duration, clamped to the ceiling', () => {
+    const storage = mockLocalStorage();
+    vi.stubGlobal('localStorage', storage);
+    const { component } = setup();
+
+    component.onCustomDefaultDurationInput('45');
+
+    expect(component.defaultDurationMin()).toBe(45);
+    expect(component.isCustomDefaultDuration()).toBe(true);
+    expect(storage.setItem).toHaveBeenCalledWith('pomodoro_default_duration_min', '45');
+
+    component.onCustomDefaultDurationInput('9999');
+
+    expect(component.defaultDurationMin()).toBe(component.MAX_PLANNED_DURATION_MIN);
+  });
+
+  test('onCustomDefaultDurationInput should leave the duration unchanged while the field is emptied', () => {
+    const { component } = setup();
+    component.selectDefaultDuration(50);
+
+    component.onCustomDefaultDurationInput('');
+
+    expect(component.customDefaultDurationInput()).toBe('');
+    expect(component.defaultDurationMin()).toBe(50);
+  });
 });
