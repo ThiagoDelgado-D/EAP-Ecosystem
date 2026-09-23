@@ -142,6 +142,61 @@ out in the design mock:
   does. This is a same-day slice of the history direction already noted as
   Deferred, not the full multi-day history screen.
 
+**Revised 2026-09-23.** The Start bullet above documented a single-suggestion
+hero — ranked by in-progress > continuation > unblocked prerequisites >
+energy match > path momentum — as the _default_ landing state, with "just
+focus" available only as an explicit override. The goal driving this
+revision is not parity with any other tool — it is that day-to-day pomodoro
+chaining should stay practical. A system can stay simple to operate by
+default while still carrying real complexity underneath, as long as that
+complexity shows up as opt-in help at the moments it actually earns its
+keep, not as a tax paid on every single cycle. The energy check and ranked
+suggestion are exactly that kind of complexity — a substantial, real aid in
+the situations where deciding what to study next is genuinely the open
+question — but forcing that decision back open on every chained pomodoro,
+even when nothing about the target has actually changed since the last one,
+turns a helpful capability into friction. This feature line has drawn on
+more than one reference tool along the way, not a single one — Rize for its
+session/timer mechanics (already named in this ADR's Context and cited
+throughout this document) and Digital Zen for its focus-session shape.
+Comparing against Rize specifically made the chaining gap legible — its
+chaining loop stays near-zero-decision — but the fix isn't to copy its
+shape; it's to stop making a genuinely useful feature mandatory on a path
+where it isn't needed. The ranked-suggestion engine remains real product
+value and stays scoped to a dedicated Recommendation feature already on next
+sprint's roadmap; this revision decouples it from the Start default rather
+than removing it or folding it into that upcoming work.
+
+**New default:** applying that principle, Start no longer leads with the
+suggestion hero. It lands directly on a Rize-style ring, pre-loaded with a
+default duration and in free focus (no target attached), ready to start
+with a single tap — no energy check, no suggestion, no duration picker
+gate. "Just focus, nothing attached" — already first-class per the original
+decision above, never a fallback — becomes the default rather than an
+override.
+
+- **Default duration** is a new per-user preference, stored the same way
+  `pomodoro_default_view_mode`/`pomodoro_hide_shortcut_hints` already are —
+  client-side only, since ADR-0024's `Settings` entity doesn't exist yet. It
+  becomes a real per-user server-held setting once that entity ships, the
+  same migration path already used for those two preferences and for the
+  "Keep going" sound toggle above. 25 minutes is an illustrative initial
+  value, not a fixed business rule, matching this ADR's existing treatment
+  of `plannedMin`'s quick-pick presets.
+- **Attaching material** after starting free-focus reuses the existing
+  "Switch material" picker verbatim (documented under Active, below) — no
+  new picker, no new UI surface. Free-focus-by-default doesn't introduce a
+  second way to pick a target; it just moves _when_ that picker gets opened,
+  from before the session to whenever the user chooses to open it.
+- The suggestion hero (energy picker, ranked "Suggested next" card,
+  alternates list) is not deleted — it is extracted into its own component
+  so its ranking logic and presentation survive intact. Where it resurfaces
+  is explicitly not decided here: that is next sprint's Recommendation
+  feature's job, which owns deciding _where_ recommendation re-enters the
+  flow (a deliberate planning moment when scheduling a multi-pomodoro series
+  was one candidate explored and set aside for that future work, not
+  adopted now).
+
 ### Lifecycle — server-authoritative writes
 
 The `Session` row is created at `Idle → Focusing` (session **start**, not
@@ -338,6 +393,12 @@ configurable durations remain ADR-0024's problem, not this one.
   multiple days — the Today panel above covers the current day only; the
   data model supports the multi-day view, but that screen itself is not
   built or scheduled to a version.
+- **Where recommendation re-enters the flow**, now that the 2026-09-23
+  revision above removed it from Start's default. The ranked-suggestion
+  component survives extracted, not deleted; deciding its new entry point
+  (a multi-pomodoro series-creation moment was explored and set aside, not
+  adopted) belongs to a dedicated Recommendation feature, scoped to next
+  sprint.
 
 ## Rejected alternatives
 
