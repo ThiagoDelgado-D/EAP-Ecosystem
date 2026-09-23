@@ -119,6 +119,8 @@ export class ActiveComponent {
 
   @HostListener('window:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable) return;
     if (!this.session() && this.phase() !== 'break') return;
     if (event.code === 'Space') {
       event.preventDefault();
@@ -164,7 +166,7 @@ export class ActiveComponent {
     const previous = this.previousTarget();
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
       panelClass: 'confirm-dark-dialog',
-      autoFocus: false,
+      autoFocus: '#switch-material-search',
       data: previous ? { target: previous, label: this.resolveTargetDisplay(previous) } : null,
     });
     const target = await firstValueFrom(dialogRef.afterClosed());
