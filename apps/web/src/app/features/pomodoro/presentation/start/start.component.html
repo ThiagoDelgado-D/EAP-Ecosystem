@@ -9,19 +9,50 @@
     <span class="t-kicker text-ink-faint max-w-[220px] truncate text-center">
       {{ hasAttachedMaterial() ? selectedTargetLabel()?.title : 'Free focus' }}
     </span>
-    <div class="relative mt-5">
-      <div class="flex items-center gap-6">
+    <div class="flex items-center gap-6 mt-5">
+      <div class="relative">
         <button
           type="button"
-          (click)="start()"
+          (click)="toggleStartMenu($event)"
           [disabled]="!canStart() || store.starting()"
           aria-label="Start focus session"
           title="Start"
-          class="text-ink-faint hover:text-ink-strong disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          [class]="startMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
+          class="disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5z" /></svg>
         </button>
-        @if (hasMoreActions()) {
+
+        @if (startMenuOpen()) {
+          <div
+            class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[240px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
+            <button
+              type="button"
+              (click)="choosePrimaryStart()"
+              class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left truncate"
+            >
+              {{ primaryStartLabel() }}
+            </button>
+            @if (canSuggestQuickStart()) {
+              <button
+                type="button"
+                (click)="chooseStartSuggested()"
+                class="px-3.5 py-2.5 rounded-md border border-line-soft hover:border-line-strong transition-colors text-left"
+              >
+                <div class="t-kicker text-[9.5px] text-ink-faint mb-0.5">Continue</div>
+                <div class="text-[12.5px] font-semibold text-ink-body truncate">{{ topSuggestion()?.nodeTitle }}</div>
+                <div class="text-[10px] text-ink-faint truncate">{{ topSuggestion()?.pathTitle }}</div>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (hasMoreActions()) {
+        <div class="relative">
           <button
             type="button"
             (click)="toggleMoreMenu($event)"
@@ -32,32 +63,32 @@
           >
             <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
           </button>
-        }
-      </div>
 
-      @if (moreMenuOpen()) {
-        <div
-          class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
-          (click)="$event.stopPropagation()"
-          (keydown)="$event.stopPropagation()"
-        >
-          @if (!hasAttachedMaterial()) {
-            <button
-              type="button"
-              (click)="chooseAttachMaterial()"
-              class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left"
+          @if (moreMenuOpen()) {
+            <div
+              class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+              (click)="$event.stopPropagation()"
+              (keydown)="$event.stopPropagation()"
             >
-              Attach material
-            </button>
-          }
-          @if (canOfferIntention()) {
-            <button
-              type="button"
-              (click)="chooseAddIntention()"
-              class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors text-left"
-            >
-              Add an intention
-            </button>
+              @if (!hasAttachedMaterial()) {
+                <button
+                  type="button"
+                  (click)="chooseAttachMaterial()"
+                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left"
+                >
+                  Attach material
+                </button>
+              }
+              @if (canOfferIntention()) {
+                <button
+                  type="button"
+                  (click)="chooseAddIntention()"
+                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors text-left"
+                >
+                  Add an intention
+                </button>
+              }
+            </div>
           }
         </div>
       }

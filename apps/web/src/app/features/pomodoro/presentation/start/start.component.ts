@@ -23,6 +23,7 @@ import {
   MAX_PLANNED_DURATION_MIN,
   SEGMENT_TARGET_KIND,
   type SegmentTarget,
+  type SuggestedCandidate,
 } from '@features/pomodoro/domain/pomodoro.model';
 import { describeTargetLabel, type TargetLabel } from './target-description';
 
@@ -55,6 +56,7 @@ export class StartComponent {
   readonly selectedTarget = signal<SegmentTarget | null>(null);
   readonly selectedTargetLabel = signal<TargetLabel | null>(null);
   readonly moreMenuOpen = signal(false);
+  readonly startMenuOpen = signal(false);
   readonly hideShortcutHints = signal(readHideShortcutHints());
 
   readonly durationClock = computed(() => formatMinutesClock(this.selectedDuration()));
@@ -64,9 +66,15 @@ export class StartComponent {
   readonly canStart = computed(() => this.selectedDuration() > 0);
   readonly canOfferIntention = computed(() => !this.showIntentInput() && !this.intent());
   readonly hasMoreActions = computed(() => !this.hasAttachedMaterial() || this.canOfferIntention());
+  readonly topSuggestion = computed<SuggestedCandidate | null>(() => this.store.suggestions()[0] ?? null);
+  readonly canSuggestQuickStart = computed(() => !this.hasAttachedMaterial() && this.topSuggestion() !== null);
+  readonly primaryStartLabel = computed(() =>
+    this.hasAttachedMaterial() ? this.selectedTargetLabel()?.title ?? 'Start' : 'Start free focus',
+  );
 
   constructor() {
     void this.picker.load();
+    void this.store.loadSuggestions();
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -83,11 +91,17 @@ export class StartComponent {
   @HostListener('document:click')
   closeMoreMenu(): void {
     this.moreMenuOpen.set(false);
+    this.startMenuOpen.set(false);
   }
 
   toggleMoreMenu(event: MouseEvent): void {
     event.stopPropagation();
     this.moreMenuOpen.update((v) => !v);
+  }
+
+  toggleStartMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.startMenuOpen.update((v) => !v);
   }
 
   pickDuration(minutes: number): void {
@@ -138,6 +152,25 @@ export class StartComponent {
   clearAttachedMaterial(): void {
     this.selectedTarget.set(null);
     this.selectedTargetLabel.set(null);
+  }
+
+  async choosePrimaryStart(): Promise<void> {
+    this.startMenuOpen.set(false);
+    await this.start();
+  }
+
+  async chooseStartSuggested(): Promise<void> {
+    const suggestion = this.topSuggestion();
+    if (!suggestion) return;
+    this.startMenuOpen.set(false);
+    this.selectedTarget.set({
+      kind: SEGMENT_TARGET_KIND.NODE,
+      learningPathId: suggestion.pathId,
+      learningPathNodeId: suggestion.nodeId,
+      resourceId: suggestion.resourceId,
+    });
+    this.selectedTargetLabel.set({ title: suggestion.nodeTitle, subtitle: suggestion.pathTitle });
+    await this.start();
   }
 
   async start(): Promise<void> {

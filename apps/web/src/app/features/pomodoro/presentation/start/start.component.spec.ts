@@ -2,12 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
-import type { Session } from '@features/pomodoro/domain/pomodoro.model';
+import type { Session, SuggestedCandidate } from '@features/pomodoro/domain/pomodoro.model';
 import { StartComponent } from './start.component';
 
-function setup() {
+function setup(suggestions: SuggestedCandidate[] = []) {
   const navigateByUrl = vi.fn();
   const { providers, pomodoroRepository } = createPomodoroComponentTestProviders(navigateByUrl);
+  pomodoroRepository.suggestions = suggestions;
 
   TestBed.configureTestingModule({ providers });
 
@@ -15,6 +16,16 @@ function setup() {
   const component = TestBed.createComponent(StartComponent).componentInstance;
   return { component, pomodoroRepository, overlayHost, navigateByUrl };
 }
+
+const cleanArchSuggestion: SuggestedCandidate = {
+  pathId: crypto.randomUUID(),
+  pathTitle: 'Frontend Architecture Mastery',
+  nodeId: crypto.randomUUID(),
+  nodeTitle: 'Clean Architecture',
+  resourceId: crypto.randomUUID(),
+  score: 0.9,
+  why: ['continues last session'],
+};
 
 describe('StartComponent', () => {
   afterEach(() => {
@@ -114,6 +125,94 @@ describe('StartComponent', () => {
     await component.start();
 
     expect(component.store.activeSession()?.intent).toBe('Finish the current chapter');
+  });
+
+  test('should label the primary start action free focus by default, or the attached material once one is picked', () => {
+    const { component } = setup();
+
+    expect(component.primaryStartLabel()).toBe('Start free focus');
+
+    component.selectedTarget.set({ kind: 'resource', resourceId: crypto.randomUUID() });
+    component.selectedTargetLabel.set({ title: 'Rust Book Chapter 17' });
+
+    expect(component.primaryStartLabel()).toBe('Rust Book Chapter 17');
+  });
+
+  test('should offer a quick-start suggestion only while still in free focus', async () => {
+    const { component } = setup([cleanArchSuggestion]);
+    await Promise.resolve();
+
+    expect(component.topSuggestion()).toEqual(cleanArchSuggestion);
+    expect(component.canSuggestQuickStart()).toBe(true);
+
+    component.selectedTarget.set({ kind: 'resource', resourceId: crypto.randomUUID() });
+
+    expect(component.canSuggestQuickStart()).toBe(false);
+  });
+
+  test('should not offer a quick-start suggestion when none is available', async () => {
+    const { component } = setup([]);
+    await Promise.resolve();
+
+    expect(component.canSuggestQuickStart()).toBe(false);
+  });
+
+  test('toggleStartMenu should open and close the start menu, stopping the click from bubbling', () => {
+    const { component } = setup();
+    const event = new MouseEvent('click');
+    const stopPropagation = vi.spyOn(event, 'stopPropagation');
+
+    component.toggleStartMenu(event);
+    expect(component.startMenuOpen()).toBe(true);
+    expect(stopPropagation).toHaveBeenCalledOnce();
+
+    component.toggleStartMenu(event);
+    expect(component.startMenuOpen()).toBe(false);
+  });
+
+  test('closeMoreMenu should also close the start menu on any outside click', () => {
+    const { component } = setup();
+    component.startMenuOpen.set(true);
+
+    component.closeMoreMenu();
+
+    expect(component.startMenuOpen()).toBe(false);
+  });
+
+  test('choosePrimaryStart should close the start menu and start with whatever is currently selected', async () => {
+    const { component, navigateByUrl } = setup();
+    component.startMenuOpen.set(true);
+
+    await component.choosePrimaryStart();
+
+    expect(component.startMenuOpen()).toBe(false);
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
+  test('chooseStartSuggested should attach the top suggestion, close the menu, and start with it', async () => {
+    const { component, navigateByUrl } = setup([cleanArchSuggestion]);
+    await Promise.resolve();
+    component.startMenuOpen.set(true);
+
+    await component.chooseStartSuggested();
+
+    expect(component.startMenuOpen()).toBe(false);
+    expect(component.selectedTarget()).toEqual({
+      kind: 'node',
+      learningPathId: cleanArchSuggestion.pathId,
+      learningPathNodeId: cleanArchSuggestion.nodeId,
+      resourceId: cleanArchSuggestion.resourceId,
+    });
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
+  test('chooseStartSuggested should do nothing when there is no suggestion to start with', async () => {
+    const { component, navigateByUrl } = setup([]);
+    await Promise.resolve();
+
+    await component.chooseStartSuggested();
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
   test('should navigate straight to the dashboard when the default view is mini', async () => {
