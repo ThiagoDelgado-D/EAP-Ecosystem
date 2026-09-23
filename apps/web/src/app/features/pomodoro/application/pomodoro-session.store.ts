@@ -96,9 +96,13 @@ export class PomodoroSessionStore {
   });
 
   readonly breakElapsedSec = computed(() => {
-    const startedAt = this.activeBreak()?.startedAt;
-    if (!startedAt) return 0;
-    return Math.max(0, Math.floor((this.breakNow().getTime() - startedAt.getTime()) / 1000));
+    const activeBreak = this.activeBreak();
+    if (!activeBreak?.startedAt) return 0;
+    const rawElapsed = Math.max(
+      0,
+      Math.floor((this.breakNow().getTime() - activeBreak.startedAt.getTime()) / 1000),
+    );
+    return Math.min(rawElapsed, activeBreak.durationSec);
   });
 
   readonly breakRemainingSec = computed(() =>
