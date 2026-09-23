@@ -1,5 +1,6 @@
 export const DEFAULT_BREAK_DURATION_SEC = 300;
 export const MAX_PLANNED_DURATION_MIN = 480;
+export const DURATION_PRESETS: readonly number[] = [15, 25, 50, 90];
 
 export const SEGMENT_TARGET_KIND = {
   FREE: 'free',
