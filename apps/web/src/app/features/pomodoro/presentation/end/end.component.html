@@ -248,15 +248,18 @@
         <button type="button" (click)="discard()" [disabled]="saving()" class="flex-1 px-4 py-2.5 rounded-lg text-xs font-semibold border border-line-soft text-ink-faint hover:border-line-strong disabled:opacity-50 transition-colors">
           Discard
         </button>
+        <button type="button" (click)="saveAndBreak()" [disabled]="saving()" class="flex-1 px-4 py-2.5 rounded-lg text-xs font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors">
+          {{ saving() ? 'Saving...' : 'Take a break' }}
+        </button>
         <button type="button" (click)="saveAndClose()" [disabled]="saving()" class="flex-[2] px-4 py-2.5 rounded-lg text-xs font-semibold bg-accent hover:bg-accent-hover text-white disabled:opacity-50 transition-colors">
           {{ saving() ? 'Saving...' : pendingCount() > 0 ? 'Save & close' : 'Log ' + elapsedLabel() + ' & close' }}
         </button>
       </div>
       <div class="text-center text-[10.5px] text-ink-faint leading-relaxed">
         @if (pendingCount() > 0) {
-          Saving applies <b class="text-ink-dim">{{ pendingCount() }} status change{{ pendingCount() === 1 ? '' : 's' }}</b>. Discarding keeps the recorded time and drops them.
+          Saving applies <b class="text-ink-dim">{{ pendingCount() }} status change{{ pendingCount() === 1 ? '' : 's' }}</b> either way — Discard drops them and keeps the recorded time, Take a break or the close button both save them.
         } @else {
-          No status changes yet — either button just closes the session and keeps the recorded time.
+          No status changes yet — any of these closes the session and keeps the recorded time; Take a break also starts a break right away.
         }
       </div>
     </div>
