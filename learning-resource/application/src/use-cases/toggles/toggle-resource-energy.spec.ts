@@ -4,11 +4,12 @@ import {
   type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { toggleResourceEnergy } from "./toggle-resource-energy.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import { LearningResourceForbiddenError } from "../../errors/learning-resource-forbidden.js";
 
 describe("toggleResourceEnergy", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -17,14 +18,17 @@ describe("toggleResourceEnergy", () => {
   >;
   let resourceId: UUID;
   let typeId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     resourceId = await cryptoService.generateUUID();
     typeId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
 
     const resource: LearningResource = {
       id: resourceId,
+      userId: currentUser.id,
       title: "Advanced Algorithms",
       typeId,
       topicIds: [],
@@ -43,6 +47,7 @@ describe("toggleResourceEnergy", () => {
     const result = await toggleResourceEnergy(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -60,6 +65,7 @@ describe("toggleResourceEnergy", () => {
     const result = await toggleResourceEnergy(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -79,6 +85,7 @@ describe("toggleResourceEnergy", () => {
     const result = await toggleResourceEnergy(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: nonExistentId,
@@ -89,10 +96,28 @@ describe("toggleResourceEnergy", () => {
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
   });
 
+  test("Should return LearningResourceForbiddenError when resource belongs to another user", async () => {
+    const otherUser = await mockCurrentUser(cryptoService);
+
+    const result = await toggleResourceEnergy(
+      {
+        learningResourceRepository,
+        currentUser: otherUser,
+      },
+      {
+        id: resourceId,
+        energyLevel: EnergyLevelType.HIGH,
+      }
+    );
+
+    expect(result).toBeInstanceOf(LearningResourceForbiddenError);
+  });
+
   test("Should return InvalidDataError when validation fails", async () => {
     const result = await toggleResourceEnergy(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -114,6 +139,7 @@ describe("toggleResourceEnergy", () => {
     await toggleResourceEnergy(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
