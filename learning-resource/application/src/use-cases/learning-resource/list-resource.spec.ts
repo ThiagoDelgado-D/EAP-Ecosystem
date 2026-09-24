@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
-import { mockCryptoService, type UUID } from "domain-lib";
+import { mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import {
   DifficultyType,
   EnergyLevelType,
@@ -14,17 +14,19 @@ describe("listFormattedResourcesLearning", () => {
     typeof mockLearningResourceRepository
   >;
   let resourceTypeId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     learningResourceRepository = mockLearningResourceRepository([]);
     resourceTypeId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
   test("Should return an empty array when no resources exist", async () => {
-    const result = await listFormattedResourcesLearning({
-      learningResourceRepository,
-    });
+    const result = await listFormattedResourcesLearning(
+      { learningResourceRepository, currentUser },
+    );
 
     expect(result.resources).toEqual([]);
   });
@@ -36,6 +38,7 @@ describe("listFormattedResourcesLearning", () => {
 
     await learningResourceRepository.save({
       id: resourceId1,
+      userId: currentUser.id,
       title: "Clean Architecture Course",
       url: "https://example.com/clean-arch",
       difficulty: DifficultyType.MEDIUM,
@@ -53,6 +56,7 @@ describe("listFormattedResourcesLearning", () => {
 
     await learningResourceRepository.save({
       id: resourceId2,
+      userId: currentUser.id,
       title: "Advanced TypeScript",
       url: "https://example.com/ts-advanced",
       difficulty: DifficultyType.HIGH,
@@ -70,6 +74,7 @@ describe("listFormattedResourcesLearning", () => {
 
     await learningResourceRepository.save({
       id: resourceId3,
+      userId: currentUser.id,
       title: "Intro to Testing",
       url: "https://example.com/testing",
       difficulty: DifficultyType.LOW,
@@ -85,9 +90,9 @@ describe("listFormattedResourcesLearning", () => {
       updatedAt: new Date(),
     });
 
-    const result = await listFormattedResourcesLearning({
-      learningResourceRepository,
-    });
+    const result = await listFormattedResourcesLearning(
+      { learningResourceRepository, currentUser },
+    );
 
     expect(result.resources.length).toBe(3);
 

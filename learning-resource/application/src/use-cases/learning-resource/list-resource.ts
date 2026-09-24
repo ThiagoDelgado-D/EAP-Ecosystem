@@ -2,6 +2,7 @@ import type {
   ILearningResourceRepository,
   LearningResource,
 } from "@learning-resource/domain";
+import type { CurrentUser } from "domain-lib";
 
 export type ResourceFormatted = Pick<
   LearningResource,
@@ -16,6 +17,7 @@ export type ResourceFormatted = Pick<
 
 export interface ListFormattedResourcesDependencies {
   learningResourceRepository: ILearningResourceRepository;
+  currentUser: CurrentUser;
 }
 export interface listFormattedResourcesResponseModel {
   resources: ResourceFormatted[];
@@ -23,8 +25,9 @@ export interface listFormattedResourcesResponseModel {
 
 export const listFormattedResourcesLearning = async ({
   learningResourceRepository,
+  currentUser,
 }: ListFormattedResourcesDependencies): Promise<listFormattedResourcesResponseModel> => {
-  const resources = await learningResourceRepository.findAll();
+  const resources = await learningResourceRepository.findAllByUserId(currentUser.id);
 
   const formattedCourses: ResourceFormatted[] = resources.map((resources) => ({
     id: resources.id,
