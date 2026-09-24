@@ -1,4 +1,4 @@
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockSessionRepository } from "../../mocks/index.js";
@@ -7,21 +7,21 @@ import { getPathMomentum } from "./get-path-momentum.js";
 describe("getPathMomentum", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
-  const deps = () => ({ sessionRepository });
+  const deps = () => ({ sessionRepository, currentUser });
 
   const addSession = async (daysAgo: number) => {
     const sessionId = await cryptoService.generateUUID();
     sessionRepository.sessions.push({
       id: sessionId,
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000),
       completedAt: new Date(),
       plannedMin: 25,
@@ -47,7 +47,7 @@ describe("getPathMomentum", () => {
   };
 
   test("Should return an empty array when there are no segments in the window", async () => {
-    const result = await getPathMomentum(deps(), { userId: requestingUserId });
+    const result = await getPathMomentum(deps(), {});
     expect(result).toEqual([]);
   });
 
@@ -59,7 +59,7 @@ describe("getPathMomentum", () => {
     await addNodeSegment(yesterdaySessionId, sharedPathId, 0, 1500);
     await addNodeSegment(twoDaysAgoSessionId, sharedPathId, 0, 900);
 
-    const result = await getPathMomentum(deps(), { userId: requestingUserId });
+    const result = await getPathMomentum(deps(), {});
     expect(result).toEqual([{ learningPathId: sharedPathId, totalSeconds: 2400 }]);
   });
 
@@ -74,7 +74,7 @@ describe("getPathMomentum", () => {
       targetKind: SegmentTargetKind.FREE,
     });
 
-    const result = await getPathMomentum(deps(), { userId: requestingUserId });
+    const result = await getPathMomentum(deps(), {});
     expect(result).toEqual([]);
   });
 
@@ -83,7 +83,7 @@ describe("getPathMomentum", () => {
     const sessionId = await addSession(1);
     await addNodeSegment(sessionId, openSegmentPathId, 0, undefined);
 
-    const result = await getPathMomentum(deps(), { userId: requestingUserId });
+    const result = await getPathMomentum(deps(), {});
     expect(result).toEqual([]);
   });
 
@@ -92,10 +92,7 @@ describe("getPathMomentum", () => {
     const outOfWindowSessionId = await addSession(30);
     await addNodeSegment(outOfWindowSessionId, outOfWindowPathId, 0, 1500);
 
-    const result = await getPathMomentum(deps(), {
-      userId: requestingUserId,
-      days: 7,
-    });
+    const result = await getPathMomentum(deps(), { days: 7 });
 
     expect(result).toEqual([]);
   });
@@ -108,7 +105,7 @@ describe("getPathMomentum", () => {
     await addNodeSegment(sessionId, quietPathId, 0, 300);
     await addNodeSegment(sessionId, busyPathId, 300, 2100);
 
-    const result = await getPathMomentum(deps(), { userId: requestingUserId });
+    const result = await getPathMomentum(deps(), {});
 
     expect(result).toEqual([
       { learningPathId: busyPathId, totalSeconds: 1800 },
@@ -117,10 +114,7 @@ describe("getPathMomentum", () => {
   });
 
   test("Should return InvalidDataError when days is not positive", async () => {
-    const result = await getPathMomentum(deps(), {
-      userId: requestingUserId,
-      days: -1,
-    });
+    const result = await getPathMomentum(deps(), { days: -1 });
     expect(result).toBeInstanceOf(InvalidDataError);
   });
 });
