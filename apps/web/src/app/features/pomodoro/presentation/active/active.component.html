@@ -31,33 +31,18 @@
         <span class="t-kicker text-status-done">Break</span>
       </div>
 
-      <div class="relative" style="width: 440px; height: 440px">
-        <svg width="440" height="440" style="transform: rotate(-90deg)">
-          <circle cx="220" cy="220" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="7" fill="none" />
-          <circle
-            cx="220"
-            cy="220"
-            [attr.r]="RING_RADIUS"
-            stroke="var(--color-status-done)"
-            stroke-width="7"
-            fill="none"
-            stroke-linecap="round"
-            [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
-            [attr.stroke-dashoffset]="breakRingDashOffset()"
-            style="transition: stroke-dashoffset 1s linear"
-          />
-        </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <span class="t-num text-[80px]">{{ breakRemainingLabel() }}</span>
-          <span class="t-kicker">{{ store.breakRemainingSec() <= 0 ? 'break over' : 'rest' }}</span>
-        </div>
+      <app-pomodoro-ring strokeColor="var(--color-status-done)" [dashOffset]="breakRingDashOffset()" [animated]="true">
+        <span class="t-num text-[80px]">{{ breakRemainingLabel() }}</span>
+        <span class="t-kicker">{{ store.breakRemainingSec() <= 0 ? 'break over' : 'rest' }}</span>
         @if (justExtended()) {
-          <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
-          <div class="absolute -top-3 left-1/2 pomodoro-extend-pop text-status-done font-mono font-bold text-base pointer-events-none">
-            +5:00
-          </div>
+          <ng-container ring-overlay>
+            <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
+            <div class="absolute -top-3 left-1/2 pomodoro-extend-pop text-status-done font-mono font-bold text-base pointer-events-none">
+              +5:00
+            </div>
+          </ng-container>
         }
-      </div>
+      </app-pomodoro-ring>
 
       <p class="text-xs text-ink-faint text-center max-w-[280px] leading-relaxed">
         Step away from the screen. Nothing is being recorded — breaks are not segments.
@@ -146,105 +131,89 @@
         }
       </div>
 
-      <div class="relative" style="width: 440px; height: 440px">
-        <svg width="440" height="440" style="transform: rotate(-90deg)">
-          <circle cx="220" cy="220" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="7" fill="none" />
-          <circle
-            cx="220"
-            cy="220"
-            [attr.r]="RING_RADIUS"
-            [attr.stroke]="ringAccentColor()"
-            stroke-width="7"
-            fill="none"
-            stroke-linecap="round"
-            [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
-            [attr.stroke-dashoffset]="ringDashOffset()"
-            [style.filter]="ringGlow()"
-            style="transition: stroke-dashoffset 1s linear"
-          />
-        </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <span class="t-num text-[80px]">{{ remainingLabel() }}</span>
-          <span class="t-kicker">remaining</span>
-          <div class="relative mt-5">
-            <div class="flex items-center gap-6">
+      <app-pomodoro-ring [strokeColor]="ringAccentColor()" [dashOffset]="ringDashOffset()" [glow]="ringGlow()" [animated]="true">
+        <span class="t-num text-[80px]">{{ remainingLabel() }}</span>
+        <span class="t-kicker">remaining</span>
+        <div class="relative mt-5">
+          <div class="flex items-center gap-6">
+            <button
+              type="button"
+              (click)="togglePause()"
+              [attr.aria-label]="paused() ? 'Resume' : 'Pause'"
+              [title]="paused() ? 'Resume' : 'Pause'"
+              class="text-ink-faint hover:text-ink-strong transition-colors"
+            >
+              @if (paused()) {
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5z" /></svg>
+              } @else {
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+              }
+            </button>
+            <button
+              type="button"
+              (click)="endSession()"
+              aria-label="End session"
+              title="End session"
+              class="text-ink-faint hover:text-ink-strong transition-colors"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="1.5" /></svg>
+            </button>
+            <button
+              type="button"
+              (click)="extendFocusSession()"
+              aria-label="Extend five minutes"
+              title="Extend +5 min"
+              class="text-ink-faint hover:text-ink-strong transition-colors"
+            >
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+            </button>
+            <button
+              type="button"
+              (click)="toggleMoreMenu($event)"
+              aria-label="More actions"
+              title="More actions"
+              [class]="moreMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
+              class="transition-colors"
+            >
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+            </button>
+          </div>
+
+          @if (moreMenuOpen()) {
+            <div
+              class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+              (click)="$event.stopPropagation()"
+              (keydown)="$event.stopPropagation()"
+            >
               <button
                 type="button"
-                (click)="togglePause()"
-                [attr.aria-label]="paused() ? 'Resume' : 'Pause'"
-                [title]="paused() ? 'Resume' : 'Pause'"
-                class="text-ink-faint hover:text-ink-strong transition-colors"
+                (click)="chooseSwitchMaterial()"
+                [disabled]="store.switchingTarget()"
+                class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 disabled:opacity-50 transition-colors text-left"
               >
-                @if (paused()) {
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5z" /></svg>
-                } @else {
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
-                }
+                {{ store.switchingTarget() ? 'Switching...' : 'Switch material' }}
               </button>
               <button
                 type="button"
-                (click)="endSession()"
-                aria-label="End session"
-                title="End session"
-                class="text-ink-faint hover:text-ink-strong transition-colors"
+                (click)="chooseTakeBreak()"
+                [disabled]="startingBreak()"
+                class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors text-left"
               >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="5" width="14" height="14" rx="1.5" /></svg>
-              </button>
-              <button
-                type="button"
-                (click)="extendFocusSession()"
-                aria-label="Extend five minutes"
-                title="Extend +5 min"
-                class="text-ink-faint hover:text-ink-strong transition-colors"
-              >
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
-              </button>
-              <button
-                type="button"
-                (click)="toggleMoreMenu($event)"
-                aria-label="More actions"
-                title="More actions"
-                [class]="moreMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
-                class="transition-colors"
-              >
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+                {{ startingBreak() ? 'Starting...' : 'Take a break' }}
               </button>
             </div>
-
-            @if (moreMenuOpen()) {
-              <div
-                class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
-                (click)="$event.stopPropagation()"
-                (keydown)="$event.stopPropagation()"
-              >
-                <button
-                  type="button"
-                  (click)="chooseSwitchMaterial()"
-                  [disabled]="store.switchingTarget()"
-                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 disabled:opacity-50 transition-colors text-left"
-                >
-                  {{ store.switchingTarget() ? 'Switching...' : 'Switch material' }}
-                </button>
-                <button
-                  type="button"
-                  (click)="chooseTakeBreak()"
-                  [disabled]="startingBreak()"
-                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors text-left"
-                >
-                  {{ startingBreak() ? 'Starting...' : 'Take a break' }}
-                </button>
-              </div>
-            }
-          </div>
+          }
         </div>
         @if (justExtended()) {
-          <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
-          <div class="absolute -top-3 left-1/2 pomodoro-extend-pop text-accent-ink font-mono font-bold text-base pointer-events-none">
-            +5:00
-          </div>
+          <ng-container ring-overlay>
+            <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
+            <div class="absolute -top-3 left-1/2 pomodoro-extend-pop text-accent-ink font-mono font-bold text-base pointer-events-none">
+              +5:00
+            </div>
+          </ng-container>
         }
         @if (plannedTimeReached()) {
-          <div class="absolute inset-0 rounded-full bg-surface-base/95 flex flex-col items-center justify-center gap-3 px-6 text-center">
+          <div ring-overlay class="absolute inset-0 rounded-full bg-surface-base/95 flex flex-col items-center justify-center gap-3 px-6 text-center">
             <span class="t-kicker text-energy-medium">Planned time reached</span>
             <div class="flex flex-col gap-1.5 w-full">
               <button
@@ -264,7 +233,7 @@
             </div>
           </div>
         }
-      </div>
+      </app-pomodoro-ring>
 
       @if (!hideShortcutHints()) {
         <div class="mt-3.5 text-[10px] text-ink-faint flex gap-3.5">

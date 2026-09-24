@@ -10,6 +10,10 @@ import { readHideShortcutHints } from '@features/pomodoro/application/pomodoro-v
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
 import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import {
+  PomodoroRingComponent,
+  POMODORO_RING_CIRCUMFERENCE,
+} from '@features/pomodoro/presentation/pomodoro-ring/pomodoro-ring.component';
+import {
   PomodoroZenViewComponent,
   POMODORO_ZEN_KEY,
 } from '@features/pomodoro/presentation/zen-view/pomodoro-zen-view.component';
@@ -30,13 +34,10 @@ import { TodayPanelComponent } from './today-panel.component';
 
 type RailTab = 'session' | 'segments' | 'today';
 
-const RING_RADIUS = 190;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
-
 @Component({
   selector: 'app-pomodoro-active',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, TodayPanelComponent],
+  imports: [DatePipe, DecimalPipe, TodayPanelComponent, PomodoroRingComponent],
   templateUrl: './active.component.html',
 })
 export class ActiveComponent {
@@ -45,9 +46,6 @@ export class ActiveComponent {
   private readonly overlayHost = inject(PomodoroOverlayHostService);
   readonly store = inject(PomodoroSessionStore);
   readonly picker = inject(PomodoroPickerService);
-
-  readonly RING_RADIUS = RING_RADIUS;
-  readonly RING_CIRCUMFERENCE = RING_CIRCUMFERENCE;
 
   readonly session = this.store.activeSession;
   readonly paused = this.store.paused;
@@ -70,9 +68,9 @@ export class ActiveComponent {
     void this.picker.load();
   }
 
-  readonly ringDashOffset = computed(() => RING_CIRCUMFERENCE * this.progressFraction());
+  readonly ringDashOffset = computed(() => POMODORO_RING_CIRCUMFERENCE * this.progressFraction());
 
-  readonly breakRingDashOffset = computed(() => RING_CIRCUMFERENCE * this.breakProgressFraction());
+  readonly breakRingDashOffset = computed(() => POMODORO_RING_CIRCUMFERENCE * this.breakProgressFraction());
 
   readonly currentTarget = computed<SegmentTarget | null>(() =>
     currentSegmentTarget(this.store.segments()),

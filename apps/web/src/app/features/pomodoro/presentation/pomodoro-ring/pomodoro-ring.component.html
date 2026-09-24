@@ -1,0 +1,22 @@
+<div class="relative" style="width: 440px; height: 440px">
+  <svg width="440" height="440" style="transform: rotate(-90deg)">
+    <circle cx="220" cy="220" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="7" fill="none" />
+    <circle
+      cx="220"
+      cy="220"
+      [attr.r]="RING_RADIUS"
+      [attr.stroke]="strokeColor"
+      stroke-width="7"
+      fill="none"
+      stroke-linecap="round"
+      [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
+      [attr.stroke-dashoffset]="dashOffset"
+      [style.filter]="glow"
+      [style.transition]="animated ? 'stroke-dashoffset 1s linear' : null"
+    />
+  </svg>
+  <div class="absolute inset-0 flex flex-col items-center justify-center gap-2">
+    <ng-content></ng-content>
+  </div>
+  <ng-content select="[ring-overlay]"></ng-content>
+</div>

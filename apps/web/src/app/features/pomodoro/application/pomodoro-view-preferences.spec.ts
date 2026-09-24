@@ -2,8 +2,10 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import { mockLocalStorage, mockThrowingLocalStorage } from './mocks/mock-local-storage';
 import {
   POMODORO_VIEW_MODE,
+  readDefaultDurationMin,
   readDefaultViewMode,
   readHideShortcutHints,
+  writeDefaultDurationMin,
   writeDefaultViewMode,
   writeHideShortcutHints,
 } from './pomodoro-view-preferences';
@@ -101,5 +103,67 @@ describe('writeHideShortcutHints', () => {
     vi.stubGlobal('localStorage', mockThrowingLocalStorage());
 
     expect(() => writeHideShortcutHints(false)).not.toThrow();
+  });
+});
+
+describe('readDefaultDurationMin', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('should default to 25 when nothing is stored', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage(null));
+
+    expect(readDefaultDurationMin()).toBe(25);
+  });
+
+  test('should return a stored, valid duration', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage('50'));
+
+    expect(readDefaultDurationMin()).toBe(50);
+  });
+
+  test('should default to 25 when the stored value is not a positive number', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage('not-a-number'));
+    expect(readDefaultDurationMin()).toBe(25);
+
+    vi.stubGlobal('localStorage', mockLocalStorage('0'));
+    expect(readDefaultDurationMin()).toBe(25);
+
+    vi.stubGlobal('localStorage', mockLocalStorage('-15'));
+    expect(readDefaultDurationMin()).toBe(25);
+  });
+
+  test('should default to 25 when the stored value exceeds the planned-duration ceiling', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage('9999'));
+
+    expect(readDefaultDurationMin()).toBe(25);
+  });
+
+  test('should default to 25 when localStorage throws', () => {
+    vi.stubGlobal('localStorage', mockThrowingLocalStorage());
+
+    expect(readDefaultDurationMin()).toBe(25);
+  });
+});
+
+describe('writeDefaultDurationMin', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('should persist the chosen duration', () => {
+    const storage = mockLocalStorage();
+    vi.stubGlobal('localStorage', storage);
+
+    writeDefaultDurationMin(50);
+
+    expect(storage.setItem).toHaveBeenCalledWith('pomodoro_default_duration_min', '50');
+  });
+
+  test('should not throw when localStorage is unavailable', () => {
+    vi.stubGlobal('localStorage', mockThrowingLocalStorage());
+
+    expect(() => writeDefaultDurationMin(50)).not.toThrow();
   });
 });

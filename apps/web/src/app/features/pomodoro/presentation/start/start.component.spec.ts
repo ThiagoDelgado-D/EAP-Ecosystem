@@ -1,270 +1,239 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
-import { mockPomodoroRepository } from '@features/pomodoro/application/mocks/mock-pomodoro.repository';
-import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
-import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
-import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
-import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
-import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
-import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
-import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
+import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
+import type { Session, SuggestedCandidate } from '@features/pomodoro/domain/pomodoro.model';
 import { StartComponent } from './start.component';
 
-const now = new Date('2026-09-11T10:00:00.000Z');
-
-function setup() {
-  const pomodoroRepository = mockPomodoroRepository();
-  const learningPathRepository = mockLearningPathRepository();
-  const learningResourceRepository = mockLearningResourceRepository();
+function setup(suggestions: SuggestedCandidate[] = []) {
   const navigateByUrl = vi.fn();
-  const showOverlay = vi.fn();
+  const { providers, pomodoroRepository } = createPomodoroComponentTestProviders(navigateByUrl);
+  pomodoroRepository.suggestions = suggestions;
 
-  TestBed.configureTestingModule({
-    providers: [
-      PomodoroSessionStore,
-      PomodoroPickerService,
-      { provide: PomodoroRepository, useValue: pomodoroRepository },
-      { provide: LearningPathRepository, useValue: learningPathRepository },
-      { provide: LearningResourceRepository, useValue: learningResourceRepository },
-      { provide: Router, useValue: { navigateByUrl } },
-      { provide: PomodoroOverlayHostService, useValue: { show: showOverlay, hide: vi.fn(), isShown: vi.fn() } },
-    ],
-  });
+  TestBed.configureTestingModule({ providers });
 
+  const overlayHost = TestBed.inject(PomodoroOverlayHostService);
   const component = TestBed.createComponent(StartComponent).componentInstance;
-  return {
-    component,
-    pomodoroRepository,
-    learningPathRepository,
-    learningResourceRepository,
-    navigateByUrl,
-    showOverlay,
-  };
+  return { component, pomodoroRepository, overlayHost, navigateByUrl };
 }
+
+const cleanArchSuggestion: SuggestedCandidate = {
+  pathId: crypto.randomUUID(),
+  pathTitle: 'Frontend Architecture Mastery',
+  nodeId: crypto.randomUUID(),
+  nodeTitle: 'Clean Architecture',
+  resourceId: crypto.randomUUID(),
+  score: 0.9,
+  why: ['continues last session'],
+};
 
 describe('StartComponent', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  test('should re-load suggestions when the energy level changes', async () => {
-    const { component, pomodoroRepository } = setup();
-    pomodoroRepository.getSuggestion = vi.fn(async () => []);
-
-    component.setEnergy('high');
-    await Promise.resolve();
-
-    expect(pomodoroRepository.getSuggestion).toHaveBeenCalledWith('high');
-    expect(component.energy()).toBe('high');
-  });
-
-  test('should require both a duration and a target before starting is allowed', () => {
+  test('should default the duration to the stored default-duration preference', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage('50'));
     const { component } = setup();
 
-    expect(component.canStart()).toBe(false);
+    expect(component.selectedDuration()).toBe(50);
+    expect(component.durationClock()).toBe('50:00');
+  });
 
-    component.pickDuration(25);
-    expect(component.canStart()).toBe(false);
+  test('should default to showing the keyboard shortcut hint', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage(null));
+    const { component } = setup();
 
-    component.pickFree();
+    expect(component.hideShortcutHints()).toBe(false);
+  });
+
+  test('should read the hide-shortcut-hints preference from Settings', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage('true'));
+    const { component } = setup();
+
+    expect(component.hideShortcutHints()).toBe(true);
+  });
+
+  test('should default to free focus, ready to start, without attaching anything', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage(null));
+    const { component } = setup();
+
+    expect(component.hasAttachedMaterial()).toBe(false);
+    expect(component.effectiveTarget()).toEqual({ kind: 'free' });
     expect(component.canStart()).toBe(true);
-    expect(component.description().isFree).toBe(true);
   });
 
-  test('should toggle between hero and browse mode', () => {
+  test('pickDuration should set the duration and clear any pending custom input', () => {
+    const { component } = setup();
+    component.customDurationInput.set('37');
+
+    component.pickDuration(50);
+
+    expect(component.selectedDuration()).toBe(50);
+    expect(component.customDurationInput()).toBe('');
+    expect(component.isCustomDurationActive()).toBe(false);
+  });
+
+  test('onCustomDurationInput should set a custom duration, clamped to the ceiling', () => {
     const { component } = setup();
 
-    component.openBrowse();
-    expect(component.mode()).toBe('browse');
+    component.onCustomDurationInput('45');
+    expect(component.selectedDuration()).toBe(45);
+    expect(component.isCustomDurationActive()).toBe(true);
 
-    component.backToHero();
-    expect(component.mode()).toBe('hero');
+    component.onCustomDurationInput('9999');
+    expect(component.selectedDuration()).toBe(component.MAX_PLANNED_DURATION_MIN);
   });
 
-  test('should auto-resolve to the single path when a library resource belongs to exactly one', async () => {
-    const { component, learningPathRepository, learningResourceRepository } = setup();
-    const pathId = crypto.randomUUID();
-    const nodeId = crypto.randomUUID();
-    const resourceId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: nodeId, pathId, title: 'Trait Objects', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    const resource: LearningResource = {
-      id: resourceId,
-      title: 'Rust Book Chapter 17',
-      difficulty: 'Medium',
-      energyLevel: 'Medium',
-      status: 'Pending',
-      estimatedDuration: { value: 45, isEstimated: true },
-      topicIds: [],
-      typeId: crypto.randomUUID(),
-      createdAt: now,
-      updatedAt: now,
-    };
-    learningResourceRepository.resources = [resource];
-    await component.picker.load();
+  test('onCustomDurationInput should leave the duration unchanged while the field is emptied', () => {
+    const { component } = setup();
+    component.pickDuration(50);
 
-    component.pickResource(resource);
+    component.onCustomDurationInput('');
 
-    expect(component.pendingResourcePick()).toBeNull();
-    expect(component.selectedTarget()).toEqual({
-      kind: 'node',
-      learningPathId: pathId,
-      learningPathNodeId: nodeId,
-      resourceId,
-    });
+    expect(component.customDurationInput()).toBe('');
+    expect(component.selectedDuration()).toBe(50);
   });
 
-  test('should ask which path to count toward when a resource belongs to two or more', async () => {
-    const { component, learningPathRepository, learningResourceRepository } = setup();
-    const resourceId = crypto.randomUUID();
-    const cleanArchPathId = crypto.randomUUID();
-    const systemDesignPathId = crypto.randomUUID();
-    const cleanArchNodeId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: cleanArchPathId, userId: crypto.randomUUID(), title: 'Frontend Architecture Mastery', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-      { id: systemDesignPathId, userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: cleanArchNodeId, pathId: cleanArchPathId, title: 'Clean Architecture', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
-      { id: crypto.randomUUID(), pathId: systemDesignPathId, title: 'Clean Architecture', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    const resource: LearningResource = {
-      id: resourceId,
-      title: 'Clean Architecture (Book)',
-      difficulty: 'High',
-      energyLevel: 'High',
-      status: 'Pending',
-      estimatedDuration: { value: 600, isEstimated: true },
-      topicIds: [],
-      typeId: crypto.randomUUID(),
-      createdAt: now,
-      updatedAt: now,
-    };
-    learningResourceRepository.resources = [resource];
-    await component.picker.load();
+  test('clearAttachedMaterial should reset back to free focus', () => {
+    const { component } = setup();
+    component.selectedTarget.set({ kind: 'resource', resourceId: crypto.randomUUID() });
+    component.selectedTargetLabel.set({ title: 'Rust Book Chapter 17' });
 
-    component.pickResource(resource);
+    component.clearAttachedMaterial();
 
-    expect(component.pendingResourcePick()?.options).toHaveLength(2);
-    expect(component.selectedTarget()).toBeNull();
-
-    component.pickPendingPath(component.pendingResourcePick()!.options[0]);
-
-    expect(component.pendingResourcePick()).toBeNull();
-    expect(component.selectedTarget()).toEqual({
-      kind: 'node',
-      learningPathId: cleanArchPathId,
-      learningPathNodeId: cleanArchNodeId,
-      resourceId,
-    });
+    expect(component.hasAttachedMaterial()).toBe(false);
+    expect(component.selectedTargetLabel()).toBeNull();
+    expect(component.effectiveTarget()).toEqual({ kind: 'free' });
   });
 
-  test('should fall back to a plain resource target when neither path is picked', async () => {
-    const { component, learningPathRepository, learningResourceRepository } = setup();
-    const resourceId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: crypto.randomUUID(), userId: crypto.randomUUID(), title: 'Frontend Architecture Mastery', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-      { id: crypto.randomUUID(), userId: crypto.randomUUID(), title: 'System Design Prep', mode: 'graph', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    const [pathA, pathB] = learningPathRepository.paths;
-    learningPathRepository.nodes = [
-      { id: crypto.randomUUID(), pathId: pathA.id, title: 'Clean Architecture', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
-      { id: crypto.randomUUID(), pathId: pathB.id, title: 'Clean Architecture', learningResourceId: resourceId, progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    const resource: LearningResource = {
-      id: resourceId,
-      title: 'Clean Architecture (Book)',
-      difficulty: 'High',
-      energyLevel: 'High',
-      status: 'Pending',
-      estimatedDuration: { value: 600, isEstimated: true },
-      topicIds: [],
-      typeId: crypto.randomUUID(),
-      createdAt: now,
-      updatedAt: now,
-    };
-    learningResourceRepository.resources = [resource];
-    await component.picker.load();
-    component.pickResource(resource);
-
-    component.pickPendingNone();
-
-    expect(component.pendingResourcePick()).toBeNull();
-    expect(component.selectedTarget()).toEqual({ kind: 'resource', resourceId });
-  });
-
-  test('should start the session with the chosen intent and navigate to the active screen', async () => {
+  test('should start a free-focus session with the default duration in a single tap', async () => {
     const { component, navigateByUrl } = setup();
-    component.pickDuration(25);
-    component.pickFree();
-    component.intent.set('Finish the current chapter');
 
     await component.start();
 
     expect(component.store.activeSession()?.plannedMin).toBe(25);
-    expect(component.store.activeSession()?.intent).toBe('Finish the current chapter');
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
   });
 
-  test('should pick a free target and start in a single action', async () => {
+  test('should start with the attached material and the chosen intent', async () => {
+    const { component } = setup();
+    const resourceId = crypto.randomUUID();
+    component.selectedTarget.set({ kind: 'resource', resourceId });
+    component.intent.set('Finish the current chapter');
+
+    await component.start();
+
+    expect(component.store.activeSession()?.intent).toBe('Finish the current chapter');
+  });
+
+  test('should label the primary start action free focus by default, or the attached material once one is picked', () => {
+    const { component } = setup();
+
+    expect(component.primaryStartLabel()).toBe('Start free focus');
+
+    component.selectedTarget.set({ kind: 'resource', resourceId: crypto.randomUUID() });
+    component.selectedTargetLabel.set({ title: 'Rust Book Chapter 17' });
+
+    expect(component.primaryStartLabel()).toBe('Rust Book Chapter 17');
+  });
+
+  test('should offer a quick-start suggestion only while still in free focus', async () => {
+    const { component } = setup([cleanArchSuggestion]);
+    await Promise.resolve();
+
+    expect(component.topSuggestion()).toEqual(cleanArchSuggestion);
+    expect(component.canSuggestQuickStart()).toBe(true);
+
+    component.selectedTarget.set({ kind: 'resource', resourceId: crypto.randomUUID() });
+
+    expect(component.canSuggestQuickStart()).toBe(false);
+  });
+
+  test('should not offer a quick-start suggestion when none is available', async () => {
+    const { component } = setup([]);
+    await Promise.resolve();
+
+    expect(component.canSuggestQuickStart()).toBe(false);
+  });
+
+  test('toggleStartMenu should open and close the start menu, stopping the click from bubbling', () => {
+    const { component } = setup();
+    const event = new MouseEvent('click');
+    const stopPropagation = vi.spyOn(event, 'stopPropagation');
+
+    component.toggleStartMenu(event);
+    expect(component.startMenuOpen()).toBe(true);
+    expect(stopPropagation).toHaveBeenCalledOnce();
+
+    component.toggleStartMenu(event);
+    expect(component.startMenuOpen()).toBe(false);
+  });
+
+  test('closeMoreMenu should also close the start menu on any outside click', () => {
+    const { component } = setup();
+    component.startMenuOpen.set(true);
+
+    component.closeMoreMenu();
+
+    expect(component.startMenuOpen()).toBe(false);
+  });
+
+  test('choosePrimaryStart should close the start menu and start with whatever is currently selected', async () => {
     const { component, navigateByUrl } = setup();
-    component.pickDuration(50);
+    component.startMenuOpen.set(true);
 
-    await component.startFree();
+    await component.choosePrimaryStart();
 
-    expect(component.selectedTarget()).toEqual({ kind: 'free' });
-    expect(component.store.activeSession()?.plannedMin).toBe(50);
+    expect(component.startMenuOpen()).toBe(false);
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
+  test('chooseStartSuggested should attach the top suggestion, close the menu, and start with it', async () => {
+    const { component, navigateByUrl } = setup([cleanArchSuggestion]);
+    await Promise.resolve();
+    component.startMenuOpen.set(true);
+
+    await component.chooseStartSuggested();
+
+    expect(component.startMenuOpen()).toBe(false);
+    expect(component.selectedTarget()).toEqual({
+      kind: 'node',
+      learningPathId: cleanArchSuggestion.pathId,
+      learningPathNodeId: cleanArchSuggestion.nodeId,
+      resourceId: cleanArchSuggestion.resourceId,
+    });
+    expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+  });
+
+  test('chooseStartSuggested should do nothing when there is no suggestion to start with', async () => {
+    const { component, navigateByUrl } = setup([]);
+    await Promise.resolve();
+
+    await component.chooseStartSuggested();
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
   test('should navigate straight to the dashboard when the default view is mini', async () => {
     vi.stubGlobal('localStorage', mockLocalStorage('mini'));
-    const { component, navigateByUrl, showOverlay } = setup();
-    component.pickDuration(25);
-    component.pickFree();
+    const { component, navigateByUrl, overlayHost } = setup();
 
     await component.start();
 
     expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
     expect(navigateByUrl).not.toHaveBeenCalledWith('/pomodoro/active');
-    expect(showOverlay).not.toHaveBeenCalled();
+    expect(overlayHost.isShown('pomodoro-zen')).toBe(false);
   });
 
   test('should land on the active screen and open the zen overlay when the default view is zen', async () => {
     vi.stubGlobal('localStorage', mockLocalStorage('zen'));
-    const { component, navigateByUrl, showOverlay } = setup();
-    component.pickDuration(25);
-    component.pickFree();
+    const { component, navigateByUrl, overlayHost } = setup();
 
     await component.start();
 
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
-    expect(showOverlay).toHaveBeenCalledWith('pomodoro-zen', expect.anything(), 'fullscreen');
-  });
-
-  test('should flag when there is no path or resource to suggest from', async () => {
-    const { component } = setup();
-
-    await component.picker.load();
-
-    expect(component.hasNoMaterial()).toBe(true);
-  });
-
-  test('should not flag missing material once a path or a resource exists', async () => {
-    const { component, learningPathRepository } = setup();
-    learningPathRepository.paths = [
-      { id: crypto.randomUUID(), userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    await component.picker.load();
-
-    expect(component.hasNoMaterial()).toBe(false);
+    expect(overlayHost.isShown('pomodoro-zen')).toBe(true);
   });
 
   function enterKeydown(target: EventTarget = document.body): KeyboardEvent {
@@ -273,10 +242,8 @@ describe('StartComponent', () => {
     return event;
   }
 
-  test('should start the session when Enter is pressed with a duration and target already chosen', async () => {
+  test('should start the session when Enter is pressed', async () => {
     const { component, navigateByUrl } = setup();
-    component.pickDuration(25);
-    component.pickFree();
 
     component.onKeydown(enterKeydown());
     await new Promise((resolve) => setTimeout(resolve));
@@ -284,83 +251,86 @@ describe('StartComponent', () => {
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
   });
 
-  test('should ignore Enter when nothing is ready to start yet', () => {
-    const { component, navigateByUrl } = setup();
+  test('should ignore Enter while already starting', async () => {
+    const { component, navigateByUrl, pomodoroRepository } = setup();
+    let resolveStart!: (session: Session) => void;
+    pomodoroRepository.startSession = vi.fn(
+      () => new Promise<Session>((resolve) => (resolveStart = resolve)),
+    );
+    void component.start();
 
     component.onKeydown(enterKeydown());
+    resolveStart({ id: crypto.randomUUID(), userId: 'u1', startedAt: new Date(), plannedMin: 25 });
+    await new Promise((resolve) => setTimeout(resolve));
 
-    expect(navigateByUrl).not.toHaveBeenCalled();
+    expect(navigateByUrl).toHaveBeenCalledTimes(1);
   });
 
-  test('should ignore Enter while in browse mode', () => {
-    const { component, navigateByUrl } = setup();
-    component.pickDuration(25);
-    component.pickFree();
-    component.openBrowse();
-
-    component.onKeydown(enterKeydown());
-
-    expect(navigateByUrl).not.toHaveBeenCalled();
-  });
-
-  test('should ignore Enter pressed on a button to avoid double-triggering its own click', () => {
-    const { component, navigateByUrl } = setup();
-    component.pickDuration(25);
-    component.pickFree();
-    const button = document.createElement('button');
-
-    component.onKeydown(enterKeydown(button));
-
-    expect(navigateByUrl).not.toHaveBeenCalled();
-  });
-
-  test('should clear the browse search query', () => {
+  test('should offer both attach and intention entries when nothing is attached yet', () => {
     const { component } = setup();
-    component.query.set('clean architecture');
 
-    component.clearQuery();
-
-    expect(component.query()).toBe('');
+    expect(component.hasMoreActions()).toBe(true);
   });
 
-  test('should report progress for a given path by id', async () => {
-    const { component, learningPathRepository } = setup();
-    const pathId = crypto.randomUUID();
-    learningPathRepository.paths = [
-      { id: pathId, userId: crypto.randomUUID(), title: 'Rust for Backend Engineers', mode: 'sequential', source: 'manual', createdAt: now, updatedAt: now },
-    ];
-    learningPathRepository.nodes = [
-      { id: crypto.randomUUID(), pathId, title: 'Ownership', progress: 'done', createdAt: now, updatedAt: now },
-      { id: crypto.randomUUID(), pathId, title: 'Trait Objects', progress: 'pending', createdAt: now, updatedAt: now },
-    ];
-    await component.picker.load();
+  test('should drop the menu entirely once material is attached and an intention is already set', () => {
+    const { component } = setup();
+    component.selectedTarget.set({ kind: 'resource', resourceId: crypto.randomUUID() });
+    component.chooseAddIntention();
+    component.intent.set('Finish the current chapter');
 
-    expect(component.progressForPath(pathId)).toEqual(component.pathProgress(learningPathRepository.nodes));
+    expect(component.hasMoreActions()).toBe(false);
   });
 
-  test('should jump to the first browse tab that actually has matches for the search', async () => {
-    const { component, learningResourceRepository } = setup();
-    const resourceId = crypto.randomUUID();
-    learningResourceRepository.resources = [
-      {
-        id: resourceId,
-        title: 'Rust Book Chapter 17',
-        difficulty: 'Medium',
-        energyLevel: 'Medium',
-        status: 'Pending',
-        estimatedDuration: { value: 45, isEstimated: true },
-        topicIds: [],
-        typeId: crypto.randomUUID(),
-        createdAt: now,
-        updatedAt: now,
-      },
-    ];
-    await component.picker.load();
-    component.openBrowse();
+  test('toggleMoreMenu should open and close the menu, stopping the click from bubbling', () => {
+    const { component } = setup();
+    const event = new MouseEvent('click');
+    const stopPropagation = vi.spyOn(event, 'stopPropagation');
 
-    component.query.set('Rust Book');
-    TestBed.tick();
+    component.toggleMoreMenu(event);
+    expect(component.moreMenuOpen()).toBe(true);
+    expect(stopPropagation).toHaveBeenCalledOnce();
 
-    expect(component.activeTab()).toBe('library');
+    component.toggleMoreMenu(event);
+    expect(component.moreMenuOpen()).toBe(false);
+  });
+
+  test('closeMoreMenu should close the menu on any outside click', () => {
+    const { component } = setup();
+    component.moreMenuOpen.set(true);
+
+    component.closeMoreMenu();
+
+    expect(component.moreMenuOpen()).toBe(false);
+  });
+
+  test('chooseAddIntention should reveal the intention input and close the menu', () => {
+    const { component } = setup();
+    component.moreMenuOpen.set(true);
+
+    component.chooseAddIntention();
+
+    expect(component.showIntentInput()).toBe(true);
+    expect(component.moreMenuOpen()).toBe(false);
+  });
+
+  test('chooseAttachMaterial should close the menu before opening the attach dialog', async () => {
+    const { component } = setup();
+    component.moreMenuOpen.set(true);
+    const openAttachDialog = vi.spyOn(component, 'openAttachDialog').mockResolvedValue();
+
+    await component.chooseAttachMaterial();
+
+    expect(component.moreMenuOpen()).toBe(false);
+    expect(openAttachDialog).toHaveBeenCalledOnce();
+  });
+
+  test('should ignore Enter pressed on a button, input, or link to avoid double-triggering its own click', () => {
+    const { component, navigateByUrl } = setup();
+
+    component.onKeydown(enterKeydown(document.createElement('button')));
+    component.onKeydown(enterKeydown(document.createElement('input')));
+    component.onKeydown(enterKeydown(document.createElement('a')));
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
   });
 });

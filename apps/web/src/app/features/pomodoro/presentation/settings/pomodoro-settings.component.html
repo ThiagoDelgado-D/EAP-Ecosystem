@@ -139,6 +139,36 @@
       </div>
     </div>
 
+    <!-- Default focus duration -->
+    <div class="rounded-xl border border-line-soft bg-surface-raised px-6 py-5">
+      <p class="text-sm font-medium text-slate-200">Default focus duration</p>
+      <p class="text-xs text-slate-500 mt-0.5 mb-4">What Start pre-loads the ring with, ready to tap and go.</p>
+      <div class="flex gap-2 flex-wrap">
+        @for (minutes of DURATION_PRESETS; track minutes) {
+          <button
+            type="button"
+            class="flex-1 min-w-[3.5rem] px-3 py-2 rounded-lg text-sm border transition-colors"
+            [class]="defaultDurationMin() === minutes && !isCustomDefaultDuration() ? 'border-accent-line bg-accent-wash text-accent-ink' : 'border-line-soft text-ink-dim hover:border-line-strong'"
+            (click)="selectDefaultDuration(minutes)"
+          >
+            {{ minutes }}
+          </button>
+        }
+        <input
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          [attr.maxlength]="maxDurationDigits"
+          [value]="customDefaultDurationInput()"
+          (input)="onCustomDefaultDurationInput($any($event.target).value)"
+          placeholder="Custom"
+          aria-label="Custom default duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
+          class="flex-1 min-w-[4.5rem] px-3 py-2 rounded-lg text-sm text-center border bg-transparent placeholder:text-ink-faint transition-colors"
+          [class]="isCustomDefaultDuration() ? 'border-accent-line bg-accent-wash text-accent-ink' : 'border-line-soft text-ink-dim hover:border-line-strong'"
+        />
+      </div>
+    </div>
+
     <!-- Interface -->
     <div class="rounded-xl border border-slate-800 bg-slate-900 px-6 py-5 flex items-center justify-between">
       <div>

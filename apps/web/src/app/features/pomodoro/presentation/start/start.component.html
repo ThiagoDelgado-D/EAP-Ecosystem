@@ -1,474 +1,153 @@
-<div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-6 [&_button]:focus:outline-none [&_button]:focus-visible:ring-2 [&_button]:focus-visible:ring-accent-line [&_button]:focus-visible:ring-offset-2 [&_button]:focus-visible:ring-offset-surface-base">
-  <div class="flex items-start justify-between gap-4">
-    <div>
-      <h1 class="text-xl font-extrabold text-ink-strong tracking-tight">
-        {{ mode() === 'browse' ? 'Pick what to focus on' : 'Start a focus session' }}
-      </h1>
-      <div class="text-[12.5px] text-ink-dim mt-1.5 leading-relaxed max-w-md">
-        {{ mode() === 'browse'
-          ? 'Attach the session to a path step, a resource, or nothing at all.'
-          : 'One tap to begin. What you attach decides what can advance when you finish.' }}
-      </div>
-    </div>
-    @if (mode() === 'hero') {
-      <div class="flex-shrink-0 text-right">
-        <div class="t-kicker mb-2">Energy right now</div>
-        <div class="flex gap-1">
-          @for (level of ENERGIES; track level) {
-            <button
-              type="button"
-              (click)="setEnergy(level)"
-              [class]="energy() === level ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
-              class="px-2.5 py-1 rounded-md text-xs font-semibold border capitalize transition-colors"
-            >
-              {{ level }}
-            </button>
-          }
-        </div>
-      </div>
-    }
+<div class="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] gap-7 px-6 py-10 [&_button]:focus:outline-none [&_button]:focus-visible:ring-2 [&_button]:focus-visible:ring-accent-line [&_button]:focus-visible:ring-offset-2 [&_button]:focus-visible:ring-offset-surface-base">
+  <div class="text-center">
+    <h1 class="text-xl font-extrabold text-ink-strong tracking-tight">Ready when you are</h1>
+    <p class="text-[12.5px] text-ink-dim mt-1.5">One tap to begin. Attach material now, or whenever you want.</p>
   </div>
 
-  @if (mode() === 'hero') {
-    @if (store.suggestionsLoading()) {
-      <div class="rounded-xl border border-line-hairline bg-surface-raised h-40 animate-pulse"></div>
-    } @else if (heroDisplay(); as display) {
-      <div class="rounded-xl overflow-hidden border border-line-hairline">
-        <div class="p-5 pb-4">
-          <div class="flex items-center gap-2 mb-3">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-ink)" stroke-width="2.4" class="flex-shrink-0">
-              @if (isOverridden()) {
-                <path d="M20 6L9 17l-5-5" />
-              } @else {
-                <path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z" />
-              }
-            </svg>
-            <span class="t-kicker text-accent-ink">
-              {{ isOverridden() ? 'Your pick' : 'Suggested next' }}
-            </span>
-            @if (isOverridden()) {
-              <button type="button" (click)="clearOverride()" class="ml-auto text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">
-                Use the suggestion instead
-              </button>
-            }
-          </div>
+  <app-pomodoro-ring>
+    <span class="t-num text-[80px] text-ink-strong">{{ durationClock() }}</span>
+    <span class="t-kicker text-ink-faint max-w-[220px] truncate text-center">
+      {{ hasAttachedMaterial() ? selectedTargetLabel()?.title : 'Free focus' }}
+    </span>
+    <div class="flex items-center gap-6 mt-5">
+      <div class="relative">
+        <button
+          type="button"
+          (click)="toggleStartMenu($event)"
+          [disabled]="!canStart() || store.starting()"
+          aria-label="Start focus session"
+          title="Start"
+          [class]="startMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
+          class="disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5z" /></svg>
+        </button>
 
-          <div class="flex items-center gap-2 mb-1">
-            <h2 class="text-lg font-extrabold text-ink-strong tracking-tight">{{ display.title }}</h2>
-            @if (description().isStub) {
-              <span class="badge badge--unset">Stub</span>
-            }
-          </div>
-          @if (display.subtitle) {
-            <div class="text-xs text-ink-faint">{{ display.subtitle }}</div>
-          }
-
-          @if (!isOverridden() && topSuggestion()?.why?.length) {
-            <div class="flex flex-wrap gap-1.5 mt-3">
-              @for (reason of topSuggestion()!.why; track reason) {
-                <span class="px-2 py-0.5 rounded-full bg-surface-raised border border-line-soft text-[10px] font-semibold text-ink-dim">{{ reason }}</span>
-              }
-            </div>
-          }
-
-          @if (description().isStub) {
-            <div class="mt-3 px-3 py-2 rounded-md bg-energy-medium/10 border border-dashed border-energy-medium/40">
-              <div class="text-xs text-ink-dim leading-relaxed">
-                No resource yet. When you finish we'll offer to <span class="text-energy-medium font-medium">promote the stub</span> with whatever you used.
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="px-5 py-3 border-t border-line-hairline bg-surface-inset flex items-center gap-3 flex-wrap">
-          <div class="flex gap-1.5">
-            @for (minutes of DURATION_PRESETS; track minutes) {
-              <button
-                type="button"
-                (click)="pickDuration(minutes)"
-                [class]="selectedDuration() === minutes ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
-                class="t-mono px-3 py-1.5 rounded-md text-xs font-bold border transition-colors"
-              >
-                {{ minutes }}
-              </button>
-            }
-            <input
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              [attr.maxlength]="maxDurationDigits"
-              [value]="customDurationInput()"
-              (input)="onCustomDurationInput($any($event.target).value)"
-              placeholder="Custom"
-              aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
-              [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
-              class="t-mono w-16 px-2 py-1.5 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-faint placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-inset transition-colors"
-            />
-          </div>
-          <div class="ml-auto flex items-center gap-2">
-            @if (canStart() && !store.starting()) {
-              <span class="text-[10px] text-ink-faint hidden sm:inline">press <b class="text-ink-dim">Enter</b></span>
-            }
+        @if (startMenuOpen()) {
+          <div
+            class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[240px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
             <button
               type="button"
-              (click)="startFree()"
-              [disabled]="!selectedDuration() || store.starting()"
-              class="font-mono text-ink-dim border border-line-soft hover:border-line-strong hover:text-ink-strong disabled:opacity-50 disabled:cursor-not-allowed text-[13px] font-semibold px-4 py-2.5 rounded-lg transition-colors"
+              (click)="choosePrimaryStart()"
+              class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left truncate"
             >
-              Free focus
+              {{ primaryStartLabel() }}
             </button>
-            <button
-              type="button"
-              (click)="start()"
-              [disabled]="!canStart() || store.starting()"
-              class="font-mono inline-flex items-center gap-1.5 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-semibold px-5 py-2.5 rounded-lg transition-colors"
-            >
-              @if (canStart() && !store.starting()) {
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z" /></svg>
-              }
-              {{ store.starting() ? 'Starting...' : selectedDuration() ? 'Start ' + selectedDuration() + ' min' : 'Pick a duration' }}
-            </button>
-          </div>
-        </div>
-
-        <div class="px-5 py-3 border-t border-line-hairline">
-          @if (!showIntentInput() && !intent()) {
-            <button type="button" (click)="toggleIntentInput()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">
-              + Add an intention
-            </button>
-          } @else {
-            <label for="hero-intent-input" class="sr-only">Intention</label>
-            <input
-              id="hero-intent-input"
-              type="text"
-              [ngModel]="intent()"
-              (ngModelChange)="intent.set($event)"
-              placeholder="What do you want to walk away with?"
-              class="w-full px-3 py-2 rounded-lg text-sm bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line"
-            />
-          }
-        </div>
-
-        <div class="px-5 py-3 border-t border-line-hairline flex items-center gap-4 flex-wrap">
-          <button type="button" (click)="toggleAlternates()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">
-            {{ showAlternates() ? 'Hide other suggestions' : 'Something else (' + alternates().length + ')' }}
-          </button>
-          <button type="button" (click)="openBrowse()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">
-            Browse paths &amp; library
-          </button>
-        </div>
-
-        @if (showAlternates()) {
-          <div class="px-3 pb-3 flex flex-col gap-1 border-t border-line-hairline pt-2">
-            @for (alt of alternates(); track alt.nodeId) {
+            @if (canSuggestQuickStart()) {
               <button
                 type="button"
-                (click)="pickAlternate(alt)"
-                class="text-left px-3 py-2 rounded-lg hover:bg-surface-overlay transition-colors flex items-center justify-between gap-2"
+                (click)="chooseStartSuggested()"
+                class="px-3.5 py-2.5 rounded-md border border-line-soft hover:border-line-strong transition-colors text-left"
               >
-                <span class="text-sm text-ink-body truncate">{{ alt.nodeTitle }}</span>
-                <span class="text-xs text-ink-faint flex-shrink-0">{{ alt.pathTitle }}</span>
+                <div class="t-kicker text-[9.5px] text-ink-faint mb-0.5">Continue</div>
+                <div class="text-[12.5px] font-semibold text-ink-body truncate">{{ topSuggestion()?.nodeTitle }}</div>
+                <div class="text-[10px] text-ink-faint truncate">{{ topSuggestion()?.pathTitle }}</div>
               </button>
             }
           </div>
         }
       </div>
-    } @else if (store.suggestionsError()) {
-      <div class="rounded-xl border border-dashed border-line-strong p-6 text-center">
-        <div class="text-sm font-semibold text-ink-strong">We couldn't load a suggestion.</div>
-        <div class="text-xs text-ink-faint mt-1.5">Check your connection and try again, or pick something yourself.</div>
-        <div class="flex items-center justify-center gap-4 mt-4">
-          <button type="button" (click)="setEnergy(energy())" class="text-xs font-semibold text-white bg-accent hover:bg-accent-hover px-4 py-2 rounded-lg transition-colors">Try again</button>
-          <button type="button" (click)="openBrowse()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">Browse paths &amp; library</button>
-          <button type="button" (click)="pickFree()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">Just focus, nothing attached</button>
-        </div>
-      </div>
-    } @else if (picker.error()) {
-      <div class="rounded-xl border border-dashed border-line-strong p-6 text-center">
-        <div class="text-sm font-semibold text-ink-strong">We couldn't load your paths and resources.</div>
-        <div class="text-xs text-ink-faint mt-1.5">{{ picker.error() }}</div>
-        <div class="flex items-center justify-center gap-4 mt-4">
-          <button type="button" (click)="picker.load()" class="text-xs font-semibold text-white bg-accent hover:bg-accent-hover px-4 py-2 rounded-lg transition-colors">Try again</button>
-          <button type="button" (click)="pickFree()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">Just focus, nothing attached</button>
-        </div>
-      </div>
-    } @else if (hasNoMaterial()) {
-      <div class="rounded-xl border border-dashed border-line-strong p-6 text-center">
-        <div class="text-sm font-semibold text-ink-strong">You haven't added anything to learn yet.</div>
-        <div class="text-xs text-ink-faint mt-1.5 max-w-sm mx-auto leading-relaxed">
-          Create a Learning Path or add a resource to your library, and we'll start suggesting what to focus on next.
-        </div>
-        <div class="flex items-center justify-center gap-2 mt-4 flex-wrap">
-          <a routerLink="/paths" class="text-xs font-semibold text-white bg-accent hover:bg-accent-hover px-4 py-2 rounded-lg transition-colors">
-            Create a Learning Path
-          </a>
-          <a routerLink="/add" class="text-xs font-semibold text-ink-dim border border-line-soft hover:border-line-strong hover:text-ink-strong px-4 py-2 rounded-lg transition-colors">
-            Add a resource
-          </a>
-        </div>
-        <button type="button" (click)="pickFree()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2 mt-4">
-          Or just start a free-focus session
-        </button>
-      </div>
-    } @else {
-      <div class="rounded-xl border border-dashed border-line-strong p-6 text-center">
-        <div class="text-sm font-semibold text-ink-strong">Nothing new to suggest right now.</div>
-        <div class="text-xs text-ink-faint mt-1.5">Everything's either done or outside today's energy — pick something yourself.</div>
-        <div class="flex items-center justify-center gap-4 mt-4">
-          <button type="button" (click)="openBrowse()" class="text-xs font-semibold text-white bg-accent hover:bg-accent-hover px-4 py-2 rounded-lg transition-colors">Browse paths &amp; library</button>
-          <button type="button" (click)="pickFree()" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">Just focus, nothing attached</button>
-        </div>
-      </div>
-    }
-  }
 
-  @if (mode() === 'browse') {
-    <button type="button" (click)="backToHero()" class="flex items-center gap-1.5 text-xs font-semibold text-ink-faint hover:text-ink-body -mt-2">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6" /></svg>
-      Back to the suggestion
-    </button>
-
-    <div class="flex gap-6 items-start">
-      <div class="flex-1 min-w-0 flex flex-col gap-3">
-        <button
-          type="button"
-          (click)="pickFree()"
-          [class]="description().isFree ? 'border-line-strong bg-accent-wash' : 'border-dashed border-line-soft hover:border-line-strong'"
-          class="flex items-center gap-3 px-4 py-3 rounded-lg border text-left transition-colors"
-        >
-          <div class="w-8 h-8 rounded-lg bg-transparent border border-line-soft flex items-center justify-center flex-shrink-0">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-dim)" stroke-width="2"><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 14" /></svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-sm font-semibold text-ink-strong">Just focus — nothing attached</div>
-            <div class="text-xs text-ink-faint mt-0.5">You can attach it retroactively when you finish.</div>
-          </div>
-          @if (description().isFree) {
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-dim)" stroke-width="3"><path d="M20 6L9 17l-5-5" /></svg>
-          }
-        </button>
-
-        <div
-          [class]="query() ? 'border-accent-line' : 'border-line-soft'"
-          class="flex items-center gap-2 px-3 py-2 rounded-lg border focus-within:border-accent-line transition-colors"
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" [attr.stroke]="query() ? 'var(--color-accent-ink)' : 'var(--color-ink-faint)'" stroke-width="2" class="flex-shrink-0"><path d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z" /></svg>
-          <label for="browse-search-input" class="sr-only">Search steps, paths, resources</label>
-          <input
-            id="browse-search-input"
-            type="text"
-            [ngModel]="query()"
-            (ngModelChange)="query.set($event)"
-            placeholder="Search steps, paths, resources..."
-            class="flex-1 min-w-0 bg-transparent text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none"
-          />
-          @if (query()) {
-            <button type="button" (click)="clearQuery()" class="text-ink-faint hover:text-ink-body flex-shrink-0" aria-label="Clear search">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12" /></svg>
-            </button>
-          }
-        </div>
-
-        <div class="flex items-center gap-1 border-b border-line-hairline">
-          <button type="button" (click)="selectTab('ready')" [class]="activeTab() === 'ready' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'" class="px-3 py-2 text-sm font-medium border-b-2 transition-colors">
-            Ready to learn <span class="t-mono text-xs text-ink-faint">{{ filteredReady().length }}</span>
+      @if (hasMoreActions()) {
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleMoreMenu($event)"
+            aria-label="More actions"
+            title="More actions"
+            [class]="moreMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
+            class="transition-colors"
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
           </button>
-          <button type="button" (click)="selectTab('going')" [class]="activeTab() === 'going' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'" class="px-3 py-2 text-sm font-medium border-b-2 transition-colors">
-            In progress <span class="t-mono text-xs text-ink-faint">{{ filteredGoing().length }}</span>
-          </button>
-          <button type="button" (click)="selectTab('paths')" [class]="activeTab() === 'paths' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'" class="px-3 py-2 text-sm font-medium border-b-2 transition-colors">
-            All paths <span class="t-mono text-xs text-ink-faint">{{ picker.allPaths().length }}</span>
-          </button>
-          <button type="button" (click)="selectTab('library')" [class]="activeTab() === 'library' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'" class="px-3 py-2 text-sm font-medium border-b-2 transition-colors">
-            Library <span class="t-mono text-xs text-ink-faint">{{ filteredLibrary().length }}</span>
-          </button>
-        </div>
 
-        <div class="flex flex-col gap-2.5">
-          @switch (activeTab()) {
-            @case ('ready') {
-              @for (entry of filteredReady(); track entry.node.id) {
-                <button type="button" (click)="pickNode(entry)" [class]="isNodeSelected(entry.node.id) ? 'border-accent-line bg-accent-wash' : 'border-line-hairline hover:border-line-soft'" class="text-left flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors">
-                  <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(entry.path.id)"></span>
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm text-ink-strong truncate">{{ entry.node.title }}</div>
-                    <div class="text-[10.5px] text-ink-faint truncate mt-0.5">{{ entry.path.title }}</div>
-                  </div>
-                </button>
-              } @empty {
-                <div class="text-sm text-ink-faint px-1 py-4">Nothing matches.</div>
-              }
-            }
-            @case ('going') {
-              @for (entry of filteredGoing(); track entry.node.id) {
-                <button type="button" (click)="pickNode(entry)" [class]="isNodeSelected(entry.node.id) ? 'border-accent-line bg-accent-wash' : 'border-line-hairline hover:border-line-soft'" class="text-left flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors">
-                  <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(entry.path.id)"></span>
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm text-ink-strong truncate">{{ entry.node.title }}</div>
-                    <div class="text-[10.5px] text-ink-faint truncate mt-0.5">{{ entry.path.title }}</div>
-                  </div>
-                </button>
-              } @empty {
-                <div class="text-sm text-ink-faint px-1 py-4">Nothing matches.</div>
-              }
-            }
-            @case ('paths') {
-              <div class="flex items-center justify-between mb-1 px-1">
-                <div class="text-[11px] text-ink-faint leading-relaxed">Collapsed by default — open only the path you need.</div>
-                <button type="button" (click)="openPaths().size ? collapseAllPaths() : expandAllPaths()" class="text-[10.5px] font-semibold text-ink-faint hover:text-ink-body">
-                  {{ openPaths().size ? 'Collapse all' : 'Expand all' }}
-                </button>
-              </div>
-              @for (group of filteredPathGroups(); track group.path.id) {
-                <div class="rounded-lg border border-line-hairline overflow-hidden">
-                  <button type="button" (click)="togglePath(group.path.id)" class="w-full flex items-center gap-2.5 px-3 py-3 text-left hover:bg-surface-overlay/60 transition-colors">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink-dim)" stroke-width="2.4" [style.transform]="isPathOpen(group.path.id) ? 'rotate(180deg)' : 'none'" class="flex-shrink-0 transition-transform"><path d="M6 9l6 6 6-6" /></svg>
-                    <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(group.path.id)"></span>
-                    <div class="flex-1 min-w-0">
-                      <div class="text-sm font-medium text-ink-body truncate">{{ group.path.title }}</div>
-                      <div class="t-mono text-[10px] text-ink-faint mt-0.5">
-                        {{ group.path.mode }} · {{ group.nodes.length }} step{{ group.nodes.length === 1 ? '' : 's' }}
-                        @if (pathProgress(group.nodes).stubs > 0) {
-                          · {{ pathProgress(group.nodes).stubs }} stub{{ pathProgress(group.nodes).stubs === 1 ? '' : 's' }}
-                        }
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                      <span class="t-mono text-[10.5px] text-ink-faint">{{ pathProgress(group.nodes).done }}/{{ pathProgress(group.nodes).total }}</span>
-                      <div class="w-11 h-1 rounded-sm bg-line-soft overflow-hidden">
-                        <div class="h-full" [style.width.%]="pathProgress(group.nodes).pct" [style.background]="pathColor(group.path.id)"></div>
-                      </div>
-                    </div>
-                  </button>
-                  @if (isPathOpen(group.path.id)) {
-                    <div class="flex flex-col gap-1 px-2 pb-2">
-                      @for (node of group.nodes; track node.id) {
-                        <button type="button" (click)="pickNode({ path: group.path, node })" [class]="isNodeSelected(node.id) ? 'border-accent-line bg-accent-wash' : 'border-transparent hover:border-line-soft'" class="text-left flex items-center justify-between gap-2 px-3 py-2 rounded-md border transition-colors">
-                          <span class="text-sm text-ink-body truncate">{{ node.title }}</span>
-                          <span
-                            [class]="node.progress === 'done' ? 'text-status-done' : node.progress === 'in_progress' ? 'text-status-in-progress' : 'text-status-pending'"
-                            class="t-mono text-[10px] flex-shrink-0"
-                          >{{ node.progress }}</span>
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-              } @empty {
-                <div class="text-sm text-ink-faint px-1 py-4">You haven't created any Learning Path yet.</div>
-              }
-            }
-            @case ('library') {
-              @for (resource of filteredLibrary(); track resource.id) {
-                <div>
-                  <app-library-resource-row
-                    [resource]="resource"
-                    [selected]="isResourceSelected(resource.id)"
-                    [pathCount]="pathCountFor(resource.id)"
-                    (rowClick)="pickResource(resource)"
-                  />
-                  @if (pendingResourcePick()?.resource?.id === resource.id) {
-                    <div class="mt-1.5 p-3 rounded-lg bg-energy-medium/5 border border-dashed border-energy-medium/40">
-                      <div class="text-xs font-bold text-energy-medium mb-1">This resource is a step in {{ pendingResourcePick()!.options.length }} paths</div>
-                      <div class="text-[11px] text-ink-dim leading-relaxed mb-2">Pick which one this session counts toward. We can't guess — and only the path you pick will advance.</div>
-                      <div class="flex flex-col gap-1.5">
-                        @for (option of pendingResourcePick()!.options; track option.path.id) {
-                          <button type="button" (click)="pickPendingPath(option)" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md border border-line-hairline text-left hover:border-line-soft transition-colors">
-                            <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(option.path.id)"></span>
-                            <div class="flex-1 min-w-0">
-                              <div class="text-xs font-semibold text-ink-body truncate">{{ option.path.title }}</div>
-                              <div class="text-[10px] text-ink-faint mt-0.5">
-                                as "{{ option.node.title }}" · {{ progressForPath(option.path.id).done }}/{{ progressForPath(option.path.id).total }} done
-                              </div>
-                            </div>
-                            <span
-                              [class]="option.node.progress === 'done' ? 'text-status-done bg-status-done/10 border-status-done/30' : option.node.progress === 'in_progress' ? 'text-status-in-progress bg-status-in-progress/10 border-status-in-progress/30' : 'text-status-pending bg-status-pending/10 border-status-pending/30'"
-                              class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
-                            >{{ option.node.progress }}</span>
-                          </button>
-                        }
-                        <button type="button" (click)="pickPendingNone()" class="flex items-center gap-2.5 px-2.5 py-2 rounded-md border border-dashed border-line-soft text-left hover:text-ink-body transition-colors">
-                          <span class="w-1.5 h-1.5 rounded-full border border-dashed border-ink-faint flex-shrink-0"></span>
-                          <div class="flex-1 min-w-0">
-                            <div class="text-xs font-semibold text-ink-body">Neither — just the resource</div>
-                            <div class="text-[10px] text-ink-faint mt-0.5">No path advances. Progress stays on the resource.</div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  }
-                </div>
-              } @empty {
-                <div class="text-sm text-ink-faint px-1 py-4">Your resource library is empty.</div>
-              }
-            }
-          }
-        </div>
-      </div>
-
-      <aside class="w-72 flex-shrink-0 rounded-xl border border-line-hairline flex flex-col">
-        <div class="p-4 border-b border-line-hairline">
-          <div class="t-kicker mb-2.5">Session context</div>
-          @if (effectiveTarget()) {
-            <span
-              [class]="description().caseNo === 1 ? 'text-ink-dim bg-surface-overlay' : description().caseNo === 2 ? 'text-status-in-progress bg-status-in-progress/10' : description().caseNo === 4 ? 'text-energy-medium bg-energy-medium/10' : 'text-accent-ink bg-accent-wash'"
-              class="t-kicker inline-block px-2 py-0.5 rounded normal-case tracking-normal"
+          @if (moreMenuOpen()) {
+            <div
+              class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+              (click)="$event.stopPropagation()"
+              (keydown)="$event.stopPropagation()"
             >
-              Case {{ description().caseNo }} · {{ description().label }}
-            </span>
-          } @else {
-            <div class="text-xs text-ink-faint leading-relaxed">Nothing picked yet. Choose a step, a resource, or just focus.</div>
-          }
-        </div>
-
-        <div class="p-4 flex flex-col gap-4 flex-1">
-          <div>
-            <div class="t-kicker mb-2">Duration</div>
-            <div class="flex gap-1.5">
-              @for (minutes of DURATION_PRESETS; track minutes) {
-                <button type="button" (click)="pickDuration(minutes)" [class]="selectedDuration() === minutes ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'" class="t-mono flex-1 py-2 rounded-md text-xs font-bold border transition-colors">
-                  {{ minutes }}
+              @if (!hasAttachedMaterial()) {
+                <button
+                  type="button"
+                  (click)="chooseAttachMaterial()"
+                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left"
+                >
+                  Attach material
+                </button>
+              }
+              @if (canOfferIntention()) {
+                <button
+                  type="button"
+                  (click)="chooseAddIntention()"
+                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors text-left"
+                >
+                  Add an intention
                 </button>
               }
             </div>
-            <input
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              [attr.maxlength]="maxDurationDigits"
-              [value]="customDurationInput()"
-              (input)="onCustomDurationInput($any($event.target).value)"
-              placeholder="Custom minutes"
-              aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
-              [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
-              class="t-mono w-full mt-1.5 px-3 py-2 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-faint placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-inset transition-colors"
-            />
-          </div>
-
-          <div>
-            <label for="sidebar-intent-input" class="t-kicker mb-2 block">Intention <span class="normal-case tracking-normal font-normal">· optional</span></label>
-            <textarea
-              id="sidebar-intent-input"
-              rows="3"
-              [ngModel]="intent()"
-              (ngModelChange)="intent.set($event)"
-              placeholder="What do you want to walk away with?"
-              class="w-full px-3 py-2 rounded-lg text-sm bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line resize-none"
-            ></textarea>
-          </div>
+          }
         </div>
+      }
+    </div>
+    @if (!hideShortcutHints() && canStart() && !store.starting()) {
+      <span class="text-[10px] text-ink-faint">press <b class="text-ink-dim">Enter</b></span>
+    }
+  </app-pomodoro-ring>
 
-        <div class="p-4 border-t border-line-hairline">
-          <button
-            type="button"
-            (click)="start()"
-            [disabled]="!canStart() || store.starting()"
-            class="font-mono w-full bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-semibold px-4 py-2.5 rounded-lg transition-colors"
-          >
-            {{ store.starting() ? 'Starting...' : effectiveTarget() ? 'Start ' + (selectedDuration() ?? '') + ' min session' : 'Pick something first' }}
-          </button>
-        </div>
-      </aside>
+  <div class="flex gap-1.5 items-center">
+    @for (minutes of DURATION_PRESETS; track minutes) {
+      <button
+        type="button"
+        (click)="pickDuration(minutes)"
+        [class]="selectedDuration() === minutes ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+        class="t-mono px-3 py-1.5 rounded-md text-xs font-bold border transition-colors"
+      >
+        {{ minutes }}
+      </button>
+    }
+    <input
+      type="text"
+      inputmode="numeric"
+      pattern="[0-9]*"
+      [attr.maxlength]="maxDurationDigits"
+      [value]="customDurationInput()"
+      (input)="onCustomDurationInput($any($event.target).value)"
+      placeholder="Custom"
+      aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
+      [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+      class="t-mono w-16 px-2 py-1.5 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-faint placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-base transition-colors"
+    />
+  </div>
+
+  @if (hasAttachedMaterial()) {
+    <div class="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border border-line-soft bg-surface-raised">
+      <span class="text-xs text-ink-body truncate max-w-[200px]">{{ selectedTargetLabel()?.title }}</span>
+      <button
+        type="button"
+        (click)="clearAttachedMaterial()"
+        class="w-4 h-4 rounded-full flex items-center justify-center text-ink-faint hover:text-ink-body hover:bg-surface-overlay transition-colors"
+        aria-label="Detach material, go back to free focus"
+      >
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
+      </button>
+    </div>
+  }
+
+  @if (showIntentInput() || intent()) {
+    <div class="w-full max-w-sm">
+      <label for="start-intent-input" class="sr-only">Intention</label>
+      <input
+        id="start-intent-input"
+        type="text"
+        [ngModel]="intent()"
+        (ngModelChange)="intent.set($event)"
+        placeholder="What do you want to walk away with?"
+        class="w-full px-3 py-2 rounded-lg text-sm bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line"
+      />
     </div>
   }
 

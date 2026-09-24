@@ -3,12 +3,15 @@ import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-se
 import { SOUND_OPTIONS, playBoundaryChime, type SoundId } from '@features/pomodoro/application/pomodoro-sound';
 import {
   POMODORO_VIEW_MODE,
+  readDefaultDurationMin,
   readDefaultViewMode,
   readHideShortcutHints,
+  writeDefaultDurationMin,
   writeDefaultViewMode,
   writeHideShortcutHints,
   type PomodoroViewMode,
 } from '@features/pomodoro/application/pomodoro-view-preferences';
+import { DURATION_PRESETS, MAX_PLANNED_DURATION_MIN } from '@features/pomodoro/domain/pomodoro.model';
 
 @Component({
   selector: 'app-pomodoro-settings',
@@ -20,6 +23,9 @@ export class PomodoroSettingsComponent {
 
   readonly SOUND_OPTIONS = SOUND_OPTIONS;
   readonly POMODORO_VIEW_MODE = POMODORO_VIEW_MODE;
+  readonly DURATION_PRESETS = DURATION_PRESETS;
+  readonly MAX_PLANNED_DURATION_MIN = MAX_PLANNED_DURATION_MIN;
+  readonly maxDurationDigits = String(MAX_PLANNED_DURATION_MIN).length;
 
   readonly soundEnabled = this.store.soundEnabled;
   readonly soundId = this.store.soundId;
@@ -32,6 +38,10 @@ export class PomodoroSettingsComponent {
   readonly defaultViewMode = signal<PomodoroViewMode>(readDefaultViewMode());
   private readonly hideShortcutHints = signal(readHideShortcutHints());
   readonly showShortcutHints = computed(() => !this.hideShortcutHints());
+
+  readonly defaultDurationMin = signal(readDefaultDurationMin());
+  readonly customDefaultDurationInput = signal('');
+  readonly isCustomDefaultDuration = computed(() => !DURATION_PRESETS.includes(this.defaultDurationMin()));
 
   toggleSoundEnabled(): void {
     this.store.toggleSound();
@@ -58,5 +68,20 @@ export class PomodoroSettingsComponent {
     const nextHidden = !this.hideShortcutHints();
     this.hideShortcutHints.set(nextHidden);
     writeHideShortcutHints(nextHidden);
+  }
+
+  selectDefaultDuration(minutes: number): void {
+    this.defaultDurationMin.set(minutes);
+    this.customDefaultDurationInput.set('');
+    writeDefaultDurationMin(minutes);
+  }
+
+  onCustomDefaultDurationInput(value: string): void {
+    const digits = value.replace(/\D/g, '');
+    this.customDefaultDurationInput.set(digits);
+    if (digits === '') return;
+    const minutes = Math.min(MAX_PLANNED_DURATION_MIN, Math.round(Number(digits)));
+    this.defaultDurationMin.set(minutes);
+    writeDefaultDurationMin(minutes);
   }
 }
