@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { BaseError, type CryptoService, type UUID } from "domain-lib";
+import { BaseError, type CryptoService, type CurrentUser, type UUID } from "domain-lib";
 import type {
   CandidateNodesPort,
   CandidateNodeEnergyLevel,
@@ -45,7 +45,7 @@ import {
 } from "./dto/request/index.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
-import { CurrentUserId } from "../auth/current-user-id.decorator.js";
+import { CurrentUser as CurrentUserDecorator } from "../auth/current-user.decorator.js";
 
 @UseGuards(JwtAuthGuard)
 @Controller("api/v1/pomodoro")
@@ -66,14 +66,12 @@ export class PomodoroController {
   ) {}
 
   @Get("sessions/active")
-  async getActiveSession(@CurrentUserId() userId: UUID) {
-    const result = await getActiveSession(
-      {
-        sessionRepository: this.sessionRepository,
-        notificationPort: this.notificationPort,
-      },
-      { userId },
-    );
+  async getActiveSession(@CurrentUserDecorator() currentUser: CurrentUser) {
+    const result = await getActiveSession({
+      sessionRepository: this.sessionRepository,
+      notificationPort: this.notificationPort,
+      currentUser,
+    });
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
@@ -81,16 +79,16 @@ export class PomodoroController {
   @Post("sessions")
   async startSession(
     @Body() dto: StartSessionDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await startSession(
       {
         sessionRepository: this.sessionRepository,
         cryptoService: this.cryptoService,
         learningPathMembershipPort: this.learningPathMembershipPort,
+        currentUser,
       },
       {
-        userId,
         plannedMin: dto.plannedMin,
         intent: dto.intent,
         target: dto.target as SegmentTargetInput,
@@ -104,15 +102,16 @@ export class PomodoroController {
   async switchTarget(
     @Param("id") id: UUID,
     @Body() dto: SwitchTargetDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await switchTarget(
       {
         sessionRepository: this.sessionRepository,
         cryptoService: this.cryptoService,
         learningPathMembershipPort: this.learningPathMembershipPort,
+        currentUser,
       },
-      { userId, sessionId: id, target: dto.target as SegmentTargetInput },
+      { sessionId: id, target: dto.target as SegmentTargetInput },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -122,14 +121,15 @@ export class PomodoroController {
   async attachOpenSegment(
     @Param("id") id: UUID,
     @Body() dto: SwitchTargetDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await attachOpenSegment(
       {
         sessionRepository: this.sessionRepository,
         learningPathMembershipPort: this.learningPathMembershipPort,
+        currentUser,
       },
-      { userId, sessionId: id, target: dto.target as SegmentTargetInput },
+      { sessionId: id, target: dto.target as SegmentTargetInput },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -139,40 +139,49 @@ export class PomodoroController {
   async attributeSession(
     @Param("id") id: UUID,
     @Body() dto: SwitchTargetDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await attributeSession(
       {
         sessionRepository: this.sessionRepository,
         learningPathMembershipPort: this.learningPathMembershipPort,
+        currentUser,
       },
-      { userId, sessionId: id, target: dto.target as SegmentTargetInput },
+      { sessionId: id, target: dto.target as SegmentTargetInput },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
   @Post("sessions/:id/end")
-  async endSession(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
+  async endSession(
+    @Param("id") id: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
     const result = await endSession(
       {
         sessionRepository: this.sessionRepository,
         notificationPort: this.notificationPort,
+        currentUser,
       },
-      { userId, sessionId: id },
+      { sessionId: id },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
   @Post("sessions/:id/continue")
-  async continueSession(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
+  async continueSession(
+    @Param("id") id: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
     const result = await continueSession(
       {
         sessionRepository: this.sessionRepository,
         cryptoService: this.cryptoService,
+        currentUser,
       },
-      { userId, sessionId: id },
+      { sessionId: id },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -182,36 +191,34 @@ export class PomodoroController {
   async extendSession(
     @Param("id") id: UUID,
     @Body() dto: ExtendSessionDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await extendSession(
-      { sessionRepository: this.sessionRepository },
-      { userId, sessionId: id, minutes: dto.minutes },
+      { sessionRepository: this.sessionRepository, currentUser },
+      { sessionId: id, minutes: dto.minutes },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
   @Get("breaks/active")
-  async getActiveBreak(@CurrentUserId() userId: UUID) {
-    const result = await getActiveBreak(
-      { breakRepository: this.breakRepository },
-      { userId },
-    );
+  async getActiveBreak(@CurrentUserDecorator() currentUser: CurrentUser) {
+    const result = await getActiveBreak({
+      breakRepository: this.breakRepository,
+      currentUser,
+    });
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
   @Post("breaks")
-  async startBreak(@CurrentUserId() userId: UUID) {
-    const result = await startBreak(
-      {
-        breakRepository: this.breakRepository,
-        cryptoService: this.cryptoService,
-        notificationPort: this.notificationPort,
-      },
-      { userId },
-    );
+  async startBreak(@CurrentUserDecorator() currentUser: CurrentUser) {
+    const result = await startBreak({
+      breakRepository: this.breakRepository,
+      cryptoService: this.cryptoService,
+      notificationPort: this.notificationPort,
+      currentUser,
+    });
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
@@ -220,21 +227,24 @@ export class PomodoroController {
   async extendBreak(
     @Param("id") id: UUID,
     @Body() dto: ExtendBreakDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await extendBreak(
-      { breakRepository: this.breakRepository },
-      { userId, breakId: id, seconds: dto.seconds },
+      { breakRepository: this.breakRepository, currentUser },
+      { breakId: id, seconds: dto.seconds },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
   @Post("breaks/:id/end")
-  async endBreak(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
+  async endBreak(
+    @Param("id") id: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
     const result = await endBreak(
-      { breakRepository: this.breakRepository },
-      { userId, breakId: id },
+      { breakRepository: this.breakRepository, currentUser },
+      { breakId: id },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -243,14 +253,15 @@ export class PomodoroController {
   @Get("suggestion")
   async suggestSessionTarget(
     @Query("energy") energy: CandidateNodeEnergyLevel | undefined,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await suggestSessionTarget(
       {
         sessionRepository: this.sessionRepository,
         candidateNodesPort: this.candidateNodesPort,
+        currentUser,
       },
-      { userId, energy },
+      { energy },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -259,19 +270,19 @@ export class PomodoroController {
   @Get("history")
   async getHistory(
     @Query() query: GetHistoryDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const since = new Date(query.since);
     const until = query.until ? new Date(query.until) : undefined;
 
     const [sessionResult, breakResult] = await Promise.all([
       getSessionHistory(
-        { sessionRepository: this.sessionRepository },
-        { userId, since, until },
+        { sessionRepository: this.sessionRepository, currentUser },
+        { since, until },
       ),
       getBreakHistory(
-        { breakRepository: this.breakRepository },
-        { userId, since, until },
+        { breakRepository: this.breakRepository, currentUser },
+        { since, until },
       ),
     ]);
 
