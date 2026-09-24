@@ -1,4 +1,4 @@
-import { BaseError, InvalidDataError, type UUID } from "domain-lib";
+import { BaseError, InvalidDataError, type CurrentUser, type UUID } from "domain-lib";
 import type {
   ISessionRepository,
   LearningPathMembershipPort,
@@ -18,10 +18,10 @@ import { validateAndRequireActiveSessionWithOpenSegment } from "./verify-session
 export interface AttachOpenSegmentDependencies {
   sessionRepository: ISessionRepository;
   learningPathMembershipPort: LearningPathMembershipPort;
+  currentUser: CurrentUser;
 }
 
 export interface AttachOpenSegmentRequestModel {
-  userId: UUID;
   sessionId: UUID;
   target: SegmentTargetInput;
 }
@@ -34,6 +34,7 @@ export const attachOpenSegment = async (
   {
     sessionRepository,
     learningPathMembershipPort,
+    currentUser,
   }: AttachOpenSegmentDependencies,
   request: AttachOpenSegmentRequestModel,
 ): Promise<
@@ -47,6 +48,7 @@ export const attachOpenSegment = async (
 > => {
   const guard = await validateAndRequireActiveSessionWithOpenSegment(
     sessionRepository,
+    currentUser,
     request,
   );
   if (guard instanceof BaseError) return guard;
