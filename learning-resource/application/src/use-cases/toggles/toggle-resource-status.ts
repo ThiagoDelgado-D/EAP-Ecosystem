@@ -4,16 +4,23 @@ import {
 } from "@learning-resource/domain";
 import {
   InvalidDataError,
+  isErrorResult,
+  type CurrentUser,
   type UUID,
   createValidationSchema,
   uuidField,
   enumField,
   ValidationError,
 } from "domain-lib";
-import { LearningResourceNotFoundError } from "../../errors/index.js";
+import {
+  LearningResourceForbiddenError,
+  LearningResourceNotFoundError,
+} from "../../errors/index.js";
+import { verifyLearningResourceOwnership } from "../learning-resource/verify-learning-resource-ownership.js";
 
 export interface ToggleResourceStatusDependencies {
   learningResourceRepository: ILearningResourceRepository;
+  currentUser: CurrentUser;
 }
 
 export interface ToggleResourceStatusRequestModel {
@@ -30,9 +37,14 @@ export const toggleResourceStatusSchema =
   });
 
 export const toggleStatus = async (
-  { learningResourceRepository }: ToggleResourceStatusDependencies,
+  { learningResourceRepository, currentUser }: ToggleResourceStatusDependencies,
   request: ToggleResourceStatusRequestModel
-): Promise<void | InvalidDataError | LearningResourceNotFoundError> => {
+): Promise<
+  | void
+  | InvalidDataError
+  | LearningResourceNotFoundError
+  | LearningResourceForbiddenError
+> => {
   const validationResult = await toggleResourceStatusSchema(request);
 
   if (validationResult instanceof ValidationError) {
@@ -42,13 +54,12 @@ export const toggleStatus = async (
 
   const validatedData = validationResult;
 
-  const existingResource = await learningResourceRepository.findById(
-    validatedData.id
+  const existingResource = await verifyLearningResourceOwnership(
+    learningResourceRepository,
+    validatedData.id,
+    currentUser,
   );
-
-  if (!existingResource) {
-    return new LearningResourceNotFoundError();
-  }
+  if (isErrorResult(existingResource)) return existingResource;
 
   await learningResourceRepository.update(validatedData.id, {
     status: validatedData.status,
