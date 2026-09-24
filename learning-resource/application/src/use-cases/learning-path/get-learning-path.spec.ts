@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser } from "domain-lib";
 import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { getLearningPath } from "./get-learning-path.js";
@@ -18,37 +18,37 @@ describe("getLearningPath", () => {
   });
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
 
     const result = await getLearningPath(
-      { learningPathRepository },
-      { userId, pathId },
+      { learningPathRepository, currentUser },
+      { pathId },
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
   });
 
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const otherUserId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
 
     const result = await getLearningPath(
-      { learningPathRepository },
-      { userId, pathId: path.id },
+      { learningPathRepository, currentUser },
+      { pathId: path.id },
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
   });
 
   test("should return path with nodes and edges when user owns it", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
 
     const result = await getLearningPath(
-      { learningPathRepository },
-      { userId, pathId: path.id },
+      { learningPathRepository, currentUser },
+      { pathId: path.id },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -63,8 +63,8 @@ describe("getLearningPath", () => {
   });
 
   test("should populate stats from the path's own nodes", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     seedLearningPathNode(learningPathRepository, {
       pathId: path.id,
       progress: "done",
@@ -73,8 +73,8 @@ describe("getLearningPath", () => {
     seedLearningPathNode(learningPathRepository, { pathId: path.id, progress: "pending" });
 
     const result = await getLearningPath(
-      { learningPathRepository },
-      { userId, pathId: path.id },
+      { learningPathRepository, currentUser },
+      { pathId: path.id },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -85,11 +85,11 @@ describe("getLearningPath", () => {
   });
 
   test("should return InvalidDataError when pathId is not a valid UUID", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     const result = await getLearningPath(
-      { learningPathRepository },
-      { userId, pathId: "not-a-uuid" as any },
+      { learningPathRepository, currentUser },
+      { pathId: "not-a-uuid" as any },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);

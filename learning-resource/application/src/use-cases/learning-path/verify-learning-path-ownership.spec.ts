@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService } from "domain-lib";
+import { mockCryptoService, mockCurrentUser } from "domain-lib";
 import { seedLearningPath } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js";
@@ -15,40 +15,40 @@ describe("verifyLearningPathOwnership", () => {
   });
 
   test("should return LearningPathNotFoundError when the path does not exist", async () => {
-    const requestingUserId = await crypto.generateUUID();
+    const requestingUser = await mockCurrentUser(crypto);
     const nonExistentPathId = await crypto.generateUUID();
 
     const result = await verifyLearningPathOwnership(
       learningPathRepository,
       nonExistentPathId,
-      requestingUserId,
+      requestingUser,
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
   });
 
   test("should return LearningPathForbiddenError when the path belongs to another user", async () => {
-    const requestingUserId = await crypto.generateUUID();
+    const requestingUser = await mockCurrentUser(crypto);
     const pathOwnerId = await crypto.generateUUID();
     const otherUsersPath = seedLearningPath(learningPathRepository, { userId: pathOwnerId });
 
     const result = await verifyLearningPathOwnership(
       learningPathRepository,
       otherUsersPath.id,
-      requestingUserId,
+      requestingUser,
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
   });
 
   test("should return the path when it exists and belongs to the user", async () => {
-    const pathOwnerId = await crypto.generateUUID();
-    const ownedPath = seedLearningPath(learningPathRepository, { userId: pathOwnerId });
+    const pathOwner = await mockCurrentUser(crypto);
+    const ownedPath = seedLearningPath(learningPathRepository, { userId: pathOwner.id });
 
     const result = await verifyLearningPathOwnership(
       learningPathRepository,
       ownedPath.id,
-      pathOwnerId,
+      pathOwner,
     );
 
     expect(result).toEqual(ownedPath);

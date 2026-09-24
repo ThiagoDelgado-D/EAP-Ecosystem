@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser } from "domain-lib";
 import { seedLearningPath } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { updateLearningPath } from "./update-learning-path.js";
@@ -18,37 +18,37 @@ describe("updateLearningPath", () => {
   });
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
 
     const result = await updateLearningPath(
-      { learningPathRepository },
-      { userId, pathId, title: "Go Programming Language" },
+      { learningPathRepository, currentUser },
+      { pathId, title: "Go Programming Language" },
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
   });
 
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const otherUserId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
 
     const result = await updateLearningPath(
-      { learningPathRepository },
-      { userId, pathId: path.id, title: "Go Programming Language" },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, title: "Go Programming Language" },
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
   });
 
   test("should update title and return updated path", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
 
     const result = await updateLearningPath(
-      { learningPathRepository },
-      { userId, pathId: path.id, title: "Rust for Systems Programming" },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, title: "Rust for Systems Programming" },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -60,13 +60,12 @@ describe("updateLearningPath", () => {
   });
 
   test("should update description without erasing title", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
 
     const result = await updateLearningPath(
-      { learningPathRepository },
+      { learningPathRepository, currentUser },
       {
-        userId,
         pathId: path.id,
         description: "Advanced Rust: async runtimes, macros, and unsafe code",
       },
@@ -83,12 +82,12 @@ describe("updateLearningPath", () => {
   });
 
   test("should update title without erasing description", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
 
     const result = await updateLearningPath(
-      { learningPathRepository },
-      { userId, pathId: path.id, title: "Rust for Systems Programming" },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, title: "Rust for Systems Programming" },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -100,12 +99,11 @@ describe("updateLearningPath", () => {
   });
 
   test("should return InvalidDataError when pathId is not a valid UUID", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     const result = await updateLearningPath(
-      { learningPathRepository },
+      { learningPathRepository, currentUser },
       {
-        userId,
         pathId: "not-a-uuid" as any,
         title: "Rust for Systems Programming",
       },

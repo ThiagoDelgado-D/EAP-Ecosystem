@@ -10,7 +10,7 @@ import {
   Post,
   UseGuards,
 } from "@nestjs/common";
-import { BaseError, type CryptoService, type UUID } from "domain-lib";
+import { BaseError, type CryptoService, type CurrentUser, type UUID } from "domain-lib";
 import type { ILearningPathRepository } from "@learning-resource/domain";
 import {
   addLearningPathEdge,
@@ -38,7 +38,7 @@ import {
 } from "./dto/request/index.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
-import { CurrentUserId } from "../auth/current-user-id.decorator.js";
+import { CurrentUser as CurrentUserDecorator } from "../auth/current-user.decorator.js";
 
 @UseGuards(JwtAuthGuard)
 @Controller("api/v1/learning-paths")
@@ -53,41 +53,31 @@ export class LearningPathController {
   @Post()
   async create(
     @Body() dto: CreateLearningPathDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await createLearningPath(
-      { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService },
-      { userId, ...dto },
+      { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService, currentUser },
+      dto,
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 
   @Get()
-  async list(@CurrentUserId() userId: UUID) {
-    const result = await listLearningPaths(
-      { learningPathRepository: this.learningPathRepository },
-      { userId },
-    );
-    if (result instanceof BaseError) throw toHttpException(result);
-    return result;
+  async list(@CurrentUserDecorator() currentUser: CurrentUser) {
+    return listLearningPaths({ learningPathRepository: this.learningPathRepository, currentUser });
   }
 
   @Get("with-nodes")
-  async listWithNodes(@CurrentUserId() userId: UUID) {
-    const result = await listLearningPathsWithNodes(
-      { learningPathRepository: this.learningPathRepository },
-      { userId },
-    );
-    if (result instanceof BaseError) throw toHttpException(result);
-    return result;
+  async listWithNodes(@CurrentUserDecorator() currentUser: CurrentUser) {
+    return listLearningPathsWithNodes({ learningPathRepository: this.learningPathRepository, currentUser });
   }
 
   @Get(":id")
-  async findOne(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
+  async findOne(@Param("id") id: UUID, @CurrentUserDecorator() currentUser: CurrentUser) {
     const result = await getLearningPath(
-      { learningPathRepository: this.learningPathRepository },
-      { userId, pathId: id },
+      { learningPathRepository: this.learningPathRepository, currentUser },
+      { pathId: id },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -97,11 +87,11 @@ export class LearningPathController {
   async update(
     @Param("id") id: UUID,
     @Body() dto: UpdateLearningPathDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await updateLearningPath(
-      { learningPathRepository: this.learningPathRepository },
-      { userId, pathId: id, ...dto },
+      { learningPathRepository: this.learningPathRepository, currentUser },
+      { pathId: id, ...dto },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -109,10 +99,10 @@ export class LearningPathController {
 
   @Delete(":id")
   @HttpCode(200)
-  async remove(@Param("id") id: UUID, @CurrentUserId() userId: UUID) {
+  async remove(@Param("id") id: UUID, @CurrentUserDecorator() currentUser: CurrentUser) {
     const result = await deleteLearningPath(
-      { learningPathRepository: this.learningPathRepository },
-      { userId, pathId: id },
+      { learningPathRepository: this.learningPathRepository, currentUser },
+      { pathId: id },
     );
     if (result instanceof BaseError) throw toHttpException(result);
   }
@@ -121,11 +111,11 @@ export class LearningPathController {
   async addNode(
     @Param("id") id: UUID,
     @Body() dto: AddLearningPathNodeDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await addLearningPathNode(
-      { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService },
-      { userId, pathId: id, ...dto },
+      { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService, currentUser },
+      { pathId: id, ...dto },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -136,11 +126,11 @@ export class LearningPathController {
     @Param("id") id: UUID,
     @Param("nodeId") nodeId: UUID,
     @Body() dto: UpdateLearningPathNodeDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await updateLearningPathNode(
-      { learningPathRepository: this.learningPathRepository },
-      { userId, pathId: id, nodeId, ...dto },
+      { learningPathRepository: this.learningPathRepository, currentUser },
+      { pathId: id, nodeId, ...dto },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -151,11 +141,11 @@ export class LearningPathController {
   async removeNode(
     @Param("id") id: UUID,
     @Param("nodeId") nodeId: UUID,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await deleteLearningPathNode(
-      { learningPathRepository: this.learningPathRepository },
-      { userId, pathId: id, nodeId },
+      { learningPathRepository: this.learningPathRepository, currentUser },
+      { pathId: id, nodeId },
     );
     if (result instanceof BaseError) throw toHttpException(result);
   }
@@ -165,11 +155,11 @@ export class LearningPathController {
     @Param("id") id: UUID,
     @Param("nodeId") nodeId: UUID,
     @Body() dto: UpdateLearningPathNodeProgressDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository: this.learningPathRepository },
-      { userId, pathId: id, nodeId, progress: dto.progress },
+      { learningPathRepository: this.learningPathRepository, currentUser },
+      { pathId: id, nodeId, progress: dto.progress },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -180,11 +170,11 @@ export class LearningPathController {
     @Param("id") id: UUID,
     @Param("nodeId") nodeId: UUID,
     @Body() dto: UpdateLearningPathNodePositionDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await updateLearningPathNodePosition(
-      { learningPathRepository: this.learningPathRepository },
-      { userId, pathId: id, nodeId, x: dto.x, y: dto.y },
+      { learningPathRepository: this.learningPathRepository, currentUser },
+      { pathId: id, nodeId, x: dto.x, y: dto.y },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -194,11 +184,11 @@ export class LearningPathController {
   async addEdge(
     @Param("id") id: UUID,
     @Body() dto: AddLearningPathEdgeDto,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await addLearningPathEdge(
-      { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService },
-      { userId, pathId: id, sourceNodeId: dto.sourceNodeId, targetNodeId: dto.targetNodeId },
+      { learningPathRepository: this.learningPathRepository, cryptoService: this.cryptoService, currentUser },
+      { pathId: id, sourceNodeId: dto.sourceNodeId, targetNodeId: dto.targetNodeId },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
@@ -209,11 +199,11 @@ export class LearningPathController {
   async removeEdge(
     @Param("id") id: UUID,
     @Param("edgeId") edgeId: UUID,
-    @CurrentUserId() userId: UUID,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await deleteLearningPathEdge(
-      { learningPathRepository: this.learningPathRepository },
-      { userId, pathId: id, edgeId },
+      { learningPathRepository: this.learningPathRepository, currentUser },
+      { pathId: id, edgeId },
     );
     if (result instanceof BaseError) throw toHttpException(result);
   }

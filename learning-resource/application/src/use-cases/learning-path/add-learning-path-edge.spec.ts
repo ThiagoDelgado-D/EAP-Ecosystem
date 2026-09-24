@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import type { LearningPath, LearningPathNode } from "@learning-resource/domain";
 import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
@@ -21,124 +21,124 @@ describe("addLearningPathEdge", () => {
   });
 
   async function seedPathWithConnectedNodes(
-    userId: UUID,
+    currentUser: CurrentUser,
   ): Promise<{ path: LearningPath; nodeA: LearningPathNode; nodeB: LearningPathNode }> {
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeA = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
     );
     return { path, nodeA, nodeB };
   }
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
     const sourceNodeId = await crypto.generateUUID();
     const targetNodeId = await crypto.generateUUID();
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId, sourceNodeId, targetNodeId },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId, sourceNodeId, targetNodeId },
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
   });
 
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const otherUserId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
     const nodeA = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
   });
 
   test("should return LearningPathNodeNotFoundError when source node does not exist", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const nonExistentId = await crypto.generateUUID();
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nonExistentId, targetNodeId: nodeB.id },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: nonExistentId, targetNodeId: nodeB.id },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should return LearningPathNodeNotFoundError when target node does not exist", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeA = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const nonExistentId = await crypto.generateUUID();
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nonExistentId },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nonExistentId },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should return LearningPathNodeNotFoundError when source node belongs to a different path", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
-    const otherPath = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
+    const otherPath = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeFromOtherPath = seedLearningPathNode(learningPathRepository, { pathId: otherPath.id });
     const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeFromOtherPath.id, targetNodeId: nodeB.id },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: nodeFromOtherPath.id, targetNodeId: nodeB.id },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should return DuplicateLearningPathEdgeError when edge already exists", async () => {
-    const userId = await crypto.generateUUID();
-    const { path, nodeA, nodeB } = await seedPathWithConnectedNodes(userId);
+    const currentUser = await mockCurrentUser(crypto);
+    const { path, nodeA, nodeB } = await seedPathWithConnectedNodes(currentUser);
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
     );
 
     expect(result).toBeInstanceOf(DuplicateLearningPathEdgeError);
   });
 
   test("should return InvalidDataError when source and target nodes are the same", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: node.id, targetNodeId: node.id },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: node.id, targetNodeId: node.id },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
   });
 
   test("should create the edge and return it", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeA = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: nodeA.id, targetNodeId: nodeB.id },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -154,12 +154,12 @@ describe("addLearningPathEdge", () => {
   });
 
   test("should allow reverse direction edge between the same two nodes", async () => {
-    const userId = await crypto.generateUUID();
-    const { path, nodeA, nodeB } = await seedPathWithConnectedNodes(userId);
+    const currentUser = await mockCurrentUser(crypto);
+    const { path, nodeA, nodeB } = await seedPathWithConnectedNodes(currentUser);
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, sourceNodeId: nodeB.id, targetNodeId: nodeA.id },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, sourceNodeId: nodeB.id, targetNodeId: nodeA.id },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -172,13 +172,13 @@ describe("addLearningPathEdge", () => {
   });
 
   test("should return InvalidDataError when sourceNodeId is not a valid UUID", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
     const targetNodeId = await crypto.generateUUID();
 
     const result = await addLearningPathEdge(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId, sourceNodeId: "not-a-uuid" as any, targetNodeId },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId, sourceNodeId: "not-a-uuid" as any, targetNodeId },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);

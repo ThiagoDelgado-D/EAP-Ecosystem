@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { mockCryptoService, mockCurrentUser } from "domain-lib";
 import { PathMode, PathSource, type LearningPath } from "@learning-resource/domain";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { listLearningPaths } from "./list-learning-paths.js";
@@ -14,24 +14,21 @@ describe("listLearningPaths", () => {
   });
 
   test("should return empty array when user has no paths", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
-    const result = await listLearningPaths(
-      { learningPathRepository },
-      { userId },
-    );
+    const result = await listLearningPaths({ learningPathRepository, currentUser });
 
     expect(Array.isArray(result)).toBe(true);
     expect(result).toHaveLength(0);
   });
 
   test("should return only paths belonging to the requesting user", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const otherUserId = await crypto.generateUUID();
 
     const userPath: LearningPath = {
       id: await crypto.generateUUID(),
-      userId,
+      userId: currentUser.id,
       title: "React and the Ecosystem",
       mode: PathMode.SEQUENTIAL,
       source: PathSource.MANUAL,
@@ -52,23 +49,9 @@ describe("listLearningPaths", () => {
 
     learningPathRepository.paths.push(userPath, otherPath);
 
-    const result = await listLearningPaths(
-      { learningPathRepository },
-      { userId },
-    );
-
-    if (result instanceof InvalidDataError) throw result;
+    const result = await listLearningPaths({ learningPathRepository, currentUser });
 
     expect(result).toHaveLength(1);
     expect(result[0]!.id).toBe(userPath.id);
-  });
-
-  test("should return InvalidDataError when userId is not a valid UUID", async () => {
-    const result = await listLearningPaths(
-      { learningPathRepository },
-      { userId: "not-a-uuid" as any },
-    );
-
-    expect(result).toBeInstanceOf(InvalidDataError);
   });
 });
