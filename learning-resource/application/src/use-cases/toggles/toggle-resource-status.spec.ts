@@ -1,11 +1,11 @@
 import {
   DifficultyType,
   EnergyLevelType,
-  type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
+import { seedOwnedLearningResource } from "../../mocks/factories.js";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
 import { LearningResourceForbiddenError } from "../../errors/learning-resource-forbidden.js";
@@ -17,30 +17,16 @@ describe("toggleStatus", () => {
     typeof mockLearningResourceRepository
   >;
   let resourceId: UUID;
-  let typeId: UUID;
   let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
-    resourceId = await cryptoService.generateUUID();
-    typeId = await cryptoService.generateUUID();
-    currentUser = await mockCurrentUser(cryptoService);
-
-    const resource: LearningResource = {
-      id: resourceId,
-      userId: currentUser.id,
+    ({ resourceId, currentUser, learningResourceRepository } = await seedOwnedLearningResource(cryptoService, {
       title: "Domain-Driven Design Fundamentals",
-      typeId,
-      topicIds: [],
       difficulty: DifficultyType.MEDIUM,
       energyLevel: EnergyLevelType.HIGH,
-      status: ResourceStatusType.PENDING,
       estimatedDuration: { value: 200, isEstimated: true },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    learningResourceRepository = mockLearningResourceRepository([resource]);
+    }));
   });
 
   test("Should toggle status successfully", async () => {

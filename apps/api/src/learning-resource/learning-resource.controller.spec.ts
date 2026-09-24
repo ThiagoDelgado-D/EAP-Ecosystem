@@ -122,6 +122,22 @@ describe("LearningResourceController (integration)", () => {
     Authorization: `Bearer ${bearerToken}`,
   });
 
+  const createResource = (
+    overrides: Record<string, unknown> = {},
+    bearerToken: string = ownerToken,
+  ) =>
+    request(app.getHttpServer())
+      .post("/api/v1/learning-resources")
+      .set(authHeader(bearerToken))
+      .send({
+        title: "TypeScript Advanced",
+        resourceTypeId,
+        topicIds: [topicId],
+        difficulty: "high",
+        estimatedDurationMinutes: 120,
+        ...overrides,
+      });
+
   describe("Unauthenticated access", () => {
     test("Should return 401 without a bearer token", async () => {
       await request(app.getHttpServer())
@@ -132,87 +148,42 @@ describe("LearningResourceController (integration)", () => {
 
   describe("Ownership", () => {
     test("Should return 403 when a different user requests the resource", async () => {
-      const createResponse = await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
+      const createResponse = await createResource().expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(`/api/v1/learning-resources/${createResponse.body.id}`)
         .set(authHeader(intruderToken))
         .expect(403);
+
+      expect(response.status).toBe(403);
     });
 
     test("Should return 403 when a different user tries to update the resource", async () => {
-      const createResponse = await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
+      const createResponse = await createResource().expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${createResponse.body.id}`)
         .set(authHeader(intruderToken))
         .send({ title: "Hijacked Title" })
         .expect(403);
+
+      expect(response.status).toBe(403);
     });
 
     test("Should return 403 when a different user tries to delete the resource", async () => {
-      const createResponse = await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
+      const createResponse = await createResource().expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete(`/api/v1/learning-resources/${createResponse.body.id}`)
         .set(authHeader(intruderToken))
         .expect(403);
+
+      expect(response.status).toBe(403);
     });
 
     test("Should not return another user's resources in the list", async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "Owned Resource",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
-
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader(intruderToken))
-        .send({
-          title: "Intruder Resource",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
+      await createResource({ title: "Owned Resource" }).expect(201);
+      await createResource({ title: "Intruder Resource" }, intruderToken).expect(201);
 
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
@@ -319,16 +290,7 @@ describe("LearningResourceController (integration)", () => {
 
     test("Should respect pageSize param", async () => {
       for (let i = 0; i < 3; i++) {
-        await request(app.getHttpServer())
-          .post("/api/v1/learning-resources")
-          .set(authHeader())
-          .send({
-            title: `Resource ${i}`,
-            resourceTypeId,
-            topicIds: [topicId],
-            difficulty: "low",
-            estimatedDurationMinutes: 10,
-          });
+        await createResource({ title: `Resource ${i}`, difficulty: "low", estimatedDurationMinutes: 10 });
       }
 
       const response = await request(app.getHttpServer())
@@ -344,16 +306,7 @@ describe("LearningResourceController (integration)", () => {
 
     test("Should respect page param", async () => {
       for (let i = 0; i < 3; i++) {
-        await request(app.getHttpServer())
-          .post("/api/v1/learning-resources")
-          .set(authHeader())
-          .send({
-            title: `Resource ${i}`,
-            resourceTypeId,
-            topicIds: [topicId],
-            difficulty: "low",
-            estimatedDurationMinutes: 10,
-          });
+        await createResource({ title: `Resource ${i}`, difficulty: "low", estimatedDurationMinutes: 10 });
       }
 
       const response = await request(app.getHttpServer())
@@ -533,18 +486,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should return the resource when it exists", async () => {
@@ -560,35 +503,29 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 404 when resource does not exist", async () => {
       const nonExistentId = await cryptoService.generateUUID();
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(`/api/v1/learning-resources/${nonExistentId}`)
         .set(authHeader())
         .expect(404);
+
+      expect(response.status).toBe(404);
     });
 
     test("Should return 400 when id is not a valid UUID", async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources/not-a-uuid")
         .set(authHeader())
         .expect(400);
+
+      expect(response.status).toBe(400);
     });
   });
   describe("PATCH /api/v1/learning-resources/:id", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should update title successfully", async () => {
@@ -643,18 +580,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should delete the resource and return 200", async () => {
@@ -669,35 +596,29 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 404 when resource does not exist", async () => {
       const nonExistentId = await cryptoService.generateUUID();
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete(`/api/v1/learning-resources/${nonExistentId}`)
         .set(authHeader())
         .expect(404);
+
+      expect(response.status).toBe(404);
     });
 
     test("Should return 400 when id is not a valid UUID", async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete("/api/v1/learning-resources/not-a-uuid")
         .set(authHeader())
         .expect(400);
+
+      expect(response.status).toBe(400);
     });
   });
   describe("PATCH /api/v1/learning-resources/:id/difficulty", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle difficulty successfully", async () => {
@@ -733,18 +654,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle energy level successfully", async () => {
@@ -780,18 +691,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle status successfully", async () => {
@@ -828,18 +729,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle mental state to deep_focus successfully", async () => {

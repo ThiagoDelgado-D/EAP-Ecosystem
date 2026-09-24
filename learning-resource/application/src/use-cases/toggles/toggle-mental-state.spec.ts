@@ -2,11 +2,10 @@ import {
   DifficultyType,
   EnergyLevelType,
   MentalStateType,
-  type LearningResource,
-  ResourceStatusType,
 } from "@learning-resource/domain";
 import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
+import { seedOwnedLearningResource } from "../../mocks/factories.js";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { toggleMentalState } from "./toggle-mental-state.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
@@ -18,30 +17,16 @@ describe("toggleMentalState", () => {
     typeof mockLearningResourceRepository
   >;
   let resourceId: UUID;
-  let typeId: UUID;
   let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
-    resourceId = await cryptoService.generateUUID();
-    typeId = await cryptoService.generateUUID();
-    currentUser = await mockCurrentUser(cryptoService);
-
-    const resource: LearningResource = {
-      id: resourceId,
-      userId: currentUser.id,
+    ({ resourceId, currentUser, learningResourceRepository } = await seedOwnedLearningResource(cryptoService, {
       title: "Advanced Algorithms",
-      typeId,
-      topicIds: [],
       difficulty: DifficultyType.HIGH,
       energyLevel: EnergyLevelType.MEDIUM,
-      status: ResourceStatusType.PENDING,
       estimatedDuration: { value: 180, isEstimated: true },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    learningResourceRepository = mockLearningResourceRepository([resource]);
+    }));
   });
 
   test("Should toggle mental state to deep_focus successfully", async () => {

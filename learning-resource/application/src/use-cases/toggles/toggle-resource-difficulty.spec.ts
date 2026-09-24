@@ -1,12 +1,9 @@
 import {
   DifficultyType,
   EnergyLevelType,
-  type LearningResource,
-  ResourceStatusType,
 } from "@learning-resource/domain";
-import type { UUID } from "crypto";
-import { ValidationError, mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
-import { mockLearningResourceRepository } from "../../mocks/index.js";
+import { ValidationError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
+import { seedOwnedLearningResource, mockLearningResourceRepository } from "../../mocks/index.js";
 import { beforeEach, describe, expect, test } from "vitest";
 import { toggleResourceDifficulty } from "./toggle-resource-difficulty.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
@@ -18,30 +15,16 @@ describe("toggleDifficulty", () => {
     typeof mockLearningResourceRepository
   >;
   let resourceId: UUID;
-  let typeId: UUID;
   let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
-    resourceId = await cryptoService.generateUUID();
-    typeId = await cryptoService.generateUUID();
-    currentUser = await mockCurrentUser(cryptoService);
-
-    const resource: LearningResource = {
-      id: resourceId,
-      userId: currentUser.id,
+    ({ resourceId, currentUser, learningResourceRepository } = await seedOwnedLearningResource(cryptoService, {
       title: "TypeScript Advanced",
-      typeId,
-      topicIds: [],
       difficulty: DifficultyType.MEDIUM,
       energyLevel: EnergyLevelType.MEDIUM,
-      status: ResourceStatusType.PENDING,
       estimatedDuration: { value: 120, isEstimated: true },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    learningResourceRepository = mockLearningResourceRepository([resource]);
+    }));
   });
 
   test("Should toggle difficulty successfully", async () => {
