@@ -1,4 +1,4 @@
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import { SegmentTargetKind, DomainNotificationType } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
@@ -18,17 +18,17 @@ describe("endSession", () => {
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
     membershipPort = mockLearningPathMembershipPort();
     notificationPort = mockNotificationPort();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
-  const deps = () => ({ sessionRepository, notificationPort });
+  const deps = () => ({ sessionRepository, notificationPort, currentUser });
 
   const startSessionStartedSecondsAgo = async (secondsAgo: number) => {
     const session = await startSession(
@@ -36,9 +36,9 @@ describe("endSession", () => {
         sessionRepository,
         cryptoService,
         learningPathMembershipPort: membershipPort,
+        currentUser,
       },
       {
-        userId: requestingUserId,
         plannedMin: 25,
         target: { kind: SegmentTargetKind.FREE },
       },
@@ -58,7 +58,6 @@ describe("endSession", () => {
     );
 
     const result = await endSession(deps(), {
-      userId: requestingUserId,
       sessionId: session.id,
     });
 
@@ -81,7 +80,6 @@ describe("endSession", () => {
     const session = await startSessionStartedSecondsAgo(boundarySec + 600);
 
     const result = await endSession(deps(), {
-      userId: requestingUserId,
       sessionId: session.id,
     });
 
@@ -103,7 +101,6 @@ describe("endSession", () => {
     );
 
     const result = await endSession(deps(), {
-      userId: requestingUserId,
       sessionId: session.id,
     });
 
@@ -114,9 +111,7 @@ describe("endSession", () => {
   });
 
   test("Should return InvalidDataError when sessionId is missing", async () => {
-    const result = await endSession(deps(), {
-      userId: requestingUserId,
-    } as any);
+    const result = await endSession(deps(), {} as any);
 
     expect(result).toBeInstanceOf(InvalidDataError);
   });
@@ -125,7 +120,6 @@ describe("endSession", () => {
     const nonExistentSessionId = await cryptoService.generateUUID();
 
     const result = await endSession(deps(), {
-      userId: requestingUserId,
       sessionId: nonExistentSessionId,
     });
 
@@ -136,12 +130,12 @@ describe("endSession", () => {
     const session = await startSessionStartedSecondsAgo(
       MIN_SESSION_DURATION_SEC + 60,
     );
-    const otherUserId = await cryptoService.generateUUID();
+    const intruder = await mockCurrentUser(cryptoService);
 
-    const result = await endSession(deps(), {
-      userId: otherUserId,
-      sessionId: session.id,
-    });
+    const result = await endSession(
+      { ...deps(), currentUser: intruder },
+      { sessionId: session.id },
+    );
 
     expect(result).toBeInstanceOf(SessionForbiddenError);
   });
@@ -156,7 +150,6 @@ describe("endSession", () => {
     storedSession.completedAt = new Date();
 
     const result = await endSession(deps(), {
-      userId: requestingUserId,
       sessionId: session.id,
     });
 
@@ -173,7 +166,6 @@ describe("endSession", () => {
     await sessionRepository.updateSegment({ ...openSegment!, endSec: 120 });
 
     const result = await endSession(deps(), {
-      userId: requestingUserId,
       sessionId: session.id,
     });
 
