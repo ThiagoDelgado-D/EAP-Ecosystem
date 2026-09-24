@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, isErrorResult, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, isErrorResult, mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import { StubScope, type LearningPath, type LearningPathNode } from "@learning-resource/domain";
 import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
@@ -20,15 +20,15 @@ describe("updateLearningPathNode", () => {
   });
 
   async function linkStubNodeToResource(
-    userId: UUID,
+    currentUser: CurrentUser,
     path: LearningPath,
-  ): Promise<{ result: LearningPathNode; learningResourceId: UUID }> {
+  ): Promise<{ result: LearningPathNode; learningResourceId: string }> {
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const learningResourceId = await crypto.generateUUID();
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, learningResourceId },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id, learningResourceId },
     );
 
     if (isErrorResult(result)) throw result;
@@ -37,67 +37,67 @@ describe("updateLearningPathNode", () => {
   }
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
     const nodeId = await crypto.generateUUID();
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId, nodeId, title: "Docker Networking" },
+      { learningPathRepository, currentUser },
+      { pathId, nodeId, title: "Docker Networking" },
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
   });
 
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const otherUserId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, title: "Docker Networking" },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id, title: "Docker Networking" },
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
   });
 
   test("should return LearningPathNodeNotFoundError when node does not exist", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeId = await crypto.generateUUID();
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId, title: "Docker Networking" },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId, title: "Docker Networking" },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should return LearningPathNodeNotFoundError when node belongs to a different path", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
-    const otherPath = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
+    const otherPath = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeFromOtherPath = seedLearningPathNode(learningPathRepository, { pathId: otherPath.id });
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: nodeFromOtherPath.id, title: "Docker Networking" },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: nodeFromOtherPath.id, title: "Docker Networking" },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should update title without erasing other fields", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, title: "Docker Networking Deep Dive" },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id, title: "Docker Networking Deep Dive" },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -111,16 +111,16 @@ describe("updateLearningPathNode", () => {
   });
 
   test("should link a resource by setting learningResourceId", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
-    const { result, learningResourceId } = await linkStubNodeToResource(userId, path);
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
+    const { result, learningResourceId } = await linkStubNodeToResource(currentUser, path);
 
     expect(result.learningResourceId).toBe(learningResourceId);
   });
 
   test("should unlink a resource when learningResourceId is null", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const learningResourceId = await crypto.generateUUID();
     const linkedNode = seedLearningPathNode(learningPathRepository, {
       pathId: path.id,
@@ -128,8 +128,8 @@ describe("updateLearningPathNode", () => {
     });
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: linkedNode.id, learningResourceId: null },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: linkedNode.id, learningResourceId: null },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -142,34 +142,34 @@ describe("updateLearningPathNode", () => {
   });
 
   test("should clear stubScope when linking a stub node to a resource", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
-    const { result, learningResourceId } = await linkStubNodeToResource(userId, path);
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
+    const { result, learningResourceId } = await linkStubNodeToResource(currentUser, path);
 
     expect(result.learningResourceId).toBe(learningResourceId);
     expect(result.stubScope).toBeNull();
   });
 
   test("should return InvalidDataError when learningResourceId is not a valid UUID", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, learningResourceId: "not-a-uuid" as any },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id, learningResourceId: "not-a-uuid" as any },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
   });
 
   test("should return InvalidDataError when nodeId is not a valid UUID", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
 
     const result = await updateLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId, nodeId: "not-a-uuid" as any, title: "Docker Networking" },
+      { learningPathRepository, currentUser },
+      { pathId, nodeId: "not-a-uuid" as any, title: "Docker Networking" },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
