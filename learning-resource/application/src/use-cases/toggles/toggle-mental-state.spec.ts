@@ -5,11 +5,12 @@ import {
   type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { toggleMentalState } from "./toggle-mental-state.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import { LearningResourceForbiddenError } from "../../errors/learning-resource-forbidden.js";
 
 describe("toggleMentalState", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -18,14 +19,17 @@ describe("toggleMentalState", () => {
   >;
   let resourceId: UUID;
   let typeId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     resourceId = await cryptoService.generateUUID();
     typeId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
 
     const resource: LearningResource = {
       id: resourceId,
+      userId: currentUser.id,
       title: "Advanced Algorithms",
       typeId,
       topicIds: [],
@@ -42,7 +46,7 @@ describe("toggleMentalState", () => {
 
   test("Should toggle mental state to deep_focus successfully", async () => {
     const result = await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: resourceId, mentalState: MentalStateType.DEEP_FOCUS },
     );
 
@@ -54,7 +58,7 @@ describe("toggleMentalState", () => {
 
   test("Should toggle mental state to light_read successfully", async () => {
     const result = await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: resourceId, mentalState: MentalStateType.LIGHT_READ },
     );
 
@@ -66,7 +70,7 @@ describe("toggleMentalState", () => {
 
   test("Should toggle mental state to creative successfully", async () => {
     const result = await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: resourceId, mentalState: MentalStateType.CREATIVE },
     );
 
@@ -78,7 +82,7 @@ describe("toggleMentalState", () => {
 
   test("Should toggle mental state to quick_op successfully", async () => {
     const result = await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: resourceId, mentalState: MentalStateType.QUICK_OP },
     );
 
@@ -90,7 +94,7 @@ describe("toggleMentalState", () => {
 
   test("Should toggle mental state to review successfully", async () => {
     const result = await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: resourceId, mentalState: MentalStateType.REVIEW },
     );
 
@@ -104,16 +108,27 @@ describe("toggleMentalState", () => {
     const nonExistentId = await cryptoService.generateUUID();
 
     const result = await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: nonExistentId, mentalState: MentalStateType.DEEP_FOCUS },
     );
 
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
   });
 
+  test("Should return LearningResourceForbiddenError when resource belongs to another user", async () => {
+    const otherUser = await mockCurrentUser(cryptoService);
+
+    const result = await toggleMentalState(
+      { learningResourceRepository, currentUser: otherUser },
+      { id: resourceId, mentalState: MentalStateType.DEEP_FOCUS },
+    );
+
+    expect(result).toBeInstanceOf(LearningResourceForbiddenError);
+  });
+
   test("Should return InvalidDataError when mentalState value is invalid", async () => {
     const result = await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: resourceId, mentalState: "INVALID_STATE" as any },
     );
 
@@ -126,7 +141,7 @@ describe("toggleMentalState", () => {
 
   test("Should return InvalidDataError when id is not a valid UUID", async () => {
     const result = await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: "not-a-uuid" as any, mentalState: MentalStateType.DEEP_FOCUS },
     );
 
@@ -141,7 +156,7 @@ describe("toggleMentalState", () => {
       await learningResourceRepository.findById(resourceId);
 
     await toggleMentalState(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { id: resourceId, mentalState: MentalStateType.CREATIVE },
     );
 

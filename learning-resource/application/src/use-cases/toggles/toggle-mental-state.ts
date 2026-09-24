@@ -4,16 +4,23 @@ import {
 } from "@learning-resource/domain";
 import {
   createValidationSchema,
+  type CurrentUser,
   enumField,
   InvalidDataError,
+  isErrorResult,
   uuidField,
   ValidationError,
   type UUID,
 } from "domain-lib";
-import { LearningResourceNotFoundError } from "../../errors/index.js";
+import {
+  LearningResourceForbiddenError,
+  LearningResourceNotFoundError,
+} from "../../errors/index.js";
+import { verifyLearningResourceOwnership } from "../learning-resource/verify-learning-resource-ownership.js";
 
 export interface ToggleMentalStateDependencies {
   learningResourceRepository: ILearningResourceRepository;
+  currentUser: CurrentUser;
 }
 
 export interface ToggleMentalStateRequestModel {
@@ -30,9 +37,14 @@ export const toggleMentalStateSchema =
   });
 
 export const toggleMentalState = async (
-  { learningResourceRepository }: ToggleMentalStateDependencies,
+  { learningResourceRepository, currentUser }: ToggleMentalStateDependencies,
   request: ToggleMentalStateRequestModel,
-): Promise<void | InvalidDataError | LearningResourceNotFoundError> => {
+): Promise<
+  | void
+  | InvalidDataError
+  | LearningResourceNotFoundError
+  | LearningResourceForbiddenError
+> => {
   const validationResult = await toggleMentalStateSchema(request);
 
   if (validationResult instanceof ValidationError) {
@@ -42,13 +54,12 @@ export const toggleMentalState = async (
 
   const validatedData = validationResult;
 
-  const existingResource = await learningResourceRepository.findById(
+  const existingResource = await verifyLearningResourceOwnership(
+    learningResourceRepository,
     validatedData.id,
+    currentUser,
   );
-
-  if (!existingResource) {
-    return new LearningResourceNotFoundError();
-  }
+  if (isErrorResult(existingResource)) return existingResource;
 
   await learningResourceRepository.update(validatedData.id, {
     mentalState: validatedData.mentalState,
