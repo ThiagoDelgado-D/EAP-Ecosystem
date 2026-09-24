@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
+import { mockCurrentUser } from "domain-lib";
 import { createBreakLifecycleFixture, type BreakLifecycleFixture } from "../../mocks/index.js";
 import { extendBreak } from "./extend-break.js";
 import { BreakNotFoundError } from "../../errors/break-not-found.js";
@@ -13,12 +14,12 @@ describe("extendBreak", () => {
   });
 
   test("should add the given seconds to the break's durationSec", async () => {
-    const { breakRepository, requestingUserId, startActiveBreak } = fixture;
+    const { breakRepository, currentUser, startActiveBreak } = fixture;
     const activeBreak = await startActiveBreak();
 
     const result = await extendBreak(
-      { breakRepository },
-      { userId: requestingUserId, breakId: activeBreak.id, seconds: 60 },
+      { breakRepository, currentUser },
+      { breakId: activeBreak.id, seconds: 60 },
     );
 
     expect(result).toMatchObject({
@@ -28,12 +29,12 @@ describe("extendBreak", () => {
   });
 
   test("should return BreakNotFoundError when the break does not exist", async () => {
-    const { breakRepository, cryptoService, requestingUserId } = fixture;
+    const { breakRepository, cryptoService, currentUser } = fixture;
     const nonExistentBreakId = await cryptoService.generateUUID();
 
     const result = await extendBreak(
-      { breakRepository },
-      { userId: requestingUserId, breakId: nonExistentBreakId, seconds: 60 },
+      { breakRepository, currentUser },
+      { breakId: nonExistentBreakId, seconds: 60 },
     );
 
     expect(result).toBeInstanceOf(BreakNotFoundError);
@@ -42,24 +43,24 @@ describe("extendBreak", () => {
   test("should return BreakForbiddenError when the break belongs to another user", async () => {
     const { breakRepository, cryptoService, startActiveBreak } = fixture;
     const activeBreak = await startActiveBreak();
-    const intruderId = await cryptoService.generateUUID();
+    const intruder = await mockCurrentUser(cryptoService);
 
     const result = await extendBreak(
-      { breakRepository },
-      { userId: intruderId, breakId: activeBreak.id, seconds: 60 },
+      { breakRepository, currentUser: intruder },
+      { breakId: activeBreak.id, seconds: 60 },
     );
 
     expect(result).toBeInstanceOf(BreakForbiddenError);
   });
 
   test("should return BreakNotActiveError when the break already ended", async () => {
-    const { breakRepository, requestingUserId, startActiveBreak } = fixture;
+    const { breakRepository, currentUser, startActiveBreak } = fixture;
     const activeBreak = await startActiveBreak();
     await breakRepository.update({ ...activeBreak, endedAt: new Date() });
 
     const result = await extendBreak(
-      { breakRepository },
-      { userId: requestingUserId, breakId: activeBreak.id, seconds: 60 },
+      { breakRepository, currentUser },
+      { breakId: activeBreak.id, seconds: 60 },
     );
 
     expect(result).toBeInstanceOf(BreakNotActiveError);
