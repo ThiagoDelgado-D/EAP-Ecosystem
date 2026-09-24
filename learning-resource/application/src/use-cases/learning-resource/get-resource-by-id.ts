@@ -5,10 +5,16 @@ import {
   MentalStateType,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import {
+  LearningResourceForbiddenError,
+  LearningResourceNotFoundError,
+} from "../../errors/index.js";
+import { verifyLearningResourceOwnership } from "./verify-learning-resource-ownership.js";
 import {
   createValidationSchema,
+  type CurrentUser,
   InvalidDataError,
+  isErrorResult,
   uuidField,
   ValidationError,
   type UUID,
@@ -16,6 +22,7 @@ import {
 
 export interface GetResourceByIdDependencies {
   learningResourceRepository: ILearningResourceRepository;
+  currentUser: CurrentUser;
 }
 
 export interface GetResourceByIdRequestModel {
@@ -45,11 +52,12 @@ export const getResourceByIdSchema =
   });
 
 export const GetResourceById = async (
-  { learningResourceRepository }: GetResourceByIdDependencies,
+  { learningResourceRepository, currentUser }: GetResourceByIdDependencies,
   { resourceId }: GetResourceByIdRequestModel,
 ): Promise<
   | GetResourceByIdResponseModel
   | LearningResourceNotFoundError
+  | LearningResourceForbiddenError
   | InvalidDataError
 > => {
   const validationResult = getResourceByIdSchema({ resourceId });
@@ -59,11 +67,12 @@ export const GetResourceById = async (
     return new InvalidDataError(validationErrors);
   }
 
-  const resource = await learningResourceRepository.findById(resourceId);
-
-  if (!resource) {
-    return new LearningResourceNotFoundError();
-  }
+  const resource = await verifyLearningResourceOwnership(
+    learningResourceRepository,
+    validationResult.resourceId,
+    currentUser,
+  );
+  if (isErrorResult(resource)) return resource;
 
   const result: GetResourceByIdResponseModel = {
     resourceId: resource.id,

@@ -9,26 +9,60 @@ import {
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { GetResourceById } from "./get-resource-by-id.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { LearningResourceForbiddenError } from "../../errors/learning-resource-forbidden.js";
+import {
+  type CurrentUser,
+  InvalidDataError,
+  mockCryptoService,
+  mockCurrentUser,
+} from "domain-lib";
 
 describe("GetResourceById", () => {
   let crypto: ReturnType<typeof mockCryptoService>;
   let repository: ReturnType<typeof mockLearningResourceRepository>;
+  let currentUser: CurrentUser;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     crypto = mockCryptoService();
     repository = mockLearningResourceRepository([]);
+    currentUser = await mockCurrentUser(crypto);
   });
 
   test("Should return LearningResourceNotFoundError when resource does not exist", async () => {
     const id = await crypto.generateUUID();
 
     const result = await GetResourceById(
-      { learningResourceRepository: repository },
+      { learningResourceRepository: repository, currentUser },
       { resourceId: id },
     );
 
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
+  });
+
+  test("Should return LearningResourceForbiddenError when resource belongs to another user", async () => {
+    const id = await crypto.generateUUID();
+    const otherUserId = await crypto.generateUUID();
+
+    await repository.save({
+      id,
+      userId: otherUserId,
+      title: "Someone Else's Resource",
+      topicIds: [],
+      difficulty: DifficultyType.LOW,
+      estimatedDuration: { isEstimated: true, value: 30 },
+      energyLevel: EnergyLevelType.LOW,
+      status: ResourceStatusType.PENDING,
+      typeId: await crypto.generateUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await GetResourceById(
+      { learningResourceRepository: repository, currentUser },
+      { resourceId: id },
+    );
+
+    expect(result).toBeInstanceOf(LearningResourceForbiddenError);
   });
 
   test("Should return the resource when it exists", async () => {
@@ -38,6 +72,7 @@ describe("GetResourceById", () => {
 
     const resource: LearningResource = {
       id,
+      userId: currentUser.id,
       title: "Resource Title",
       url: "https://example.com",
       topicIds: [topicId],
@@ -60,7 +95,7 @@ describe("GetResourceById", () => {
     await repository.save(resource);
 
     const result = await GetResourceById(
-      { learningResourceRepository: repository },
+      { learningResourceRepository: repository, currentUser },
       { resourceId: id },
     );
 
@@ -71,6 +106,8 @@ describe("GetResourceById", () => {
     if (result instanceof InvalidDataError) {
       return result;
     }
+
+    if (result instanceof LearningResourceForbiddenError) return result;
 
     expect(result).not.toBeInstanceOf(LearningResourceNotFoundError);
     expect(result.resourceId).toBe(id);
@@ -88,7 +125,7 @@ describe("GetResourceById", () => {
 
   test("Should return InvalidDataError when resourceId is not a valid UUID", async () => {
     const result = await GetResourceById(
-      { learningResourceRepository: repository },
+      { learningResourceRepository: repository, currentUser },
       { resourceId: "not-a-valid-uuid" as any },
     );
 
