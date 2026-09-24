@@ -1,5 +1,6 @@
 // ============= ENTITIES =============
 export * from "./entities/index.js";
+export * from "./entities/mocks/index.js";
 
 // ============= TYPES =============
 export * from "./types/index.js";
