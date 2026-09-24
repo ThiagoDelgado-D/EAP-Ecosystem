@@ -1,4 +1,4 @@
-import { BaseError, mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import { DomainNotificationType } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
@@ -12,33 +12,29 @@ describe("startBreak", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let breakRepository: ReturnType<typeof mockBreakRepository>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     breakRepository = mockBreakRepository();
     notificationPort = mockNotificationPort();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
+  const deps = () => ({ breakRepository, cryptoService, notificationPort, currentUser });
+
   test("Should persist a break with the default duration", async () => {
-    const result = await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
+    const result = await startBreak(deps());
 
     expect(result).toMatchObject({
-      userId: requestingUserId,
+      userId: currentUser.id,
       durationSec: DEFAULT_BREAK_DURATION_SEC,
     });
     expect(breakRepository.breaks).toHaveLength(1);
   });
 
   test("Should notify that a break started with the default duration", async () => {
-    await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
+    await startBreak(deps());
 
     expect(notificationPort.notifications).toHaveLength(1);
     const [notification] = notificationPort.notifications;
@@ -47,16 +43,10 @@ describe("startBreak", () => {
   });
 
   test("Should return BreakAlreadyActiveError when the user already has an active break", async () => {
-    const activeBreak = await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
+    const activeBreak = await startBreak(deps());
     if (activeBreak instanceof BaseError) throw activeBreak;
 
-    const result = await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
+    const result = await startBreak(deps());
 
     expect(result).toBeInstanceOf(BreakAlreadyActiveError);
     if (!(result instanceof BreakAlreadyActiveError)) throw result;
