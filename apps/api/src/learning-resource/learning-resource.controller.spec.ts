@@ -122,6 +122,22 @@ describe("LearningResourceController (integration)", () => {
     Authorization: `Bearer ${bearerToken}`,
   });
 
+  const createResource = (
+    overrides: Record<string, unknown> = {},
+    bearerToken: string = ownerToken,
+  ) =>
+    request(app.getHttpServer())
+      .post("/api/v1/learning-resources")
+      .set(authHeader(bearerToken))
+      .send({
+        title: "TypeScript Advanced",
+        resourceTypeId,
+        topicIds: [topicId],
+        difficulty: "high",
+        estimatedDurationMinutes: 120,
+        ...overrides,
+      });
+
   describe("Unauthenticated access", () => {
     test("Should return 401 without a bearer token", async () => {
       await request(app.getHttpServer())
@@ -132,17 +148,7 @@ describe("LearningResourceController (integration)", () => {
 
   describe("Ownership", () => {
     test("Should return 403 when a different user requests the resource", async () => {
-      const createResponse = await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
+      const createResponse = await createResource().expect(201);
 
       await request(app.getHttpServer())
         .get(`/api/v1/learning-resources/${createResponse.body.id}`)
@@ -151,17 +157,7 @@ describe("LearningResourceController (integration)", () => {
     });
 
     test("Should return 403 when a different user tries to update the resource", async () => {
-      const createResponse = await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
+      const createResponse = await createResource().expect(201);
 
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${createResponse.body.id}`)
@@ -171,17 +167,7 @@ describe("LearningResourceController (integration)", () => {
     });
 
     test("Should return 403 when a different user tries to delete the resource", async () => {
-      const createResponse = await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
+      const createResponse = await createResource().expect(201);
 
       await request(app.getHttpServer())
         .delete(`/api/v1/learning-resources/${createResponse.body.id}`)
@@ -190,29 +176,8 @@ describe("LearningResourceController (integration)", () => {
     });
 
     test("Should not return another user's resources in the list", async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "Owned Resource",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
-
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader(intruderToken))
-        .send({
-          title: "Intruder Resource",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        })
-        .expect(201);
+      await createResource({ title: "Owned Resource" }).expect(201);
+      await createResource({ title: "Intruder Resource" }, intruderToken).expect(201);
 
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
@@ -319,16 +284,7 @@ describe("LearningResourceController (integration)", () => {
 
     test("Should respect pageSize param", async () => {
       for (let i = 0; i < 3; i++) {
-        await request(app.getHttpServer())
-          .post("/api/v1/learning-resources")
-          .set(authHeader())
-          .send({
-            title: `Resource ${i}`,
-            resourceTypeId,
-            topicIds: [topicId],
-            difficulty: "low",
-            estimatedDurationMinutes: 10,
-          });
+        await createResource({ title: `Resource ${i}`, difficulty: "low", estimatedDurationMinutes: 10 });
       }
 
       const response = await request(app.getHttpServer())
@@ -344,16 +300,7 @@ describe("LearningResourceController (integration)", () => {
 
     test("Should respect page param", async () => {
       for (let i = 0; i < 3; i++) {
-        await request(app.getHttpServer())
-          .post("/api/v1/learning-resources")
-          .set(authHeader())
-          .send({
-            title: `Resource ${i}`,
-            resourceTypeId,
-            topicIds: [topicId],
-            difficulty: "low",
-            estimatedDurationMinutes: 10,
-          });
+        await createResource({ title: `Resource ${i}`, difficulty: "low", estimatedDurationMinutes: 10 });
       }
 
       const response = await request(app.getHttpServer())

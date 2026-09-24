@@ -1,12 +1,16 @@
 import { faker } from "@faker-js/faker";
 import {
+  DifficultyType,
+  EnergyLevelType,
   NodeProgress,
   PathMode,
   PathSource,
+  ResourceStatusType,
   StubScope,
   type LearningPath,
   type LearningPathEdge,
   type LearningPathNode,
+  type LearningResource,
 } from "@learning-resource/domain";
 import type { UUID } from "domain-lib";
 import type { MockedLearningPathRepository } from "./mock-learning-path-repository.js";
@@ -79,3 +83,18 @@ export const seedLearningPathEdge = (
   repo.edges.push(edge);
   return edge;
 };
+
+export const generateLearningResource = (
+  overrides: Partial<LearningResource> &
+    Pick<LearningResource, "id" | "userId" | "typeId">,
+): LearningResource => ({
+  title: "Untitled Resource",
+  topicIds: [],
+  difficulty: DifficultyType.MEDIUM,
+  energyLevel: EnergyLevelType.MEDIUM,
+  status: ResourceStatusType.PENDING,
+  estimatedDuration: { value: 60, isEstimated: true },
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+});
