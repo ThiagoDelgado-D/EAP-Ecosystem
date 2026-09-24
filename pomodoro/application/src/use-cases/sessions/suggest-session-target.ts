@@ -2,9 +2,8 @@ import {
   createValidationSchema,
   InvalidDataError,
   optionalEnum,
-  uuidField,
   ValidationError,
-  type UUID,
+  type CurrentUser,
 } from "domain-lib";
 import {
   CandidateNodeEnergyLevel,
@@ -22,19 +21,18 @@ import {
 export interface SuggestSessionTargetDependencies {
   sessionRepository: ISessionRepository;
   candidateNodesPort: CandidateNodesPort;
+  currentUser: CurrentUser;
 }
 
 export interface SuggestSessionTargetRequestModel {
-  userId: UUID;
   energy?: CandidateNodeEnergyLevel;
 }
 
 export type SuggestedCandidateResponseModel = ScoredCandidate;
 
 const suggestSessionTargetSchema = createValidationSchema<
-  Pick<SuggestSessionTargetRequestModel, "userId" | "energy">
+  Pick<SuggestSessionTargetRequestModel, "energy">
 >({
-  userId: uuidField("UserId", { required: true }),
   energy: optionalEnum(
     Object.values(CandidateNodeEnergyLevel) as CandidateNodeEnergyLevel[],
     "Energy",
@@ -42,21 +40,20 @@ const suggestSessionTargetSchema = createValidationSchema<
 });
 
 export const suggestSessionTarget = async (
-  { sessionRepository, candidateNodesPort }: SuggestSessionTargetDependencies,
+  { sessionRepository, candidateNodesPort, currentUser }: SuggestSessionTargetDependencies,
   request: SuggestSessionTargetRequestModel,
 ): Promise<SuggestedCandidateResponseModel[] | InvalidDataError> => {
   const validationResult = suggestSessionTargetSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
   }
-  const { userId, energy } = validationResult;
+  const { energy } = validationResult;
 
   const [candidates, lastTarget, momentum] = await Promise.all([
-    candidateNodesPort.findCandidateNodes(userId),
-    getLastSessionTarget({ sessionRepository }, { userId }),
-    getPathMomentum({ sessionRepository }, { userId }),
+    candidateNodesPort.findCandidateNodes(currentUser.id),
+    getLastSessionTarget({ sessionRepository, currentUser }),
+    getPathMomentum({ sessionRepository, currentUser }, {}),
   ]);
-  if (lastTarget instanceof InvalidDataError) return lastTarget;
   if (momentum instanceof InvalidDataError) return momentum;
 
   const context: ScoringContext = {
