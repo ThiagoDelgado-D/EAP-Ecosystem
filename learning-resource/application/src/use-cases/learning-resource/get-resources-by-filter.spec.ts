@@ -1,4 +1,4 @@
-import { mockCryptoService, type UUID } from "domain-lib";
+import { mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import {
@@ -25,6 +25,7 @@ describe("getResourcesByFilter", () => {
   let topicProgrammingId: UUID;
   let topicDesignId: UUID;
   let topicScienceId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
@@ -34,10 +35,12 @@ describe("getResourcesByFilter", () => {
     topicProgrammingId = await cryptoService.generateUUID();
     topicDesignId = await cryptoService.generateUUID();
     topicScienceId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
 
     const seedResources: LearningResource[] = [
       {
         id: await cryptoService.generateUUID(),
+        userId: currentUser.id,
         title: "TypeScript Basics",
         typeId: typeVideoId,
         topicIds: [topicProgrammingId],
@@ -50,6 +53,7 @@ describe("getResourcesByFilter", () => {
       },
       {
         id: await cryptoService.generateUUID(),
+        userId: currentUser.id,
         title: "Advanced TypeScript",
         typeId: typeVideoId,
         topicIds: [topicProgrammingId],
@@ -62,6 +66,7 @@ describe("getResourcesByFilter", () => {
       },
       {
         id: await cryptoService.generateUUID(),
+        userId: currentUser.id,
         title: "Design Systems",
         typeId: typeArticleId,
         topicIds: [topicDesignId],
@@ -74,6 +79,7 @@ describe("getResourcesByFilter", () => {
       },
       {
         id: await cryptoService.generateUUID(),
+        userId: currentUser.id,
         title: "Figma Tutorial",
         typeId: typeVideoId,
         topicIds: [topicDesignId, topicProgrammingId],
@@ -86,6 +92,7 @@ describe("getResourcesByFilter", () => {
       },
       {
         id: await cryptoService.generateUUID(),
+        userId: currentUser.id,
         title: "Quantum Physics Introduction",
         typeId: typeArticleId,
         topicIds: [topicScienceId],
@@ -98,6 +105,7 @@ describe("getResourcesByFilter", () => {
       },
       {
         id: await cryptoService.generateUUID(),
+        userId: currentUser.id,
         title: "CSS Grid Basics",
         typeId: typeArticleId,
         topicIds: [topicProgrammingId],
@@ -115,7 +123,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return paginated shape with all resources when no filters provided", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       {},
     );
 
@@ -128,7 +136,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return paginated shape when filters object is empty", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: {} },
     );
 
@@ -142,7 +150,7 @@ describe("getResourcesByFilter", () => {
     learningResourceRepository.clear();
 
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       {},
     );
 
@@ -153,7 +161,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should paginate correctly with pageSize=2 and return page 1", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { page: 1, pageSize: 2 },
     );
 
@@ -166,7 +174,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should paginate correctly and return page 2", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { page: 2, pageSize: 2 },
     );
 
@@ -177,7 +185,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should clamp page to 1 when page < 1", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { page: -5 },
     );
 
@@ -186,7 +194,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should clamp pageSize to MAX_PAGE_SIZE when pageSize exceeds limit", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { pageSize: 999 },
     );
 
@@ -195,7 +203,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should clamp pageSize to 1 when pageSize < 1", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { pageSize: 0 },
     );
 
@@ -205,7 +213,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources with LOW difficulty", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { difficulty: DifficultyType.LOW } },
     );
 
@@ -217,7 +225,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources with MEDIUM difficulty", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { difficulty: DifficultyType.MEDIUM } },
     );
 
@@ -229,7 +237,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources with HIGH difficulty", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { difficulty: DifficultyType.HIGH } },
     );
 
@@ -241,7 +249,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources with LOW energy level", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { energyLevel: EnergyLevelType.LOW } },
     );
 
@@ -253,7 +261,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources with HIGH energy level", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { energyLevel: EnergyLevelType.HIGH } },
     );
 
@@ -265,7 +273,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return PENDING resources", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { status: ResourceStatusType.PENDING } },
     );
 
@@ -277,7 +285,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return IN_PROGRESS resources", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { status: ResourceStatusType.IN_PROGRESS } },
     );
 
@@ -287,7 +295,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return COMPLETED resources", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { status: ResourceStatusType.COMPLETED } },
     );
 
@@ -299,7 +307,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources filtered by article type", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { resourceTypeId: typeArticleId } },
     );
 
@@ -313,7 +321,7 @@ describe("getResourcesByFilter", () => {
     const nonExistentTypeId = await cryptoService.generateUUID();
 
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { resourceTypeId: nonExistentTypeId } },
     );
 
@@ -323,7 +331,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources filtered by single topic", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { topicIds: [topicProgrammingId] } },
     );
 
@@ -335,7 +343,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources filtered by multiple topics (OR logic)", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { topicIds: [topicDesignId, topicScienceId] } },
     );
 
@@ -353,7 +361,7 @@ describe("getResourcesByFilter", () => {
     const nonExistentTopicId = await cryptoService.generateUUID();
 
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { topicIds: [nonExistentTopicId] } },
     );
 
@@ -363,7 +371,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return resources matching search query (case-insensitive)", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { q: "typescript" } },
     );
 
@@ -377,7 +385,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return empty when search query matches nothing", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { q: "nonexistentxyz" } },
     );
 
@@ -387,7 +395,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should ignore empty q string and return all results", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { q: "" } },
     );
 
@@ -399,6 +407,7 @@ describe("getResourcesByFilter", () => {
 
     await learningResourceRepository.save({
       id: deepFocusId,
+      userId: currentUser.id,
       title: "Deep Work",
       typeId: typeVideoId,
       topicIds: [topicProgrammingId],
@@ -412,7 +421,7 @@ describe("getResourcesByFilter", () => {
     });
 
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { mentalState: MentalStateType.DEEP_FOCUS } },
     );
 
@@ -427,6 +436,7 @@ describe("getResourcesByFilter", () => {
 
     await learningResourceRepository.save({
       id: id1,
+      userId: currentUser.id,
       title: "Deep Focus High",
       typeId: typeVideoId,
       topicIds: [topicProgrammingId],
@@ -441,6 +451,7 @@ describe("getResourcesByFilter", () => {
 
     await learningResourceRepository.save({
       id: id2,
+      userId: currentUser.id,
       title: "Deep Focus Low",
       typeId: typeArticleId,
       topicIds: [topicDesignId],
@@ -454,7 +465,7 @@ describe("getResourcesByFilter", () => {
     });
 
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       {
         filters: {
           mentalState: MentalStateType.DEEP_FOCUS,
@@ -469,7 +480,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should apply filters combined with pagination", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       { filters: { difficulty: DifficultyType.LOW }, page: 1, pageSize: 1 },
     );
 
@@ -481,7 +492,7 @@ describe("getResourcesByFilter", () => {
 
   test("Should return all resources when all filter values are undefined", async () => {
     const result = await getResourcesByFilter(
-      { learningResourceRepository },
+      { learningResourceRepository, currentUser },
       {
         filters: {
           topicIds: undefined,
@@ -495,5 +506,31 @@ describe("getResourcesByFilter", () => {
 
     expect(result.total).toBe(6);
     expect(result.resources).toHaveLength(6);
+  });
+
+  test("Should not return resources belonging to another user", async () => {
+    const otherUserId = await cryptoService.generateUUID();
+
+    await learningResourceRepository.save({
+      id: await cryptoService.generateUUID(),
+      userId: otherUserId,
+      title: "Someone Else's Resource",
+      typeId: typeVideoId,
+      topicIds: [],
+      difficulty: DifficultyType.LOW,
+      energyLevel: EnergyLevelType.LOW,
+      status: ResourceStatusType.PENDING,
+      estimatedDuration: { value: 15, isEstimated: true },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await getResourcesByFilter(
+      { learningResourceRepository, currentUser },
+      {},
+    );
+
+    expect(result.total).toBe(6);
+    expect(result.resources.every((r) => r.userId === currentUser.id)).toBe(true);
   });
 });

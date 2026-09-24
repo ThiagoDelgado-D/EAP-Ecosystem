@@ -3,9 +3,11 @@ import type {
   PaginatedResources,
   ResourceFilters,
 } from "@learning-resource/domain";
+import type { CurrentUser } from "domain-lib";
 
 export interface GetResourcesWithPaginationDeps {
   learningResourceRepository: ILearningResourceRepository;
+  currentUser: CurrentUser;
 }
 
 export interface GetResourcesWithPaginationRequestModel {
@@ -18,7 +20,7 @@ export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
 
 export const getResourcesByFilter = async (
-  { learningResourceRepository }: GetResourcesWithPaginationDeps,
+  { learningResourceRepository, currentUser }: GetResourcesWithPaginationDeps,
   request: GetResourcesWithPaginationRequestModel = {},
 ): Promise<PaginatedResources> => {
   const page = Math.max(1, request.page ?? 1);
@@ -28,8 +30,9 @@ export const getResourcesByFilter = async (
   );
   const filters: ResourceFilters = request.filters ?? {};
 
-  return learningResourceRepository.findWithFiltersAndCount(filters, {
-    page,
-    pageSize,
-  });
+  return learningResourceRepository.findWithFiltersAndCount(
+    currentUser.id,
+    filters,
+    { page, pageSize },
+  );
 };
