@@ -5,8 +5,10 @@ import {
   mockLearningResourceRepository,
 } from "../../mocks/index.js";
 import {
+  type CurrentUser,
   InvalidDataError,
   mockCryptoService,
+  mockCurrentUser,
   NotFoundError,
   type UUID,
 } from "domain-lib";
@@ -20,7 +22,10 @@ import {
   type Topic,
 } from "@learning-resource/domain";
 import { updateResource } from "./edit-resource.js";
-import { LearningResourceNotFoundError } from "../../errors/index.js";
+import {
+  LearningResourceForbiddenError,
+  LearningResourceNotFoundError,
+} from "../../errors/index.js";
 
 describe("updateResource", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -35,6 +40,7 @@ describe("updateResource", () => {
   let newTypeId: UUID;
   let topicId: UUID;
   let newTopicId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
@@ -44,9 +50,11 @@ describe("updateResource", () => {
     newTypeId = await cryptoService.generateUUID();
     topicId = await cryptoService.generateUUID();
     newTopicId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
 
     const existingResource: LearningResource = {
       id: resourceId,
+      userId: currentUser.id,
       title: "Original Title",
       url: "https://original-url.com",
       typeId,
@@ -110,6 +118,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -131,6 +140,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -151,6 +161,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -170,6 +181,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -189,6 +201,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -209,6 +222,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -228,6 +242,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -249,6 +264,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -278,6 +294,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -296,6 +313,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -317,6 +335,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: nonExistentId,
@@ -335,6 +354,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -357,6 +377,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -377,6 +398,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -394,6 +416,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -414,6 +437,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -432,6 +456,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -449,6 +474,7 @@ describe("updateResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -462,7 +488,7 @@ describe("updateResource", () => {
 
   test("Should update only imageUrl", async () => {
     const result = await updateResource(
-      { learningResourceRepository, resourceTypeRepository, topicRepository },
+      { learningResourceRepository, resourceTypeRepository, topicRepository, currentUser },
       { id: resourceId, imageUrl: "https://example.com/image.jpg" },
     );
 
@@ -473,7 +499,7 @@ describe("updateResource", () => {
 
   test("Should update only mentalState", async () => {
     const result = await updateResource(
-      { learningResourceRepository, resourceTypeRepository, topicRepository },
+      { learningResourceRepository, resourceTypeRepository, topicRepository, currentUser },
       { id: resourceId, mentalState: MentalStateType.DEEP_FOCUS },
     );
 
@@ -484,10 +510,24 @@ describe("updateResource", () => {
 
   test("Should return InvalidDataError when only new fields omitted", async () => {
     const result = await updateResource(
-      { learningResourceRepository, resourceTypeRepository, topicRepository },
+      { learningResourceRepository, resourceTypeRepository, topicRepository, currentUser },
       { id: resourceId },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
+  });
+
+  test("Should return LearningResourceForbiddenError when resource belongs to another user", async () => {
+    const otherUser = await mockCurrentUser(cryptoService);
+
+    const result = await updateResource(
+      { learningResourceRepository, resourceTypeRepository, topicRepository, currentUser: otherUser },
+      { id: resourceId, title: "Hijacked Title" },
+    );
+
+    expect(result).toBeInstanceOf(LearningResourceForbiddenError);
+
+    const untouched = await learningResourceRepository.findById(resourceId);
+    expect(untouched?.title).toBe("Original Title");
   });
 });
