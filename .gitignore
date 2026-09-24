@@ -23,3 +23,7 @@ coverage
 *.tsbuildinfo
 src/**/*.d.ts
 src/**/*.d.ts.map
+# prowl-agent: derived state
+.prowl/
+.prowl-setup.lock
+# /prowl-agent: derived state
