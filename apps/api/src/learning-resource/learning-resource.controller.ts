@@ -15,6 +15,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import {
   AddResourceDto,
@@ -39,10 +40,13 @@ import {
   updateResource,
   type IUrlMetadataService,
 } from "@learning-resource/application";
-import { BaseError, type CryptoService, type UUID } from "domain-lib";
+import { BaseError, type CryptoService, type CurrentUser, type UUID } from "domain-lib";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { isUUID } from "class-validator";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
+import { CurrentUser as CurrentUserDecorator } from "../auth/current-user.decorator.js";
 
+@UseGuards(JwtAuthGuard)
 @Controller("api/v1/learning-resources")
 export class LearningResourceController {
   constructor(
@@ -59,13 +63,17 @@ export class LearningResourceController {
   ) {}
 
   @Post()
-  async create(@Body() dto: AddResourceDto) {
+  async create(
+    @Body() dto: AddResourceDto,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
     const result = await addResource(
       {
         learningResourceRepository: this.learningResourceRepository,
         resourceTypeRepository: this.resourceTypeRepository,
         topicRepository: this.topicRepository,
         cryptoService: this.cryptoService,
+        currentUser,
       },
       dto,
     );
@@ -75,6 +83,7 @@ export class LearningResourceController {
   }
   @Get()
   async listResources(
+    @CurrentUserDecorator() currentUser: CurrentUser,
     @Query("page") page?: string,
     @Query("pageSize") pageSize?: string,
     @Query("q") q?: string,
@@ -96,7 +105,7 @@ export class LearningResourceController {
     const parsedPageSize = parseInt(pageSize ?? "", 10);
 
     return getResourcesByFilter(
-      { learningResourceRepository: this.learningResourceRepository },
+      { learningResourceRepository: this.learningResourceRepository, currentUser },
       {
         filters,
         page: Number.isNaN(parsedPage) ? 1 : parsedPage,
@@ -106,17 +115,20 @@ export class LearningResourceController {
   }
 
   @Get("suggestions")
-  async suggestions(@Query("q") q?: string) {
+  async suggestions(
+    @Query("q") q: string | undefined,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
     return getSuggestions(
-      { learningResourceRepository: this.learningResourceRepository },
+      { learningResourceRepository: this.learningResourceRepository, currentUser },
       q ?? "",
     );
   }
 
   @Get(":id")
-  async findOne(@Param("id") id: UUID) {
+  async findOne(@Param("id") id: UUID, @CurrentUserDecorator() currentUser: CurrentUser) {
     const result = await GetResourceById(
-      { learningResourceRepository: this.learningResourceRepository },
+      { learningResourceRepository: this.learningResourceRepository, currentUser },
       { resourceId: id },
     );
     if (result instanceof BaseError) toHttpException(result);
@@ -124,12 +136,17 @@ export class LearningResourceController {
   }
 
   @Patch(":id")
-  async update(@Param("id") id: UUID, @Body() dto: UpdateResourceDto) {
+  async update(
+    @Param("id") id: UUID,
+    @Body() dto: UpdateResourceDto,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
     const result = await updateResource(
       {
         learningResourceRepository: this.learningResourceRepository,
         resourceTypeRepository: this.resourceTypeRepository,
         topicRepository: this.topicRepository,
+        currentUser,
       },
       { id, ...dto },
     );
@@ -137,9 +154,9 @@ export class LearningResourceController {
   }
 
   @Delete(":id")
-  async remove(@Param("id") id: UUID) {
+  async remove(@Param("id") id: UUID, @CurrentUserDecorator() currentUser: CurrentUser) {
     const result = await deleteResource(
-      { learningResourceRepository: this.learningResourceRepository },
+      { learningResourceRepository: this.learningResourceRepository, currentUser },
       { id },
     );
     if (result instanceof BaseError) toHttpException(result);
@@ -149,27 +166,36 @@ export class LearningResourceController {
   async toggleDifficulty(
     @Param("id") id: UUID,
     @Body() dto: ToggleDifficultyDto,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await toggleResourceDifficulty(
-      { learningResourceRepository: this.learningResourceRepository },
+      { learningResourceRepository: this.learningResourceRepository, currentUser },
       { id, difficulty: dto.difficulty },
     );
     if (result instanceof BaseError) toHttpException(result);
   }
 
   @Patch(":id/energy")
-  async toggleEnergy(@Param("id") id: UUID, @Body() dto: ToggleEnergyDto) {
+  async toggleEnergy(
+    @Param("id") id: UUID,
+    @Body() dto: ToggleEnergyDto,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
     const result = await toggleResourceEnergy(
-      { learningResourceRepository: this.learningResourceRepository },
+      { learningResourceRepository: this.learningResourceRepository, currentUser },
       { id, energyLevel: dto.energyLevel },
     );
     if (result instanceof BaseError) toHttpException(result);
   }
 
   @Patch(":id/status")
-  async toggleStatus(@Param("id") id: UUID, @Body() dto: ToggleStatusDto) {
+  async toggleStatus(
+    @Param("id") id: UUID,
+    @Body() dto: ToggleStatusDto,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
     const result = await toggleStatus(
-      { learningResourceRepository: this.learningResourceRepository },
+      { learningResourceRepository: this.learningResourceRepository, currentUser },
       { id, status: dto.status },
     );
     if (result instanceof BaseError) toHttpException(result);
@@ -179,9 +205,10 @@ export class LearningResourceController {
   async toggleMentalState(
     @Param("id") id: UUID,
     @Body() dto: ToggleMentalStateDto,
+    @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await toggleMentalState(
-      { learningResourceRepository: this.learningResourceRepository },
+      { learningResourceRepository: this.learningResourceRepository, currentUser },
       { id, mentalState: dto.mentalState },
     );
     if (result instanceof BaseError) toHttpException(result);
@@ -197,7 +224,7 @@ export class LearningResourceController {
       },
       { url: dto.url },
     );
-    if (result instanceof BaseError) toHttpException(result);
+    if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
 }
