@@ -17,6 +17,9 @@ export class LearningResourceEntity {
   @PrimaryColumn("uuid")
   id!: string;
 
+  @Column("uuid")
+  userId!: string;
+
   @Column({ length: 500 })
   title!: string;
 
