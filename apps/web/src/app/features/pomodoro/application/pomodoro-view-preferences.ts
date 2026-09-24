@@ -50,7 +50,7 @@ export function writeHideShortcutHints(hidden: boolean): void {
 export function readDefaultDurationMin(): number {
   try {
     const raw = localStorage.getItem(DEFAULT_DURATION_MIN_STORAGE_KEY);
-    const minutes = raw !== null ? Number(raw) : NaN;
+    const minutes = raw !== null ? Number(raw) : Number.NaN;
     const valid = Number.isFinite(minutes) && minutes > 0 && minutes <= MAX_PLANNED_DURATION_MIN;
     return valid ? minutes : FALLBACK_DEFAULT_DURATION_MIN;
   } catch {
