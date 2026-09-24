@@ -3,8 +3,120 @@
 ### Planned
 
 - Learning resources associated to authenticated user (data isolation per user) — not yet scheduled to a version
-- Pomodoro timer + `LearningSession` records — v0.9.5
 - WebSocket gateway for cross-device session sync — Post-MVP
+
+---
+
+## [0.9.5] - 2026-09-24
+
+### Pomodoro Focus Sessions + Weekly Summary
+
+What started as a simple timer tied to the active resource grew, over roughly
+seventy PRs across three weeks, into a full Pomodoro system: server-authoritative
+session and break lifecycles, full/mini/zen views, a cross-context suggestion
+engine that reads Learning Path progress, a weekly summary with a day-by-day
+log, and a session-honesty model that stops trusting the client's clock instead
+of the original session-history-only scope. See ADR-0022 (and its three
+revisions), ADR-0023, ADR-0024, and ADR-0025 for how the design evolved.
+
+---
+
+### Added
+
+#### Backend — Domain & Application
+
+- `Session` and `Segment` domain entities, with `startSession`, `switchTarget`
+  (mid-session material switching), `endSession` (`NotificationPort` +
+  minimum-duration discard), `continueSession`, and `extendSession` (in-place
+  duration extension) use cases
+- `Break` promoted from a stateless side effect to a first-class persisted
+  entity (ADR-0022, revised 2026-09-13): `startBreak`, `getActiveBreak`,
+  `extendBreak`, `endBreak`
+- Session-honesty lifecycle (ADR-0022, revised 2026-09-16): sessions auto-close
+  at `plannedMin` server-side instead of trusting the client's `endSession`
+  call, with `continueSession` to keep going past the boundary
+- Retroactive session attribution (`attributeSession`) — assign a completed
+  session to a resource or path node after the fact
+- Cross-context suggestion engine: session-history queries, a `candidate-nodes`
+  port into Learning Paths, and a scoring use case
+- Weekly summary (ADR-0025): two range queries over existing session/break
+  data, no new persisted entity, day-by-day log and week-over-week delta
+  computed at read time
+
+#### Backend — Infrastructure & API
+
+- TypeORM entities and repositories for `Session`/`Segment`/`Break`,
+  migrations, and full `pomodoro` module wiring
+- `GET /pomodoro/sessions/active` for refresh recovery / session rehydration
+- Full sessions/breaks REST surface: `POST /pomodoro/sessions`,
+  `PATCH .../target`, `PATCH .../attach`, `PATCH .../attribute`,
+  `POST .../end`, `POST .../continue`, `PATCH .../extend`;
+  `GET /pomodoro/breaks/active`, `POST /pomodoro/breaks`,
+  `PATCH .../extend`, `POST .../end`; `GET /pomodoro/suggestion`,
+  `GET /pomodoro/history`
+- Weekly summary history endpoint
+
+#### Frontend
+
+- Start, Active, and End screens, with session rehydration on refresh
+- Full / mini / zen view-mode parity for both focus sessions and breaks,
+  behind a shared overlay host and root providers
+- Break support end to end: take a break from the Active view or the End
+  screen, extend it, break support in the mini widget and zen view
+- Weekly summary screen (v1, then v2 with a day-by-day log), and a Today
+  panel with a session-honesty boundary prompt and a hover breakdown of
+  focus/break blocks
+- Browse/picker flow: an aggregate `learning-path-with-nodes` endpoint,
+  a categorization service, and a picker dialog for choosing a session's
+  target
+- Settings: sound picker with volume, default view mode, hide-shortcut-hints
+  toggle
+- Custom duration input and in-place focus-session extend
+- Start screen redesign (ADR-0022, revised 2026-09-23): defaults to free
+  focus instead of a single suggestion hero, quick-start suggestions, the
+  `PomodoroRing` component, active-session UX polish, Library row parity,
+  and a wider contrast pass
+
+### Fixed
+
+- Missing `typescript` devDependency across workspaces
+- Estimated duration not shown in the resources library
+- Take a Break failing with a missing `BreakEntity` and silently destroying
+  the session
+- `endSession` still counting time past the planned boundary
+- Sound-preference tests leaking real `localStorage` writes
+- Switch-modal intercepting the spacebar, and time drift on break-extend
+
+### Changed
+
+- Design tokens and enum values (`Difficulty`/`Energy`/`Status`/`MentalState`)
+  centralized for dashboard components
+- Dependency bumps: `@angular/core`/`@angular/common` 21.2.20, `vitest`
+  4.1.11, `faker` 10.5.0, `multer` 2.3.0, `nodemailer` 9.1.1, `qs` 6.16.0,
+  `fast-uri` 3.1.7
+
+### Architecture Decision Records
+
+- ADR-0022 (Pomodoro Focus Sessions) — Accepted 2026-09-05, revised
+  2026-09-13 (Break as a persisted entity), 2026-09-16 (session-honesty
+  lifecycle), and 2026-09-23 (Start defaults to free focus)
+- ADR-0023 (Notification Strategy) — Accepted 2026-09-05
+- ADR-0025 (Weekly Summary) — Accepted 2026-09-15
+
+### Known Limitations (intentional)
+
+- ADR-0024 (Settings & cycle awareness — short/long break distinction, a
+  real `Settings` entity) is Accepted but explicitly Post-MVP, not
+  scheduled; nothing from it shipped in this release.
+- Full auto-cycling between sessions (planning a chain in advance and
+  auto-advancing through it) stays out of scope even for ADR-0024, and is
+  deferred to be designed together with the Recommendation engine (v0.10.0).
+- Where recommendation re-enters the flow after the Start-screen redesign
+  is deferred to that same v0.10.0 work.
+- Cross-device session sync (WebSocket gateway) remains Post-MVP, unchanged
+  from v0.9.0.
+- Per-user data isolation for `LearningResource` is still outstanding —
+  tracked separately as a pre-deploy gate, not part of this release.
 
 ---
 
