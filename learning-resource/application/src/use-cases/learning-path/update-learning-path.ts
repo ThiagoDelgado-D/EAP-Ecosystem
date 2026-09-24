@@ -1,5 +1,6 @@
 import {
   createValidationSchema,
+  type CurrentUser,
   InvalidDataError,
   isErrorResult,
   optionalString,
@@ -19,24 +20,23 @@ import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js
 
 export interface UpdateLearningPathDependencies {
   learningPathRepository: ILearningPathRepository;
+  currentUser: CurrentUser;
 }
 
 export interface UpdateLearningPathRequest {
-  userId: UUID;
   pathId: UUID;
   title?: string;
   description?: string;
 }
 
 const updateLearningPathSchema = createValidationSchema<UpdateLearningPathRequest>({
-  userId: uuidField("UserId", { required: true }),
   pathId: uuidField("PathId", { required: true }),
   title: optionalString("Title", { maxLength: 200 }),
   description: optionalString("Description", { maxLength: 1000 }),
 });
 
 export const updateLearningPath = async (
-  { learningPathRepository }: UpdateLearningPathDependencies,
+  { learningPathRepository, currentUser }: UpdateLearningPathDependencies,
   request: UpdateLearningPathRequest,
 ): Promise<
   LearningPath | LearningPathNotFoundError | LearningPathForbiddenError | InvalidDataError
@@ -46,9 +46,9 @@ export const updateLearningPath = async (
     return new InvalidDataError(validationResult.errors);
   }
 
-  const { userId, pathId, title, description } = validationResult;
+  const { pathId, title, description } = validationResult;
 
-  const existing = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  const existing = await verifyLearningPathOwnership(learningPathRepository, pathId, currentUser);
   if (isErrorResult(existing)) return existing;
 
   return learningPathRepository.update(pathId, {
