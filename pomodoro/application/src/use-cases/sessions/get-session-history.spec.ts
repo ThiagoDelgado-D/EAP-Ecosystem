@@ -1,29 +1,29 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { BaseError, mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import { mockSessionRepository, seedSegment, seedSession } from "../../mocks/index.js";
 import { getSessionHistory } from "./get-session-history.js";
 
 describe("getSessionHistory", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
   test("should return sessions and segments on or after since", async () => {
     const inRangeSession = seedSession(sessionRepository, {
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date("2026-09-10T10:00:00Z"),
     });
     seedSegment(sessionRepository, { sessionId: inRangeSession.id, endSec: 25 * 60 });
 
     const result = await getSessionHistory(
-      { sessionRepository },
-      { userId: requestingUserId, since: new Date("2026-09-08T00:00:00Z") },
+      { sessionRepository, currentUser },
+      { since: new Date("2026-09-08T00:00:00Z") },
     );
     if (result instanceof BaseError) throw result;
 
@@ -33,13 +33,13 @@ describe("getSessionHistory", () => {
 
   test("should exclude sessions started before since", async () => {
     seedSession(sessionRepository, {
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date("2026-09-01T10:00:00Z"),
     });
 
     const result = await getSessionHistory(
-      { sessionRepository },
-      { userId: requestingUserId, since: new Date("2026-09-08T00:00:00Z") },
+      { sessionRepository, currentUser },
+      { since: new Date("2026-09-08T00:00:00Z") },
     );
     if (result instanceof BaseError) throw result;
 
@@ -49,18 +49,17 @@ describe("getSessionHistory", () => {
 
   test("should exclude sessions on or after until when given", async () => {
     seedSession(sessionRepository, {
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date("2026-09-15T10:00:00Z"),
     });
     const inRangeSession = seedSession(sessionRepository, {
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date("2026-09-10T10:00:00Z"),
     });
 
     const result = await getSessionHistory(
-      { sessionRepository },
+      { sessionRepository, currentUser },
       {
-        userId: requestingUserId,
         since: new Date("2026-09-08T00:00:00Z"),
         until: new Date("2026-09-12T00:00:00Z"),
       },
@@ -78,8 +77,8 @@ describe("getSessionHistory", () => {
     });
 
     const result = await getSessionHistory(
-      { sessionRepository },
-      { userId: requestingUserId, since: new Date("2026-09-08T00:00:00Z") },
+      { sessionRepository, currentUser },
+      { since: new Date("2026-09-08T00:00:00Z") },
     );
     if (result instanceof BaseError) throw result;
 
