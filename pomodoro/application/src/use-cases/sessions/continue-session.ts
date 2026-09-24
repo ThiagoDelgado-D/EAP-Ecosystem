@@ -5,6 +5,7 @@ import {
   ValidationError,
   InvalidDataError,
   type CryptoService,
+  type CurrentUser,
   type UUID,
 } from "domain-lib";
 import type { ISessionRepository, Segment, Session } from "@pomodoro/domain";
@@ -18,10 +19,10 @@ import { segmentToResolvedTarget } from "./resolve-segment-target.js";
 export interface ContinueSessionDependencies {
   sessionRepository: ISessionRepository;
   cryptoService: CryptoService;
+  currentUser: CurrentUser;
 }
 
 export interface ContinueSessionRequestModel {
-  userId: UUID;
   sessionId: UUID;
 }
 
@@ -32,12 +33,11 @@ export interface ContinueSessionResponseModel {
 }
 
 const continueSessionSchema = createValidationSchema<ContinueSessionRequestModel>({
-  userId: uuidField("UserId", { required: true }),
   sessionId: uuidField("SessionId", { required: true }),
 });
 
 export const continueSession = async (
-  { sessionRepository, cryptoService }: ContinueSessionDependencies,
+  { sessionRepository, cryptoService, currentUser }: ContinueSessionDependencies,
   request: ContinueSessionRequestModel,
 ): Promise<
   | ContinueSessionResponseModel
@@ -55,7 +55,7 @@ export const continueSession = async (
   const guard = await requireActiveSessionWithOpenSegment(
     sessionRepository,
     validationResult.sessionId,
-    validationResult.userId,
+    currentUser,
   );
   if (guard instanceof BaseError) return guard;
   const { session, openSegment } = guard;

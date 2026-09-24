@@ -1,4 +1,4 @@
-import { InvalidDataError } from "domain-lib";
+import { InvalidDataError, mockCurrentUser } from "domain-lib";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
@@ -21,6 +21,7 @@ describe("continueSession", () => {
   const deps = () => ({
     sessionRepository: fixture.sessionRepository,
     cryptoService: fixture.cryptoService,
+    currentUser: fixture.currentUser,
   });
 
   test("closes the current session exactly at plannedMin and starts a new one against the same target", async () => {
@@ -31,7 +32,6 @@ describe("continueSession", () => {
     storedSession.startedAt = new Date(Date.now() - 3600 * 1000);
 
     const result = await continueSession(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
     });
 
@@ -59,9 +59,7 @@ describe("continueSession", () => {
   });
 
   test("returns InvalidDataError when sessionId is missing", async () => {
-    const result = await continueSession(deps(), {
-      userId: fixture.requestingUserId,
-    } as any);
+    const result = await continueSession(deps(), {} as any);
 
     expect(result).toBeInstanceOf(InvalidDataError);
   });
@@ -70,7 +68,6 @@ describe("continueSession", () => {
     const nonExistentSessionId = await fixture.cryptoService.generateUUID();
 
     const result = await continueSession(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: nonExistentSessionId,
     });
 
@@ -79,12 +76,12 @@ describe("continueSession", () => {
 
   test("returns SessionForbiddenError when the session belongs to another user", async () => {
     const session = await fixture.startFreeSession();
-    const otherUserId = await fixture.cryptoService.generateUUID();
+    const intruder = await mockCurrentUser(fixture.cryptoService);
 
-    const result = await continueSession(deps(), {
-      userId: otherUserId,
-      sessionId: session.id,
-    });
+    const result = await continueSession(
+      { ...deps(), currentUser: intruder },
+      { sessionId: session.id },
+    );
 
     expect(result).toBeInstanceOf(SessionForbiddenError);
   });
@@ -97,7 +94,6 @@ describe("continueSession", () => {
     storedSession.completedAt = new Date();
 
     const result = await continueSession(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
     });
 
@@ -112,7 +108,6 @@ describe("continueSession", () => {
     await fixture.sessionRepository.updateSegment({ ...openSegment!, endSec: 120 });
 
     const result = await continueSession(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
     });
 
