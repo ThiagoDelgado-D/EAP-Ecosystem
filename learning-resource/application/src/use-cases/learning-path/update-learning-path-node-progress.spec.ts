@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser } from "domain-lib";
 import { NodeProgress } from "@learning-resource/domain";
 import { seedLearningPath, seedLearningPathNode } from "../../mocks/factories.js";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
@@ -20,70 +20,70 @@ describe("updateLearningPathNodeProgress", () => {
   });
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
     const nodeId = await crypto.generateUUID();
 
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository },
-      { userId, pathId, nodeId, progress: NodeProgress.DONE },
+      { learningPathRepository, currentUser },
+      { pathId, nodeId, progress: NodeProgress.DONE },
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
   });
 
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const otherUserId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, progress: NodeProgress.DONE },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id, progress: NodeProgress.DONE },
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
   });
 
   test("should return LearningPathNodeNotFoundError when node does not exist", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeId = await crypto.generateUUID();
 
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId, progress: NodeProgress.DONE },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId, progress: NodeProgress.DONE },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should return LearningPathNodeNotFoundError when node belongs to a different path", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
-    const otherPath = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
+    const otherPath = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeFromOtherPath = seedLearningPathNode(learningPathRepository, { pathId: otherPath.id });
 
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: nodeFromOtherPath.id, progress: NodeProgress.DONE },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: nodeFromOtherPath.id, progress: NodeProgress.DONE },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should transition progress from pending to in_progress", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const node = seedLearningPathNode(learningPathRepository, {
       pathId: path.id,
       progress: NodeProgress.PENDING,
     });
 
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, progress: NodeProgress.IN_PROGRESS },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id, progress: NodeProgress.IN_PROGRESS },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -95,16 +95,16 @@ describe("updateLearningPathNodeProgress", () => {
   });
 
   test("should transition progress from in_progress to done", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const node = seedLearningPathNode(learningPathRepository, {
       pathId: path.id,
       progress: NodeProgress.IN_PROGRESS,
     });
 
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, progress: NodeProgress.DONE },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id, progress: NodeProgress.DONE },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -116,13 +116,13 @@ describe("updateLearningPathNodeProgress", () => {
   });
 
   test("should not modify other node fields when updating progress", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id, progress: NodeProgress.DONE },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id, progress: NodeProgress.DONE },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -135,13 +135,13 @@ describe("updateLearningPathNodeProgress", () => {
   });
 
   test("should return InvalidDataError when progress value is invalid", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
     const nodeId = await crypto.generateUUID();
 
     const result = await updateLearningPathNodeProgress(
-      { learningPathRepository },
-      { userId, pathId, nodeId, progress: "completed" as any },
+      { learningPathRepository, currentUser },
+      { pathId, nodeId, progress: "completed" as any },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
