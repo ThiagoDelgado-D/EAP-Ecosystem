@@ -3,6 +3,7 @@ import {
   uuidField,
   ValidationError,
   InvalidDataError,
+  type CurrentUser,
   type UUID,
 } from "domain-lib";
 import type { Break, IBreakRepository } from "@pomodoro/domain";
@@ -13,20 +14,19 @@ import { verifyBreakOwnership } from "./verify-break-ownership.js";
 
 export interface EndBreakDependencies {
   breakRepository: IBreakRepository;
+  currentUser: CurrentUser;
 }
 
 export interface EndBreakRequestModel {
-  userId: UUID;
   breakId: UUID;
 }
 
 const endBreakSchema = createValidationSchema<EndBreakRequestModel>({
-  userId: uuidField("UserId", { required: true }),
   breakId: uuidField("BreakId", { required: true }),
 });
 
 export const endBreak = async (
-  { breakRepository }: EndBreakDependencies,
+  { breakRepository, currentUser }: EndBreakDependencies,
   request: EndBreakRequestModel,
 ): Promise<
   | Break
@@ -44,7 +44,7 @@ export const endBreak = async (
   const activeBreak = await verifyBreakOwnership(
     breakRepository,
     validatedData.breakId,
-    validatedData.userId,
+    currentUser,
   );
 
   if (
