@@ -1,14 +1,13 @@
 import {
   createValidationSchema,
   type CryptoService,
+  type CurrentUser,
   enumField,
   InvalidDataError,
   optionalEnum,
   optionalString,
   stringField,
-  uuidField,
   ValidationError,
-  type UUID,
 } from "domain-lib";
 import {
   PathMode,
@@ -19,10 +18,10 @@ import {
 export interface CreateLearningPathDependencies {
   learningPathRepository: ILearningPathRepository;
   cryptoService: CryptoService;
+  currentUser: CurrentUser;
 }
 
 export interface CreateLearningPathRequest {
-  userId: UUID;
   title: string;
   description?: string;
   mode: PathMode;
@@ -31,7 +30,6 @@ export interface CreateLearningPathRequest {
 }
 
 const createLearningPathSchema = createValidationSchema<CreateLearningPathRequest>({
-  userId: uuidField("UserId", { required: true }),
   title: stringField("Title", { required: true, maxLength: 200 }),
   description: optionalString("Description", { maxLength: 1000 }),
   mode: enumField(Object.values(PathMode) as PathMode[], "Mode", { required: true }),
@@ -40,7 +38,7 @@ const createLearningPathSchema = createValidationSchema<CreateLearningPathReques
 });
 
 export const createLearningPath = async (
-  { learningPathRepository, cryptoService }: CreateLearningPathDependencies,
+  { learningPathRepository, cryptoService, currentUser }: CreateLearningPathDependencies,
   request: CreateLearningPathRequest,
 ): Promise<LearningPath | InvalidDataError> => {
   const validationResult = await createLearningPathSchema(request);
@@ -54,7 +52,7 @@ export const createLearningPath = async (
 
   const path: LearningPath = {
     id,
-    userId: validated.userId,
+    userId: currentUser.id,
     title: validated.title,
     description: validated.description,
     mode: validated.mode,

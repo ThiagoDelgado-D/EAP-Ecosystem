@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser } from "domain-lib";
 import { PathMode, PathSource } from "@learning-resource/domain";
 import { mockLearningPathRepository } from "../../mocks/mock-learning-path-repository.js";
 import { createLearningPath } from "./create-learning-path.js";
@@ -14,16 +14,16 @@ describe("createLearningPath", () => {
   });
 
   test("should create a learning path and return it", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     const result = await createLearningPath(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, title: "TypeScript Advanced Patterns", mode: PathMode.SEQUENTIAL },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { title: "TypeScript Advanced Patterns", mode: PathMode.SEQUENTIAL },
     );
 
     if (result instanceof InvalidDataError) throw result;
 
-    expect(result.userId).toBe(userId);
+    expect(result.userId).toBe(currentUser.id);
     expect(result.title).toBe("TypeScript Advanced Patterns");
     expect(result.mode).toBe(PathMode.SEQUENTIAL);
     expect(result.source).toBe(PathSource.MANUAL);
@@ -32,11 +32,11 @@ describe("createLearningPath", () => {
   });
 
   test("should persist the path in the repository", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     await createLearningPath(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, title: "Docker and Kubernetes Fundamentals", mode: PathMode.GRAPH },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { title: "Docker and Kubernetes Fundamentals", mode: PathMode.GRAPH },
     );
 
     expect(learningPathRepository.paths).toHaveLength(1);
@@ -44,11 +44,11 @@ describe("createLearningPath", () => {
   });
 
   test("should default source to MANUAL when not provided", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     const result = await createLearningPath(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, title: "Clean Architecture with Node.js", mode: PathMode.SEQUENTIAL },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { title: "Clean Architecture with Node.js", mode: PathMode.SEQUENTIAL },
     );
 
     if (result instanceof InvalidDataError) throw result;
@@ -57,12 +57,11 @@ describe("createLearningPath", () => {
   });
 
   test("should accept optional description and sourceSlug", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     const result = await createLearningPath(
-      { learningPathRepository, cryptoService: crypto },
+      { learningPathRepository, cryptoService: crypto, currentUser },
       {
-        userId,
         title: "Backend Developer Roadmap",
         description: "A structured path covering APIs, databases, caching, and system design",
         mode: PathMode.GRAPH,
@@ -78,32 +77,23 @@ describe("createLearningPath", () => {
     expect(result.sourceSlug).toBe("backend");
   });
 
-  test("should return InvalidDataError when userId is not a valid UUID", async () => {
-    const result = await createLearningPath(
-      { learningPathRepository, cryptoService: crypto },
-      { userId: "not-a-uuid" as any, title: "TypeScript Advanced Patterns", mode: PathMode.SEQUENTIAL },
-    );
-
-    expect(result).toBeInstanceOf(InvalidDataError);
-  });
-
   test("should return InvalidDataError when title is missing", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     const result = await createLearningPath(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, title: "" as any, mode: PathMode.SEQUENTIAL },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { title: "" as any, mode: PathMode.SEQUENTIAL },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
   });
 
   test("should return InvalidDataError when mode is invalid", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     const result = await createLearningPath(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, title: "TypeScript Advanced Patterns", mode: "invalid" as any },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { title: "TypeScript Advanced Patterns", mode: "invalid" as any },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
