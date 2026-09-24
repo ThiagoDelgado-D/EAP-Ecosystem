@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService } from "domain-lib";
+import { mockCryptoService, mockCurrentUser } from "domain-lib";
 import { mockBreakRepository } from "../../mocks/index.js";
 import { verifyBreakOwnership } from "./verify-break-ownership.js";
 import { BreakNotFoundError } from "../../errors/break-not-found.js";
@@ -15,20 +15,20 @@ describe("verifyBreakOwnership", () => {
   });
 
   test("should return BreakNotFoundError when the break does not exist", async () => {
-    const requestingUserId = await cryptoService.generateUUID();
+    const currentUser = await mockCurrentUser(cryptoService);
     const nonExistentBreakId = await cryptoService.generateUUID();
 
     const result = await verifyBreakOwnership(
       breakRepository,
       nonExistentBreakId,
-      requestingUserId,
+      currentUser,
     );
 
     expect(result).toBeInstanceOf(BreakNotFoundError);
   });
 
   test("should return BreakForbiddenError when the break belongs to another user", async () => {
-    const requestingUserId = await cryptoService.generateUUID();
+    const currentUser = await mockCurrentUser(cryptoService);
     const breakOwnerId = await cryptoService.generateUUID();
     const otherUsersBreak = await breakRepository.save({
       id: await cryptoService.generateUUID(),
@@ -40,17 +40,17 @@ describe("verifyBreakOwnership", () => {
     const result = await verifyBreakOwnership(
       breakRepository,
       otherUsersBreak.id,
-      requestingUserId,
+      currentUser,
     );
 
     expect(result).toBeInstanceOf(BreakForbiddenError);
   });
 
   test("should return the break when it exists and belongs to the user", async () => {
-    const breakOwnerId = await cryptoService.generateUUID();
+    const currentUser = await mockCurrentUser(cryptoService);
     const ownedBreak = await breakRepository.save({
       id: await cryptoService.generateUUID(),
-      userId: breakOwnerId,
+      userId: currentUser.id,
       startedAt: new Date(),
       durationSec: 300,
     });
@@ -58,7 +58,7 @@ describe("verifyBreakOwnership", () => {
     const result = await verifyBreakOwnership(
       breakRepository,
       ownedBreak.id,
-      breakOwnerId,
+      currentUser,
     );
 
     expect(result).toEqual(ownedBreak);
