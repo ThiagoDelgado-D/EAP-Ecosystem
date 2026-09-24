@@ -28,11 +28,12 @@ export interface ILearningResourceRepository {
   save(resource: LearningResource): Promise<void>;
   update(id: UUID, resource: Partial<LearningResource>): Promise<void>;
   delete(id: UUID): Promise<void>;
-  findAll(): Promise<LearningResource[]>;
+  findAllByUserId(userId: UUID): Promise<LearningResource[]>;
   findById(id: UUID): Promise<LearningResource | null>;
   findWithFiltersAndCount(
+    userId: UUID,
     filters: ResourceFilters,
     pagination: ResourcePagination,
   ): Promise<PaginatedResources>;
-  findSimilarTitles(q: string, limit?: number): Promise<string[]>;
+  findSimilarTitles(userId: UUID, q: string, limit?: number): Promise<string[]>;
 }
