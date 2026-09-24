@@ -3,6 +3,7 @@ import {
   uuidField,
   ValidationError,
   InvalidDataError,
+  type CurrentUser,
   type UUID,
 } from "domain-lib";
 import type { ISessionRepository, Segment, Session } from "@pomodoro/domain";
@@ -14,25 +15,24 @@ import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
 export const verifySessionOwnership = async (
   sessionRepository: ISessionRepository,
   sessionId: UUID,
-  userId: UUID,
+  currentUser: CurrentUser,
 ): Promise<Session | SessionNotFoundError | SessionForbiddenError> => {
   const session = await sessionRepository.findById(sessionId);
   if (!session) return new SessionNotFoundError();
-  if (session.userId !== userId) return new SessionForbiddenError();
+  if (session.userId !== currentUser.id) return new SessionForbiddenError();
   return session;
 };
 
 const sessionIdentitySchema = createValidationSchema<{
-  userId: UUID;
   sessionId: UUID;
 }>({
-  userId: uuidField("UserId", { required: true }),
   sessionId: uuidField("SessionId", { required: true }),
 });
 
 export const validateAndVerifySessionOwnership = async (
   sessionRepository: ISessionRepository,
-  request: { userId: UUID; sessionId: UUID },
+  currentUser: CurrentUser,
+  request: { sessionId: UUID },
 ): Promise<
   Session | InvalidDataError | SessionNotFoundError | SessionForbiddenError
 > => {
@@ -43,14 +43,14 @@ export const validateAndVerifySessionOwnership = async (
   return verifySessionOwnership(
     sessionRepository,
     validationResult.sessionId,
-    validationResult.userId,
+    currentUser,
   );
 };
 
 export const requireActiveSessionWithOpenSegment = async (
   sessionRepository: ISessionRepository,
   sessionId: UUID,
-  userId: UUID,
+  currentUser: CurrentUser,
 ): Promise<
   | { session: Session; openSegment: Segment }
   | SessionNotFoundError
@@ -61,7 +61,7 @@ export const requireActiveSessionWithOpenSegment = async (
   const session = await verifySessionOwnership(
     sessionRepository,
     sessionId,
-    userId,
+    currentUser,
   );
   if (
     session instanceof SessionNotFoundError ||
@@ -86,7 +86,8 @@ export const requireActiveSessionWithOpenSegment = async (
 
 export const validateAndRequireActiveSessionWithOpenSegment = async (
   sessionRepository: ISessionRepository,
-  request: { userId: UUID; sessionId: UUID },
+  currentUser: CurrentUser,
+  request: { sessionId: UUID },
 ): Promise<
   | { session: Session; openSegment: Segment }
   | InvalidDataError
@@ -102,6 +103,6 @@ export const validateAndRequireActiveSessionWithOpenSegment = async (
   return requireActiveSessionWithOpenSegment(
     sessionRepository,
     validationResult.sessionId,
-    validationResult.userId,
+    currentUser,
   );
 };

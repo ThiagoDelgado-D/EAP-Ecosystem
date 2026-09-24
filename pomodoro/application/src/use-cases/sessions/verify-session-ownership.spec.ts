@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService } from "domain-lib";
+import { mockCryptoService, mockCurrentUser } from "domain-lib";
 import { mockSessionRepository } from "../../mocks/index.js";
 import { verifySessionOwnership } from "./verify-session-ownership.js";
 import { SessionNotFoundError } from "../../errors/session-not-found.js";
@@ -15,20 +15,20 @@ describe("verifySessionOwnership", () => {
   });
 
   test("should return SessionNotFoundError when the session does not exist", async () => {
-    const requestingUserId = await cryptoService.generateUUID();
+    const currentUser = await mockCurrentUser(cryptoService);
     const nonExistentSessionId = await cryptoService.generateUUID();
 
     const result = await verifySessionOwnership(
       sessionRepository,
       nonExistentSessionId,
-      requestingUserId,
+      currentUser,
     );
 
     expect(result).toBeInstanceOf(SessionNotFoundError);
   });
 
   test("should return SessionForbiddenError when the session belongs to another user", async () => {
-    const requestingUserId = await cryptoService.generateUUID();
+    const currentUser = await mockCurrentUser(cryptoService);
     const sessionOwnerId = await cryptoService.generateUUID();
     const otherUsersSession = await sessionRepository.save({
       id: await cryptoService.generateUUID(),
@@ -40,17 +40,17 @@ describe("verifySessionOwnership", () => {
     const result = await verifySessionOwnership(
       sessionRepository,
       otherUsersSession.id,
-      requestingUserId,
+      currentUser,
     );
 
     expect(result).toBeInstanceOf(SessionForbiddenError);
   });
 
   test("should return the session when it exists and belongs to the user", async () => {
-    const sessionOwnerId = await cryptoService.generateUUID();
+    const currentUser = await mockCurrentUser(cryptoService);
     const ownedSession = await sessionRepository.save({
       id: await cryptoService.generateUUID(),
-      userId: sessionOwnerId,
+      userId: currentUser.id,
       startedAt: new Date(),
       plannedMin: 25,
     });
@@ -58,7 +58,7 @@ describe("verifySessionOwnership", () => {
     const result = await verifySessionOwnership(
       sessionRepository,
       ownedSession.id,
-      sessionOwnerId,
+      currentUser,
     );
 
     expect(result).toEqual(ownedSession);
