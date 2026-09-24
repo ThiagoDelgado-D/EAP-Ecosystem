@@ -1,4 +1,4 @@
-import { InvalidDataError } from "domain-lib";
+import { InvalidDataError, mockCurrentUser } from "domain-lib";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import { createSessionLifecycleFixture, type SessionLifecycleFixture } from "../../mocks/index.js";
@@ -20,6 +20,7 @@ describe("switchTarget", () => {
     sessionRepository: fixture.sessionRepository,
     cryptoService: fixture.cryptoService,
     learningPathMembershipPort: fixture.membershipPort,
+    currentUser: fixture.currentUser,
   });
 
   test("Should close the open segment and open a new one for the resolved target", async () => {
@@ -27,7 +28,6 @@ describe("switchTarget", () => {
     const reactDocsResourceId = await fixture.cryptoService.generateUUID();
 
     const result = await switchTarget(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
       target: {
         kind: SegmentTargetKind.RESOURCE,
@@ -57,7 +57,6 @@ describe("switchTarget", () => {
 
   test("Should return InvalidDataError when sessionId is missing", async () => {
     const result = await switchTarget(deps(), {
-      userId: fixture.requestingUserId,
       target: { kind: SegmentTargetKind.FREE },
     } as any);
 
@@ -68,7 +67,6 @@ describe("switchTarget", () => {
     const nonExistentSessionId = await fixture.cryptoService.generateUUID();
 
     const result = await switchTarget(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: nonExistentSessionId,
       target: { kind: SegmentTargetKind.FREE },
     });
@@ -78,13 +76,12 @@ describe("switchTarget", () => {
 
   test("Should return SessionForbiddenError when the session belongs to another user", async () => {
     const session = await fixture.startFreeSession();
-    const otherUserId = await fixture.cryptoService.generateUUID();
+    const intruder = await mockCurrentUser(fixture.cryptoService);
 
-    const result = await switchTarget(deps(), {
-      userId: otherUserId,
-      sessionId: session.id,
-      target: { kind: SegmentTargetKind.FREE },
-    });
+    const result = await switchTarget(
+      { ...deps(), currentUser: intruder },
+      { sessionId: session.id, target: { kind: SegmentTargetKind.FREE } },
+    );
 
     expect(result).toBeInstanceOf(SessionForbiddenError);
   });
@@ -97,7 +94,6 @@ describe("switchTarget", () => {
     storedSession.completedAt = new Date();
 
     const result = await switchTarget(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
       target: { kind: SegmentTargetKind.FREE },
     });
@@ -116,7 +112,6 @@ describe("switchTarget", () => {
     });
 
     const result = await switchTarget(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
       target: { kind: SegmentTargetKind.FREE },
     });
@@ -135,7 +130,6 @@ describe("switchTarget", () => {
     });
 
     const result = await switchTarget(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
       target: {
         kind: SegmentTargetKind.RESOURCE,
@@ -150,7 +144,6 @@ describe("switchTarget", () => {
     const session = await fixture.startFreeSession();
 
     const result = await switchTarget(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
       target: {
         kind: SegmentTargetKind.RESOURCE,
