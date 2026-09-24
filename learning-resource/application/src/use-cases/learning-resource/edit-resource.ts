@@ -8,7 +8,9 @@ import {
 import {
   arrayField,
   createValidationSchema,
+  type CurrentUser,
   InvalidDataError,
+  isErrorResult,
   NotFoundError,
   optionalEnum,
   optionalNumber,
@@ -18,12 +20,17 @@ import {
   ValidationError,
   type UUID,
 } from "domain-lib";
-import { LearningResourceNotFoundError } from "../../errors/index.js";
+import {
+  LearningResourceForbiddenError,
+  LearningResourceNotFoundError,
+} from "../../errors/index.js";
+import { verifyLearningResourceOwnership } from "./verify-learning-resource-ownership.js";
 
 export interface UpdateResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;
   resourceTypeRepository: IResourceTypeRepository;
   topicRepository: ITopicRepository;
+  currentUser: CurrentUser;
 }
 
 export interface UpdateResourceRequestModel {
@@ -64,10 +71,15 @@ export const updateResource = async (
     learningResourceRepository,
     resourceTypeRepository,
     topicRepository,
+    currentUser,
   }: UpdateResourceDependencies,
   request: UpdateResourceRequestModel,
 ): Promise<
-  void | InvalidDataError | LearningResourceNotFoundError | NotFoundError
+  | void
+  | InvalidDataError
+  | LearningResourceNotFoundError
+  | LearningResourceForbiddenError
+  | NotFoundError
 > => {
   const hasUpdates =
     request.title !== undefined ||
@@ -93,12 +105,12 @@ export const updateResource = async (
 
   const validatedData = validationResult;
 
-  const existingResource = await learningResourceRepository.findById(
+  const existingResource = await verifyLearningResourceOwnership(
+    learningResourceRepository,
     validatedData.id,
+    currentUser,
   );
-  if (!existingResource) {
-    return new LearningResourceNotFoundError();
-  }
+  if (isErrorResult(existingResource)) return existingResource;
 
   if (validatedData.typeId !== undefined) {
     const resourceType = await resourceTypeRepository.findById(

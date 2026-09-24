@@ -1,13 +1,14 @@
 import {
   DifficultyType,
   EnergyLevelType,
-  type LearningResource,
   ResourceStatusType,
 } from "@learning-resource/domain";
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
+import { seedOwnedLearningResource } from "../../mocks/factories.js";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import { LearningResourceForbiddenError } from "../../errors/learning-resource-forbidden.js";
 import { toggleStatus } from "./toggle-resource-status.js";
 
 describe("toggleStatus", () => {
@@ -16,33 +17,23 @@ describe("toggleStatus", () => {
     typeof mockLearningResourceRepository
   >;
   let resourceId: UUID;
-  let typeId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
-    resourceId = await cryptoService.generateUUID();
-    typeId = await cryptoService.generateUUID();
-
-    const resource: LearningResource = {
-      id: resourceId,
+    ({ resourceId, currentUser, learningResourceRepository } = await seedOwnedLearningResource(cryptoService, {
       title: "Domain-Driven Design Fundamentals",
-      typeId,
-      topicIds: [],
       difficulty: DifficultyType.MEDIUM,
       energyLevel: EnergyLevelType.HIGH,
-      status: ResourceStatusType.PENDING,
       estimatedDuration: { value: 200, isEstimated: true },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    learningResourceRepository = mockLearningResourceRepository([resource]);
+    }));
   });
 
   test("Should toggle status successfully", async () => {
     const result = await toggleStatus(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -62,6 +53,7 @@ describe("toggleStatus", () => {
     await toggleStatus(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -81,6 +73,7 @@ describe("toggleStatus", () => {
     const result = await toggleStatus(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: nonExistentId,
@@ -91,10 +84,28 @@ describe("toggleStatus", () => {
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
   });
 
+  test("Should return LearningResourceForbiddenError when resource belongs to another user", async () => {
+    const otherUser = await mockCurrentUser(cryptoService);
+
+    const result = await toggleStatus(
+      {
+        learningResourceRepository,
+        currentUser: otherUser,
+      },
+      {
+        id: resourceId,
+        status: ResourceStatusType.COMPLETED,
+      }
+    );
+
+    expect(result).toBeInstanceOf(LearningResourceForbiddenError);
+  });
+
   test("Should return InvalidDataError when validation fails", async () => {
     const result = await toggleStatus(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -117,6 +128,7 @@ describe("toggleStatus", () => {
     await toggleStatus(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,

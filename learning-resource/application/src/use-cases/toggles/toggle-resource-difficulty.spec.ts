@@ -1,15 +1,13 @@
 import {
   DifficultyType,
   EnergyLevelType,
-  type LearningResource,
-  ResourceStatusType,
 } from "@learning-resource/domain";
-import type { UUID } from "crypto";
-import { ValidationError, mockCryptoService } from "domain-lib";
-import { mockLearningResourceRepository } from "../../mocks/index.js";
+import { ValidationError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
+import { seedOwnedLearningResource, mockLearningResourceRepository } from "../../mocks/index.js";
 import { beforeEach, describe, expect, test } from "vitest";
 import { toggleResourceDifficulty } from "./toggle-resource-difficulty.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import { LearningResourceForbiddenError } from "../../errors/learning-resource-forbidden.js";
 
 describe("toggleDifficulty", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -17,33 +15,23 @@ describe("toggleDifficulty", () => {
     typeof mockLearningResourceRepository
   >;
   let resourceId: UUID;
-  let typeId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
-    resourceId = await cryptoService.generateUUID();
-    typeId = await cryptoService.generateUUID();
-
-    const resource: LearningResource = {
-      id: resourceId,
+    ({ resourceId, currentUser, learningResourceRepository } = await seedOwnedLearningResource(cryptoService, {
       title: "TypeScript Advanced",
-      typeId,
-      topicIds: [],
       difficulty: DifficultyType.MEDIUM,
       energyLevel: EnergyLevelType.MEDIUM,
-      status: ResourceStatusType.PENDING,
       estimatedDuration: { value: 120, isEstimated: true },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    learningResourceRepository = mockLearningResourceRepository([resource]);
+    }));
   });
 
   test("Should toggle difficulty successfully", async () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -63,6 +51,7 @@ describe("toggleDifficulty", () => {
     await toggleResourceDifficulty(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -82,6 +71,7 @@ describe("toggleDifficulty", () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: nonExistentId,
@@ -92,10 +82,28 @@ describe("toggleDifficulty", () => {
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
   });
 
+  test("Should return LearningResourceForbiddenError when resource belongs to another user", async () => {
+    const otherUser = await mockCurrentUser(cryptoService);
+
+    const result = await toggleResourceDifficulty(
+      {
+        learningResourceRepository,
+        currentUser: otherUser,
+      },
+      {
+        id: resourceId,
+        difficulty: DifficultyType.HIGH,
+      }
+    );
+
+    expect(result).toBeInstanceOf(LearningResourceForbiddenError);
+  });
+
   test("Should return ValidationError when difficulty is invalid", async () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -110,6 +118,7 @@ describe("toggleDifficulty", () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: "invalid-uuid" as UUID,
@@ -124,6 +133,7 @@ describe("toggleDifficulty", () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         difficulty: DifficultyType.HIGH,
@@ -137,6 +147,7 @@ describe("toggleDifficulty", () => {
     const result = await toggleResourceDifficulty(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,
@@ -157,6 +168,7 @@ describe("toggleDifficulty", () => {
     await toggleResourceDifficulty(
       {
         learningResourceRepository,
+        currentUser,
       },
       {
         id: resourceId,

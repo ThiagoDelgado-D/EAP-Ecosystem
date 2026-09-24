@@ -1,8 +1,14 @@
 import type { ILearningResourceRepository } from "@learning-resource/domain";
-import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
+import {
+  LearningResourceForbiddenError,
+  LearningResourceNotFoundError,
+} from "../../errors/index.js";
+import { verifyLearningResourceOwnership } from "./verify-learning-resource-ownership.js";
 import {
   createValidationSchema,
+  type CurrentUser,
   InvalidDataError,
+  isErrorResult,
   uuidField,
   ValidationError,
   type UUID,
@@ -10,6 +16,7 @@ import {
 
 export interface DeleteResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;
+  currentUser: CurrentUser;
 }
 export interface DeleteResourceRequestModel {
   id: UUID;
@@ -21,9 +28,14 @@ export const deleteResourceSchema =
   });
 
 export const deleteResource = async (
-  { learningResourceRepository }: DeleteResourceDependencies,
+  { learningResourceRepository, currentUser }: DeleteResourceDependencies,
   { id }: DeleteResourceRequestModel
-): Promise<void | LearningResourceNotFoundError | InvalidDataError> => {
+): Promise<
+  | void
+  | LearningResourceNotFoundError
+  | LearningResourceForbiddenError
+  | InvalidDataError
+> => {
   const validationResult = deleteResourceSchema({ id });
 
   if (validationResult instanceof ValidationError) {
@@ -31,12 +43,12 @@ export const deleteResource = async (
     return new InvalidDataError(validationErrors);
   }
 
-  const validatedId = validationResult.id;
-  const foundResource = await learningResourceRepository.findById(validatedId);
+  const existingResource = await verifyLearningResourceOwnership(
+    learningResourceRepository,
+    validationResult.id,
+    currentUser,
+  );
+  if (isErrorResult(existingResource)) return existingResource;
 
-  if (!foundResource) {
-    return new LearningResourceNotFoundError();
-  }
-
-  await learningResourceRepository.delete(validatedId);
+  await learningResourceRepository.delete(validationResult.id);
 };

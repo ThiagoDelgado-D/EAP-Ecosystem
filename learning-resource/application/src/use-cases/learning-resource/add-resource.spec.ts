@@ -1,6 +1,8 @@
 import {
+  type CurrentUser,
   InvalidDataError,
   mockCryptoService,
+  mockCurrentUser,
   NotFoundError,
   type UUID,
 } from "domain-lib";
@@ -28,12 +30,14 @@ describe("addResource", () => {
 
   let topicId: UUID;
   let resourceTypeId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
 
     topicId = await cryptoService.generateUUID();
     resourceTypeId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
 
     const topic: Topic = {
       id: topicId,
@@ -75,6 +79,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -107,6 +112,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -131,6 +137,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -155,6 +162,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -178,6 +186,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -202,6 +211,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -227,6 +237,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -255,6 +266,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -284,6 +296,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -310,6 +323,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -332,6 +346,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -355,6 +370,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -379,6 +395,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -403,6 +420,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -426,6 +444,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -450,6 +469,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -472,6 +492,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -494,6 +515,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );
@@ -514,6 +536,7 @@ describe("addResource", () => {
         learningResourceRepository,
         resourceTypeRepository,
         topicRepository,
+        currentUser,
       },
       request,
     );

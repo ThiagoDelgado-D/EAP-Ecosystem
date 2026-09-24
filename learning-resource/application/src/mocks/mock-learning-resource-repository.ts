@@ -35,8 +35,8 @@ export function mockLearningResourceRepository(
       return this.learningResources.find((r) => r.id === id) || null;
     },
 
-    async findAll(): Promise<LearningResource[]> {
-      return [...this.learningResources];
+    async findAllByUserId(userId: UUID): Promise<LearningResource[]> {
+      return this.learningResources.filter((r) => r.userId === userId);
     },
 
     async update(id: UUID, data: Partial<LearningResource>): Promise<void> {
@@ -61,11 +61,12 @@ export function mockLearningResourceRepository(
     },
 
     async findWithFiltersAndCount(
+      userId: UUID,
       filters: ResourceFilters,
       pagination: ResourcePagination,
     ): Promise<PaginatedResources> {
       const { page, pageSize } = pagination;
-      let results = [...this.learningResources];
+      let results = this.learningResources.filter((r) => r.userId === userId);
 
       if (filters.q) {
         const q = filters.q.toLowerCase();
@@ -105,10 +106,10 @@ export function mockLearningResourceRepository(
       };
     },
 
-    async findSimilarTitles(q: string, limit = 5): Promise<string[]> {
+    async findSimilarTitles(userId: UUID, q: string, limit = 5): Promise<string[]> {
       const lower = q.toLowerCase();
       return this.learningResources
-        .filter((r) => r.title.toLowerCase().includes(lower))
+        .filter((r) => r.userId === userId && r.title.toLowerCase().includes(lower))
         .map((r) => r.title)
         .slice(0, limit);
     },

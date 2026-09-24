@@ -1,76 +1,48 @@
-import { mockCryptoService } from "domain-lib";
+import { mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
+import { generateLearningResource } from "../../mocks/factories.js";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import {
   DifficultyType,
   EnergyLevelType,
   type LearningResource,
-  ResourceStatusType,
 } from "@learning-resource/domain";
 import { getSuggestions } from "./get-suggestions.js";
 
 describe("getSuggestions", () => {
   let learningResourceRepository: ReturnType<typeof mockLearningResourceRepository>;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     const cryptoService = mockCryptoService();
+    currentUser = await mockCurrentUser(cryptoService);
 
-    const seedResources: LearningResource[] = [
-      {
-        id: await cryptoService.generateUUID(),
-        title: "TypeScript Basics",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.LOW,
-        energyLevel: EnergyLevelType.LOW,
-        status: ResourceStatusType.PENDING,
-        estimatedDuration: { value: 30, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: await cryptoService.generateUUID(),
-        title: "Advanced TypeScript Patterns",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.HIGH,
-        energyLevel: EnergyLevelType.HIGH,
-        status: ResourceStatusType.PENDING,
-        estimatedDuration: { value: 120, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: await cryptoService.generateUUID(),
-        title: "React Hooks Deep Dive",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.MEDIUM,
-        energyLevel: EnergyLevelType.MEDIUM,
-        status: ResourceStatusType.PENDING,
-        estimatedDuration: { value: 60, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: await cryptoService.generateUUID(),
-        title: "CSS Grid Fundamentals",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.LOW,
-        energyLevel: EnergyLevelType.LOW,
-        status: ResourceStatusType.COMPLETED,
-        estimatedDuration: { value: 20, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+    const resourceSeeds: Array<
+      Pick<LearningResource, "title" | "difficulty" | "energyLevel" | "estimatedDuration">
+    > = [
+      { title: "TypeScript Basics", difficulty: DifficultyType.LOW, energyLevel: EnergyLevelType.LOW, estimatedDuration: { value: 30, isEstimated: true } },
+      { title: "Advanced TypeScript Patterns", difficulty: DifficultyType.HIGH, energyLevel: EnergyLevelType.HIGH, estimatedDuration: { value: 120, isEstimated: true } },
+      { title: "React Hooks Deep Dive", difficulty: DifficultyType.MEDIUM, energyLevel: EnergyLevelType.MEDIUM, estimatedDuration: { value: 60, isEstimated: true } },
+      { title: "CSS Grid Fundamentals", difficulty: DifficultyType.LOW, energyLevel: EnergyLevelType.LOW, estimatedDuration: { value: 20, isEstimated: true } },
     ];
+
+    const seedResources: LearningResource[] = [];
+    for (const seed of resourceSeeds) {
+      seedResources.push(
+        generateLearningResource({
+          id: await cryptoService.generateUUID(),
+          userId: currentUser.id,
+          typeId: await cryptoService.generateUUID(),
+          ...seed,
+        }),
+      );
+    }
 
     learningResourceRepository = mockLearningResourceRepository(seedResources);
   });
 
   test("Should return suggestions matching the query", async () => {
-    const result = await getSuggestions({ learningResourceRepository }, "TypeScript");
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "TypeScript");
 
     expect(result.suggestions).toHaveLength(2);
     expect(result.suggestions).toContain("TypeScript Basics");
@@ -78,111 +50,83 @@ describe("getSuggestions", () => {
   });
 
   test("Should return empty array when q is empty string", async () => {
-    const result = await getSuggestions({ learningResourceRepository }, "");
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "");
 
     expect(result.suggestions).toHaveLength(0);
   });
 
   test("Should return empty array when q is a single character", async () => {
-    const result = await getSuggestions({ learningResourceRepository }, "T");
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "T");
 
     expect(result.suggestions).toHaveLength(0);
   });
 
   test("Should return empty array when q is whitespace only", async () => {
-    const result = await getSuggestions({ learningResourceRepository }, "   ");
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "   ");
 
     expect(result.suggestions).toHaveLength(0);
   });
 
   test("Should return empty array when no titles match", async () => {
-    const result = await getSuggestions({ learningResourceRepository }, "Python");
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "Python");
 
     expect(result.suggestions).toHaveLength(0);
   });
 
   test("Should be case-insensitive", async () => {
-    const result = await getSuggestions({ learningResourceRepository }, "typescript");
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "typescript");
 
     expect(result.suggestions).toHaveLength(2);
   });
 
   test("Should respect the default limit of 5", async () => {
     const cryptoService = mockCryptoService();
-    const extraResources: LearningResource[] = [
-      {
-        id: await cryptoService.generateUUID(),
-        title: "TypeScript Design Patterns",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.HIGH,
-        energyLevel: EnergyLevelType.HIGH,
-        status: ResourceStatusType.PENDING,
-        estimatedDuration: { value: 90, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: await cryptoService.generateUUID(),
-        title: "TypeScript with React",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.MEDIUM,
-        energyLevel: EnergyLevelType.MEDIUM,
-        status: ResourceStatusType.PENDING,
-        estimatedDuration: { value: 75, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: await cryptoService.generateUUID(),
-        title: "TypeScript Compiler Internals",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.HIGH,
-        energyLevel: EnergyLevelType.HIGH,
-        status: ResourceStatusType.PENDING,
-        estimatedDuration: { value: 180, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: await cryptoService.generateUUID(),
-        title: "Functional Programming in TypeScript",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.HIGH,
-        energyLevel: EnergyLevelType.MEDIUM,
-        status: ResourceStatusType.PENDING,
-        estimatedDuration: { value: 120, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: await cryptoService.generateUUID(),
-        title: "TypeScript Monorepos with Nx",
-        typeId: await cryptoService.generateUUID(),
-        topicIds: [],
-        difficulty: DifficultyType.MEDIUM,
-        energyLevel: EnergyLevelType.LOW,
-        status: ResourceStatusType.PENDING,
-        estimatedDuration: { value: 60, isEstimated: true },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+    const extraTitles = [
+      "TypeScript Design Patterns",
+      "TypeScript with React",
+      "TypeScript Compiler Internals",
+      "Functional Programming in TypeScript",
+      "TypeScript Monorepos with Nx",
     ];
-    for (const r of extraResources) {
-      await learningResourceRepository.save(r);
+
+    for (const title of extraTitles) {
+      await learningResourceRepository.save(
+        generateLearningResource({
+          id: await cryptoService.generateUUID(),
+          userId: currentUser.id,
+          typeId: await cryptoService.generateUUID(),
+          title,
+        }),
+      );
     }
 
-    const result = await getSuggestions({ learningResourceRepository }, "TypeScript");
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "TypeScript");
 
     expect(result.suggestions).toHaveLength(5);
   });
 
   test("Should trim whitespace from query before searching", async () => {
-    const result = await getSuggestions({ learningResourceRepository }, "  TypeScript  ");
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "  TypeScript  ");
 
+    expect(result.suggestions).toHaveLength(2);
+  });
+
+  test("Should not return suggestions from another user's resources", async () => {
+    const cryptoService = mockCryptoService();
+    const otherUserId = await cryptoService.generateUUID();
+
+    await learningResourceRepository.save(
+      generateLearningResource({
+        id: await cryptoService.generateUUID(),
+        userId: otherUserId,
+        typeId: await cryptoService.generateUUID(),
+        title: "TypeScript for Beginners",
+      }),
+    );
+
+    const result = await getSuggestions({ learningResourceRepository, currentUser }, "TypeScript");
+
+    expect(result.suggestions).not.toContain("TypeScript for Beginners");
     expect(result.suggestions).toHaveLength(2);
   });
 });

@@ -10,9 +10,10 @@ import {
   TypeOrmResourceTypeRepository,
   UrlMetadataService,
 } from "@learning-resource/infrastructure";
-import { CryptoServiceImpl } from "infrastructure-lib";
+import { CryptoServiceImpl, JwtServiceImpl } from "infrastructure-lib";
 import { TopicController } from "./topic.controller.js";
 import { ResourceTypeController } from "./resource-type.controller.js";
+import { EnvironmentService } from "../config/environment.service.js";
 
 @Module({
   imports: [
@@ -49,6 +50,15 @@ import { ResourceTypeController } from "./resource-type.controller.js";
     },
     { provide: "ICryptoService", useClass: CryptoServiceImpl },
     { provide: "IUrlMetadataService", useClass: UrlMetadataService },
+    {
+      provide: "IJwtService",
+      useFactory: (env: EnvironmentService) =>
+        new JwtServiceImpl({
+          secret: env.jwtSecret,
+          expiresInSeconds: env.jwtExpiresInSeconds,
+        }),
+      inject: [EnvironmentService],
+    },
   ],
 })
 export class LearningResourceModule {}

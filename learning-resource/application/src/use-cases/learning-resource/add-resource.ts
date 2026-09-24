@@ -2,6 +2,7 @@ import {
   arrayField,
   createValidationSchema,
   type CryptoService,
+  type CurrentUser,
   enumField,
   InvalidDataError,
   NotFoundError,
@@ -31,6 +32,7 @@ export interface AddResourceDependencies {
   resourceTypeRepository: IResourceTypeRepository;
   topicRepository: ITopicRepository;
   cryptoService: CryptoService;
+  currentUser: CurrentUser;
 }
 
 export interface AddResourceRequestModel {
@@ -91,6 +93,7 @@ export const addResource = async (
     resourceTypeRepository,
     topicRepository,
     cryptoService,
+    currentUser,
   }: AddResourceDependencies,
   request: AddResourceRequestModel,
 ): Promise<LearningResource | InvalidDataError | NotFoundError> => {
@@ -130,6 +133,7 @@ export const addResource = async (
 
   const newResource: LearningResource = {
     id,
+    userId: currentUser.id,
     title: validatedData.title,
     url: validatedData.url,
     imageUrl: validatedData.imageUrl,

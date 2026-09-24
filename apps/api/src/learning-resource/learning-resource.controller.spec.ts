@@ -7,7 +7,7 @@ import {
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
-import type { UUID } from "domain-lib";
+import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { LearningResourceModule } from "./learning-resource.module.js";
 import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
@@ -25,14 +25,22 @@ describe("LearningResourceController (integration)", () => {
   let resourceTypeRepo: ReturnType<typeof mockResourceTypeRepository>;
   let cryptoService: CryptoServiceImpl;
   let mockMetadataService: IUrlMetadataService;
+  let jwtService: MockedJwtService;
 
   let topicId: UUID;
   let resourceTypeId: UUID;
+  let ownerId: UUID;
+  let intruderId: UUID;
+  let ownerToken: string;
+  let intruderToken: string;
 
   beforeAll(async () => {
     cryptoService = new CryptoServiceImpl();
     topicId = await cryptoService.generateUUID();
     resourceTypeId = await cryptoService.generateUUID();
+    ownerId = await cryptoService.generateUUID();
+    intruderId = await cryptoService.generateUUID();
+    jwtService = mockJwtService();
 
     resourceRepo = mockLearningResourceRepository([]);
     topicRepo = mockTopicRepository([
@@ -88,6 +96,8 @@ describe("LearningResourceController (integration)", () => {
       .useValue(cryptoService)
       .overrideProvider("IUrlMetadataService")
       .useValue(mockMetadataService)
+      .overrideProvider("IJwtService")
+      .useValue(jwtService)
       .compile();
 
     app = module.createNestApplication();
@@ -100,15 +110,96 @@ describe("LearningResourceController (integration)", () => {
     );
     app.useGlobalFilters(new GlobalExceptionFilter());
     await app.init();
+
+    ownerToken = await jwtService.sign({ sub: ownerId });
+    intruderToken = await jwtService.sign({ sub: intruderId });
   });
   afterAll(async () => await app.close());
 
   afterEach(() => resourceRepo.reset());
 
+  const authHeader = (bearerToken: string = ownerToken) => ({
+    Authorization: `Bearer ${bearerToken}`,
+  });
+
+  const createResource = (
+    overrides: Record<string, unknown> = {},
+    bearerToken: string = ownerToken,
+  ) =>
+    request(app.getHttpServer())
+      .post("/api/v1/learning-resources")
+      .set(authHeader(bearerToken))
+      .send({
+        title: "TypeScript Advanced",
+        resourceTypeId,
+        topicIds: [topicId],
+        difficulty: "high",
+        estimatedDurationMinutes: 120,
+        ...overrides,
+      });
+
+  describe("Unauthenticated access", () => {
+    test("Should return 401 without a bearer token", async () => {
+      await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .expect(401);
+    });
+  });
+
+  describe("Ownership", () => {
+    test("Should return 403 when a different user requests the resource", async () => {
+      const createResponse = await createResource().expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/learning-resources/${createResponse.body.id}`)
+        .set(authHeader(intruderToken))
+        .expect(403);
+
+      expect(response.status).toBe(403);
+    });
+
+    test("Should return 403 when a different user tries to update the resource", async () => {
+      const createResponse = await createResource().expect(201);
+
+      const response = await request(app.getHttpServer())
+        .patch(`/api/v1/learning-resources/${createResponse.body.id}`)
+        .set(authHeader(intruderToken))
+        .send({ title: "Hijacked Title" })
+        .expect(403);
+
+      expect(response.status).toBe(403);
+    });
+
+    test("Should return 403 when a different user tries to delete the resource", async () => {
+      const createResponse = await createResource().expect(201);
+
+      const response = await request(app.getHttpServer())
+        .delete(`/api/v1/learning-resources/${createResponse.body.id}`)
+        .set(authHeader(intruderToken))
+        .expect(403);
+
+      expect(response.status).toBe(403);
+    });
+
+    test("Should not return another user's resources in the list", async () => {
+      await createResource({ title: "Owned Resource" }).expect(201);
+      await createResource({ title: "Intruder Resource" }, intruderToken).expect(201);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/learning-resources")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body.resources).toHaveLength(1);
+      expect(response.body.resources[0].title).toBe("Owned Resource");
+    });
+  });
+
   describe("POST /api/v1/learning-resources", () => {
     test("Should create a resource and return 201", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "TypeScript Advanced",
           resourceTypeId,
@@ -124,6 +215,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when required fields are missing", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({ title: "Missing fields" })
         .expect(400);
     });
@@ -131,6 +223,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when resourceTypeId is not valid UUID", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "TypeScript Advanced",
           resourceTypeId: "not-a-uuid",
@@ -146,6 +239,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "TypeScript Advanced",
           resourceTypeId: nonExistentId,
@@ -160,6 +254,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return paginated shape when no resources exist", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .expect(200);
 
       expect(response.body.resources).toEqual([]);
@@ -172,6 +267,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return paginated shape with existing resources", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "TypeScript Advanced",
           resourceTypeId,
@@ -182,6 +278,7 @@ describe("LearningResourceController (integration)", () => {
 
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .expect(200);
 
       expect(response.body.resources).toHaveLength(1);
@@ -193,19 +290,12 @@ describe("LearningResourceController (integration)", () => {
 
     test("Should respect pageSize param", async () => {
       for (let i = 0; i < 3; i++) {
-        await request(app.getHttpServer())
-          .post("/api/v1/learning-resources")
-          .send({
-            title: `Resource ${i}`,
-            resourceTypeId,
-            topicIds: [topicId],
-            difficulty: "low",
-            estimatedDurationMinutes: 10,
-          });
+        await createResource({ title: `Resource ${i}`, difficulty: "low", estimatedDurationMinutes: 10 });
       }
 
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ pageSize: 2 })
         .expect(200);
 
@@ -216,19 +306,12 @@ describe("LearningResourceController (integration)", () => {
 
     test("Should respect page param", async () => {
       for (let i = 0; i < 3; i++) {
-        await request(app.getHttpServer())
-          .post("/api/v1/learning-resources")
-          .send({
-            title: `Resource ${i}`,
-            resourceTypeId,
-            topicIds: [topicId],
-            difficulty: "low",
-            estimatedDurationMinutes: 10,
-          });
+        await createResource({ title: `Resource ${i}`, difficulty: "low", estimatedDurationMinutes: 10 });
       }
 
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ page: 2, pageSize: 2 })
         .expect(200);
 
@@ -239,6 +322,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should fall back to page=1 when page param is non-numeric", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ page: "abc" })
         .expect(200);
 
@@ -249,6 +333,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should fall back to pageSize=20 when pageSize param is non-numeric", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ pageSize: "xyz" })
         .expect(200);
 
@@ -259,6 +344,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should ignore resourceTypeId filter when value is not a valid UUID", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ resourceTypeId: "not-a-uuid" })
         .expect(200);
 
@@ -271,6 +357,7 @@ describe("LearningResourceController (integration)", () => {
     beforeEach(async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "TypeScript Advanced",
           resourceTypeId,
@@ -282,6 +369,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "CSS Basics",
           resourceTypeId,
@@ -293,6 +381,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "Clean Architecture",
           resourceTypeId,
@@ -304,6 +393,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "NestJS Fundamentals",
           resourceTypeId,
@@ -315,6 +405,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources")
+        .set(authHeader())
         .send({
           title: "React Hooks Deep Dive",
           resourceTypeId,
@@ -328,6 +419,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return all resources when no filters provided", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .expect(200);
 
       expect(response.body.total).toBe(5);
@@ -337,6 +429,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should filter by difficulty", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ difficulty: "high" })
         .expect(200);
 
@@ -347,6 +440,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should filter by status", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ status: "completed" })
         .expect(200);
 
@@ -357,6 +451,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should filter by q (title search, case-insensitive)", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ q: "typescript" })
         .expect(200);
 
@@ -367,6 +462,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return empty when q matches nothing", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ q: "nonexistentxyz" })
         .expect(200);
 
@@ -377,6 +473,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should combine filters (difficulty + status)", async () => {
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
+        .set(authHeader())
         .query({ difficulty: "medium", status: "completed" })
         .expect(200);
 
@@ -389,22 +486,14 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should return the resource when it exists", async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/v1/learning-resources/${resourceId}`)
+        .set(authHeader())
         .expect(200);
 
       expect(response.body.title).toBe("TypeScript Advanced");
@@ -414,37 +503,35 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 404 when resource does not exist", async () => {
       const nonExistentId = await cryptoService.generateUUID();
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(`/api/v1/learning-resources/${nonExistentId}`)
+        .set(authHeader())
         .expect(404);
+
+      expect(response.status).toBe(404);
     });
 
     test("Should return 400 when id is not a valid UUID", async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources/not-a-uuid")
+        .set(authHeader())
         .expect(400);
+
+      expect(response.status).toBe(400);
     });
   });
   describe("PATCH /api/v1/learning-resources/:id", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should update title successfully", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}`)
+        .set(authHeader())
         .send({ title: "TypeScript Masterclass" })
         .expect(200);
 
@@ -455,6 +542,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should clear url when empty string is provided", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}`)
+        .set(authHeader())
         .send({ url: "" })
         .expect(200);
 
@@ -467,6 +555,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${nonExistentId}`)
+        .set(authHeader())
         .send({ title: "New Title" })
         .expect(404);
     });
@@ -474,6 +563,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when no fields are provided", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}`)
+        .set(authHeader())
         .send({})
         .expect(400);
     });
@@ -481,6 +571,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when title exceeds max length", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}`)
+        .set(authHeader())
         .send({ title: "x".repeat(251) })
         .expect(400);
     });
@@ -489,22 +580,14 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should delete the resource and return 200", async () => {
       await request(app.getHttpServer())
         .delete(`/api/v1/learning-resources/${resourceId}`)
+        .set(authHeader())
         .expect(200);
 
       expect(resourceRepo.count()).toBe(0);
@@ -513,37 +596,35 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 404 when resource does not exist", async () => {
       const nonExistentId = await cryptoService.generateUUID();
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete(`/api/v1/learning-resources/${nonExistentId}`)
+        .set(authHeader())
         .expect(404);
+
+      expect(response.status).toBe(404);
     });
 
     test("Should return 400 when id is not a valid UUID", async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete("/api/v1/learning-resources/not-a-uuid")
+        .set(authHeader())
         .expect(400);
+
+      expect(response.status).toBe(400);
     });
   });
   describe("PATCH /api/v1/learning-resources/:id/difficulty", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle difficulty successfully", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/difficulty`)
+        .set(authHeader())
         .send({ difficulty: "low" })
         .expect(200);
 
@@ -556,6 +637,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${nonExistentId}/difficulty`)
+        .set(authHeader())
         .send({ difficulty: "low" })
         .expect(404);
     });
@@ -563,6 +645,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when difficulty is invalid", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/difficulty`)
+        .set(authHeader())
         .send({ difficulty: "INVALID" })
         .expect(400);
     });
@@ -571,22 +654,14 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle energy level successfully", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/energy`)
+        .set(authHeader())
         .send({ energyLevel: "low" })
         .expect(200);
 
@@ -599,6 +674,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${nonExistentId}/energy`)
+        .set(authHeader())
         .send({ energyLevel: "low" })
         .expect(404);
     });
@@ -606,6 +682,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when energyLevel is invalid", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/energy`)
+        .set(authHeader())
         .send({ energyLevel: "INVALID" })
         .expect(400);
     });
@@ -614,22 +691,14 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle status successfully", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/status`)
+        .set(authHeader())
         .send({ status: "completed" })
         .expect(200);
 
@@ -642,6 +711,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${nonExistentId}/status`)
+        .set(authHeader())
         .send({ status: "completed" })
         .expect(404);
     });
@@ -649,6 +719,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when status is invalid", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/status`)
+        .set(authHeader())
         .send({ status: "INVALID" })
         .expect(400);
     });
@@ -658,22 +729,14 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle mental state to deep_focus successfully", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/mental-state`)
+        .set(authHeader())
         .send({ mentalState: "deep_focus" })
         .expect(200);
 
@@ -684,6 +747,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should toggle mental state to light_read successfully", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/mental-state`)
+        .set(authHeader())
         .send({ mentalState: "light_read" })
         .expect(200);
 
@@ -696,6 +760,7 @@ describe("LearningResourceController (integration)", () => {
 
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${nonExistentId}/mental-state`)
+        .set(authHeader())
         .send({ mentalState: "deep_focus" })
         .expect(404);
     });
@@ -703,6 +768,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when mentalState is invalid", async () => {
       await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${resourceId}/mental-state`)
+        .set(authHeader())
         .send({ mentalState: "INVALID" })
         .expect(400);
     });
@@ -712,6 +778,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 200 with metadata for a YouTube URL", async () => {
       const response = await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
+        .set(authHeader())
         .send({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" })
         .expect(200);
 
@@ -722,6 +789,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should resolve resourceTypeId when code matches an existing resource type", async () => {
       const response = await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
+        .set(authHeader())
         .send({ url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" })
         .expect(200);
 
@@ -731,6 +799,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 200 with empty body when site returns no metadata", async () => {
       const response = await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
+        .set(authHeader())
         .send({ url: "https://example.com/empty" })
         .expect(200);
 
@@ -742,6 +811,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when URL is missing", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
+        .set(authHeader())
         .send({})
         .expect(400);
     });
@@ -749,6 +819,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when URL is malformed", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
+        .set(authHeader())
         .send({ url: "not-a-valid-url" })
         .expect(400);
     });
@@ -756,6 +827,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 400 when URL is empty string", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
+        .set(authHeader())
         .send({ url: "" })
         .expect(400);
     });
@@ -763,6 +835,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should ignore extra fields (whitelist)", async () => {
       await request(app.getHttpServer())
         .post("/api/v1/learning-resources/preview")
+        .set(authHeader())
         .send({ url: "https://github.com/test", extra: "field" })
         .expect(400);
     });
