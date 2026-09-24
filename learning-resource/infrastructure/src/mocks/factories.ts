@@ -43,6 +43,7 @@ export const generateLearningResource = (
   const createdAt = faker.date.past({ years: 1 });
   return {
     id: faker.string.uuid() as UUID,
+    userId: faker.string.uuid() as UUID,
     title: faker.hacker.phrase(),
     url: faker.internet.url(),
     typeId: faker.string.uuid() as UUID,

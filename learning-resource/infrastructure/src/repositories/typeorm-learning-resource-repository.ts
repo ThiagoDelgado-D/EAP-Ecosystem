@@ -66,8 +66,11 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
     await this.repository.delete(id);
   }
 
-  async findAll(): Promise<LearningResource[]> {
-    const entities = await this.repository.find({ relations: ["topics"] });
+  async findAllByUserId(userId: UUID): Promise<LearningResource[]> {
+    const entities = await this.repository.find({
+      where: { userId },
+      relations: ["topics"],
+    });
     return entities.map((e) => this.toDomain(e));
   }
 
@@ -81,6 +84,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
   }
 
   async findWithFiltersAndCount(
+    userId: UUID,
     filters: ResourceFilters,
     pagination: ResourcePagination,
   ): Promise<PaginatedResources> {
@@ -89,7 +93,8 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
 
     const qb = this.repository
       .createQueryBuilder("lr")
-      .leftJoinAndSelect("lr.topics", "topic");
+      .leftJoinAndSelect("lr.topics", "topic")
+      .where("lr.userId = :userId", { userId });
 
     if (filters.q) {
       qb.andWhere("LOWER(lr.title) LIKE LOWER(:q)", { q: `%${filters.q}%` });
@@ -130,14 +135,14 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
     };
   }
 
-  async findSimilarTitles(q: string, limit = 5): Promise<string[]> {
+  async findSimilarTitles(userId: UUID, q: string, limit = 5): Promise<string[]> {
     const results = await this.repository.query(
-      `SELECT title, similarity(lower(title), lower($1)) AS sim
+      `SELECT title, similarity(lower(title), lower($2)) AS sim
        FROM learning_resources
-       WHERE similarity(lower(title), lower($1)) > 0.15
+       WHERE "userId" = $1 AND similarity(lower(title), lower($2)) > 0.15
        ORDER BY sim DESC
-       LIMIT $2`,
-      [q, limit],
+       LIMIT $3`,
+      [userId, q, limit],
     );
     return results.map((r: { title: string }) => r.title);
   }
@@ -145,6 +150,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
   private toDomain(entity: LearningResourceEntity): LearningResource {
     return {
       id: entity.id as UUID,
+      userId: entity.userId as UUID,
       title: entity.title,
       url: entity.url ?? undefined,
       imageUrl: entity.imageUrl ?? undefined,
@@ -170,6 +176,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
   ): Promise<LearningResourceEntity> {
     const entity = new LearningResourceEntity();
     entity.id = resource.id;
+    entity.userId = resource.userId;
     entity.title = resource.title;
     entity.url = resource.url ?? null;
     entity.imageUrl = resource.imageUrl ?? null;
