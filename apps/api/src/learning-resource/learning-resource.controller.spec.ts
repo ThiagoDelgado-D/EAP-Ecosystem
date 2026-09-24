@@ -150,29 +150,35 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 403 when a different user requests the resource", async () => {
       const createResponse = await createResource().expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(`/api/v1/learning-resources/${createResponse.body.id}`)
         .set(authHeader(intruderToken))
         .expect(403);
+
+      expect(response.status).toBe(403);
     });
 
     test("Should return 403 when a different user tries to update the resource", async () => {
       const createResponse = await createResource().expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .patch(`/api/v1/learning-resources/${createResponse.body.id}`)
         .set(authHeader(intruderToken))
         .send({ title: "Hijacked Title" })
         .expect(403);
+
+      expect(response.status).toBe(403);
     });
 
     test("Should return 403 when a different user tries to delete the resource", async () => {
       const createResponse = await createResource().expect(201);
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete(`/api/v1/learning-resources/${createResponse.body.id}`)
         .set(authHeader(intruderToken))
         .expect(403);
+
+      expect(response.status).toBe(403);
     });
 
     test("Should not return another user's resources in the list", async () => {
@@ -497,17 +503,21 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 404 when resource does not exist", async () => {
       const nonExistentId = await cryptoService.generateUUID();
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(`/api/v1/learning-resources/${nonExistentId}`)
         .set(authHeader())
         .expect(404);
+
+      expect(response.status).toBe(404);
     });
 
     test("Should return 400 when id is not a valid UUID", async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources/not-a-uuid")
         .set(authHeader())
         .expect(400);
+
+      expect(response.status).toBe(400);
     });
   });
   describe("PATCH /api/v1/learning-resources/:id", () => {
@@ -586,17 +596,21 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 404 when resource does not exist", async () => {
       const nonExistentId = await cryptoService.generateUUID();
 
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete(`/api/v1/learning-resources/${nonExistentId}`)
         .set(authHeader())
         .expect(404);
+
+      expect(response.status).toBe(404);
     });
 
     test("Should return 400 when id is not a valid UUID", async () => {
-      await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .delete("/api/v1/learning-resources/not-a-uuid")
         .set(authHeader())
         .expect(400);
+
+      expect(response.status).toBe(400);
     });
   });
   describe("PATCH /api/v1/learning-resources/:id/difficulty", () => {
