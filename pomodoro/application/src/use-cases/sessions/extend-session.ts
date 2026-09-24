@@ -4,6 +4,7 @@ import {
   uuidField,
   ValidationError,
   InvalidDataError,
+  type CurrentUser,
   type UUID,
 } from "domain-lib";
 import type { ISessionRepository, Session } from "@pomodoro/domain";
@@ -16,22 +17,21 @@ export const MAX_PLANNED_DURATION_MIN = 480;
 
 export interface ExtendSessionDependencies {
   sessionRepository: ISessionRepository;
+  currentUser: CurrentUser;
 }
 
 export interface ExtendSessionRequestModel {
-  userId: UUID;
   sessionId: UUID;
   minutes: number;
 }
 
 const extendSessionSchema = createValidationSchema<ExtendSessionRequestModel>({
-  userId: uuidField("UserId", { required: true }),
   sessionId: uuidField("SessionId", { required: true }),
   minutes: positiveNumber("Minutes", { integer: true }),
 });
 
 export const extendSession = async (
-  { sessionRepository }: ExtendSessionDependencies,
+  { sessionRepository, currentUser }: ExtendSessionDependencies,
   request: ExtendSessionRequestModel,
 ): Promise<
   | Session
@@ -49,7 +49,7 @@ export const extendSession = async (
   const session = await verifySessionOwnership(
     sessionRepository,
     validatedData.sessionId,
-    validatedData.userId,
+    currentUser,
   );
   if (
     session instanceof SessionNotFoundError ||
