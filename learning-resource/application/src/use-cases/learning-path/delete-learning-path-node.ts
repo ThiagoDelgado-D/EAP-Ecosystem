@@ -1,5 +1,6 @@
 import {
   createValidationSchema,
+  type CurrentUser,
   InvalidDataError,
   isErrorResult,
   uuidField,
@@ -16,22 +17,21 @@ import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js
 
 export interface DeleteLearningPathNodeDependencies {
   learningPathRepository: ILearningPathRepository;
+  currentUser: CurrentUser;
 }
 
 export interface DeleteLearningPathNodeRequest {
-  userId: UUID;
   pathId: UUID;
   nodeId: UUID;
 }
 
 const deleteLearningPathNodeSchema = createValidationSchema<DeleteLearningPathNodeRequest>({
-  userId: uuidField("UserId", { required: true }),
   pathId: uuidField("PathId", { required: true }),
   nodeId: uuidField("NodeId", { required: true }),
 });
 
 export const deleteLearningPathNode = async (
-  { learningPathRepository }: DeleteLearningPathNodeDependencies,
+  { learningPathRepository, currentUser }: DeleteLearningPathNodeDependencies,
   request: DeleteLearningPathNodeRequest,
 ): Promise<
   | void
@@ -45,9 +45,9 @@ export const deleteLearningPathNode = async (
     return new InvalidDataError(validationResult.errors);
   }
 
-  const { userId, pathId, nodeId } = validationResult;
+  const { pathId, nodeId } = validationResult;
 
-  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, currentUser);
   if (isErrorResult(path)) return path;
 
   const node = await learningPathRepository.findNodeById(nodeId);

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser } from "domain-lib";
 import {
   seedLearningPath,
   seedLearningPathEdge,
@@ -23,67 +23,67 @@ describe("deleteLearningPathNode", () => {
   });
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
     const nodeId = await crypto.generateUUID();
 
     const result = await deleteLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId, nodeId },
+      { learningPathRepository, currentUser },
+      { pathId, nodeId },
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
   });
 
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const otherUserId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await deleteLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id },
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
   });
 
   test("should return LearningPathNodeNotFoundError when node does not exist", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeId = await crypto.generateUUID();
 
     const result = await deleteLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should return LearningPathNodeNotFoundError when node belongs to a different path", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
-    const otherPath = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
+    const otherPath = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeFromOtherPath = seedLearningPathNode(learningPathRepository, { pathId: otherPath.id });
 
     const result = await deleteLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: nodeFromOtherPath.id },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: nodeFromOtherPath.id },
     );
 
     expect(result).toBeInstanceOf(LearningPathNodeNotFoundError);
   });
 
   test("should delete the node and return void", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const node = seedLearningPathNode(learningPathRepository, { pathId: path.id });
 
     const result = await deleteLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: node.id },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: node.id },
     );
 
     expect(result).toBeUndefined();
@@ -91,8 +91,8 @@ describe("deleteLearningPathNode", () => {
   });
 
   test("should cascade deletion of connected edges", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const nodeA = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     const nodeB = seedLearningPathNode(learningPathRepository, { pathId: path.id });
     seedLearningPathEdge(learningPathRepository, {
@@ -102,8 +102,8 @@ describe("deleteLearningPathNode", () => {
     });
 
     await deleteLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId: path.id, nodeId: nodeA.id },
+      { learningPathRepository, currentUser },
+      { pathId: path.id, nodeId: nodeA.id },
     );
 
     expect(learningPathRepository.nodes).toHaveLength(1);
@@ -111,12 +111,12 @@ describe("deleteLearningPathNode", () => {
   });
 
   test("should return InvalidDataError when nodeId is not a valid UUID", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
 
     const result = await deleteLearningPathNode(
-      { learningPathRepository },
-      { userId, pathId, nodeId: "not-a-uuid" as any },
+      { learningPathRepository, currentUser },
+      { pathId, nodeId: "not-a-uuid" as any },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
