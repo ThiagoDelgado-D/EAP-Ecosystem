@@ -18,6 +18,7 @@ import {
   ResourceTypeEntity,
   TopicEntity,
 } from "@learning-resource/infrastructure";
+import { UserEntity } from "@user/infrastructure";
 import { AppDataSource } from "../database/data-source.js";
 
 config({ path: "../../.env" });
@@ -58,10 +59,11 @@ const energyLevels = Object.values(EnergyLevelType);
 const statuses = Object.values(ResourceStatusType);
 const mentalStates = Object.values(MentalStateType);
 
-const learningResources: LearningResource[] = Array.from({ length: 30 }, () => {
+const makeLearningResource = (userId: UUID): LearningResource => {
   const createdAt = faker.date.past({ years: 1 });
   return {
     id: faker.string.uuid() as UUID,
+    userId,
     title: faker.hacker.phrase(),
     url: faker.internet.url(),
     imageUrl: faker.datatype.boolean()
@@ -85,15 +87,25 @@ const learningResources: LearningResource[] = Array.from({ length: 30 }, () => {
     createdAt,
     updatedAt: faker.date.between({ from: createdAt, to: new Date() }),
   };
-});
+};
 
 try {
   await AppDataSource.initialize();
 
+  const userRepo = AppDataSource.getRepository(UserEntity);
   const resourceTypeRepo = AppDataSource.getRepository(ResourceTypeEntity);
   const topicRepo = AppDataSource.getRepository(TopicEntity);
   const learningResourceRepo = AppDataSource.getRepository(
     LearningResourceEntity,
+  );
+
+  const user = await userRepo.findOne({ where: {}, order: { createdAt: "ASC" } });
+  if (!user) {
+    throw new Error("No user found — sign up first, then re-run the seed script.");
+  }
+
+  const learningResources: LearningResource[] = Array.from({ length: 30 }, () =>
+    makeLearningResource(user.id as UUID),
   );
 
   await resourceTypeRepo.save(
@@ -126,6 +138,7 @@ try {
       learningResources.map(async (lr) => {
         const entity = new LearningResourceEntity();
         entity.id = lr.id;
+        entity.userId = lr.userId;
         entity.title = lr.title;
         entity.url = lr.url ?? null;
         entity.imageUrl = lr.imageUrl ?? null;
