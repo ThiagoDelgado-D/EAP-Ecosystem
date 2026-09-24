@@ -1,6 +1,7 @@
 import {
   createValidationSchema,
   type CryptoService,
+  type CurrentUser,
   InvalidDataError,
   isErrorResult,
   optionalEnum,
@@ -27,10 +28,10 @@ import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js
 export interface AddLearningPathNodeDependencies {
   learningPathRepository: ILearningPathRepository;
   cryptoService: CryptoService;
+  currentUser: CurrentUser;
 }
 
 export interface AddLearningPathNodeRequest {
-  userId: UUID;
   pathId: UUID;
   title: string;
   description?: string;
@@ -42,7 +43,6 @@ export interface AddLearningPathNodeRequest {
 }
 
 const addLearningPathNodeSchema = createValidationSchema<AddLearningPathNodeRequest>({
-  userId: uuidField("UserId", { required: true }),
   pathId: uuidField("PathId", { required: true }),
   title: stringField("Title", { required: true, maxLength: 200 }),
   description: optionalString("Description", { maxLength: 1000 }),
@@ -54,7 +54,7 @@ const addLearningPathNodeSchema = createValidationSchema<AddLearningPathNodeRequ
 });
 
 export const addLearningPathNode = async (
-  { learningPathRepository, cryptoService }: AddLearningPathNodeDependencies,
+  { learningPathRepository, cryptoService, currentUser }: AddLearningPathNodeDependencies,
   request: AddLearningPathNodeRequest,
 ): Promise<
   LearningPathNode | LearningPathNotFoundError | LearningPathForbiddenError | InvalidDataError
@@ -64,9 +64,9 @@ export const addLearningPathNode = async (
     return new InvalidDataError(validationResult.errors);
   }
 
-  const { userId, pathId, title, description, externalUrl, learningResourceId, stubScope, order, progress } = validationResult;
+  const { pathId, title, description, externalUrl, learningResourceId, stubScope, order, progress } = validationResult;
 
-  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, currentUser);
   if (isErrorResult(path)) return path;
 
   const id = await cryptoService.generateUUID();

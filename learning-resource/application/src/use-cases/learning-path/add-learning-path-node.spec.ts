@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser } from "domain-lib";
 import {
   NodeProgress,
   StubScope,
@@ -23,37 +23,37 @@ describe("addLearningPathNode", () => {
   });
 
   test("should return LearningPathNotFoundError when path does not exist", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
 
     const result = await addLearningPathNode(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId, title: "Goroutines and Channels" },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId, title: "Goroutines and Channels" },
     );
 
     expect(result).toBeInstanceOf(LearningPathNotFoundError);
   });
 
   test("should return LearningPathForbiddenError when path belongs to another user", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const otherUserId = await crypto.generateUUID();
     const path = seedLearningPath(learningPathRepository, { userId: otherUserId });
 
     const result = await addLearningPathNode(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, title: "Goroutines and Channels" },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, title: "Goroutines and Channels" },
     );
 
     expect(result).toBeInstanceOf(LearningPathForbiddenError);
   });
 
   test("should create a stub node with default progress and stubScope", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
 
     const result = await addLearningPathNode(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, title: "Goroutines and Channels" },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, title: "Goroutines and Channels" },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -68,13 +68,13 @@ describe("addLearningPathNode", () => {
   });
 
   test("should create a linked node when learningResourceId is provided", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
     const learningResourceId = await crypto.generateUUID();
 
     const result = await addLearningPathNode(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, title: "Building REST APIs with net/http", learningResourceId },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, title: "Building REST APIs with net/http", learningResourceId },
     );
 
     if (result instanceof LearningPathNotFoundError) throw result;
@@ -86,13 +86,12 @@ describe("addLearningPathNode", () => {
   });
 
   test("should respect explicit stubScope and progress when provided", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
 
     const result = await addLearningPathNode(
-      { learningPathRepository, cryptoService: crypto },
+      { learningPathRepository, cryptoService: crypto, currentUser },
       {
-        userId,
         pathId: path.id,
         title: "Error Handling Patterns in Go",
         stubScope: StubScope.CATALOG,
@@ -111,12 +110,12 @@ describe("addLearningPathNode", () => {
   });
 
   test("should persist the node in the repository", async () => {
-    const userId = await crypto.generateUUID();
-    const path = seedLearningPath(learningPathRepository, { userId });
+    const currentUser = await mockCurrentUser(crypto);
+    const path = seedLearningPath(learningPathRepository, { userId: currentUser.id });
 
     await addLearningPathNode(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: path.id, title: "Interfaces and Composition" },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: path.id, title: "Interfaces and Composition" },
     );
 
     expect(learningPathRepository.nodes).toHaveLength(1);
@@ -124,23 +123,23 @@ describe("addLearningPathNode", () => {
   });
 
   test("should return InvalidDataError when pathId is not a valid UUID", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
 
     const result = await addLearningPathNode(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId: "not-a-uuid" as any, title: "Goroutines and Channels" },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId: "not-a-uuid" as any, title: "Goroutines and Channels" },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
   });
 
   test("should return InvalidDataError when title is missing", async () => {
-    const userId = await crypto.generateUUID();
+    const currentUser = await mockCurrentUser(crypto);
     const pathId = await crypto.generateUUID();
 
     const result = await addLearningPathNode(
-      { learningPathRepository, cryptoService: crypto },
-      { userId, pathId, title: "" as any },
+      { learningPathRepository, cryptoService: crypto, currentUser },
+      { pathId, title: "" as any },
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
