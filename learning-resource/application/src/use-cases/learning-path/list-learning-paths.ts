@@ -1,10 +1,4 @@
-import {
-  createValidationSchema,
-  InvalidDataError,
-  uuidField,
-  ValidationError,
-  type UUID,
-} from "domain-lib";
+import { type CurrentUser } from "domain-lib";
 import {
   type ILearningPathRepository,
   type LearningPath,
@@ -12,24 +6,11 @@ import {
 
 export interface ListLearningPathsDependencies {
   learningPathRepository: ILearningPathRepository;
+  currentUser: CurrentUser;
 }
-
-export interface ListLearningPathsRequest {
-  userId: UUID;
-}
-
-const listLearningPathsSchema = createValidationSchema<ListLearningPathsRequest>({
-  userId: uuidField("UserId", { required: true }),
-});
 
 export const listLearningPaths = async (
-  { learningPathRepository }: ListLearningPathsDependencies,
-  request: ListLearningPathsRequest,
-): Promise<LearningPath[] | InvalidDataError> => {
-  const validationResult = await listLearningPathsSchema(request);
-  if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
-  }
-
-  return learningPathRepository.findAllByUserId(validationResult.userId);
+  { learningPathRepository, currentUser }: ListLearningPathsDependencies,
+): Promise<LearningPath[]> => {
+  return learningPathRepository.findAllByUserId(currentUser.id);
 };
