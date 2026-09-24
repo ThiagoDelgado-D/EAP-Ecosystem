@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService, type UUID } from "domain-lib";
+import { mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import {
   mockBreakRepository,
   mockNotificationPort,
@@ -11,49 +11,39 @@ describe("getActiveBreak", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let breakRepository: ReturnType<typeof mockBreakRepository>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     breakRepository = mockBreakRepository();
     notificationPort = mockNotificationPort();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
   test("should return null when the user has no active break", async () => {
-    const result = await getActiveBreak(
-      { breakRepository },
-      { userId: requestingUserId },
-    );
+    const result = await getActiveBreak({ breakRepository, currentUser });
 
     expect(result).toBeNull();
   });
 
   test("should return the user's active break", async () => {
-    const startedBreak = await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
+    const startedBreak = await startBreak({
+      breakRepository,
+      cryptoService,
+      notificationPort,
+      currentUser,
+    });
 
-    const result = await getActiveBreak(
-      { breakRepository },
-      { userId: requestingUserId },
-    );
+    const result = await getActiveBreak({ breakRepository, currentUser });
 
     expect(result).toEqual(startedBreak);
   });
 
   test("should not return another user's active break", async () => {
-    await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
-    );
-    const intruderId = await cryptoService.generateUUID();
+    await startBreak({ breakRepository, cryptoService, notificationPort, currentUser });
+    const intruder = await mockCurrentUser(cryptoService);
 
-    const result = await getActiveBreak(
-      { breakRepository },
-      { userId: intruderId },
-    );
+    const result = await getActiveBreak({ breakRepository, currentUser: intruder });
 
     expect(result).toBeNull();
   });
