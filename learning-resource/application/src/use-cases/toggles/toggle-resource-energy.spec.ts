@@ -4,7 +4,7 @@ import {
 } from "@learning-resource/domain";
 import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
-import { generateLearningResource } from "../../mocks/factories.js";
+import { seedOwnedLearningResource } from "../../mocks/factories.js";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { toggleResourceEnergy } from "./toggle-resource-energy.js";
 import { LearningResourceNotFoundError } from "../../errors/learning-resource-not-found.js";
@@ -16,26 +16,16 @@ describe("toggleResourceEnergy", () => {
     typeof mockLearningResourceRepository
   >;
   let resourceId: UUID;
-  let typeId: UUID;
   let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
-    resourceId = await cryptoService.generateUUID();
-    typeId = await cryptoService.generateUUID();
-    currentUser = await mockCurrentUser(cryptoService);
-
-    const resource = generateLearningResource({
-      id: resourceId,
-      userId: currentUser.id,
-      typeId,
+    ({ resourceId, currentUser, learningResourceRepository } = await seedOwnedLearningResource(cryptoService, {
       title: "Advanced Algorithms",
       difficulty: DifficultyType.HIGH,
       energyLevel: EnergyLevelType.MEDIUM,
       estimatedDuration: { value: 180, isEstimated: true },
-    });
-
-    learningResourceRepository = mockLearningResourceRepository([resource]);
+    }));
   });
 
   test("Should toggle energy level to HIGH successfully", async () => {

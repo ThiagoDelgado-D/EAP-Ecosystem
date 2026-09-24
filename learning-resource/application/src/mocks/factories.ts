@@ -12,8 +12,14 @@ import {
   type LearningPathNode,
   type LearningResource,
 } from "@learning-resource/domain";
-import type { UUID } from "domain-lib";
+import {
+  mockCurrentUser,
+  type CryptoService,
+  type CurrentUser,
+  type UUID,
+} from "domain-lib";
 import type { MockedLearningPathRepository } from "./mock-learning-path-repository.js";
+import { mockLearningResourceRepository } from "./mock-learning-resource-repository.js";
 
 export const generateLearningPath = (opts?: Partial<LearningPath>): LearningPath => {
   const createdAt = faker.date.past({ years: 1 });
@@ -98,3 +104,26 @@ export const generateLearningResource = (
   updatedAt: new Date(),
   ...overrides,
 });
+
+export const seedOwnedLearningResource = async (
+  cryptoService: CryptoService,
+  overrides: Partial<LearningResource> = {},
+): Promise<{
+  resourceId: UUID;
+  currentUser: CurrentUser;
+  learningResourceRepository: ReturnType<typeof mockLearningResourceRepository>;
+}> => {
+  const currentUser = await mockCurrentUser(cryptoService);
+  const resource = generateLearningResource({
+    id: await cryptoService.generateUUID(),
+    typeId: await cryptoService.generateUUID(),
+    userId: currentUser.id,
+    ...overrides,
+  });
+
+  return {
+    resourceId: resource.id,
+    currentUser,
+    learningResourceRepository: mockLearningResourceRepository([resource]),
+  };
+};

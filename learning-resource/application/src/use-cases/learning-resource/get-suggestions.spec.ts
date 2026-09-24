@@ -17,44 +17,26 @@ describe("getSuggestions", () => {
     const cryptoService = mockCryptoService();
     currentUser = await mockCurrentUser(cryptoService);
 
-    const seedResources: LearningResource[] = [
-      generateLearningResource({
-        id: await cryptoService.generateUUID(),
-        userId: currentUser.id,
-        typeId: await cryptoService.generateUUID(),
-        title: "TypeScript Basics",
-        difficulty: DifficultyType.LOW,
-        energyLevel: EnergyLevelType.LOW,
-        estimatedDuration: { value: 30, isEstimated: true },
-      }),
-      generateLearningResource({
-        id: await cryptoService.generateUUID(),
-        userId: currentUser.id,
-        typeId: await cryptoService.generateUUID(),
-        title: "Advanced TypeScript Patterns",
-        difficulty: DifficultyType.HIGH,
-        energyLevel: EnergyLevelType.HIGH,
-        estimatedDuration: { value: 120, isEstimated: true },
-      }),
-      generateLearningResource({
-        id: await cryptoService.generateUUID(),
-        userId: currentUser.id,
-        typeId: await cryptoService.generateUUID(),
-        title: "React Hooks Deep Dive",
-        difficulty: DifficultyType.MEDIUM,
-        energyLevel: EnergyLevelType.MEDIUM,
-        estimatedDuration: { value: 60, isEstimated: true },
-      }),
-      generateLearningResource({
-        id: await cryptoService.generateUUID(),
-        userId: currentUser.id,
-        typeId: await cryptoService.generateUUID(),
-        title: "CSS Grid Fundamentals",
-        difficulty: DifficultyType.LOW,
-        energyLevel: EnergyLevelType.LOW,
-        estimatedDuration: { value: 20, isEstimated: true },
-      }),
+    const resourceSeeds: Array<
+      Pick<LearningResource, "title" | "difficulty" | "energyLevel" | "estimatedDuration">
+    > = [
+      { title: "TypeScript Basics", difficulty: DifficultyType.LOW, energyLevel: EnergyLevelType.LOW, estimatedDuration: { value: 30, isEstimated: true } },
+      { title: "Advanced TypeScript Patterns", difficulty: DifficultyType.HIGH, energyLevel: EnergyLevelType.HIGH, estimatedDuration: { value: 120, isEstimated: true } },
+      { title: "React Hooks Deep Dive", difficulty: DifficultyType.MEDIUM, energyLevel: EnergyLevelType.MEDIUM, estimatedDuration: { value: 60, isEstimated: true } },
+      { title: "CSS Grid Fundamentals", difficulty: DifficultyType.LOW, energyLevel: EnergyLevelType.LOW, estimatedDuration: { value: 20, isEstimated: true } },
     ];
+
+    const seedResources: LearningResource[] = [];
+    for (const seed of resourceSeeds) {
+      seedResources.push(
+        generateLearningResource({
+          id: await cryptoService.generateUUID(),
+          userId: currentUser.id,
+          typeId: await cryptoService.generateUUID(),
+          ...seed,
+        }),
+      );
+    }
 
     learningResourceRepository = mockLearningResourceRepository(seedResources);
   });

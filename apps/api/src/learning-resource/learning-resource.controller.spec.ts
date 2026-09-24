@@ -480,18 +480,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should return the resource when it exists", async () => {
@@ -524,18 +514,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should update title successfully", async () => {
@@ -590,18 +570,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should delete the resource and return 200", async () => {
@@ -633,18 +603,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle difficulty successfully", async () => {
@@ -680,18 +640,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle energy level successfully", async () => {
@@ -727,18 +677,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle status successfully", async () => {
@@ -775,18 +715,8 @@ describe("LearningResourceController (integration)", () => {
     let resourceId: UUID;
 
     beforeEach(async () => {
-      await request(app.getHttpServer())
-        .post("/api/v1/learning-resources")
-        .set(authHeader())
-        .send({
-          title: "TypeScript Advanced",
-          resourceTypeId,
-          topicIds: [topicId],
-          difficulty: "high",
-          estimatedDurationMinutes: 120,
-        });
-
-      resourceId = resourceRepo.learningResources[0].id;
+      const response = await createResource().expect(201);
+      resourceId = response.body.id;
     });
 
     test("Should toggle mental state to deep_focus successfully", async () => {
