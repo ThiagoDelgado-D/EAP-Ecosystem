@@ -1,4 +1,4 @@
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
@@ -11,32 +11,32 @@ describe("getActiveSession", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
     notificationPort = mockNotificationPort();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
-  const deps = () => ({ sessionRepository, notificationPort });
+  const deps = () => ({ sessionRepository, notificationPort, currentUser });
 
   test("should return null when the user has no active session", async () => {
-    const result = await getActiveSession(deps(), { userId: requestingUserId });
+    const result = await getActiveSession(deps());
     expect(result).toBeNull();
   });
 
   test("should return null when the user's most recent session is already completed", async () => {
     sessionRepository.sessions.push({
       id: await cryptoService.generateUUID(),
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date(Date.now() - 3600 * 1000),
       completedAt: new Date(),
       plannedMin: 25,
     });
 
-    const result = await getActiveSession(deps(), { userId: requestingUserId });
+    const result = await getActiveSession(deps());
 
     expect(result).toBeNull();
   });
@@ -47,7 +47,7 @@ describe("getActiveSession", () => {
     const learningPathNodeId = await cryptoService.generateUUID();
     const session = {
       id: sessionId,
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date(),
       intent: "Finish the current chapter",
       plannedMin: 25,
@@ -71,7 +71,7 @@ describe("getActiveSession", () => {
       },
     );
 
-    const result = await getActiveSession(deps(), { userId: requestingUserId });
+    const result = await getActiveSession(deps());
 
     expect(result).toEqual({ session, segments: sessionRepository.segments });
   });
@@ -85,14 +85,9 @@ describe("getActiveSession", () => {
       plannedMin: 25,
     });
 
-    const result = await getActiveSession(deps(), { userId: requestingUserId });
+    const result = await getActiveSession(deps());
 
     expect(result).toBeNull();
-  });
-
-  test("should return InvalidDataError when userId is missing", async () => {
-    const result = await getActiveSession(deps(), {} as never);
-    expect(result).toBeInstanceOf(InvalidDataError);
   });
 
   test("should auto-close a session left open past plannedMin, capped exactly at the boundary", async () => {
@@ -101,7 +96,7 @@ describe("getActiveSession", () => {
     const startedAt = new Date(Date.now() - (plannedMin * 60 + 3600) * 1000);
     sessionRepository.sessions.push({
       id: sessionId,
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt,
       plannedMin,
     });
@@ -112,14 +107,14 @@ describe("getActiveSession", () => {
       targetKind: SegmentTargetKind.FREE,
     });
 
-    const result = await getActiveSession(deps(), { userId: requestingUserId });
+    const result = await getActiveSession(deps());
 
     const boundaryAt = new Date(startedAt.getTime() + plannedMin * 60 * 1000);
     expect(result).toEqual({
       autoClosed: true,
       session: {
         id: sessionId,
-        userId: requestingUserId,
+        userId: currentUser.id,
         startedAt,
         plannedMin,
         completedAt: boundaryAt,
@@ -143,12 +138,12 @@ describe("getActiveSession", () => {
     const plannedMin = 25;
     sessionRepository.sessions.push({
       id: sessionId,
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date(Date.now() - 60 * 1000),
       plannedMin,
     });
 
-    const result = await getActiveSession(deps(), { userId: requestingUserId });
+    const result = await getActiveSession(deps());
 
     expect(result).not.toBeNull();
     expect(result && "autoClosed" in result).toBe(false);
