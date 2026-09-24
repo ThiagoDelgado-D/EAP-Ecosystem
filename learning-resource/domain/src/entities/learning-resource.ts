@@ -1,6 +1,7 @@
 import type { Entity, TimestampedEntity, UUID } from "domain-lib";
 
 export interface LearningResource extends Entity, TimestampedEntity {
+  userId: UUID;
   title: string;
   url?: string;
   imageUrl?: string;
