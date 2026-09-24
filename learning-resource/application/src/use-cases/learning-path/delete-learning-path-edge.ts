@@ -1,5 +1,6 @@
 import {
   createValidationSchema,
+  type CurrentUser,
   InvalidDataError,
   isErrorResult,
   uuidField,
@@ -16,22 +17,21 @@ import { verifyLearningPathOwnership } from "./verify-learning-path-ownership.js
 
 export interface DeleteLearningPathEdgeDependencies {
   learningPathRepository: ILearningPathRepository;
+  currentUser: CurrentUser;
 }
 
 export interface DeleteLearningPathEdgeRequest {
-  userId: UUID;
   pathId: UUID;
   edgeId: UUID;
 }
 
 const deleteLearningPathEdgeSchema = createValidationSchema<DeleteLearningPathEdgeRequest>({
-  userId: uuidField("UserId", { required: true }),
   pathId: uuidField("PathId", { required: true }),
   edgeId: uuidField("EdgeId", { required: true }),
 });
 
 export const deleteLearningPathEdge = async (
-  { learningPathRepository }: DeleteLearningPathEdgeDependencies,
+  { learningPathRepository, currentUser }: DeleteLearningPathEdgeDependencies,
   request: DeleteLearningPathEdgeRequest,
 ): Promise<
   | void
@@ -45,9 +45,9 @@ export const deleteLearningPathEdge = async (
     return new InvalidDataError(validationResult.errors);
   }
 
-  const { userId, pathId, edgeId } = validationResult;
+  const { pathId, edgeId } = validationResult;
 
-  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, userId);
+  const path = await verifyLearningPathOwnership(learningPathRepository, pathId, currentUser);
   if (isErrorResult(path)) return path;
 
   const edges = await learningPathRepository.findEdgesByPathId(pathId);
