@@ -33,6 +33,7 @@ const httpStatusMap: Record<ErrorName, number> = {
   LEARNING_PATH_EDGE_NOT_FOUND_ERROR: 404,
   DUPLICATE_LEARNING_PATH_EDGE_ERROR: 409,
   SESSION_ALREADY_ACTIVE_ERROR: 409,
+  SESSION_STILL_ACTIVE_ERROR: 409,
   AMBIGUOUS_PATH_TARGET_ERROR: 409,
   SEGMENT_TARGET_FORBIDDEN_ERROR: 403,
   SESSION_NOT_ACTIVE_ERROR: 409,
@@ -47,5 +48,8 @@ const httpStatusMap: Record<ErrorName, number> = {
 };
 
 export function toHttpException(error: AppDomainError): never {
-  throw new HttpException(error.context ?? {}, httpStatusMap[error.name]);
+  throw new HttpException(
+    { error: error.name, ...(error.context ?? {}) },
+    httpStatusMap[error.name],
+  );
 }

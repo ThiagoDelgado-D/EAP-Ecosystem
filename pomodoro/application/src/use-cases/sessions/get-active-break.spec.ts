@@ -3,6 +3,7 @@ import { mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib
 import {
   mockBreakRepository,
   mockNotificationPort,
+  mockSessionRepository,
 } from "../../mocks/index.js";
 import { startBreak } from "./start-break.js";
 import { getActiveBreak } from "./get-active-break.js";
@@ -10,12 +11,14 @@ import { getActiveBreak } from "./get-active-break.js";
 describe("getActiveBreak", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let breakRepository: ReturnType<typeof mockBreakRepository>;
+  let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
   let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     breakRepository = mockBreakRepository();
+    sessionRepository = mockSessionRepository();
     notificationPort = mockNotificationPort();
     currentUser = await mockCurrentUser(cryptoService);
   });
@@ -29,6 +32,7 @@ describe("getActiveBreak", () => {
   test("should return the user's active break", async () => {
     const startedBreak = await startBreak({
       breakRepository,
+      sessionRepository,
       cryptoService,
       notificationPort,
       currentUser,
@@ -40,7 +44,13 @@ describe("getActiveBreak", () => {
   });
 
   test("should not return another user's active break", async () => {
-    await startBreak({ breakRepository, cryptoService, notificationPort, currentUser });
+    await startBreak({
+      breakRepository,
+      sessionRepository,
+      cryptoService,
+      notificationPort,
+      currentUser,
+    });
     const intruder = await mockCurrentUser(cryptoService);
 
     const result = await getActiveBreak({ breakRepository, currentUser: intruder });
