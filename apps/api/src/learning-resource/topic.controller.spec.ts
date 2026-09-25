@@ -7,6 +7,8 @@ describe("TopicController (integration)", () => {
   let app: INestApplication;
   let jwtService: MockedJwtService;
   let ownerToken: string;
+  let programmingId: UUID;
+  let designId: UUID;
 
   beforeAll(async () => {
     const ctx = await createLearningResourceTestApp({
@@ -18,6 +20,8 @@ describe("TopicController (integration)", () => {
 
     app = ctx.app;
     jwtService = ctx.jwtService;
+    programmingId = ctx.topics[0].id;
+    designId = ctx.topics[1].id;
 
     const ownerId: UUID = await ctx.cryptoService.generateUUID();
     ownerToken = await jwtService.sign({ sub: ownerId });
@@ -27,7 +31,11 @@ describe("TopicController (integration)", () => {
 
   describe("Unauthenticated access", () => {
     test("Should return 401 without a bearer token", async () => {
-      await request(app.getHttpServer()).get("/api/v1/topics").expect(401);
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/topics")
+        .expect(401);
+
+      expect(response.body.topics).toBeUndefined();
     });
   });
 
@@ -40,9 +48,37 @@ describe("TopicController (integration)", () => {
 
       expect(response.body.total).toBe(2);
       expect(response.body.topics).toHaveLength(2);
-      expect(response.body.topics.map((t: { name: string }) => t.name)).toEqual(
-        expect.arrayContaining(["Programming", "Design"]),
+      expect(response.body.topics).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: programmingId, name: "Programming", color: "#FF5733" }),
+          expect.objectContaining({ id: designId, name: "Design", color: "#33A1FF" }),
+        ]),
       );
     });
+  });
+});
+
+describe("TopicController (integration) — empty state", () => {
+  let app: INestApplication;
+  let ownerToken: string;
+
+  beforeAll(async () => {
+    const ctx = await createLearningResourceTestApp();
+
+    app = ctx.app;
+    const ownerId: UUID = await ctx.cryptoService.generateUUID();
+    ownerToken = await ctx.jwtService.sign({ sub: ownerId });
+  });
+
+  afterAll(async () => await app.close());
+
+  test("Should return an empty list and total 0 when no topics exist", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/api/v1/topics")
+      .set({ Authorization: `Bearer ${ownerToken}` })
+      .expect(200);
+
+    expect(response.body.topics).toEqual([]);
+    expect(response.body.total).toBe(0);
   });
 });
