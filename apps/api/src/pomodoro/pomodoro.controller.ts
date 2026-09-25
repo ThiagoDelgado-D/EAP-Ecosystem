@@ -215,6 +215,7 @@ export class PomodoroController {
   async startBreak(@CurrentUserDecorator() currentUser: CurrentUser) {
     const result = await startBreak({
       breakRepository: this.breakRepository,
+      sessionRepository: this.sessionRepository,
       cryptoService: this.cryptoService,
       notificationPort: this.notificationPort,
       currentUser,
