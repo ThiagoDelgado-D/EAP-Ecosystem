@@ -31,18 +31,22 @@ describe("toHttpException", () => {
     );
   });
 
-  test("passes error context as response body", () => {
+  test("passes error context alongside the error name in the response body", () => {
     const context = { field: "required" };
     const error = new InvalidDataError(context);
     expect(() => toHttpException(error)).toThrow(
-      expect.objectContaining({ response: context }),
+      expect.objectContaining({
+        response: { error: "INVALID_DATA_ERROR", field: "required" },
+      }),
     );
   });
 
-  test("uses empty object when context is undefined", () => {
+  test("includes only the error name when context is undefined", () => {
     const error = new LearningResourceNotFoundError();
     expect(() => toHttpException(error)).toThrow(
-      expect.objectContaining({ response: {} }),
+      expect.objectContaining({
+        response: { error: "LEARNING_RESOURCE_NOT_FOUND_ERROR" },
+      }),
     );
   });
 });
