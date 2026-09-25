@@ -2,24 +2,38 @@ import {
   DomainNotificationType,
   type Break,
   type IBreakRepository,
+  type ISessionRepository,
   type NotificationPort,
 } from "@pomodoro/domain";
 import { type CryptoService, type CurrentUser } from "domain-lib";
 import { BreakAlreadyActiveError } from "../../errors/break-already-active.js";
+import { SessionStillActiveError } from "../../errors/session-still-active.js";
 
 export const DEFAULT_BREAK_DURATION_SEC = 300;
 
 export interface StartBreakDependencies {
   breakRepository: IBreakRepository;
+  sessionRepository: ISessionRepository;
   cryptoService: CryptoService;
   notificationPort: NotificationPort;
   currentUser: CurrentUser;
 }
 
-export const startBreak = async (
-  { breakRepository, cryptoService, notificationPort, currentUser }: StartBreakDependencies,
-): Promise<Break | BreakAlreadyActiveError> => {
+export const startBreak = async ({
+  breakRepository,
+  sessionRepository,
+  cryptoService,
+  notificationPort,
+  currentUser,
+}: StartBreakDependencies): Promise<
+  Break | BreakAlreadyActiveError | SessionStillActiveError
+> => {
   const { id: userId } = currentUser;
+
+  const activeSession = await sessionRepository.findActiveByUserId(userId);
+  if (activeSession) {
+    return new SessionStillActiveError(activeSession.id);
+  }
 
   const activeBreak = await breakRepository.findActiveByUserId(userId);
   if (activeBreak) {
