@@ -8,10 +8,10 @@ export class SessionEntity {
   @Column("uuid")
   userId!: string;
 
-  @Column({ type: "timestamp" })
+  @Column({ type: "timestamptz" })
   startedAt!: Date;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: "timestamptz", nullable: true })
   completedAt!: Date | null;
 
   @Column({ type: "varchar", length: 500, nullable: true })
