@@ -1,30 +1,17 @@
 import {
   mockLearningResourceRepository,
-  mockResourceTypeRepository,
-  mockTopicRepository,
   type IUrlMetadataService,
 } from "@learning-resource/application";
-import { ValidationPipe, type INestApplication } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
+import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
-import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
+import { type MockedJwtService, type UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
-import { LearningResourceModule } from "./learning-resource.module.js";
-import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
-import { getRepositoryToken } from "@nestjs/typeorm";
-import {
-  LearningResourceEntity,
-  ResourceTypeEntity,
-  TopicEntity,
-} from "@learning-resource/infrastructure";
+import { createLearningResourceTestApp } from "./learning-resource-module.fixture.js";
 
 describe("LearningResourceController (integration)", () => {
   let app: INestApplication;
   let resourceRepo: ReturnType<typeof mockLearningResourceRepository>;
-  let topicRepo: ReturnType<typeof mockTopicRepository>;
-  let resourceTypeRepo: ReturnType<typeof mockResourceTypeRepository>;
   let cryptoService: CryptoServiceImpl;
-  let mockMetadataService: IUrlMetadataService;
   let jwtService: MockedJwtService;
 
   let topicId: UUID;
@@ -35,34 +22,7 @@ describe("LearningResourceController (integration)", () => {
   let intruderToken: string;
 
   beforeAll(async () => {
-    cryptoService = new CryptoServiceImpl();
-    topicId = await cryptoService.generateUUID();
-    resourceTypeId = await cryptoService.generateUUID();
-    ownerId = await cryptoService.generateUUID();
-    intruderId = await cryptoService.generateUUID();
-    jwtService = mockJwtService();
-
-    resourceRepo = mockLearningResourceRepository([]);
-    topicRepo = mockTopicRepository([
-      {
-        id: topicId,
-        name: "Programming",
-        color: "#FF5733",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]);
-    resourceTypeRepo = mockResourceTypeRepository([
-      {
-        id: resourceTypeId,
-        code: "video",
-        displayName: "Video",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]);
-
-    mockMetadataService = {
+    const metadataService: IUrlMetadataService = {
       extract: async (url: string) => {
         if (url.includes("youtube.com") || url.includes("youtu.be")) {
           return { title: "Some Video", resourceTypeCode: "video" };
@@ -77,40 +37,21 @@ describe("LearningResourceController (integration)", () => {
       },
     };
 
-    const module = await Test.createTestingModule({
-      imports: [LearningResourceModule],
-    })
-      .overrideProvider(getRepositoryToken(LearningResourceEntity))
-      .useValue({})
-      .overrideProvider(getRepositoryToken(TopicEntity))
-      .useValue({})
-      .overrideProvider(getRepositoryToken(ResourceTypeEntity))
-      .useValue({})
-      .overrideProvider("ILearningResourceRepository")
-      .useValue(resourceRepo)
-      .overrideProvider("ITopicRepository")
-      .useValue(topicRepo)
-      .overrideProvider("IResourceTypeRepository")
-      .useValue(resourceTypeRepo)
-      .overrideProvider("ICryptoService")
-      .useValue(cryptoService)
-      .overrideProvider("IUrlMetadataService")
-      .useValue(mockMetadataService)
-      .overrideProvider("IJwtService")
-      .useValue(jwtService)
-      .compile();
+    const ctx = await createLearningResourceTestApp({
+      topics: [{ name: "Programming", color: "#FF5733" }],
+      resourceTypes: [{ code: "video", displayName: "Video" }],
+      metadataService,
+    });
 
-    app = module.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
-    app.useGlobalFilters(new GlobalExceptionFilter());
-    await app.init();
+    app = ctx.app;
+    resourceRepo = ctx.resourceRepo;
+    cryptoService = ctx.cryptoService;
+    jwtService = ctx.jwtService;
+    topicId = ctx.topics[0].id;
+    resourceTypeId = ctx.resourceTypes[0].id;
 
+    ownerId = await cryptoService.generateUUID();
+    intruderId = await cryptoService.generateUUID();
     ownerToken = await jwtService.sign({ sub: ownerId });
     intruderToken = await jwtService.sign({ sub: intruderId });
   });
