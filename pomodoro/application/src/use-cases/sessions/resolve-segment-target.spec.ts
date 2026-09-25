@@ -1,4 +1,4 @@
-import { mockCryptoService, type UUID } from "domain-lib";
+import { mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import {
   SegmentTargetKind,
   type LearningPathMembership,
@@ -11,9 +11,11 @@ import {
   segmentToResolvedTarget,
 } from "./resolve-segment-target.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
+import { SegmentTargetForbiddenError } from "../../errors/segment-target-forbidden.js";
 
 describe("resolveSegmentTarget", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
+  let currentUser: CurrentUser;
   let unlinkedResourceId: UUID;
   let singlePathResourceId: UUID;
   let multiPathResourceId: UUID;
@@ -27,6 +29,7 @@ describe("resolveSegmentTarget", () => {
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
+    currentUser = await mockCurrentUser(cryptoService);
     unlinkedResourceId = await cryptoService.generateUUID();
     singlePathResourceId = await cryptoService.generateUUID();
     multiPathResourceId = await cryptoService.generateUUID();
@@ -65,16 +68,22 @@ describe("resolveSegmentTarget", () => {
 
   test("Should resolve a free target as-is", async () => {
     const result = await resolveSegmentTarget(
-      { learningPathMembershipPort: membershipPort },
+      { learningPathMembershipPort: membershipPort, currentUser },
       { kind: SegmentTargetKind.FREE },
     );
 
     expect(result).toEqual({ targetKind: SegmentTargetKind.FREE });
   });
 
-  test("Should pass a node target through without querying membership", async () => {
+  test("Should pass a node target through when the current user owns it", async () => {
+    membershipPort.grantNodeOwnership(
+      firstCandidatePathId,
+      firstCandidateNodeId,
+      currentUser.id,
+    );
+
     const result = await resolveSegmentTarget(
-      { learningPathMembershipPort: membershipPort },
+      { learningPathMembershipPort: membershipPort, currentUser },
       {
         kind: SegmentTargetKind.NODE,
         learningPathId: firstCandidatePathId,
@@ -90,9 +99,22 @@ describe("resolveSegmentTarget", () => {
     });
   });
 
+  test("Should return SegmentTargetForbiddenError when the node belongs to another user's path", async () => {
+    const result = await resolveSegmentTarget(
+      { learningPathMembershipPort: membershipPort, currentUser },
+      {
+        kind: SegmentTargetKind.NODE,
+        learningPathId: firstCandidatePathId,
+        learningPathNodeId: firstCandidateNodeId,
+      },
+    );
+
+    expect(result).toBeInstanceOf(SegmentTargetForbiddenError);
+  });
+
   test("Should resolve a resource in zero paths as a plain resource segment", async () => {
     const result = await resolveSegmentTarget(
-      { learningPathMembershipPort: membershipPort },
+      { learningPathMembershipPort: membershipPort, currentUser },
       { kind: SegmentTargetKind.RESOURCE, resourceId: unlinkedResourceId },
     );
 
@@ -104,7 +126,7 @@ describe("resolveSegmentTarget", () => {
 
   test("Should auto-resolve a resource in exactly one path to a node segment", async () => {
     const result = await resolveSegmentTarget(
-      { learningPathMembershipPort: membershipPort },
+      { learningPathMembershipPort: membershipPort, currentUser },
       { kind: SegmentTargetKind.RESOURCE, resourceId: singlePathResourceId },
     );
 
@@ -118,7 +140,7 @@ describe("resolveSegmentTarget", () => {
 
   test("Should return AmbiguousPathTargetError when a resource belongs to 2+ paths and none was chosen", async () => {
     const result = await resolveSegmentTarget(
-      { learningPathMembershipPort: membershipPort },
+      { learningPathMembershipPort: membershipPort, currentUser },
       { kind: SegmentTargetKind.RESOURCE, resourceId: multiPathResourceId },
     );
 
@@ -141,7 +163,7 @@ describe("resolveSegmentTarget", () => {
 
   test("Should resolve directly to a node when the caller already picked which of the 2+ paths counts", async () => {
     const result = await resolveSegmentTarget(
-      { learningPathMembershipPort: membershipPort },
+      { learningPathMembershipPort: membershipPort, currentUser },
       {
         kind: SegmentTargetKind.RESOURCE,
         resourceId: multiPathResourceId,
