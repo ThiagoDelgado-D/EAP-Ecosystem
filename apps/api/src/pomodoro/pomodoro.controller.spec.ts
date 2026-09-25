@@ -432,7 +432,7 @@ describe("PomodoroController (integration)", () => {
         .send({ target: { kind: "free" } })
         .expect(403);
 
-      expect(forbiddenAttachResponse.body).toEqual({});
+      expect(forbiddenAttachResponse.body).toEqual({ error: "SESSION_FORBIDDEN_ERROR" });
     });
   });
 
@@ -552,7 +552,7 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader(intruderToken))
         .expect(403);
 
-      expect(forbiddenContinueResponse.body).toEqual({});
+      expect(forbiddenContinueResponse.body).toEqual({ error: "SESSION_FORBIDDEN_ERROR" });
     });
   });
 
@@ -588,7 +588,7 @@ describe("PomodoroController (integration)", () => {
         .send({ minutes: 5 })
         .expect(403);
 
-      expect(forbiddenExtendResponse.body).toEqual({});
+      expect(forbiddenExtendResponse.body).toEqual({ error: "SESSION_FORBIDDEN_ERROR" });
     });
   });
 
@@ -675,7 +675,7 @@ describe("PomodoroController (integration)", () => {
         .send({ seconds: 60 })
         .expect(403);
 
-      expect(response.body).toEqual({});
+      expect(response.body).toEqual({ error: "BREAK_FORBIDDEN_ERROR" });
     });
 
     test("rejects extending a break that does not exist", async () => {
@@ -687,7 +687,7 @@ describe("PomodoroController (integration)", () => {
         .send({ seconds: 60 })
         .expect(404);
 
-      expect(response.body).toEqual({});
+      expect(response.body).toEqual({ error: "BREAK_NOT_FOUND_ERROR" });
     });
 
     test("ends the break", async () => {
@@ -725,7 +725,10 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader())
         .expect(409);
 
-      expect(response.body).toEqual({ breakId: startResponse.body.id });
+      expect(response.body).toEqual({
+        error: "BREAK_NOT_ACTIVE_ERROR",
+        breakId: startResponse.body.id,
+      });
     });
 
     test("rejects ending another user's break", async () => {
@@ -739,7 +742,7 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader(intruderToken))
         .expect(403);
 
-      expect(response.body).toEqual({});
+      expect(response.body).toEqual({ error: "BREAK_FORBIDDEN_ERROR" });
     });
   });
 
@@ -903,7 +906,7 @@ describe("PomodoroController (integration)", () => {
         })
         .expect(403);
 
-      expect(forbiddenStartResponse.body).toEqual({});
+      expect(forbiddenStartResponse.body).toEqual({ error: "SEGMENT_TARGET_FORBIDDEN_ERROR" });
       expect(sessionRepository.sessions).toHaveLength(0);
     });
 
@@ -920,7 +923,7 @@ describe("PomodoroController (integration)", () => {
         .send({ target: { kind: "free" } })
         .expect(403);
 
-      expect(forbiddenSwitchResponse.body).toEqual({});
+      expect(forbiddenSwitchResponse.body).toEqual({ error: "SESSION_FORBIDDEN_ERROR" });
     });
 
     test("Should return 404 when ending a session that does not exist", async () => {
@@ -931,7 +934,7 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader())
         .expect(404);
 
-      expect(sessionNotFoundResponse.body).toEqual({});
+      expect(sessionNotFoundResponse.body).toEqual({ error: "SESSION_NOT_FOUND_ERROR" });
     });
 
     test("Should return 409 when ending a session that already ended", async () => {

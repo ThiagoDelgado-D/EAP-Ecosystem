@@ -274,7 +274,7 @@ describe("LearningPathController (integration)", () => {
         .set(authHeader())
         .expect(404);
 
-      expect(response.body).toEqual({});
+      expect(response.body).toEqual({ error: "LEARNING_PATH_NOT_FOUND_ERROR" });
     });
 
     test("Should return 403 when a different user requests the path", async () => {
@@ -289,7 +289,7 @@ describe("LearningPathController (integration)", () => {
         .set(authHeader(intruderToken))
         .expect(403);
 
-      expect(response.body).toEqual({});
+      expect(response.body).toEqual({ error: "LEARNING_PATH_FORBIDDEN_ERROR" });
     });
 
     test("Should return 409 when adding a duplicate edge", async () => {
@@ -329,7 +329,7 @@ describe("LearningPathController (integration)", () => {
         })
         .expect(409);
 
-      expect(response.body).toEqual({});
+      expect(response.body).toEqual({ error: "DUPLICATE_LEARNING_PATH_EDGE_ERROR" });
     });
 
     test("Should return 400 when an edge is self-looping", async () => {
