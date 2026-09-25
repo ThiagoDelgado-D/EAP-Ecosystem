@@ -1,4 +1,4 @@
-import { BaseError, mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { SegmentTargetKind, type LearningPathMembership, type Session } from "@pomodoro/domain";
 import { mockLearningPathMembershipPort } from "./mock-learning-path-membership-port.js";
 import { mockSessionRepository } from "./mock-session-repository.js";
@@ -8,6 +8,7 @@ export interface SessionLifecycleFixture {
   cryptoService: ReturnType<typeof mockCryptoService>;
   sessionRepository: ReturnType<typeof mockSessionRepository>;
   membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
+  currentUser: CurrentUser;
   requestingUserId: UUID;
   cleanArchitectureResourceId: UUID;
   startFreeSession: () => Promise<Session>;
@@ -16,7 +17,8 @@ export interface SessionLifecycleFixture {
 export async function createSessionLifecycleFixture(): Promise<SessionLifecycleFixture> {
   const cryptoService = mockCryptoService();
   const sessionRepository = mockSessionRepository();
-  const requestingUserId = await cryptoService.generateUUID();
+  const currentUser = await mockCurrentUser(cryptoService);
+  const requestingUserId = currentUser.id;
   const cleanArchitectureResourceId = await cryptoService.generateUUID();
 
   const pathsSharingCleanArchitecture: LearningPathMembership[] = [
@@ -37,8 +39,8 @@ export async function createSessionLifecycleFixture(): Promise<SessionLifecycleF
 
   const startFreeSession = async (): Promise<Session> => {
     const session = await startSession(
-      { sessionRepository, cryptoService, learningPathMembershipPort: membershipPort },
-      { userId: requestingUserId, plannedMin: 25, target: { kind: SegmentTargetKind.FREE } },
+      { sessionRepository, cryptoService, learningPathMembershipPort: membershipPort, currentUser },
+      { plannedMin: 25, target: { kind: SegmentTargetKind.FREE } },
     );
     if (session instanceof BaseError) throw session;
     return session;
@@ -48,6 +50,7 @@ export async function createSessionLifecycleFixture(): Promise<SessionLifecycleF
     cryptoService,
     sessionRepository,
     membershipPort,
+    currentUser,
     requestingUserId,
     cleanArchitectureResourceId,
     startFreeSession,

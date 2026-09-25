@@ -1,10 +1,4 @@
-import {
-  createValidationSchema,
-  InvalidDataError,
-  uuidField,
-  ValidationError,
-  type UUID,
-} from "domain-lib";
+import type { CurrentUser, UUID } from "domain-lib";
 import {
   SegmentTargetKind,
   type ISessionRepository,
@@ -13,10 +7,7 @@ import {
 
 export interface GetLastSessionTargetDependencies {
   sessionRepository: ISessionRepository;
-}
-
-export interface GetLastSessionTargetRequestModel {
-  userId: UUID;
+  currentUser: CurrentUser;
 }
 
 export interface LastSessionTargetResponseModel {
@@ -25,22 +16,10 @@ export interface LastSessionTargetResponseModel {
   resourceId?: UUID;
 }
 
-const getLastSessionTargetSchema =
-  createValidationSchema<GetLastSessionTargetRequestModel>({
-    userId: uuidField("UserId", { required: true }),
-  });
-
 export const getLastSessionTarget = async (
-  { sessionRepository }: GetLastSessionTargetDependencies,
-  request: GetLastSessionTargetRequestModel,
-): Promise<LastSessionTargetResponseModel | null | InvalidDataError> => {
-  const validationResult = getLastSessionTargetSchema(request);
-  if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
-  }
-  const { userId } = validationResult;
-
-  const lastSession = await sessionRepository.findMostRecentByUserId(userId);
+  { sessionRepository, currentUser }: GetLastSessionTargetDependencies,
+): Promise<LastSessionTargetResponseModel | null> => {
+  const lastSession = await sessionRepository.findMostRecentByUserId(currentUser.id);
   if (!lastSession) return null;
 
   const segments = await sessionRepository.findSegmentsBySessionId(

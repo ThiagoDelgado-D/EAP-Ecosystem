@@ -4,6 +4,7 @@ import {
   uuidField,
   ValidationError,
   InvalidDataError,
+  type CurrentUser,
   type UUID,
 } from "domain-lib";
 import {
@@ -24,10 +25,10 @@ export const MIN_SESSION_DURATION_SEC = 60;
 export interface EndSessionDependencies {
   sessionRepository: ISessionRepository;
   notificationPort: NotificationPort;
+  currentUser: CurrentUser;
 }
 
 export interface EndSessionRequestModel {
-  userId: UUID;
   sessionId: UUID;
 }
 
@@ -36,12 +37,11 @@ export type EndSessionResponseModel =
   | { discarded: false; session: Session; segments: Segment[] };
 
 const endSessionSchema = createValidationSchema<EndSessionRequestModel>({
-  userId: uuidField("UserId", { required: true }),
   sessionId: uuidField("SessionId", { required: true }),
 });
 
 export const endSession = async (
-  { sessionRepository, notificationPort }: EndSessionDependencies,
+  { sessionRepository, notificationPort, currentUser }: EndSessionDependencies,
   request: EndSessionRequestModel,
 ): Promise<
   | EndSessionResponseModel
@@ -59,7 +59,7 @@ export const endSession = async (
   const guard = await requireActiveSessionWithOpenSegment(
     sessionRepository,
     validationResult.sessionId,
-    validationResult.userId,
+    currentUser,
   );
   if (guard instanceof BaseError) return guard;
   const { session, openSegment } = guard;

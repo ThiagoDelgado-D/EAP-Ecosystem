@@ -1,10 +1,4 @@
-import {
-  createValidationSchema,
-  uuidField,
-  ValidationError,
-  InvalidDataError,
-  type UUID,
-} from "domain-lib";
+import type { CurrentUser } from "domain-lib";
 import {
   DomainNotificationType,
   type ISessionRepository,
@@ -16,10 +10,7 @@ import {
 export interface GetActiveSessionDependencies {
   sessionRepository: ISessionRepository;
   notificationPort: NotificationPort;
-}
-
-export interface GetActiveSessionRequestModel {
-  userId: UUID;
+  currentUser: CurrentUser;
 }
 
 export interface ActiveSessionResult {
@@ -37,22 +28,10 @@ export type GetActiveSessionResponseModel =
   | ActiveSessionResult
   | AutoClosedSessionResult;
 
-const getActiveSessionSchema = createValidationSchema<GetActiveSessionRequestModel>({
-  userId: uuidField("UserId", { required: true }),
-});
-
 export const getActiveSession = async (
-  { sessionRepository, notificationPort }: GetActiveSessionDependencies,
-  request: GetActiveSessionRequestModel,
-): Promise<GetActiveSessionResponseModel | null | InvalidDataError> => {
-  const validationResult = getActiveSessionSchema(request);
-  if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
-  }
-
-  const session = await sessionRepository.findActiveByUserId(
-    validationResult.userId,
-  );
+  { sessionRepository, notificationPort, currentUser }: GetActiveSessionDependencies,
+): Promise<GetActiveSessionResponseModel | null> => {
+  const session = await sessionRepository.findActiveByUserId(currentUser.id);
   if (!session) return null;
 
   const boundarySec = session.plannedMin * 60;

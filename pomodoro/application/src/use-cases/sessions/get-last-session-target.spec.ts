@@ -1,4 +1,4 @@
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockSessionRepository } from "../../mocks/index.js";
@@ -7,22 +7,22 @@ import { getLastSessionTarget } from "./get-last-session-target.js";
 describe("getLastSessionTarget", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
-  const deps = () => ({ sessionRepository });
+  const deps = () => ({ sessionRepository, currentUser });
 
   const addCompletedSession = async (secondsAgo: number) => {
     const sessionId = await cryptoService.generateUUID();
 
     sessionRepository.sessions.push({
       id: sessionId,
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date(Date.now() - secondsAgo * 1000),
       completedAt: new Date(Date.now() - secondsAgo * 1000 + 25 * 60 * 1000),
       plannedMin: 25,
@@ -32,9 +32,7 @@ describe("getLastSessionTarget", () => {
   };
 
   test("Should return null when the user has no sessions", async () => {
-    const result = await getLastSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await getLastSessionTarget(deps());
     expect(result).toBeNull();
   });
 
@@ -49,9 +47,7 @@ describe("getLastSessionTarget", () => {
       targetKind: SegmentTargetKind.FREE,
     });
 
-    const result = await getLastSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await getLastSessionTarget(deps());
 
     expect(result).toBeNull();
   });
@@ -73,9 +69,7 @@ describe("getLastSessionTarget", () => {
       resourceId,
     });
 
-    const result = await getLastSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await getLastSessionTarget(deps());
 
     expect(result).toEqual({ learningPathId, learningPathNodeId, resourceId });
   });
@@ -84,7 +78,7 @@ describe("getLastSessionTarget", () => {
     const activeSessionId = await cryptoService.generateUUID();
     sessionRepository.sessions.push({
       id: activeSessionId,
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date(),
       plannedMin: 25,
     });
@@ -103,19 +97,12 @@ describe("getLastSessionTarget", () => {
       learningPathNodeId,
     });
 
-    const result = await getLastSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await getLastSessionTarget(deps());
 
     expect(result).toEqual({
       learningPathId,
       learningPathNodeId,
       resourceId: undefined,
     });
-  });
-
-  test("Should return InvalidDataError when userId is missing", async () => {
-    const result = await getLastSessionTarget(deps(), {} as never);
-    expect(result).toBeInstanceOf(InvalidDataError);
   });
 });

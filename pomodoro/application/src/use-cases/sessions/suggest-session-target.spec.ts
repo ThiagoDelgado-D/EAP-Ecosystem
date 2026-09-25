@@ -1,4 +1,4 @@
-import { InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import {
   CandidateNodeEnergyLevel,
   CandidateNodeProgress,
@@ -14,28 +14,26 @@ describe("suggestSessionTarget", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let candidateNodesPort: ReturnType<typeof mockCandidateNodesPort>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
     candidateNodesPort = mockCandidateNodesPort();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
   });
 
-  const deps = () => ({ sessionRepository, candidateNodesPort });
+  const deps = () => ({ sessionRepository, candidateNodesPort, currentUser });
 
   test("Should return an empty array when the user has no candidates", async () => {
-    const result = await suggestSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await suggestSessionTarget(deps(), {});
     expect(result).toEqual([]);
   });
 
   test("Should combine the candidate port, last session, and momentum into a scored list", async () => {
     const pathId = await cryptoService.generateUUID();
     const nodeId = await cryptoService.generateUUID();
-    candidateNodesPort.nodesByUser[requestingUserId] = [
+    candidateNodesPort.nodesByUser[currentUser.id] = [
       {
         pathId,
         pathTitle: "Frontend Architecture Mastery",
@@ -49,7 +47,7 @@ describe("suggestSessionTarget", () => {
     const sessionId = await cryptoService.generateUUID();
     sessionRepository.sessions.push({
       id: sessionId,
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date(Date.now() - 3600 * 1000),
       completedAt: new Date(),
       plannedMin: 25,
@@ -64,9 +62,7 @@ describe("suggestSessionTarget", () => {
       learningPathNodeId: nodeId,
     });
 
-    const result = await suggestSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await suggestSessionTarget(deps(), {});
     if (result instanceof InvalidDataError) throw result;
 
     expect(result[0].nodeId).toBe(nodeId);
@@ -76,7 +72,7 @@ describe("suggestSessionTarget", () => {
   test("Should score candidates with no bonus when there is no session history yet", async () => {
     const nodeId = await cryptoService.generateUUID();
 
-    candidateNodesPort.nodesByUser[requestingUserId] = [
+    candidateNodesPort.nodesByUser[currentUser.id] = [
       {
         pathId: await cryptoService.generateUUID(),
         pathTitle: "TypeScript, Step by Step",
@@ -88,9 +84,7 @@ describe("suggestSessionTarget", () => {
       },
     ];
 
-    const result = await suggestSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await suggestSessionTarget(deps(), {});
 
     if (result instanceof InvalidDataError) throw result;
 
@@ -102,7 +96,7 @@ describe("suggestSessionTarget", () => {
   test("Should forward the energy query through to the scoring", async () => {
     const matchingNodeId = await cryptoService.generateUUID();
 
-    candidateNodesPort.nodesByUser[requestingUserId] = [
+    candidateNodesPort.nodesByUser[currentUser.id] = [
       {
         pathId: await cryptoService.generateUUID(),
         pathTitle: "TypeScript, Step by Step",
@@ -126,7 +120,6 @@ describe("suggestSessionTarget", () => {
     ];
 
     const result = await suggestSessionTarget(deps(), {
-      userId: requestingUserId,
       energy: CandidateNodeEnergyLevel.HIGH,
     });
     if (result instanceof InvalidDataError) throw result;
@@ -140,7 +133,7 @@ describe("suggestSessionTarget", () => {
     const quietPathId = await cryptoService.generateUUID();
     const activePathNodeId = await cryptoService.generateUUID();
 
-    candidateNodesPort.nodesByUser[requestingUserId] = [
+    candidateNodesPort.nodesByUser[currentUser.id] = [
       {
         pathId: quietPathId,
         pathTitle: "System Design Prep",
@@ -165,7 +158,7 @@ describe("suggestSessionTarget", () => {
 
     sessionRepository.sessions.push({
       id: activeSessionId,
-      userId: requestingUserId,
+      userId: currentUser.id,
       startedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
       completedAt: new Date(),
       plannedMin: 25,
@@ -181,9 +174,7 @@ describe("suggestSessionTarget", () => {
       learningPathNodeId: activePathNodeId,
     });
 
-    const result = await suggestSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await suggestSessionTarget(deps(), {});
     if (result instanceof InvalidDataError) throw result;
 
     expect(result[0].nodeId).toBe(activePathNodeId);
@@ -195,7 +186,7 @@ describe("suggestSessionTarget", () => {
     const pendingNodeId = await cryptoService.generateUUID();
     const stubNodeId = await cryptoService.generateUUID();
 
-    candidateNodesPort.nodesByUser[requestingUserId] = [
+    candidateNodesPort.nodesByUser[currentUser.id] = [
       {
         pathId: await cryptoService.generateUUID(),
         pathTitle: "System Design Prep",
@@ -224,9 +215,7 @@ describe("suggestSessionTarget", () => {
       },
     ];
 
-    const result = await suggestSessionTarget(deps(), {
-      userId: requestingUserId,
-    });
+    const result = await suggestSessionTarget(deps(), {});
     if (result instanceof InvalidDataError) throw result;
 
     expect(result.map((candidate) => candidate.nodeId)).toEqual([
@@ -236,14 +225,8 @@ describe("suggestSessionTarget", () => {
     ]);
   });
 
-  test("Should return InvalidDataError when userId is missing", async () => {
-    const result = await suggestSessionTarget(deps(), {} as never);
-    expect(result).toBeInstanceOf(InvalidDataError);
-  });
-
   test("Should return InvalidDataError when energy is not a known level", async () => {
     const result = await suggestSessionTarget(deps(), {
-      userId: requestingUserId,
       energy: "extreme" as CandidateNodeEnergyLevel,
     });
     expect(result).toBeInstanceOf(InvalidDataError);

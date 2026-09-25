@@ -1,4 +1,4 @@
-import { BaseError, InvalidDataError, mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import {
   SegmentTargetKind,
   type LearningPathMembership,
@@ -16,13 +16,13 @@ describe("startSession", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
-  let requestingUserId: UUID;
+  let currentUser: CurrentUser;
   let multiPathResourceId: UUID;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
-    requestingUserId = await cryptoService.generateUUID();
+    currentUser = await mockCurrentUser(cryptoService);
     multiPathResourceId = await cryptoService.generateUUID();
 
     const candidates: LearningPathMembership[] = [
@@ -42,23 +42,22 @@ describe("startSession", () => {
     });
   });
 
+  const deps = () => ({
+    sessionRepository,
+    cryptoService,
+    learningPathMembershipPort: membershipPort,
+    currentUser,
+  });
+
   test("Should start a free session and create its first segment", async () => {
-    const result = await startSession(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        plannedMin: 25,
-        target: { kind: SegmentTargetKind.FREE },
-      },
-    );
+    const result = await startSession(deps(), {
+      plannedMin: 25,
+      target: { kind: SegmentTargetKind.FREE },
+    });
 
     if (result instanceof BaseError) throw result;
     const session = result;
-    expect(session.userId).toBe(requestingUserId);
+    expect(session.userId).toBe(currentUser.id);
     expect(session.plannedMin).toBe(25);
     expect(session.completedAt).toBeUndefined();
 
@@ -74,67 +73,35 @@ describe("startSession", () => {
   });
 
   test("Should return InvalidDataError when plannedMin is missing", async () => {
-    const result = await startSession(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        target: { kind: SegmentTargetKind.FREE },
-      } as any,
-    );
+    const result = await startSession(deps(), {
+      target: { kind: SegmentTargetKind.FREE },
+    } as any);
 
     expect(result).toBeInstanceOf(InvalidDataError);
   });
 
   test("Should return SessionAlreadyActiveError when the user already has an active session", async () => {
-    await startSession(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        plannedMin: 25,
-        target: { kind: SegmentTargetKind.FREE },
-      },
-    );
+    await startSession(deps(), {
+      plannedMin: 25,
+      target: { kind: SegmentTargetKind.FREE },
+    });
 
-    const result = await startSession(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
-      },
-      {
-        userId: requestingUserId,
-        plannedMin: 50,
-        target: { kind: SegmentTargetKind.FREE },
-      },
-    );
+    const result = await startSession(deps(), {
+      plannedMin: 50,
+      target: { kind: SegmentTargetKind.FREE },
+    });
 
     expect(result).toBeInstanceOf(SessionAlreadyActiveError);
   });
 
   test("Should return AmbiguousPathTargetError instead of guessing which path counts", async () => {
-    const result = await startSession(
-      {
-        sessionRepository,
-        cryptoService,
-        learningPathMembershipPort: membershipPort,
+    const result = await startSession(deps(), {
+      plannedMin: 25,
+      target: {
+        kind: SegmentTargetKind.RESOURCE,
+        resourceId: multiPathResourceId,
       },
-      {
-        userId: requestingUserId,
-        plannedMin: 25,
-        target: {
-          kind: SegmentTargetKind.RESOURCE,
-          resourceId: multiPathResourceId,
-        },
-      },
-    );
+    });
 
     expect(result).toBeInstanceOf(AmbiguousPathTargetError);
     expect(sessionRepository.sessions).toHaveLength(0);

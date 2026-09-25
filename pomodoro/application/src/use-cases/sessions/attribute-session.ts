@@ -1,4 +1,4 @@
-import { InvalidDataError, type UUID } from "domain-lib";
+import { InvalidDataError, type CurrentUser, type UUID } from "domain-lib";
 import type {
   ISessionRepository,
   LearningPathMembershipPort,
@@ -18,10 +18,10 @@ import { validateAndVerifySessionOwnership } from "./verify-session-ownership.js
 export interface AttributeSessionDependencies {
   sessionRepository: ISessionRepository;
   learningPathMembershipPort: LearningPathMembershipPort;
+  currentUser: CurrentUser;
 }
 
 export interface AttributeSessionRequestModel {
-  userId: UUID;
   sessionId: UUID;
   target: SegmentTargetInput;
 }
@@ -31,7 +31,7 @@ export interface AttributeSessionResponseModel {
 }
 
 export const attributeSession = async (
-  { sessionRepository, learningPathMembershipPort }: AttributeSessionDependencies,
+  { sessionRepository, learningPathMembershipPort, currentUser }: AttributeSessionDependencies,
   request: AttributeSessionRequestModel,
 ): Promise<
   | AttributeSessionResponseModel
@@ -44,6 +44,7 @@ export const attributeSession = async (
 > => {
   const session = await validateAndVerifySessionOwnership(
     sessionRepository,
+    currentUser,
     request,
   );
   if (

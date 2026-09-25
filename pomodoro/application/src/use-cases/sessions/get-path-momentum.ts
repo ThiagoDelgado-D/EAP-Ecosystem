@@ -2,8 +2,8 @@ import {
   createValidationSchema,
   InvalidDataError,
   positiveNumber,
-  uuidField,
   ValidationError,
+  type CurrentUser,
   type UUID,
 } from "domain-lib";
 import { SegmentTargetKind, type ISessionRepository } from "@pomodoro/domain";
@@ -12,10 +12,10 @@ export const DEFAULT_MOMENTUM_WINDOW_DAYS = 7;
 
 export interface GetPathMomentumDependencies {
   sessionRepository: ISessionRepository;
+  currentUser: CurrentUser;
 }
 
 export interface GetPathMomentumRequestModel {
-  userId: UUID;
   days?: number;
 }
 
@@ -25,14 +25,13 @@ export interface PathMomentumResponseModel {
 }
 
 const getPathMomentumSchema = createValidationSchema<
-  Pick<GetPathMomentumRequestModel, "userId" | "days">
+  Pick<GetPathMomentumRequestModel, "days">
 >({
-  userId: uuidField("UserId", { required: true }),
   days: positiveNumber("Days", { integer: true, required: false }),
 });
 
 export const getPathMomentum = async (
-  { sessionRepository }: GetPathMomentumDependencies,
+  { sessionRepository, currentUser }: GetPathMomentumDependencies,
   request: GetPathMomentumRequestModel,
 ): Promise<PathMomentumResponseModel[] | InvalidDataError> => {
   const validationResult = getPathMomentumSchema(request);
@@ -40,14 +39,14 @@ export const getPathMomentum = async (
     return new InvalidDataError(validationResult.errors);
   }
 
-  const { userId, days } = validationResult;
+  const { days } = validationResult;
 
   const since = new Date(
     Date.now() - (days ?? DEFAULT_MOMENTUM_WINDOW_DAYS) * 24 * 60 * 60 * 1000,
   );
 
   const segments = await sessionRepository.findSegmentsByUserIdBetween(
-    userId,
+    currentUser.id,
     since,
   );
 

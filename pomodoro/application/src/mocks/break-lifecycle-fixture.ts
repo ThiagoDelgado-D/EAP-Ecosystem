@@ -1,4 +1,4 @@
-import { BaseError, mockCryptoService, type UUID } from "domain-lib";
+import { BaseError, mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import type { Break } from "@pomodoro/domain";
 import { mockBreakRepository } from "./mock-break-repository.js";
 import { mockNotificationPort } from "./mock-notification-port.js";
@@ -8,6 +8,7 @@ export interface BreakLifecycleFixture {
   cryptoService: ReturnType<typeof mockCryptoService>;
   breakRepository: ReturnType<typeof mockBreakRepository>;
   notificationPort: ReturnType<typeof mockNotificationPort>;
+  currentUser: CurrentUser;
   requestingUserId: UUID;
   startActiveBreak: () => Promise<Break>;
 }
@@ -16,12 +17,12 @@ export async function createBreakLifecycleFixture(): Promise<BreakLifecycleFixtu
   const cryptoService = mockCryptoService();
   const breakRepository = mockBreakRepository();
   const notificationPort = mockNotificationPort();
-  const requestingUserId = await cryptoService.generateUUID();
+  const currentUser = await mockCurrentUser(cryptoService);
+  const requestingUserId = currentUser.id;
 
   const startActiveBreak = async (): Promise<Break> => {
     const activeBreak = await startBreak(
-      { breakRepository, cryptoService, notificationPort },
-      { userId: requestingUserId },
+      { breakRepository, cryptoService, notificationPort, currentUser },
     );
     if (activeBreak instanceof BaseError) throw activeBreak;
     return activeBreak;
@@ -31,6 +32,7 @@ export async function createBreakLifecycleFixture(): Promise<BreakLifecycleFixtu
     cryptoService,
     breakRepository,
     notificationPort,
+    currentUser,
     requestingUserId,
     startActiveBreak,
   };

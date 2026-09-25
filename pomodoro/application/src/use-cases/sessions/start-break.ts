@@ -4,14 +4,7 @@ import {
   type IBreakRepository,
   type NotificationPort,
 } from "@pomodoro/domain";
-import {
-  createValidationSchema,
-  uuidField,
-  ValidationError,
-  InvalidDataError,
-  type CryptoService,
-  type UUID,
-} from "domain-lib";
+import { type CryptoService, type CurrentUser } from "domain-lib";
 import { BreakAlreadyActiveError } from "../../errors/break-already-active.js";
 
 export const DEFAULT_BREAK_DURATION_SEC = 300;
@@ -20,26 +13,13 @@ export interface StartBreakDependencies {
   breakRepository: IBreakRepository;
   cryptoService: CryptoService;
   notificationPort: NotificationPort;
+  currentUser: CurrentUser;
 }
-
-export interface StartBreakRequestModel {
-  userId: UUID;
-}
-
-const startBreakSchema = createValidationSchema<StartBreakRequestModel>({
-  userId: uuidField("UserId", { required: true }),
-});
 
 export const startBreak = async (
-  { breakRepository, cryptoService, notificationPort }: StartBreakDependencies,
-  request: StartBreakRequestModel,
-): Promise<Break | InvalidDataError | BreakAlreadyActiveError> => {
-  const validationResult = startBreakSchema(request);
-  if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
-  }
-
-  const { userId } = validationResult;
+  { breakRepository, cryptoService, notificationPort, currentUser }: StartBreakDependencies,
+): Promise<Break | BreakAlreadyActiveError> => {
+  const { id: userId } = currentUser;
 
   const activeBreak = await breakRepository.findActiveByUserId(userId);
   if (activeBreak) {

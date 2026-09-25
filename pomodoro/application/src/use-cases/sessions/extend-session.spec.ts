@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
+import { mockCurrentUser } from "domain-lib";
 import {
   createSessionLifecycleFixture,
   type SessionLifecycleFixture,
@@ -15,13 +16,15 @@ describe("extendSession", () => {
     fixture = await createSessionLifecycleFixture();
   });
 
-  const deps = () => ({ sessionRepository: fixture.sessionRepository });
+  const deps = () => ({
+    sessionRepository: fixture.sessionRepository,
+    currentUser: fixture.currentUser,
+  });
 
   test("should add the given minutes to the session's plannedMin in place", async () => {
     const session = await fixture.startFreeSession();
 
     const result = await extendSession(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
       minutes: 5,
     });
@@ -40,7 +43,6 @@ describe("extendSession", () => {
     storedSession.plannedMin = MAX_PLANNED_DURATION_MIN - 3;
 
     const result = await extendSession(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
       minutes: 10,
     });
@@ -54,7 +56,6 @@ describe("extendSession", () => {
     const nonExistentSessionId = await fixture.cryptoService.generateUUID();
 
     const result = await extendSession(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: nonExistentSessionId,
       minutes: 5,
     });
@@ -64,13 +65,12 @@ describe("extendSession", () => {
 
   test("returns SessionForbiddenError when the session belongs to another user", async () => {
     const session = await fixture.startFreeSession();
-    const intruderId = await fixture.cryptoService.generateUUID();
+    const intruder = await mockCurrentUser(fixture.cryptoService);
 
-    const result = await extendSession(deps(), {
-      userId: intruderId,
-      sessionId: session.id,
-      minutes: 5,
-    });
+    const result = await extendSession(
+      { ...deps(), currentUser: intruder },
+      { sessionId: session.id, minutes: 5 },
+    );
 
     expect(result).toBeInstanceOf(SessionForbiddenError);
   });
@@ -83,7 +83,6 @@ describe("extendSession", () => {
     storedSession.completedAt = new Date();
 
     const result = await extendSession(deps(), {
-      userId: fixture.requestingUserId,
       sessionId: session.id,
       minutes: 5,
     });

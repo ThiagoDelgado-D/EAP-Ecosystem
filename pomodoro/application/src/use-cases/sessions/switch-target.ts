@@ -1,4 +1,4 @@
-import { BaseError, InvalidDataError, type CryptoService, type UUID } from "domain-lib";
+import { BaseError, InvalidDataError, type CryptoService, type CurrentUser, type UUID } from "domain-lib";
 import type {
   ISessionRepository,
   LearningPathMembershipPort,
@@ -19,10 +19,10 @@ export interface SwitchTargetDependencies {
   sessionRepository: ISessionRepository;
   cryptoService: CryptoService;
   learningPathMembershipPort: LearningPathMembershipPort;
+  currentUser: CurrentUser;
 }
 
 export interface SwitchTargetRequestModel {
-  userId: UUID;
   sessionId: UUID;
   target: SegmentTargetInput;
 }
@@ -37,6 +37,7 @@ export const switchTarget = async (
     sessionRepository,
     cryptoService,
     learningPathMembershipPort,
+    currentUser,
   }: SwitchTargetDependencies,
   request: SwitchTargetRequestModel,
 ): Promise<
@@ -50,6 +51,7 @@ export const switchTarget = async (
 > => {
   const guard = await validateAndRequireActiveSessionWithOpenSegment(
     sessionRepository,
+    currentUser,
     request,
   );
   if (guard instanceof BaseError) return guard;

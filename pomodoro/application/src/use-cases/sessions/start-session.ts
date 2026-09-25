@@ -2,11 +2,10 @@ import {
   createValidationSchema,
   optionalString,
   positiveNumber,
-  uuidField,
   ValidationError,
   InvalidDataError,
   type CryptoService,
-  type UUID,
+  type CurrentUser,
 } from "domain-lib";
 import type {
   ISessionRepository,
@@ -24,19 +23,18 @@ export interface StartSessionDependencies {
   sessionRepository: ISessionRepository;
   cryptoService: CryptoService;
   learningPathMembershipPort: LearningPathMembershipPort;
+  currentUser: CurrentUser;
 }
 
 export interface StartSessionRequestModel {
-  userId: UUID;
   plannedMin: number;
   intent?: string;
   target: SegmentTargetInput;
 }
 
 const startSessionSchema = createValidationSchema<
-  Pick<StartSessionRequestModel, "userId" | "plannedMin" | "intent">
+  Pick<StartSessionRequestModel, "plannedMin" | "intent">
 >({
-  userId: uuidField("UserId", { required: true }),
   plannedMin: positiveNumber("PlannedMin", { integer: true }),
   intent: optionalString("Intent", { maxLength: 500 }),
 });
@@ -46,6 +44,7 @@ export const startSession = async (
     sessionRepository,
     cryptoService,
     learningPathMembershipPort,
+    currentUser,
   }: StartSessionDependencies,
   request: StartSessionRequestModel,
 ): Promise<
@@ -61,7 +60,7 @@ export const startSession = async (
   const validatedData = validationResult;
 
   const activeSession = await sessionRepository.findActiveByUserId(
-    validatedData.userId,
+    currentUser.id,
   );
   if (activeSession) {
     return new SessionAlreadyActiveError(activeSession.id);
@@ -80,7 +79,7 @@ export const startSession = async (
 
   const session: Session = {
     id: sessionId,
-    userId: validatedData.userId,
+    userId: currentUser.id,
     startedAt: now,
     intent: validatedData.intent,
     plannedMin: validatedData.plannedMin,
