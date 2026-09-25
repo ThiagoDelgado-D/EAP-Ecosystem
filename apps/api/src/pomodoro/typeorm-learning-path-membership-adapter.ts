@@ -13,7 +13,10 @@ export class TypeOrmLearningPathMembershipAdapter
     private readonly nodeRepository: Repository<LearningPathNodeEntity>,
   ) {}
 
-  async findPathsForResource(resourceId: UUID): Promise<LearningPathMembership[]> {
+  async findPathsForResource(
+    resourceId: UUID,
+    userId: UUID,
+  ): Promise<LearningPathMembership[]> {
     const rows = await this.nodeRepository
       .createQueryBuilder("node")
       .innerJoin(LearningPathEntity, "path", "path.id = node.pathId")
@@ -21,6 +24,7 @@ export class TypeOrmLearningPathMembershipAdapter
       .addSelect("path.title", "pathTitle")
       .addSelect("node.id", "nodeId")
       .where("node.learningResourceId = :resourceId", { resourceId })
+      .andWhere("path.userId = :userId", { userId })
       .getRawMany<{ pathId: string; pathTitle: string; nodeId: string }>();
 
     return rows.map((row) => ({
@@ -28,5 +32,21 @@ export class TypeOrmLearningPathMembershipAdapter
       pathTitle: row.pathTitle,
       nodeId: row.nodeId as UUID,
     }));
+  }
+
+  async verifyNodeOwnership(
+    learningPathId: UUID,
+    learningPathNodeId: UUID,
+    userId: UUID,
+  ): Promise<boolean> {
+    const count = await this.nodeRepository
+      .createQueryBuilder("node")
+      .innerJoin(LearningPathEntity, "path", "path.id = node.pathId")
+      .where("node.id = :learningPathNodeId", { learningPathNodeId })
+      .andWhere("node.pathId = :learningPathId", { learningPathId })
+      .andWhere("path.userId = :userId", { userId })
+      .getCount();
+
+    return count > 0;
   }
 }
