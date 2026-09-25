@@ -9,6 +9,7 @@ import { SessionForbiddenError } from "../../errors/session-forbidden.js";
 import { SessionNotCompletedError } from "../../errors/session-not-completed.js";
 import { SegmentsAlreadyAttributedError } from "../../errors/segments-already-attributed.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
+import { SegmentTargetForbiddenError } from "../../errors/segment-target-forbidden.js";
 import {
   resolveSegmentTarget,
   type SegmentTargetInput,
@@ -41,6 +42,7 @@ export const attributeSession = async (
   | SessionNotCompletedError
   | SegmentsAlreadyAttributedError
   | AmbiguousPathTargetError
+  | SegmentTargetForbiddenError
 > => {
   const session = await validateAndVerifySessionOwnership(
     sessionRepository,
@@ -65,10 +67,13 @@ export const attributeSession = async (
   }
 
   const resolvedTarget = await resolveSegmentTarget(
-    { learningPathMembershipPort },
+    { learningPathMembershipPort, currentUser },
     request.target,
   );
-  if (resolvedTarget instanceof AmbiguousPathTargetError) {
+  if (
+    resolvedTarget instanceof AmbiguousPathTargetError ||
+    resolvedTarget instanceof SegmentTargetForbiddenError
+  ) {
     return resolvedTarget;
   }
 
