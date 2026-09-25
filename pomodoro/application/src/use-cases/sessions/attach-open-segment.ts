@@ -9,6 +9,7 @@ import type { SessionForbiddenError } from "../../errors/session-forbidden.js";
 import type { SessionNotActiveError } from "../../errors/session-not-active.js";
 import type { NoOpenSegmentError } from "../../errors/no-open-segment.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
+import { SegmentTargetForbiddenError } from "../../errors/segment-target-forbidden.js";
 import {
   resolveSegmentTarget,
   type SegmentTargetInput,
@@ -45,6 +46,7 @@ export const attachOpenSegment = async (
   | SessionNotActiveError
   | NoOpenSegmentError
   | AmbiguousPathTargetError
+  | SegmentTargetForbiddenError
 > => {
   const guard = await validateAndRequireActiveSessionWithOpenSegment(
     sessionRepository,
@@ -55,10 +57,13 @@ export const attachOpenSegment = async (
   const { openSegment } = guard;
 
   const resolvedTarget = await resolveSegmentTarget(
-    { learningPathMembershipPort },
+    { learningPathMembershipPort, currentUser },
     request.target,
   );
-  if (resolvedTarget instanceof AmbiguousPathTargetError) {
+  if (
+    resolvedTarget instanceof AmbiguousPathTargetError ||
+    resolvedTarget instanceof SegmentTargetForbiddenError
+  ) {
     return resolvedTarget;
   }
 
