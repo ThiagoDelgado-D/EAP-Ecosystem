@@ -213,6 +213,7 @@ describe("PomodoroController (integration)", () => {
       const pathId = await cryptoService.generateUUID();
       const nodeId = await cryptoService.generateUUID();
       const resourceId = await cryptoService.generateUUID();
+      membershipPort.grantNodeOwnership(pathId, nodeId, ownerId);
 
       const startResponse = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/sessions")
@@ -248,6 +249,7 @@ describe("PomodoroController (integration)", () => {
     test("switches target on a stub node (no linked resource yet)", async () => {
       const pathId = await cryptoService.generateUUID();
       const stubNodeId = await cryptoService.generateUUID();
+      membershipPort.grantNodeOwnership(pathId, stubNodeId, ownerId);
 
       const startResponse = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/sessions")
@@ -299,6 +301,7 @@ describe("PomodoroController (integration)", () => {
       const resourceId = await cryptoService.generateUUID();
       const pathId = await cryptoService.generateUUID();
       const nodeId = await cryptoService.generateUUID();
+      membershipPort.grantNodeOwnership(pathId, nodeId, ownerId);
 
       const startResponse = await request(app.getHttpServer())
         .post("/api/v1/pomodoro/sessions")
@@ -389,6 +392,7 @@ describe("PomodoroController (integration)", () => {
 
       const pathId = await cryptoService.generateUUID();
       const nodeId = await cryptoService.generateUUID();
+      membershipPort.grantNodeOwnership(pathId, nodeId, ownerId);
       const attachResponse = await request(app.getHttpServer())
         .patch(`/api/v1/pomodoro/sessions/${sessionId}/attach`)
         .set(authHeader())
@@ -879,6 +883,28 @@ describe("PomodoroController (integration)", () => {
         .expect(409);
 
       expect(ambiguousTargetResponse.body.candidates).toHaveLength(2);
+    });
+
+    test("Should return 403 when starting a session on a node from another user's learning path", async () => {
+      const strangersPathId = await cryptoService.generateUUID();
+      const strangersNodeId = await cryptoService.generateUUID();
+      membershipPort.grantNodeOwnership(strangersPathId, strangersNodeId, intruderId);
+
+      const forbiddenStartResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({
+          plannedMin: 25,
+          target: {
+            kind: "node",
+            learningPathId: strangersPathId,
+            learningPathNodeId: strangersNodeId,
+          },
+        })
+        .expect(403);
+
+      expect(forbiddenStartResponse.body).toEqual({});
+      expect(sessionRepository.sessions).toHaveLength(0);
     });
 
     test("Should return 403 when a different user tries to switch target", async () => {

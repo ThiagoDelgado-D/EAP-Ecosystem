@@ -1,10 +1,11 @@
-import type { UUID } from "domain-lib";
+import type { CurrentUser, UUID } from "domain-lib";
 import {
   SegmentTargetKind,
   type LearningPathMembershipPort,
   type Segment,
 } from "@pomodoro/domain";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
+import { SegmentTargetForbiddenError } from "../../errors/segment-target-forbidden.js";
 
 export type SegmentTargetInput =
   | { kind: typeof SegmentTargetKind.FREE }
@@ -47,17 +48,28 @@ export function segmentToResolvedTarget(segment: Segment): ResolvedSegmentTarget
 
 export interface ResolveSegmentTargetDependencies {
   learningPathMembershipPort: LearningPathMembershipPort;
+  currentUser: CurrentUser;
 }
 
 export const resolveSegmentTarget = async (
-  { learningPathMembershipPort }: ResolveSegmentTargetDependencies,
+  { learningPathMembershipPort, currentUser }: ResolveSegmentTargetDependencies,
   input: SegmentTargetInput,
-): Promise<ResolvedSegmentTarget | AmbiguousPathTargetError> => {
+): Promise<
+  ResolvedSegmentTarget | AmbiguousPathTargetError | SegmentTargetForbiddenError
+> => {
   if (input.kind === SegmentTargetKind.FREE) {
     return { targetKind: SegmentTargetKind.FREE };
   }
 
   if (input.kind === SegmentTargetKind.NODE) {
+    const owned = await learningPathMembershipPort.verifyNodeOwnership(
+      input.learningPathId,
+      input.learningPathNodeId,
+      currentUser.id,
+    );
+    if (!owned) {
+      return new SegmentTargetForbiddenError();
+    }
     return {
       targetKind: SegmentTargetKind.NODE,
       learningPathId: input.learningPathId,
@@ -69,6 +81,7 @@ export const resolveSegmentTarget = async (
   if (input.learningPathId) {
     const memberships = await learningPathMembershipPort.findPathsForResource(
       input.resourceId,
+      currentUser.id,
     );
     const match = memberships.find((m) => m.pathId === input.learningPathId);
     if (match) {
@@ -87,6 +100,7 @@ export const resolveSegmentTarget = async (
 
   const memberships = await learningPathMembershipPort.findPathsForResource(
     input.resourceId,
+    currentUser.id,
   );
 
   if (memberships.length === 0) {

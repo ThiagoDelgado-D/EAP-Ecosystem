@@ -14,6 +14,7 @@ import type {
 } from "@pomodoro/domain";
 import { SessionAlreadyActiveError } from "../../errors/session-already-active.js";
 import { AmbiguousPathTargetError } from "../../errors/ambiguous-path-target.js";
+import { SegmentTargetForbiddenError } from "../../errors/segment-target-forbidden.js";
 import {
   resolveSegmentTarget,
   type SegmentTargetInput,
@@ -52,6 +53,7 @@ export const startSession = async (
   | InvalidDataError
   | SessionAlreadyActiveError
   | AmbiguousPathTargetError
+  | SegmentTargetForbiddenError
 > => {
   const validationResult = await startSessionSchema(request);
   if (validationResult instanceof ValidationError) {
@@ -67,10 +69,13 @@ export const startSession = async (
   }
 
   const resolvedTarget = await resolveSegmentTarget(
-    { learningPathMembershipPort },
+    { learningPathMembershipPort, currentUser },
     request.target,
   );
-  if (resolvedTarget instanceof AmbiguousPathTargetError) {
+  if (
+    resolvedTarget instanceof AmbiguousPathTargetError ||
+    resolvedTarget instanceof SegmentTargetForbiddenError
+  ) {
     return resolvedTarget;
   }
 
