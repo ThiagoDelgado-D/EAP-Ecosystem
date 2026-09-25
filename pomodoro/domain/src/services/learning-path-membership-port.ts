@@ -7,5 +7,13 @@ export interface LearningPathMembership {
 }
 
 export interface LearningPathMembershipPort {
-  findPathsForResource(resourceId: UUID): Promise<LearningPathMembership[]>;
+  findPathsForResource(
+    resourceId: UUID,
+    userId: UUID,
+  ): Promise<LearningPathMembership[]>;
+  verifyNodeOwnership(
+    learningPathId: UUID,
+    learningPathNodeId: UUID,
+    userId: UUID,
+  ): Promise<boolean>;
 }
