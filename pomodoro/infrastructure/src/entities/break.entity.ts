@@ -8,12 +8,12 @@ export class BreakEntity {
   @Column("uuid")
   userId!: string;
 
-  @Column({ type: "timestamp" })
+  @Column({ type: "timestamptz" })
   startedAt!: Date;
 
   @Column("int")
   durationSec!: number;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: "timestamptz", nullable: true })
   endedAt!: Date | null;
 }
