@@ -510,12 +510,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:^21.2.19":
-  version: 21.2.19
-  resolution: "@angular/compiler@npm:21.2.19"
+"@angular/compiler@npm:^21.2.20":
+  version: 21.2.20
+  resolution: "@angular/compiler@npm:21.2.20"
   dependencies:
     tslib: "npm:^2.3.0"
-  checksum: 10c0/ae3993ed73a4731e1ccd84518fc20520273e6afd38cc040af0ef423c0b60d57fd4a72dbfb955009e6bb67a4119cd118d2fc82486e0b17924ce7f35ce0037da2f
+  checksum: 10c0/5c1ea9f3a43420897d7373b9701b78889f85c98f8397476ece105295b50ea01a41342ea9df2aae1190919c33cb428853acfbe217c856cb098f051b45aa877a0f
   languageName: node
   linkType: hard
 
@@ -7291,9 +7291,9 @@ __metadata:
   linkType: hard
 
 "hono@npm:^4.11.4":
-  version: 4.13.1
-  resolution: "hono@npm:4.13.1"
-  checksum: 10c0/83524961f806293464e6c3b31a7fd2ab8cd8e9cb66e65dea1fbbefb70744844c13b7409ed9b49b43e8543e5c0f1b851f2586fa759eea9da0b69503b58cd0d985
+  version: 4.13.7
+  resolution: "hono@npm:4.13.7"
+  checksum: 10c0/29672a94a4f2be7f3f4d959ad69808dd3bbc220909ca4f9660997022ff45d48ae71e42a460e417d808809d68110196f19359aaab2b14ae6a750331d789601b5a
   languageName: node
   linkType: hard
 
@@ -11982,7 +11982,7 @@ __metadata:
     "@angular/cdk": "npm:^21.2.6"
     "@angular/cli": "npm:^21.2.22"
     "@angular/common": "npm:^21.2.20"
-    "@angular/compiler": "npm:^21.2.19"
+    "@angular/compiler": "npm:^21.2.20"
     "@angular/compiler-cli": "npm:^21.1.0"
     "@angular/core": "npm:^21.2.20"
     "@angular/forms": "npm:^21.1.0"
