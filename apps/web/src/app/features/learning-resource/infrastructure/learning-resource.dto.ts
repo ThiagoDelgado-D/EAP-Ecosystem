@@ -1,12 +1,12 @@
 export interface LearningResourceDto {
-  id: string;
+  resourceId: string;
   title: string;
   difficulty: string;
   energyLevel: string;
   status: string;
   typeId: string;
   topicIds: string[];
-  estimatedDuration: { value: number; isEstimated: boolean };
+  estimatedDurationMinutes: number;
 }
 
 export interface LearningResourceByIdDto {
