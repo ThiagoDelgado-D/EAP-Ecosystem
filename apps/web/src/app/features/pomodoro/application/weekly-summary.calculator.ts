@@ -44,7 +44,12 @@ function segmentDurationSec(segment: Segment): number {
   return Math.max(0, (segment.endSec ?? segment.startSec) - segment.startSec);
 }
 
-function weekTotals(sessions: Session[], segments: Segment[], breaks: Break[], now: Date): WeekTotals {
+function breakDurationSec(activeBreak: Break): number {
+  if (!activeBreak.endedAt) return activeBreak.durationSec;
+  return Math.max(0, (activeBreak.endedAt.getTime() - activeBreak.startedAt.getTime()) / 1000);
+}
+
+function weekTotals(sessions: Session[], segments: Segment[], breaks: Break[]): WeekTotals {
   const sessionIds = new Set(sessions.map((session) => session.id));
   const weekSegments = segments.filter((segment) => sessionIds.has(segment.sessionId));
 
@@ -56,11 +61,7 @@ function weekTotals(sessions: Session[], segments: Segment[], breaks: Break[], n
   const sessionCount = sessions.length;
   const avgSessionSec = sessionCount === 0 ? 0 : totalSec / sessionCount;
 
-  const breakTotalSec = breaks.reduce(
-    (sum, activeBreak) =>
-      sum + Math.max(0, ((activeBreak.endedAt ?? now).getTime() - activeBreak.startedAt.getTime()) / 1000),
-    0,
-  );
+  const breakTotalSec = breaks.reduce((sum, activeBreak) => sum + breakDurationSec(activeBreak), 0);
 
   return {
     focus: { totalSec, sessionCount, avgSessionSec, activeDays, unattributedSec },
@@ -127,9 +128,7 @@ export function computeWeeklySummary(history: HistorySnapshot, now: Date = new D
   const sessionsByWeek = bucketByWeek(history.sessions, thisWeekStart, (session) => session.startedAt);
   const breaksByWeek = bucketByWeek(history.breaks, thisWeekStart, (activeBreak) => activeBreak.startedAt);
 
-  const weeks = sessionsByWeek.map((sessions, index) =>
-    weekTotals(sessions, history.segments, breaksByWeek[index]!, now),
-  );
+  const weeks = sessionsByWeek.map((sessions, index) => weekTotals(sessions, history.segments, breaksByWeek[index]!));
 
   const thisWeek = weeks[0]!;
   const priorWeeks = weeks.slice(1);
@@ -223,10 +222,7 @@ export function buildWeekDayLog(history: HistorySnapshot, now: Date = new Date()
     const index = dayIndex(activeBreak.startedAt, windowStart);
     if (index < 0 || index >= DAYS_PER_WEEK) continue;
 
-    days[index]!.breakSec += Math.max(
-      0,
-      ((activeBreak.endedAt ?? now).getTime() - activeBreak.startedAt.getTime()) / 1000,
-    );
+    days[index]!.breakSec += breakDurationSec(activeBreak);
   }
 
   for (const day of days) {

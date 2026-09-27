@@ -214,14 +214,14 @@ export class LearningResourceService {
       return 'Pending';
     };
     return {
-      id: dto.id,
+      id: dto.resourceId,
       title: dto.title,
       difficulty: capitalize(dto.difficulty) as DifficultyLevel,
       energyLevel: capitalize(dto.energyLevel) as EnergyLevel,
       status: toStatus(dto.status),
       typeId: dto.typeId,
       topicIds: dto.topicIds,
-      estimatedDuration: dto.estimatedDuration,
+      estimatedDuration: { value: dto.estimatedDurationMinutes, isEstimated: true },
       createdAt: new Date(),
       updatedAt: new Date(),
     };

@@ -531,6 +531,21 @@ describe("getResourcesByFilter", () => {
     );
 
     expect(result.total).toBe(6);
-    expect(result.resources.every((r) => r.userId === currentUser.id)).toBe(true);
+    expect(result.resources.some((r) => r.title === "Someone Else's Resource")).toBe(false);
+  });
+
+  test("Should report the response shape with resourceId and flat estimatedDurationMinutes, matching getResourceById", async () => {
+    const result = await getResourcesByFilter(
+      { learningResourceRepository, currentUser },
+      { filters: { q: "typescript basics" } },
+    );
+
+    expect(result.resources).toHaveLength(1);
+    const [resource] = result.resources;
+    expect(resource).not.toHaveProperty("id");
+    expect(resource).not.toHaveProperty("userId");
+    expect(resource).not.toHaveProperty("estimatedDuration");
+    expect(resource.resourceId).toBeDefined();
+    expect(resource.estimatedDurationMinutes).toBe(30);
   });
 });
