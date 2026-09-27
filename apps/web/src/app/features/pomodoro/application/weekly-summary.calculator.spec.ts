@@ -149,6 +149,22 @@ describe('computeWeeklySummary', () => {
     expect(summary.thisWeek.break.breakCount).toBe(1);
   });
 
+  test('should fall back to the allocated durationSec for a break missing endedAt, instead of counting elapsed time up to now', () => {
+    const thisWeekSession = buildSession(daysBefore(now, 1));
+    const priorWeekSession = buildSession(daysBefore(now, 8));
+    const abandonedBreak = buildBreak(daysBefore(now, 8), 300);
+    abandonedBreak.endedAt = undefined;
+
+    const history: HistorySnapshot = {
+      sessions: [thisWeekSession, priorWeekSession],
+      segments: [],
+      breaks: [abandonedBreak],
+    };
+
+    const summary = computeWeeklySummary(history, now);
+    expect(summary.delta?.breakTotalSec.baseline).toBe(300);
+  });
+
   test('should keep the top two observations when more than two clear their threshold', () => {
     const thisWeekSessions = [0, 1, 2, 3].map((offset) => buildSession(daysBefore(now, offset)));
     const priorWeekSession = buildSession(daysBefore(now, 8));
@@ -211,6 +227,17 @@ describe('buildWeekDayLog', () => {
     const days = buildWeekDayLog(history, now);
 
     expect(days.every((day) => day.sessionCount === 0 && day.breakSec === 0)).toBe(true);
+  });
+
+  test('should fall back to the allocated durationSec for a break missing endedAt', () => {
+    const abandonedBreak = buildBreak(daysBefore(now, 1), 300);
+    abandonedBreak.endedAt = undefined;
+    const history: HistorySnapshot = { sessions: [], segments: [], breaks: [abandonedBreak] };
+
+    const days = buildWeekDayLog(history, now);
+    const yesterday = days[5]!;
+
+    expect(yesterday.breakSec).toBe(300);
   });
 
   test('should order same-day sessions chronologically regardless of input order', () => {
