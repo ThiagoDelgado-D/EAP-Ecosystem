@@ -1,26 +1,39 @@
-import { defineConfig, mergeConfig } from "vitest/config";
-import { resolve } from "node:path";
-import { baseNodeVitestConfig } from "../../shared/domain-lib/src/testing/index.js";
+import { defineConfig } from "vitest/config";
+import { resolve } from "path";
 
-export default mergeConfig(
-  baseNodeVitestConfig(),
-  defineConfig({
-    test: {
-      name: "learning-resource-infrastructure",
+export default defineConfig({
+  test: {
+    name: "learning-resource-infrastructure",
+    root: "./",
+    globals: true,
+    environment: "node",
+    passWithNoTests: true,
+    exclude: ["dist/**", "node_modules/**"],
+    coverage: {
+      provider: "v8",
+      exclude: [
+        "**/index.ts",
+        "dist/**",
+        "node_modules/**",
+        "**/*.spec.ts",
+        "**/*.test.ts",
+        "**/mocks/**",
+      ],
+      reporter: ["text", "json", "html"],
     },
-    resolve: {
-      alias: {
-        "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
-        "infrastructure-lib": resolve(
-          __dirname,
-          "../../shared/infrastructure-lib/src",
-        ),
-        "@learning-resource/domain": resolve(__dirname, "../domain/src"),
-        "@learning-resource/application": resolve(
-          __dirname,
-          "../application/src",
-        ),
-      },
+  },
+  resolve: {
+    alias: {
+      "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
+      "infrastructure-lib": resolve(
+        __dirname,
+        "../../shared/infrastructure-lib/src",
+      ),
+      "@learning-resource/domain": resolve(__dirname, "../domain/src"),
+      "@learning-resource/application": resolve(
+        __dirname,
+        "../application/src",
+      ),
     },
-  }),
-);
+  },
+});

@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { baseNodeVitestConfig } from "../../shared/domain-lib/src/testing/index.js";
 
 export default mergeConfig(
-  baseNodeVitestConfig(),
+  baseNodeVitestConfig,
   defineConfig({
     test: {
       name: "pomodoro-application",
