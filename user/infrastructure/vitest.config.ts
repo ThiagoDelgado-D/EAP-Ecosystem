@@ -1,31 +1,18 @@
-import { defineConfig } from "vitest/config";
-import { resolve } from "path";
+import { defineConfig, mergeConfig } from "vitest/config";
+import { resolve } from "node:path";
+import { baseNodeVitestConfig } from "../../shared/domain-lib/src/testing/index.js";
 
-export default defineConfig({
-  test: {
-    name: "user-infrastructure",
-    root: "./",
-    globals: true,
-    environment: "node",
-    exclude: ["dist/**", "node_modules/**"],
-    coverage: {
-      provider: "v8",
-      exclude: [
-        "**/index.ts",
-        "dist/**",
-        "node_modules/**",
-        "**/*.spec.ts",
-        "**/*.test.ts",
-        "**/mocks/**",
-      ],
-      reporter: ["text", "json", "html"],
+export default mergeConfig(
+  baseNodeVitestConfig(),
+  defineConfig({
+    test: {
+      name: "user-infrastructure",
     },
-    passWithNoTests: true,
-  },
-  resolve: {
-    alias: {
-      "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
-      "@user/domain": resolve(__dirname, "../domain/src"),
+    resolve: {
+      alias: {
+        "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
+        "@user/domain": resolve(__dirname, "../domain/src"),
+      },
     },
-  },
-});
+  }),
+);
