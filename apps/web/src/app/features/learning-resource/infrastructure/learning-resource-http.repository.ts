@@ -205,14 +205,14 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
 
   private toDomain(dto: LearningResourceDto): LearningResource {
     return {
-      id: dto.id,
+      id: dto.resourceId,
       title: dto.title,
       difficulty: this.capitalizeDifficulty(dto.difficulty),
       energyLevel: this.capitalizeEnergyLevel(dto.energyLevel),
       status: this.capitalizeStatus(dto.status),
       typeId: dto.typeId,
       topicIds: dto.topicIds,
-      estimatedDuration: dto.estimatedDuration,
+      estimatedDuration: { value: dto.estimatedDurationMinutes, isEstimated: true },
       createdAt: new Date(),
       updatedAt: new Date(),
     };
