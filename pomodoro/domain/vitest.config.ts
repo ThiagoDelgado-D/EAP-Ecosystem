@@ -11,6 +11,10 @@ export default mergeConfig(
     resolve: {
       alias: {
         "domain-lib": resolve(__dirname, "../../shared/domain-lib/src"),
+        "@learning-resource/domain": resolve(
+          __dirname,
+          "../../learning-resource/domain/src",
+        ),
       },
     },
   }),
