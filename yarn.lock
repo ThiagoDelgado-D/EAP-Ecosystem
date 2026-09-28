@@ -3026,7 +3026,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recommendation/application@workspace:recommendation/application":
+"@recommendation/application@workspace:^, @recommendation/application@workspace:recommendation/application":
   version: 0.0.0-use.local
   resolution: "@recommendation/application@workspace:recommendation/application"
   dependencies:
@@ -3051,7 +3051,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recommendation/infrastructure@workspace:recommendation/infrastructure":
+"@recommendation/infrastructure@workspace:^, @recommendation/infrastructure@workspace:recommendation/infrastructure":
   version: 0.0.0-use.local
   resolution: "@recommendation/infrastructure@workspace:recommendation/infrastructure"
   dependencies:
@@ -5001,6 +5001,9 @@ __metadata:
     "@pomodoro/application": "workspace:^"
     "@pomodoro/domain": "workspace:^"
     "@pomodoro/infrastructure": "workspace:^"
+    "@recommendation/application": "workspace:^"
+    "@recommendation/domain": "workspace:^"
+    "@recommendation/infrastructure": "workspace:^"
     "@types/express": "npm:^5.0.6"
     "@types/jest": "npm:^30.0.0"
     "@types/node": "npm:^22.10.7"
