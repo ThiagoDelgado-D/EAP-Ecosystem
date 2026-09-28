@@ -37,6 +37,9 @@
       ],
       "@user/infrastructure": [
         "user/infrastructure/src/index.ts"
+      ],
+      "@recommendation/domain": [
+        "recommendation/domain/src/index.ts"
       ]
     },
     "target": "ES2023",
