@@ -28,6 +28,11 @@ const config = {
     "^@user/domain$": "<rootDir>/../../user/domain/src",
     "^@user/application$": "<rootDir>/../../user/application/src",
     "^@user/infrastructure$": "<rootDir>/../../user/infrastructure/src",
+    "^@recommendation/domain$": "<rootDir>/../../recommendation/domain/src",
+    "^@recommendation/application$":
+      "<rootDir>/../../recommendation/application/src",
+    "^@recommendation/infrastructure$":
+      "<rootDir>/../../recommendation/infrastructure/src",
     "^domain-lib$": "<rootDir>/../../shared/domain-lib/src",
     "^infrastructure-lib$": "<rootDir>/../../shared/infrastructure-lib/src",
     "^(\\.{1,2}/.+)\\.js$": "$1",
