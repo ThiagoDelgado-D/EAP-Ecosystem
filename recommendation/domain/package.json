@@ -1,0 +1,28 @@
+{
+  "name": "@recommendation/domain",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "packageManager": "yarn@4.9.2",
+  "dependencies": {
+    "domain-lib": "workspace:^"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./entities": "./dist/entities/index.js",
+    "./repositories": "./dist/repositories/index.js",
+    "./services": "./dist/services/index.js"
+  },
+  "devDependencies": {
+    "@learning-resource/domain": "workspace:^",
+    "@vitest/coverage-v8": "4.0.13",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  },
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "build": "tsc -p tsconfig.build.json",
+    "type-check": "tsc --noEmit"
+  }
+}
