@@ -7,6 +7,7 @@ import type {
 } from "@learning-resource/application";
 import type { UserDomainError } from "@user/application";
 import type { PomodoroDomainError } from "@pomodoro/application";
+import type { RecommendationDomainError } from "@recommendation/application";
 
 type AppDomainError =
   | LearningResourceDomainError
@@ -14,7 +15,8 @@ type AppDomainError =
   | LearningPathDomainError
   | LearningPathNodeDomainError
   | LearningPathEdgeDomainError
-  | PomodoroDomainError;
+  | PomodoroDomainError
+  | RecommendationDomainError;
 type ErrorName = AppDomainError["name"];
 
 const httpStatusMap: Record<ErrorName, number> = {
@@ -45,6 +47,7 @@ const httpStatusMap: Record<ErrorName, number> = {
   BREAK_NOT_FOUND_ERROR: 404,
   BREAK_FORBIDDEN_ERROR: 403,
   BREAK_NOT_ACTIVE_ERROR: 409,
+  RECOMMENDATION_CONTEXT_NOT_FOUND_ERROR: 404,
 };
 
 export function toHttpException(error: AppDomainError): never {
