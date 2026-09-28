@@ -21,6 +21,7 @@ import {
   SegmentEntity as PomodoroSegmentEntity,
   BreakEntity as PomodoroBreakEntity,
 } from "@pomodoro/infrastructure";
+import { RecommendationContextEntity } from "@recommendation/infrastructure";
 
 config({ path: "../../apps/api/.env" });
 
@@ -46,6 +47,7 @@ export const AppDataSource = new DataSource({
     PomodoroSessionEntity,
     PomodoroSegmentEntity,
     PomodoroBreakEntity,
+    RecommendationContextEntity,
   ],
   migrations: ["src/database/migrations/*.ts"],
   synchronize: false,
