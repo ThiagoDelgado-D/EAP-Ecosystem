@@ -3,5 +3,5 @@ import type { RecommendationContext } from "../entities/recommendation-context.j
 
 export interface IRecommendationContextRepository {
   findByUserId(userId: UUID): Promise<RecommendationContext | null>;
-  upsert(context: RecommendationContext): Promise<RecommendationContext>;
+  save(context: RecommendationContext): Promise<RecommendationContext>;
 }
