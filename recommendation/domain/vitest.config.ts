@@ -6,7 +6,7 @@ export default mergeConfig(
   baseNodeVitestConfig({ excludeMocks: false }),
   defineConfig({
     test: {
-      name: "pomodoro-domain",
+      name: "recommendation-domain",
     },
     resolve: {
       alias: {

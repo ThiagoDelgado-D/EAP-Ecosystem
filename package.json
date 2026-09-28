@@ -17,7 +17,8 @@
     "pomodoro/infrastructure",
     "user/domain",
     "user/application",
-    "user/infrastructure"
+    "user/infrastructure",
+    "recommendation/domain"
   ],
   "resolutions": {
     "multer": "^2.3.0",

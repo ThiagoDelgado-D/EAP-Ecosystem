@@ -3005,6 +3005,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@pomodoro/domain@workspace:pomodoro/domain"
   dependencies:
+    "@learning-resource/domain": "workspace:^"
     "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
     typescript: "npm:^5.9.3"
@@ -3020,6 +3021,18 @@ __metadata:
     "@vitest/coverage-v8": "npm:4.0.13"
     domain-lib: "workspace:^"
     typeorm: "npm:^0.3.31"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^4.1.11"
+  languageName: unknown
+  linkType: soft
+
+"@recommendation/domain@workspace:recommendation/domain":
+  version: 0.0.0-use.local
+  resolution: "@recommendation/domain@workspace:recommendation/domain"
+  dependencies:
+    "@learning-resource/domain": "workspace:^"
+    "@vitest/coverage-v8": "npm:4.0.13"
+    domain-lib: "workspace:^"
     typescript: "npm:^5.9.3"
     vitest: "npm:^4.1.11"
   languageName: unknown
