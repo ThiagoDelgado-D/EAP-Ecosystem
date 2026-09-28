@@ -9,8 +9,9 @@ import {
   LearningPathNodeEntity,
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
-import { In, type Repository } from "typeorm";
+import { type Repository } from "typeorm";
 import { arePrerequisitesDone } from "../learning-path/learning-path-prerequisites.js";
+import { loadActivePathGraph } from "../learning-path/learning-path-graph-loader.js";
 
 export class TypeOrmLearningPathCandidatesAdapter implements LearningPathCandidatesPort {
   constructor(
@@ -23,29 +24,16 @@ export class TypeOrmLearningPathCandidatesAdapter implements LearningPathCandida
   async findActivePathCandidates(
     userId: UUID,
   ): Promise<LearningPathNodeCandidate[]> {
-    const paths = await this.pathRepository.find({ where: { userId } });
-    if (paths.length === 0) return [];
-    const pathIds = paths.map((path) => path.id);
-
-    const [nodes, edges] = await Promise.all([
-      this.nodeRepository.find({ where: { pathId: In(pathIds) } }),
-      this.edgeRepository.find({ where: { pathId: In(pathIds) } }),
-    ]);
-
-    const resourceIds = nodes
-      .map((node) => node.learningResourceId)
-      .filter((id): id is string => !!id);
-    const resources = resourceIds.length
-      ? await this.resourceRepository.find({ where: { id: In(resourceIds) } })
-      : [];
-    const resourceById = new Map(
-      resources.map((resource) => [resource.id, resource]),
+    const graph = await loadActivePathGraph(
+      userId,
+      this.pathRepository,
+      this.nodeRepository,
+      this.edgeRepository,
+      this.resourceRepository,
     );
-
-    const pathById = new Map(paths.map((path) => [path.id, path]));
-    const nodeById = new Map(nodes.map((node) => [node.id, node]));
-    const nodesByPathId = groupBy(nodes, (node) => node.pathId);
-    const edgesByPathId = groupBy(edges, (edge) => edge.pathId);
+    if (!graph) return [];
+    const { nodes, pathById, nodeById, nodesByPathId, edgesByPathId, resourceById } =
+      graph;
 
     const actionableNodes = nodes.filter((node) => {
       if (node.progress === "done") return false;
@@ -81,15 +69,4 @@ export class TypeOrmLearningPathCandidatesAdapter implements LearningPathCandida
       };
     });
   }
-}
-
-function groupBy<T>(items: T[], key: (item: T) => string): Map<string, T[]> {
-  const map = new Map<string, T[]>();
-  for (const item of items) {
-    const k = key(item);
-    const list = map.get(k) ?? [];
-    list.push(item);
-    map.set(k, list);
-  }
-  return map;
 }
