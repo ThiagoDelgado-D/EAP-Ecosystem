@@ -35,6 +35,15 @@
       ],
       "@user/infrastructure": [
         "user/infrastructure/src/index.ts"
+      ],
+      "@recommendation/domain": [
+        "recommendation/domain/src/index.ts"
+      ],
+      "@recommendation/application": [
+        "recommendation/application/src/index.ts"
+      ],
+      "@recommendation/infrastructure": [
+        "recommendation/infrastructure/src/index.ts"
       ]
     },
     "module": "NodeNext",
