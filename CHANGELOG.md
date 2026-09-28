@@ -1,9 +1,33 @@
 ## [Unreleased]
 
+### Added
+
+- `CurrentUser` adopted as an injected dependency across learning-resource, learning-path, and pomodoro (ADR-0026) — identity resolved once at the HTTP boundary instead of validated as caller-supplied payload
+- `LearningResource` gained a `userId` column and full per-owner scoping across its use cases
+- `resource-type` and `topic` controllers now require authentication
+
+### Fixed
+
+- Pomodoro node-target sessions: `LearningPathMembershipPort` now verifies real path/node ownership before trusting a caller-supplied target (previously an IDOR)
+- `pomodoro_sessions`/`pomodoro_breaks` timestamp columns migrated to `timestamptz`
+- `domain-error-mapper` no longer discards `error.name` from the HTTP response body
+- `startBreak` now rejects starting a break while a session is already active
+- `DELETE /auth/sessions/:id` validates the session id as a UUID before querying, returning 400 instead of an unhandled 500
+- Weekly summary: an abandoned break missing `endedAt` no longer inflates a prior week's totals
+- `GET /learning-resources` list response now matches the detail endpoint's shape, and no longer leaks `userId`
+
+### Changed
+
+- All workspace `vitest.config.ts` files converged onto a shared `baseNodeVitestConfig` factory
+
+### Architecture Decision Records
+
+- ADR-0026: `CurrentUser` as an Injected Dependency
+
 ### Planned
 
-- Learning resources associated to authenticated user (data isolation per user) — not yet scheduled to a version
 - WebSocket gateway for cross-device session sync — Post-MVP
+- Recommendation Engine: persisted per-user context (energy, available time, mental state), ranked cross-module suggestions with explained reasons, coexisting with Pomodoro's own session-scoped suggestion mechanism — see ADR-0027 (v0.10.0)
 
 ---
 
