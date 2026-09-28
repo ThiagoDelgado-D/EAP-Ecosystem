@@ -19,7 +19,8 @@
     "user/application",
     "user/infrastructure",
     "recommendation/domain",
-    "recommendation/application"
+    "recommendation/application",
+    "recommendation/infrastructure"
   ],
   "resolutions": {
     "multer": "^2.3.0",
