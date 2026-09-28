@@ -43,6 +43,9 @@
       ],
       "@recommendation/application": [
         "recommendation/application/src/index.ts"
+      ],
+      "@recommendation/infrastructure": [
+        "recommendation/infrastructure/src/index.ts"
       ]
     },
     "target": "ES2023",
