@@ -3026,7 +3026,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@recommendation/domain@workspace:recommendation/domain":
+"@recommendation/application@workspace:recommendation/application":
+  version: 0.0.0-use.local
+  resolution: "@recommendation/application@workspace:recommendation/application"
+  dependencies:
+    "@faker-js/faker": "npm:^10.5.0"
+    "@recommendation/domain": "workspace:^"
+    "@vitest/coverage-v8": "npm:4.0.13"
+    domain-lib: "workspace:^"
+    typescript: "npm:^5.9.3"
+    vitest: "npm:^4.1.11"
+  languageName: unknown
+  linkType: soft
+
+"@recommendation/domain@workspace:^, @recommendation/domain@workspace:recommendation/domain":
   version: 0.0.0-use.local
   resolution: "@recommendation/domain@workspace:recommendation/domain"
   dependencies:
