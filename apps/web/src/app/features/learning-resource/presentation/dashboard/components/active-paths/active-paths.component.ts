@@ -24,4 +24,10 @@ export class ActivePathsComponent {
     if (total === 0) return 0;
     return Math.round(((path.stats?.done ?? 0) / total) * 100);
   }
+
+  trailDots(path: LearningPath): number[] {
+    const total = Math.min(8, Math.max(1, path.stats?.total ?? 0));
+    const done = path.stats?.done ?? 0;
+    return Array.from({ length: total }, (_, i) => (i < done ? 2 : i === done ? 1 : 0));
+  }
 }
