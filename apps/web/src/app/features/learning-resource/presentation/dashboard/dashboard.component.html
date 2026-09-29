@@ -1,32 +1,82 @@
-<div class="flex flex-col lg:grid lg:grid-cols-[1fr_300px] min-h-full">
-  <div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-5 lg:border-r lg:border-slate-800">
-    <app-system-check
-      [selectedEnergy]="selectedEnergy()"
-      [selectedMentalState]="selectedMentalState()"
-      (energyChange)="onEnergyChange($event)"
-      (mentalStateChange)="onMentalStateChange($event)"
-    />
+<div class="mx-auto w-full max-w-[86rem] px-4 sm:px-7 flex flex-col gap-6 pt-1 pb-4">
+  <header class="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="min-w-0">
+      <p class="eyebrow flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span>{{ todayLabel }}</span>
+        <span class="text-ink-ghost">/</span>
+        <span class="inline-flex items-center gap-1.5 text-energy-high">
+          {{ todayMinutes() }}m today
+        </span>
+      </p>
 
-    <div>
-      <p class="text-xs uppercase tracking-widest text-slate-500 mb-2 font-medium">Ideal Match</p>
+      <h1 class="display mt-3 text-[clamp(2.3rem,6.2vw,4.1rem)] font-semibold">
+        {{ greetingLabel }}, <span class="text-accent-ink">{{ displayName() }}</span>
+        <span class="block text-ink-body text-[clamp(1.4rem,3.4vw,2.2rem)] font-normal italic">
+          what makes sense right now?
+        </span>
+      </h1>
 
-      @if (loading()) {
-        <div class="rounded-xl border border-slate-800 bg-slate-900 h-56 animate-pulse"></div>
-      } @else if (error()) {
-        <div class="rounded-xl border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-400">
-          Failed to load recommendation. Check your API connection.
-        </div>
-      } @else {
+      <p class="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-body">
+        You have <span class="tnum font-semibold text-ink-strong">{{ pendingResourceCount() }}</span> pending
+        resources and
+        <span class="tnum font-semibold text-ink-strong">{{ catalogMinutes() }}m</span>
+        of material ahead. The engine ranks everything by the energy and time you actually have right now.
+      </p>
+    </div>
+
+    <app-quick-actions />
+  </header>
+
+  <div>
+    @if (loading() && !hasLoaded()) {
+      <div class="card h-56 animate-pulse"></div>
+    } @else if (error() && !hasLoaded()) {
+      <div class="card border-energy-high/40 bg-energy-high/20 p-4 text-sm text-energy-high">
+        Failed to load recommendation. Check your API connection.
+      </div>
+    } @else {
+      <div
+        class="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] transition-opacity duration-200"
+        [class.opacity-60]="loading()"
+      >
         <app-ideal-match
+          class="block h-full"
           [recommendation]="topRecommendation()"
           [resource]="topRecommendationResource()"
           [mentalState]="selectedMentalState()"
+          [secondary]="secondaryRecommendations()"
         />
-      }
-    </div>
+        <app-system-check
+          [selectedEnergy]="selectedEnergy()"
+          [selectedMentalState]="selectedMentalState()"
+          [selectedAvailableMinutes]="availableMinutes()"
+          [availableMinutesOptions]="AVAILABLE_MINUTES_OPTIONS"
+          (energyChange)="onEnergyChange($event)"
+          (mentalStateChange)="onMentalStateChange($event)"
+          (availableMinutesChange)="onAvailableMinutesChange($event)"
+        />
+      </div>
+    }
   </div>
 
-  <div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-5 border-t border-slate-800 lg:border-t-0">
+  <app-kpi-row
+    [pendingResourceCount]="pendingResourceCount()"
+    [inProgressCount]="inProgressCount()"
+    [catalogMinutes]="catalogMinutes()"
+    [weeklyFocusMinutes]="weeklyFocusMinutes()"
+    [weekDeltaPct]="weekDeltaPct()"
+    [weekDays]="weekDays()"
+    [streakDays]="streakDays()"
+    [goalMinutes]="goalMinutes"
+  />
+
+  <div class="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+    <app-continue-resources [resources]="continueResources()" />
     <app-active-paths />
+  </div>
+
+  <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <app-recent-activity [resources]="recentResources()" />
+    <app-topic-attention [topics]="topicLoad()" />
   </div>
 </div>
