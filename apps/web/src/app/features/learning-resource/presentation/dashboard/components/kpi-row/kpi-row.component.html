@@ -1,7 +1,7 @@
 <div class="card flex flex-col divide-y divide-line-soft overflow-hidden sm:flex-row sm:divide-x sm:divide-y-0">
   <div class="group relative p-5 transition-colors hover:bg-surface-overlay sm:flex-1">
     <p class="eyebrow mb-2">Live resources</p>
-    <p class="tnum text-[2rem] leading-none font-semibold text-ink-strong">{{ pendingResourceCount() + inProgressCount() }}</p>
+    <app-counter [value]="liveCount()" class="text-[2rem] leading-none font-semibold text-ink-strong" />
     <span class="mt-1 block text-[0.72rem] text-ink-dim">
       {{ inProgressCount() }} in progress &middot; {{ catalogLabel() }} ahead
     </span>
@@ -9,7 +9,7 @@
 
   <div class="group relative p-5 transition-colors hover:bg-surface-overlay sm:flex-1">
     <p class="eyebrow mb-2">Focus this week</p>
-    <p class="tnum text-[2rem] leading-none font-semibold text-ink-strong">{{ weeklyFocusLabel() }}</p>
+    <app-counter [value]="weeklyFocusHours()" suffix=" h" class="text-[2rem] leading-none font-semibold text-ink-strong" />
     <span class="mt-1 flex items-center gap-1.5 text-[0.72rem]">
       @if (weekDeltaPct() !== null) {
         <span
@@ -46,7 +46,7 @@
 
   <div class="group relative p-5 transition-colors hover:bg-surface-overlay sm:flex-1">
     <p class="eyebrow mb-2">Streak</p>
-    <p class="tnum text-[2rem] leading-none font-semibold text-ink-strong">{{ streakDays() }}d</p>
+    <app-counter [value]="streakDays()" suffix="d" class="text-[2rem] leading-none font-semibold text-ink-strong" />
     <span class="mt-1 block text-[0.72rem] text-ink-dim">days in a row with focus</span>
   </div>
 </div>
