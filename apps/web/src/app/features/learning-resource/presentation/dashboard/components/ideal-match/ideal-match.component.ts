@@ -1,5 +1,6 @@
 import { Component, input, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ScrambleComponent } from '@shared/components/scramble/scramble.component';
 import {
   LearningResource,
   MentalStateType,
@@ -15,7 +16,7 @@ function hashHue(title: string): number {
 @Component({
   selector: 'app-ideal-match',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, ScrambleComponent],
   templateUrl: './ideal-match.component.html',
 })
 export class IdealMatchComponent {
