@@ -1,46 +1,47 @@
 import { Component, input, output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-paginator',
   standalone: true,
-  imports: [FormsModule],
   template: `
-    <div class="border-t border-slate-800 pt-4 mt-2">
-      <div class="flex items-center justify-between text-sm text-slate-400">
+    @if (totalPages() > 1) {
+      <nav class="flex items-center justify-center gap-1.5 pt-4" aria-label="Pagination">
         <button
-          class="px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-slate-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          (click)="prev()"
+          type="button"
+          class="btn btn-outline btn-sm"
           [disabled]="currentPage() <= 1"
-          aria-label="Previous page"
+          (click)="prev()"
         >
           Previous
         </button>
-
-        <div class="flex items-center gap-3">
-          <span class="text-slate-400">Page {{ currentPage() }} of {{ totalPages() }}</span>
-          <select
-            class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
-            [ngModel]="pageSize()"
-            (ngModelChange)="pageSizeChange.emit($event)"
-            aria-label="Items per page"
-          >
-            @for (size of pageSizeOptions; track size) {
-              <option [ngValue]="size">{{ size }} per page</option>
-            }
-          </select>
-        </div>
-
+        @for (entry of pageEntries(); track $index) {
+          @if (entry === null) {
+            <span class="text-ink-faint">&hellip;</span>
+          } @else {
+            <button
+              type="button"
+              (click)="goTo(entry)"
+              [attr.aria-current]="entry === currentPage() ? 'page' : undefined"
+              [class]="
+                entry === currentPage()
+                  ? 'tnum grid h-8 w-8 place-items-center rounded-full text-[0.8rem] font-semibold bg-ink-strong text-surface-base transition-all'
+                  : 'tnum grid h-8 w-8 place-items-center rounded-full text-[0.8rem] font-semibold text-ink-dim hover:bg-surface-overlay hover:text-ink-strong transition-all'
+              "
+            >
+              {{ entry }}
+            </button>
+          }
+        }
         <button
-          class="px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-slate-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          (click)="next()"
+          type="button"
+          class="btn btn-outline btn-sm"
           [disabled]="currentPage() >= totalPages()"
-          aria-label="Next page"
+          (click)="next()"
         >
           Next
         </button>
-      </div>
-    </div>
+      </nav>
+    }
   `,
 })
 export class PaginatorComponent {
@@ -59,5 +60,25 @@ export class PaginatorComponent {
 
   next(): void {
     this.pageChange.emit(this.currentPage() + 1);
+  }
+
+  goTo(page: number): void {
+    this.pageChange.emit(page);
+  }
+
+  pageEntries(): (number | null)[] {
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const pages = new Set<number>([1, total]);
+    for (let p = current - 1; p <= current + 1; p += 1) {
+      if (p >= 1 && p <= total) pages.add(p);
+    }
+    const sorted = [...pages].sort((a, b) => a - b);
+    const entries: (number | null)[] = [];
+    sorted.forEach((p, i) => {
+      if (i > 0 && sorted[i - 1] !== p - 1) entries.push(null);
+      entries.push(p);
+    });
+    return entries;
   }
 }
