@@ -5,6 +5,7 @@ export interface TopicLoad {
   id: string;
   name: string;
   pendingMinutes: number;
+  color?: string;
 }
 
 function minutesLabel(minutes: number): string {
