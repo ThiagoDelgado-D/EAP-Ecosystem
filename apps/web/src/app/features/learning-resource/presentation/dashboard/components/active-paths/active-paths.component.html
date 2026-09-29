@@ -7,44 +7,63 @@
   </div>
 
   @if (activePaths().length) {
-    @for (path of activePaths(); track path.id) {
+    @for (item of activePaths(); track item.entry.path.id) {
       <a
-        [routerLink]="['/paths', path.id]"
+        [routerLink]="['/paths', item.entry.path.id]"
         class="card card-lift group relative overflow-hidden p-4"
       >
         <span class="accent-line"></span>
         <div class="flex items-start justify-between gap-3 pl-2">
           <div class="min-w-0">
-            <h3 class="display truncate text-[1.05rem] font-semibold">{{ path.title }}</h3>
+            <h3 class="display truncate text-[1.05rem] font-semibold">{{ item.entry.path.title }}</h3>
             <p class="mt-0.5 truncate text-[0.74rem] text-ink-dim">
-              {{ path.stats?.done ?? 0 }}/{{ path.stats?.total ?? 0 }} steps
+              {{ doneCount(item.nodes) }}/{{ item.nodes.length }} steps
             </p>
           </div>
           <span class="tnum shrink-0 text-[1.3rem] leading-none font-semibold text-accent-ink">
-            {{ progressPct(path) }}%
+            {{ progressPct(item.nodes) }}%
           </span>
         </div>
         <div class="mt-3 pl-2">
           <div class="relative w-full overflow-hidden rounded-full bg-surface-overlay" style="height: 5px">
             <div
               class="absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-700"
-              [style.width.%]="progressPct(path)"
+              [style.width.%]="progressPct(item.nodes)"
             ></div>
           </div>
         </div>
         <div class="mt-3 flex items-center gap-1 pl-2">
-          @for (dot of trailDots(path); track $index) {
+          @for (node of item.nodes.slice(0, 8); track node.id) {
             <span class="flex items-center gap-1">
               <span
-                class="h-2 w-2 rounded-full"
-                [style.background]="dot === 2 ? 'var(--color-accent)' : dot === 1 ? 'var(--tone-ochre, var(--color-accent))' : 'var(--color-line-strong)'"
+                class="h-2 w-2 rounded-full transition-transform duration-500 hover:scale-150"
+                [style.background]="
+                  node.progress === 'done'
+                    ? 'var(--color-accent)'
+                    : node.progress === 'in_progress'
+                      ? 'var(--tone-ochre, var(--color-accent))'
+                      : 'var(--color-line-strong)'
+                "
+                [title]="node.title"
               ></span>
               @if (!$last) {
                 <span class="h-px w-3 bg-line-soft"></span>
               }
             </span>
           }
+          @if (item.nodes.length > 8) {
+            <span class="text-[0.66rem] text-ink-faint">+{{ item.nodes.length - 8 }}</span>
+          }
         </div>
+        @if (nextNode(item.nodes); as next) {
+          <p class="mt-2 flex items-center gap-1.5 pl-2 text-[0.74rem] text-ink-body">
+            <span class="font-semibold text-accent-ink">next</span>
+            <span class="truncate">{{ next.title }}</span>
+            <span class="shrink-0 text-ink-faint transition-transform duration-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">&#8599;</span>
+          </p>
+        } @else {
+          <p class="mt-2 pl-2 text-[0.74rem] text-accent-ink">Path complete</p>
+        }
       </a>
     }
   } @else {
