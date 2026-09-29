@@ -1,135 +1,132 @@
-<div class="relative rounded-xl border border-line-hairline overflow-hidden min-h-52 bg-surface-base">
-  @if (displayResource().imageUrl) {
-    <img
-      [src]="displayResource().imageUrl"
-      alt=""
-      aria-hidden="true"
-      class="absolute inset-0 w-full h-full object-cover opacity-30"
-    />
-  } @else {
-    <svg
-      class="absolute inset-0 w-full h-full opacity-20"
-      viewBox="0 0 600 220"
-      preserveAspectRatio="xMidYMid slice"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <radialGradient id="rg" cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stop-color="#7c3aed" stop-opacity=".7" />
-          <stop offset="100%" stop-color="#7c3aed" stop-opacity="0" />
-        </radialGradient>
-      </defs>
-      <rect width="600" height="220" fill="#050a18" />
-      <ellipse cx="300" cy="110" rx="200" ry="120" fill="url(#rg)" />
-      <path
-        d="M100,110 Q200,50 300,110 Q400,170 500,110"
-        stroke="#7c3aed"
-        stroke-width=".8"
-        fill="none"
-      />
-      <path
-        d="M80,110 Q190,30 300,110 Q410,190 520,110"
-        stroke="#7c3aed"
-        stroke-width=".5"
-        fill="none"
-        opacity=".6"
-      />
-      <path
-        d="M60,110 Q180,15 300,110 Q420,205 540,110"
-        stroke="#7c3aed"
-        stroke-width=".3"
-        fill="none"
-        opacity=".4"
-      />
-    </svg>
-  }
-
+<div class="card relative overflow-hidden p-6 sm:p-7 h-full">
   <div
-    class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"
+    class="pointer-events-none absolute -top-28 -left-20 h-72 w-72 rounded-full blur-3xl breathe"
+    style="background: color-mix(in oklab, var(--color-accent) 22%, transparent)"
   ></div>
 
-  <div class="relative z-10 p-5 flex flex-col h-full justify-end">
-    <div class="flex items-center gap-2 mb-2 flex-wrap">
-      @if (displayResource().score !== null) {
-        <span
-          class="inline-flex items-center gap-1.5 border border-violet-700/60 bg-violet-950/50 rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-300"
-        >
-          <span class="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0"></span>
-          Match score {{ displayResource().score }}
-        </span>
-      }
-      <app-enum-badge [value]="mentalState()" [options]="mentalStateOptions" [readonly]="true" />
-      @if (displayResource().duration !== null) {
-        <span class="badge bg-line-soft border-line-strong text-ink-dim">{{ displayResource().duration }}m</span>
-      }
+  <div class="relative flex items-start justify-between gap-4">
+    <div>
+      <p class="eyebrow flex items-center gap-1.5">Suggestion engine</p>
+      <h2 class="display mt-2 text-[clamp(1.7rem,3.4vw,2.5rem)] font-semibold">
+        {{ displayResource().title }}
+      </h2>
+    </div>
+    @if (displayResource().score !== null) {
+      <div class="relative grid place-items-center shrink-0" style="width: 74px; height: 74px">
+        <svg width="74" height="74" viewBox="0 0 74 74" class="-rotate-90">
+          <circle cx="37" cy="37" [attr.r]="ringR" fill="none" stroke-width="7" class="ring-track" />
+          <circle
+            cx="37"
+            cy="37"
+            [attr.r]="ringR"
+            fill="none"
+            stroke-width="7"
+            [attr.stroke]="ringTone()"
+            [attr.stroke-dasharray]="ringC"
+            [attr.stroke-dashoffset]="ringOffset()"
+            class="ring-value"
+          />
+        </svg>
+        <div class="absolute inset-0 grid place-items-center text-center">
+          <div class="flex flex-col items-center">
+            <span class="tnum text-[1.15rem] leading-none font-bold text-ink-strong">{{ displayResource().score }}</span>
+            <span class="text-[0.52rem] tracking-[0.1em] text-ink-faint uppercase">score</span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (displayResource().resource) {
+    <div class="relative mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.78rem] text-ink-dim">
+      <span class="font-semibold text-ink-body">{{ displayResource().kindLabel }}</span>
+      <span>&middot; {{ displayResource().duration }}m</span>
+      <span>&middot; {{ displayResource().energyLabel }} energy</span>
+      <span>&middot; difficulty {{ displayResource().difficulty }}</span>
     </div>
 
-    <h3 class="t-display text-[17px] mb-1">
-      {{ displayResource().title }}
-    </h3>
-
     @if (displayResource().why.length) {
-      <ul class="text-xs text-slate-400 leading-relaxed mb-4 flex flex-col gap-1">
-        @for (reason of displayResource().why; track reason) {
-          <li class="flex items-start gap-1.5">
-            <span class="text-violet-500 leading-[1.4]">&middot;</span>
-            <span>{{ reason }}</span>
+      <ul class="relative mt-4 flex flex-col gap-1.5">
+        @for (reason of displayResource().why; track reason; let i = $index) {
+          <li class="flex items-start gap-2.5 text-[0.84rem] leading-snug text-ink-body">
+            <span
+              class="tnum mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full text-[0.58rem] font-bold"
+              style="background: var(--tone-ochre-soft, color-mix(in oklab, var(--color-accent) 14%, transparent)); color: var(--color-accent-ink)"
+            >
+              {{ i + 1 }}
+            </span>
+            {{ reason }}
           </li>
         }
       </ul>
     } @else if (displayResource().desc) {
-      <p class="text-xs text-slate-400 leading-relaxed mb-4 line-clamp-2">
+      <p class="relative mt-4 text-[0.84rem] leading-snug text-ink-body line-clamp-2">
         {{ displayResource().desc }}
       </p>
-    } @else {
-      <p class="text-xs text-slate-500 leading-relaxed mb-4">
-        Set your context above to get a suggestion.
-      </p>
     }
-
-    <div class="flex items-center gap-2">
-      @if (displayResource().url) {
-        <a
-          [href]="displayResource().url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-mono text-xs font-semibold px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap shrink-0"
-        >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="white">
-            <polygon points="5,3 19,12 5,21" />
-          </svg>
-          Start Learning
-        </a>
-      } @else {
-        <!-- No URL yet — button still looks clickable, disabled state -->
-        <button
-          type="button"
-          disabled
-          class="flex items-center gap-2 bg-violet-600/60 text-white/70 font-mono text-xs font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed whitespace-nowrap shrink-0"
-        >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="white">
-            <polygon points="5,3 19,12 5,21" />
-          </svg>
-          Start Learning
-        </button>
-      }
-
-      <button
-        type="button"
-        class="w-9 h-9 flex items-center justify-center rounded-lg bg-transparent border border-line-soft text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-all"
-        aria-label="Bookmark resource"
-      >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-        </svg>
-      </button>
+  } @else {
+    <div class="relative mt-6">
+      <p class="max-w-md text-[0.9rem] leading-relaxed text-ink-body">
+        Nothing fits this calibration yet. Widen the time, lower the bar, or capture something new.
+      </p>
     </div>
+  }
+
+  <div class="relative mt-6 flex flex-wrap items-center gap-2">
+    @if (displayResource().url) {
+      <a
+        [href]="displayResource().url"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-primary"
+      >
+        Focus now
+      </a>
+    } @else {
+      <button type="button" disabled class="btn btn-primary opacity-45 cursor-not-allowed">
+        Focus now
+      </button>
+    }
+    @if (displayResource().resource) {
+      <a [routerLink]="['/resources', displayResource().resource!.id]" class="btn btn-outline">
+        Open details
+      </a>
+    }
+    <span class="ml-auto"></span>
   </div>
+
+  @if (secondary().length) {
+    <div class="relative mt-7 border-t border-line-soft pt-4">
+      <p class="eyebrow mb-3">Second choices</p>
+      <ul class="flex flex-col gap-2">
+        @for (choice of secondary(); track choice.resourceId ?? choice.nodeId ?? choice.title; let i = $index) {
+          <li>
+            <div class="group flex items-center gap-3 rounded-[16px_5px_16px_5px] border border-transparent p-2 transition-all hover:border-line-soft hover:bg-surface-overlay">
+              <div
+                class="cover relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl text-lg"
+                [style]="coverStyle(choice.title)"
+                aria-hidden
+              >
+                <span class="relative z-10 font-display text-white/90">{{ choice.title.trim().charAt(0).toUpperCase() }}</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="block truncate text-[0.88rem] font-semibold text-ink-strong">
+                  {{ choice.title }}
+                </p>
+                <div class="mt-1 flex items-center gap-2">
+                  <div class="h-1 w-28 overflow-hidden rounded-full bg-line-soft">
+                    <div
+                      class="h-full rounded-full bg-accent transition-[width] duration-700"
+                      [style.width.%]="secondaryWidthPct(choice.score)"
+                    ></div>
+                  </div>
+                  <span class="tnum text-[0.66rem] text-ink-faint">{{ choice.score }}</span>
+                </div>
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  }
 </div>
