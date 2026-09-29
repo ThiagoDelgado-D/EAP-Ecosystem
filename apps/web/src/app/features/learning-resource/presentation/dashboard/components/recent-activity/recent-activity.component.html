@@ -1,0 +1,31 @@
+<div class="card p-5 h-full">
+  <p class="eyebrow">Recent activity</p>
+  @if (resources().length) {
+    <ol class="relative mt-4 flex flex-col gap-0">
+      <span class="absolute top-2 bottom-2 left-[7px] w-px bg-line-soft" aria-hidden></span>
+      @for (resource of resources(); track resource.id) {
+        <li class="relative flex items-start gap-4 py-2.5">
+          <span
+            class="relative z-10 mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border-2 border-surface-raised bg-accent"
+          ></span>
+          <div class="min-w-0 flex-1">
+            <a
+              [routerLink]="['/resources', resource.id]"
+              class="line-clamp-1 text-[0.88rem] font-semibold text-ink-strong hover:text-accent-ink transition-colors"
+            >
+              {{ resource.title }}
+            </a>
+            <p class="mt-0.5 text-[0.72rem] text-ink-dim">
+              {{ resource.status }} &middot; {{ relativeLabel(resource) }}
+            </p>
+          </div>
+          <span class="tnum shrink-0 text-[0.68rem] text-ink-faint">
+            {{ minutesLabel(resource.estimatedDuration.value) }}
+          </span>
+        </li>
+      }
+    </ol>
+  } @else {
+    <p class="mt-2 text-[0.9rem] text-ink-dim">No recent activity yet.</p>
+  }
+</div>
