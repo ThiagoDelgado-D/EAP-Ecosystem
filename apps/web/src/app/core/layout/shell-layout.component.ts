@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
+import { ThemeService } from '@core/theme/theme.service';
 
 @Component({
   selector: 'app-shell-layout',
@@ -15,6 +16,7 @@ export class ShellLayoutComponent implements OnInit {
   private readonly authHttp = inject(AuthHttpService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  readonly themeService = inject(ThemeService);
 
   readonly userInitials = this.authStore.userInitials;
   readonly displayName = this.authStore.displayName;
