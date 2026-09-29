@@ -1,0 +1,39 @@
+<div>
+  <div class="flex items-center justify-between mb-3">
+    <p class="text-xs uppercase tracking-widest text-slate-500 font-medium">Active Paths</p>
+    <a routerLink="/paths" class="text-xs text-violet-400 hover:text-violet-300 font-medium transition-colors">
+      View All
+    </a>
+  </div>
+
+  @if (activePaths().length) {
+    <div class="flex flex-col gap-2">
+      @for (path of activePaths(); track path.id) {
+        <a
+          [routerLink]="['/paths', path.id]"
+          class="flex flex-col gap-2 px-3 sm:px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 hover:bg-slate-800/60 transition-all"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-sm font-medium text-slate-200 truncate">{{ path.title }}</p>
+            <span class="text-[11px] font-bold text-slate-500 flex-shrink-0">{{ progressPct(path) }}%</span>
+          </div>
+
+          <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-violet-400 rounded-full transition-all"
+              [style.width.%]="progressPct(path)"
+            ></div>
+          </div>
+
+          <p class="text-[11px] text-slate-600">
+            <b class="text-slate-400 font-semibold">{{ path.stats?.done ?? 0 }}</b>/{{ path.stats?.total ?? 0 }} done
+          </p>
+        </a>
+      }
+    </div>
+  } @else {
+    <div class="rounded-xl border border-slate-800 bg-slate-900 p-4 text-xs text-slate-500">
+      No active paths yet.
+    </div>
+  }
+</div>
