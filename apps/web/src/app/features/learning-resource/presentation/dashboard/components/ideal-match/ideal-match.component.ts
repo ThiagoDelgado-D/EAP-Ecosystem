@@ -96,8 +96,16 @@ export class IdealMatchComponent {
     return Math.max(6, (score / this.maxSecondaryScore()) * 100);
   }
 
-  coverStyle(title: string): string {
+  coverStyle(title: string, score?: number): string {
     const hue = hashHue(title || 'eap');
-    return `--cover-h: ${hue}deg; --cover-a: var(--color-accent);`;
+    const tone =
+      score === undefined
+        ? 'var(--color-accent)'
+        : score > 70
+          ? 'var(--color-accent)'
+          : score > 45
+            ? 'var(--tone-ochre, var(--color-accent))'
+            : 'var(--tone-ember, var(--color-accent))';
+    return `--cover-h: ${hue}deg; --cover-a: ${tone};`;
   }
 }
