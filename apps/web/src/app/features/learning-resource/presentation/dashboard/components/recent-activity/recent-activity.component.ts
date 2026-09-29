@@ -31,6 +31,17 @@ export class RecentActivityComponent {
     return minutesLabel(minutes);
   }
 
+  dotColor(resource: LearningResource): string {
+    switch (resource.status) {
+      case 'Completed':
+        return 'var(--color-accent)';
+      case 'InProgress':
+        return 'var(--tone-info, var(--color-accent))';
+      default:
+        return 'var(--tone-slate, var(--color-line-strong))';
+    }
+  }
+
   relativeLabel(resource: LearningResource): string {
     return relativeTime(resource.lastViewed ?? resource.updatedAt);
   }
