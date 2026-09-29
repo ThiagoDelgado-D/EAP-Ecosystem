@@ -1,12 +1,19 @@
 export interface LearningResourceDto {
   resourceId: string;
   title: string;
+  url?: string | null;
+  imageUrl?: string | null;
+  notes?: string | null;
   difficulty: string;
   energyLevel: string;
+  mentalState?: string | null;
   status: string;
   typeId: string;
   topicIds: string[];
   estimatedDurationMinutes: number;
+  lastViewed?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface LearningResourceByIdDto {
