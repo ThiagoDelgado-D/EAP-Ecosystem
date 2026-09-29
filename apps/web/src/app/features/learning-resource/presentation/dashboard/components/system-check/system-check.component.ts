@@ -11,9 +11,10 @@ import {
 interface EnergyOption {
   value: EnergyLevel;
   label: string;
-  iconColor: string;
-  bgColor: string;
-  activeRing: string;
+  level: number;
+  tone: string;
+  hint: string;
+  activeStyle: string;
 }
 
 interface MentalStateOption {
@@ -29,31 +30,44 @@ interface MentalStateOption {
 export class SystemCheckComponent {
   readonly selectedEnergy = input.required<EnergyLevel>();
   readonly selectedMentalState = input.required<MentalStateType>();
+  readonly selectedAvailableMinutes = input.required<number>();
+  readonly availableMinutesOptions = input.required<readonly number[]>();
 
   readonly energyChange = output<EnergyLevel>();
   readonly mentalStateChange = output<MentalStateType>();
+  readonly availableMinutesChange = output<number>();
+
+  selectAvailableMinutes(value: number): void {
+    this.availableMinutesChange.emit(value);
+  }
 
   readonly energyOptions: EnergyOption[] = [
     {
       value: 'Low',
       label: 'Low',
-      iconColor: 'text-energy-low',
-      bgColor: 'bg-energy-low/10',
-      activeRing: 'border-energy-low/60',
+      level: 1,
+      tone: 'var(--color-accent)',
+      hint: 'Light reads and quick reviews',
+      activeStyle:
+        'background: color-mix(in oklab, var(--color-accent) 14%, var(--color-surface-raised)); border-color: color-mix(in oklab, var(--color-accent) 45%, transparent);',
     },
     {
       value: 'Medium',
       label: 'Medium',
-      iconColor: 'text-energy-medium',
-      bgColor: 'bg-energy-medium/10',
-      activeRing: 'border-energy-medium/60',
+      level: 2,
+      tone: 'var(--tone-ochre, var(--color-accent))',
+      hint: 'Steady progress on open work',
+      activeStyle:
+        'background: color-mix(in oklab, var(--tone-ochre, var(--color-accent)) 14%, var(--color-surface-raised)); border-color: color-mix(in oklab, var(--tone-ochre, var(--color-accent)) 45%, transparent);',
     },
     {
       value: 'High',
       label: 'High',
-      iconColor: 'text-energy-high',
-      bgColor: 'bg-energy-high/10',
-      activeRing: 'border-energy-high/60',
+      level: 3,
+      tone: 'var(--tone-ember, var(--color-accent))',
+      hint: 'Deep focus on hard material',
+      activeStyle:
+        'background: color-mix(in oklab, var(--tone-ember, var(--color-accent)) 14%, var(--color-surface-raised)); border-color: color-mix(in oklab, var(--tone-ember, var(--color-accent)) 45%, transparent);',
     },
   ];
 
