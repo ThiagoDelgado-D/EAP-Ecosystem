@@ -1,6 +1,7 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ScrambleComponent } from '@shared/components/scramble/scramble.component';
+import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import {
   LearningResource,
   MentalStateType,
@@ -13,10 +14,14 @@ function hashHue(title: string): number {
   return h;
 }
 
+function recKey(rec: ScoredRecommendation): string {
+  return rec.resourceId ?? rec.nodeId ?? rec.title;
+}
+
 @Component({
   selector: 'app-ideal-match',
   standalone: true,
-  imports: [RouterLink, ScrambleComponent],
+  imports: [RouterLink, ScrambleComponent, RevealDirective],
   templateUrl: './ideal-match.component.html',
 })
 export class IdealMatchComponent {
@@ -24,24 +29,48 @@ export class IdealMatchComponent {
   readonly resource = input<LearningResource | null>(null);
   readonly mentalState = input.required<MentalStateType>();
   readonly secondary = input<ScoredRecommendation[]>([]);
+  readonly catalogMinutes = input(0);
+
+  readonly discarded = signal<string[]>([]);
+
+  readonly ranked = computed(() => {
+    const top = this.recommendation();
+    const all = top ? [top, ...this.secondary()] : [...this.secondary()];
+    const skipped = new Set(this.discarded());
+    return all.filter((rec) => !skipped.has(recKey(rec)));
+  });
+
+  readonly effectiveTop = computed(() => this.ranked()[0] ?? null);
+  readonly effectiveSecondary = computed(() => this.ranked().slice(1));
 
   readonly displayResource = computed(() => {
-    const rec = this.recommendation();
+    const rec = this.effectiveTop();
     const r = this.resource();
-    const energyRaw = r?.energyLevel ?? 'Medium';
+    const matched = r && rec && rec.resourceId === r.id ? r : null;
+    const energyRaw = matched?.energyLevel ?? 'Medium';
     return {
-      title: rec?.title ?? r?.title ?? 'Quiet catalog',
-      desc: r?.notes ?? null,
-      duration: r?.estimatedDuration.value ?? null,
-      resource: r,
-      url: r?.url ?? null,
+      title: rec?.title ?? 'Quiet catalog',
+      desc: matched?.notes ?? null,
+      duration: matched?.estimatedDuration.value ?? null,
+      resource: matched,
+      url: matched?.url ?? null,
       score: rec?.score ?? null,
       why: rec?.why ?? [],
       kindLabel: 'Resource',
       energyLabel: energyRaw.toLowerCase(),
-      difficulty: r?.difficulty ?? '—',
+      difficulty: matched?.difficulty ?? '—',
     };
   });
+
+  dismissTop(): void {
+    const top = this.effectiveTop();
+    if (!top) return;
+    this.discarded.update((list) => [...list, recKey(top)]);
+  }
+
+  restoreDiscarded(): void {
+    this.discarded.set([]);
+  }
 
   readonly ringR = 30;
   readonly ringC = 2 * Math.PI * 30;
@@ -60,7 +89,7 @@ export class IdealMatchComponent {
   }
 
   maxSecondaryScore(): number {
-    return Math.max(1, ...this.secondary().map((s) => s.score));
+    return Math.max(1, ...this.effectiveSecondary().map((s) => s.score));
   }
 
   secondaryWidthPct(score: number): number {
