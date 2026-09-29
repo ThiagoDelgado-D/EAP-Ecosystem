@@ -21,6 +21,7 @@ import {
   SegmentEntity as PomodoroSegmentEntity,
   BreakEntity as PomodoroBreakEntity,
 } from "@pomodoro/infrastructure";
+import { RecommendationContextEntity } from "@recommendation/infrastructure";
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import {
             PomodoroSessionEntity,
             PomodoroSegmentEntity,
             PomodoroBreakEntity,
+            RecommendationContextEntity,
           ],
           synchronize: false,
         };
