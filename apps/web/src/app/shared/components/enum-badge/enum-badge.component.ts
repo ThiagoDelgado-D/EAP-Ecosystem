@@ -29,6 +29,7 @@ export class EnumBadgeComponent {
 
   @ViewChild('triggerBtn') triggerBtn!: ElementRef<HTMLButtonElement>;
 
+  // NOSONAR(S2245): DOM instance id for dropdown state tracking, not security-sensitive.
   private readonly instanceId = Math.random().toString(36).slice(2);
 
   readonly isOpen = computed(() => openBadgeId() === this.instanceId);
