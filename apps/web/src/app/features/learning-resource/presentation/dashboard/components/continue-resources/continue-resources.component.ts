@@ -13,7 +13,7 @@ export class ContinueResourcesComponent {
 
   coverStyle(title: string): string {
     let h = 0;
-    for (let i = 0; i < title.length; i += 1) h = (h * 31 + title.charCodeAt(i)) % 360;
+    for (let i = 0; i < title.length; i += 1) h = (h * 31 + (title.codePointAt(i) ?? 0)) % 360;
     return `--cover-h: ${h}deg; --cover-a: var(--color-accent);`;
   }
 

@@ -3,6 +3,12 @@ import { RouterLink } from '@angular/router';
 import { LearningPathService } from '@features/learning-path/application/learning-path.service';
 import type { LearningPath } from '@features/learning-path/domain/learning-path.model';
 
+function trailDotState(index: number, doneCount: number): number {
+  if (index < doneCount) return 2;
+  if (index === doneCount) return 1;
+  return 0;
+}
+
 @Component({
   selector: 'app-active-paths',
   standalone: true,
@@ -28,6 +34,6 @@ export class ActivePathsComponent {
   trailDots(path: LearningPath): number[] {
     const total = Math.min(8, Math.max(1, path.stats?.total ?? 0));
     const done = path.stats?.done ?? 0;
-    return Array.from({ length: total }, (_, i) => (i < done ? 2 : i === done ? 1 : 0));
+    return Array.from({ length: total }, (_, i) => trailDotState(i, done));
   }
 }

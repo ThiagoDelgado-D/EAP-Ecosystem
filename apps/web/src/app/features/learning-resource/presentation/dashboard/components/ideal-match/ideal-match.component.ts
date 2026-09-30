@@ -8,7 +8,7 @@ import type { ScoredRecommendation } from '@features/recommendation/domain/recom
 
 function hashHue(title: string): number {
   let h = 0;
-  for (let i = 0; i < title.length; i += 1) h = (h * 31 + title.charCodeAt(i)) % 360;
+  for (let i = 0; i < title.length; i += 1) h = (h * 31 + (title.codePointAt(i) ?? 0)) % 360;
   return h;
 }
 
