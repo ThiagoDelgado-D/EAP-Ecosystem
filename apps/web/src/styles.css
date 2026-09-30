@@ -15,6 +15,9 @@
   --color-line-hairline: var(--c-line);
   --color-line-soft: var(--c-line);
   --color-line-strong: var(--c-line-strong);
+  --color-meter-track: var(--c-meter-track);
+  --color-meter-knob: var(--c-meter-knob);
+  --color-meter-label: var(--c-meter-label);
 
   --color-ink-strong: var(--c-ink);
   --color-ink-body: var(--c-ink-2);
@@ -58,6 +61,9 @@
   --c-muted: #7d7768;
   --c-line: #e0dacd;
   --c-line-strong: #cec6b3;
+  --c-meter-track: #d3c9b2;
+  --c-meter-knob: #857c6b;
+  --c-meter-label: #57534a;
 
   --tone-pine: #2c6a51;
   --tone-pine-soft: #dfeae2;
@@ -88,10 +94,13 @@
   --c-surface: #1a1c17;
   --c-surface-2: #21241d;
   --c-ink: #f2efe6;
-  --c-ink-2: #d3cfc2;
-  --c-muted: #8e8a7b;
+  --c-ink-2: #e4e0d3;
+  --c-muted: #9d9787;
   --c-line: #2c2f27;
   --c-line-strong: #3d4137;
+  --c-meter-track: #4b5145;
+  --c-meter-knob: #8e8a7b;
+  --c-meter-label: #cdc7b8;
 
   --tone-pine: #7ec9a3;
   --tone-pine-soft: #1c3227;
@@ -601,11 +610,39 @@
   color: var(--color-surface-base);
   border-color: var(--color-ink-strong);
 }
-
 .tone-chip {
   border-color: color-mix(in oklab, var(--tone, var(--color-accent)) 35%, transparent);
   background: color-mix(in oklab, var(--tone, var(--color-accent)) 12%, transparent);
   color: color-mix(in oklab, var(--tone, var(--color-accent)) 85%, var(--color-ink-body));
+}
+
+.input {
+  width: 100%;
+  border-radius: 14px 14px 14px 4px;
+  border: 1px solid var(--color-line-soft);
+  background: var(--color-surface-raised);
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  color: var(--color-ink-strong);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--color-ink-faint);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-wash);
+}
+
+.label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--color-ink-dim);
 }
 
 .ring-track {
