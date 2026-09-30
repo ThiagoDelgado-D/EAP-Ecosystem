@@ -128,7 +128,7 @@ export class DashboardComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await Promise.all([
       this.applyFilter(),
-      this.pathService.loadAll(),
+      this.pathService.loadAllWithNodes(),
       this.topicService.loadAll(),
       this.loadContinueResources(),
       this.loadWeeklyFocus(),
