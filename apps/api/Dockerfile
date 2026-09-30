@@ -10,6 +10,8 @@ WORKDIR /app
 # into the shell PATH when running workspace scripts from the builder stage.
 ENV PATH="/app/node_modules/.bin:$PATH"
 
+ENV YARN_ENABLE_SCRIPTS=false
+
 # Copy Yarn config and root manifests first for better layer caching
 COPY .yarnrc.yml package.json yarn.lock ./
 
@@ -51,6 +53,7 @@ RUN corepack enable
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV YARN_ENABLE_SCRIPTS=false
 
 COPY .yarnrc.yml package.json yarn.lock ./
 
@@ -77,6 +80,10 @@ COPY --from=builder /app/learning-resource/infrastructure/dist ./learning-resour
 COPY --from=builder /app/user/domain/dist ./user/domain/dist
 COPY --from=builder /app/user/application/dist ./user/application/dist
 COPY --from=builder /app/user/infrastructure/dist ./user/infrastructure/dist
+
+# node:20-alpine ships a non-root "node" user for exactly this purpose.
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 3000
 
