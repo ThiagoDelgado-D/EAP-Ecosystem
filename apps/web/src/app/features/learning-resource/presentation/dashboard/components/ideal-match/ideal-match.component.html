@@ -123,7 +123,7 @@
             <div class="group flex items-center gap-3 rounded-[16px_5px_16px_5px] border border-transparent p-2 transition-all hover:border-line-soft hover:bg-surface-overlay">
               <div
                 class="cover relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl text-lg"
-                [style]="coverStyle(choice.title)"
+                [style]="coverStyle(choice.title, choice.score)"
                 aria-hidden
               >
                 <span class="relative z-10 font-display text-white/90">{{ choice.title.trim().charAt(0).toUpperCase() }}</span>

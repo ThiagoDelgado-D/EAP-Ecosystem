@@ -119,6 +119,7 @@ export class DashboardComponent implements OnInit {
     day: 'numeric',
   });
   readonly recentResources = signal<LearningResource[]>([]);
+  readonly topicColorById = signal<Record<string, string>>({});
   readonly topicLoad = signal<{ id: string; name: string; pendingMinutes: number }[]>([]);
 
   private filterInFlight = false;
@@ -246,10 +247,14 @@ export class DashboardComponent implements OnInit {
       .slice(0, 6);
     this.recentResources.set(recent);
     const topics = this.topicService.topics();
+    const colorById: Record<string, string> = {};
+    for (const t of topics) if (t.color) colorById[t.id] = t.color;
+    this.topicColorById.set(colorById);
     const load = topics
       .map((t) => ({
         id: t.id,
         name: t.name,
+        color: t.color,
         pendingMinutes: Math.round(
           [...pending, ...inProgress]
             .filter((r) => r.topicIds.includes(t.id))

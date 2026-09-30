@@ -6,7 +6,8 @@
       @for (resource of resources(); track resource.id) {
         <li class="relative flex items-start gap-4 py-2.5">
           <span
-            class="relative z-10 mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border-2 border-surface-raised bg-accent"
+            class="relative z-10 mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border-2 border-surface-raised transition-transform duration-500 hover:scale-125"
+            [style.background]="dotColor(resource)"
           ></span>
           <div class="min-w-0 flex-1">
             <a

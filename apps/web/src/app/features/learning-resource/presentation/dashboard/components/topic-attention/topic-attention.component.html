@@ -12,8 +12,9 @@
           <span class="w-36 shrink-0 truncate text-[0.8rem] font-medium text-ink-body">{{ topic.name }}</span>
           <span class="relative h-2.5 flex-1 overflow-hidden rounded-full bg-surface-overlay">
             <span
-              class="absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-700 group-hover:brightness-110"
+              class="absolute inset-y-0 left-0 rounded-full transition-[width] duration-700 group-hover:brightness-110"
               [style.width.%]="widthPct(topic.pendingMinutes)"
+              [style.background]="topic.color ?? 'var(--color-accent)'"
             ></span>
           </span>
           <span class="tnum w-16 shrink-0 text-right text-[0.7rem] text-ink-faint">

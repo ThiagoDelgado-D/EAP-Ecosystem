@@ -10,8 +10,17 @@ import type { LearningResource } from '@features/learning-resource/domain/learni
 })
 export class ContinueResourcesComponent {
   readonly resources = input.required<LearningResource[]>();
+  readonly topicColorById = input<Record<string, string>>({});
 
-  coverStyle(title: string): string {
+  coverStyle(resource: LearningResource): string {
+    const color = resource.topicIds
+      .map((id) => this.topicColorById()[id])
+      .find((c): c is string => !!c);
+    if (color) return `--cover-h: 135deg; --cover-a: ${color};`;
+    return this.hashCover(resource.title);
+  }
+
+  private hashCover(title: string): string {
     let h = 0;
     for (let i = 0; i < title.length; i += 1) h = (h * 31 + (title.codePointAt(i) ?? 0)) % 360;
     return `--cover-h: ${h}deg; --cover-a: var(--color-accent);`;
