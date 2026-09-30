@@ -32,7 +32,8 @@ export class PomodoroSettingsComponent {
   readonly volume = this.store.volume;
   readonly volumePercent = computed(() => Math.round(this.volume() * 100));
   readonly volumeTrackBackground = computed(
-    () => `linear-gradient(to right, #7c3aed 0%, #7c3aed ${this.volumePercent()}%, #334155 ${this.volumePercent()}%, #334155 100%)`,
+    () =>
+      `linear-gradient(to right, var(--color-accent) 0%, var(--color-accent) ${this.volumePercent()}%, var(--color-line-soft) ${this.volumePercent()}%, var(--color-line-soft) 100%)`,
   );
 
   readonly defaultViewMode = signal<PomodoroViewMode>(readDefaultViewMode());

@@ -1,30 +1,32 @@
 <div class="max-w-[680px] mx-auto px-14 py-10">
   <div class="mb-8">
-    <h1 class="text-xl font-semibold text-slate-100">Pomodoro</h1>
-    <p class="text-sm text-slate-400 mt-1">Sound, default view, and on-screen hints for focus sessions.</p>
+    <h1 class="display text-[1.4rem] font-semibold">Pomodoro</h1>
+    <p class="text-sm text-ink-dim mt-1">Sound, default view, and on-screen hints for focus sessions.</p>
   </div>
 
   <div class="flex flex-col gap-6">
 
     <!-- End-of-session sound -->
-    <div class="rounded-xl border border-slate-800 bg-slate-900">
-      <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+    <div class="card p-0 overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-5 border-b border-line-soft">
         <div>
-          <p class="text-sm font-medium text-slate-200">Play a sound when a session ends</p>
-          <p class="text-xs text-slate-500 mt-0.5">A short alert when your planned time is reached.</p>
+          <p class="text-sm font-medium text-ink-strong">Play a sound when a session ends</p>
+          <p class="text-xs text-ink-dim mt-0.5">A short alert when your planned time is reached.</p>
         </div>
         <button
           type="button"
           role="switch"
           [attr.aria-checked]="soundEnabled()"
           aria-label="Play a sound when a session ends"
-          class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 flex-shrink-0"
-          [class.bg-violet-600]="soundEnabled()"
-          [class.bg-slate-700]="!soundEnabled()"
+          class="relative w-10 h-6 rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised flex-shrink-0"
+          [class.bg-accent]="soundEnabled()"
+          [class.border-accent]="soundEnabled()"
+          [class.bg-surface-overlay]="!soundEnabled()"
+          [class.border-line-strong]="!soundEnabled()"
           (click)="toggleSoundEnabled()"
         >
           <span
-            class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+            class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-surface-base shadow transition-transform duration-200"
             [class.translate-x-4]="soundEnabled()"
           ></span>
         </button>
@@ -35,15 +37,15 @@
           <div
             class="flex items-center justify-between gap-1 rounded-lg border px-2.5 py-2 transition-colors"
             [class.opacity-50]="!soundEnabled()"
-            [class.border-violet-500]="soundId() === option.id"
-            [class.bg-violet-600/10]="soundId() === option.id"
-            [class.border-slate-700]="soundId() !== option.id"
+            [class.border-accent]="soundId() === option.id"
+            [class.bg-accent-wash]="soundId() === option.id"
+            [class.border-line-strong]="soundId() !== option.id"
           >
             <button
               type="button"
               class="flex-1 min-w-0 text-left text-sm truncate disabled:cursor-not-allowed"
-              [class.text-violet-300]="soundId() === option.id"
-              [class.text-slate-300]="soundId() !== option.id"
+              [class.text-accent-ink]="soundId() === option.id"
+              [class.text-ink-body]="soundId() !== option.id"
               [disabled]="!soundEnabled()"
               [title]="option.description"
               (click)="selectSound(option.id)"
@@ -52,7 +54,7 @@
             </button>
             <button
               type="button"
-              class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-ink-dim hover:text-ink-strong hover:bg-surface-overlay transition-colors"
               [attr.aria-label]="'Preview ' + option.label"
               [title]="'Preview ' + option.label"
               (click)="previewSound(option.id)"
@@ -65,10 +67,10 @@
         }
       </div>
 
-      <div class="px-6 py-5 border-t border-slate-800 transition-opacity" [class.opacity-50]="!soundEnabled()">
-        <p class="text-sm font-medium text-slate-200 mb-3">Volume</p>
+      <div class="px-6 py-5 border-t border-line-soft transition-opacity" [class.opacity-50]="!soundEnabled()">
+        <p class="text-sm font-medium text-ink-strong mb-3">Volume</p>
         <div class="flex items-center gap-3">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0 text-slate-400">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0 text-ink-dim">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
@@ -80,34 +82,34 @@
             step="5"
             class="flex-1 h-1.5 rounded-lg appearance-none cursor-pointer disabled:cursor-not-allowed
                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5
-                   [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:bg-violet-600
+                   [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:bg-accent
                    [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow
                    [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:rounded-full
-                   [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-violet-600 [&::-moz-range-thumb]:cursor-pointer"
+                   [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-accent [&::-moz-range-thumb]:cursor-pointer"
             [style.background]="volumeTrackBackground()"
             [disabled]="!soundEnabled()"
             [value]="volumePercent()"
             (input)="setVolumePercent($any($event.target).valueAsNumber)"
             aria-label="Alert volume"
           />
-          <span class="text-xs text-slate-400 w-9 text-right tabular-nums">{{ volumePercent() }}%</span>
+          <span class="text-xs text-ink-dim w-9 text-right tabular-nums">{{ volumePercent() }}%</span>
         </div>
       </div>
     </div>
 
     <!-- Default view mode -->
-    <div class="rounded-xl border border-slate-800 bg-slate-900 px-6 py-5">
-      <p class="text-sm font-medium text-slate-200">Default view when starting a session</p>
-      <p class="text-xs text-slate-500 mt-0.5 mb-4">Where a new focus session opens: the full screen, the floating mini widget, or zen mode.</p>
+    <div class="card px-6 py-5">
+      <p class="text-sm font-medium text-ink-strong">Default view when starting a session</p>
+      <p class="text-xs text-ink-dim mt-0.5 mb-4">Where a new focus session opens: the full screen, the floating mini widget, or zen mode.</p>
       <div class="flex gap-2">
         <button
           type="button"
           class="flex-1 px-3 py-2 rounded-lg text-sm border transition-colors"
-          [class.bg-violet-600]="defaultViewMode() === POMODORO_VIEW_MODE.FULL"
-          [class.border-violet-600]="defaultViewMode() === POMODORO_VIEW_MODE.FULL"
-          [class.text-white]="defaultViewMode() === POMODORO_VIEW_MODE.FULL"
-          [class.border-slate-700]="defaultViewMode() !== POMODORO_VIEW_MODE.FULL"
-          [class.text-slate-300]="defaultViewMode() !== POMODORO_VIEW_MODE.FULL"
+          [class.bg-ink-strong]="defaultViewMode() === POMODORO_VIEW_MODE.FULL"
+          [class.border-ink-strong]="defaultViewMode() === POMODORO_VIEW_MODE.FULL"
+          [class.text-surface-base]="defaultViewMode() === POMODORO_VIEW_MODE.FULL"
+          [class.border-line-strong]="defaultViewMode() !== POMODORO_VIEW_MODE.FULL"
+          [class.text-ink-dim]="defaultViewMode() !== POMODORO_VIEW_MODE.FULL"
           (click)="selectViewMode(POMODORO_VIEW_MODE.FULL)"
         >
           Full
@@ -115,11 +117,11 @@
         <button
           type="button"
           class="flex-1 px-3 py-2 rounded-lg text-sm border transition-colors"
-          [class.bg-violet-600]="defaultViewMode() === POMODORO_VIEW_MODE.MINI"
-          [class.border-violet-600]="defaultViewMode() === POMODORO_VIEW_MODE.MINI"
-          [class.text-white]="defaultViewMode() === POMODORO_VIEW_MODE.MINI"
-          [class.border-slate-700]="defaultViewMode() !== POMODORO_VIEW_MODE.MINI"
-          [class.text-slate-300]="defaultViewMode() !== POMODORO_VIEW_MODE.MINI"
+          [class.bg-ink-strong]="defaultViewMode() === POMODORO_VIEW_MODE.MINI"
+          [class.border-ink-strong]="defaultViewMode() === POMODORO_VIEW_MODE.MINI"
+          [class.text-surface-base]="defaultViewMode() === POMODORO_VIEW_MODE.MINI"
+          [class.border-line-strong]="defaultViewMode() !== POMODORO_VIEW_MODE.MINI"
+          [class.text-ink-dim]="defaultViewMode() !== POMODORO_VIEW_MODE.MINI"
           (click)="selectViewMode(POMODORO_VIEW_MODE.MINI)"
         >
           Mini
@@ -127,11 +129,11 @@
         <button
           type="button"
           class="flex-1 px-3 py-2 rounded-lg text-sm border transition-colors"
-          [class.bg-violet-600]="defaultViewMode() === POMODORO_VIEW_MODE.ZEN"
-          [class.border-violet-600]="defaultViewMode() === POMODORO_VIEW_MODE.ZEN"
-          [class.text-white]="defaultViewMode() === POMODORO_VIEW_MODE.ZEN"
-          [class.border-slate-700]="defaultViewMode() !== POMODORO_VIEW_MODE.ZEN"
-          [class.text-slate-300]="defaultViewMode() !== POMODORO_VIEW_MODE.ZEN"
+          [class.bg-ink-strong]="defaultViewMode() === POMODORO_VIEW_MODE.ZEN"
+          [class.border-ink-strong]="defaultViewMode() === POMODORO_VIEW_MODE.ZEN"
+          [class.text-surface-base]="defaultViewMode() === POMODORO_VIEW_MODE.ZEN"
+          [class.border-line-strong]="defaultViewMode() !== POMODORO_VIEW_MODE.ZEN"
+          [class.text-ink-dim]="defaultViewMode() !== POMODORO_VIEW_MODE.ZEN"
           (click)="selectViewMode(POMODORO_VIEW_MODE.ZEN)"
         >
           Zen
@@ -140,9 +142,9 @@
     </div>
 
     <!-- Default focus duration -->
-    <div class="rounded-xl border border-line-soft bg-surface-raised px-6 py-5">
-      <p class="text-sm font-medium text-slate-200">Default focus duration</p>
-      <p class="text-xs text-slate-500 mt-0.5 mb-4">What Start pre-loads the ring with, ready to tap and go.</p>
+    <div class="card px-6 py-5">
+      <p class="text-sm font-medium text-ink-strong">Default focus duration</p>
+      <p class="text-xs text-ink-dim mt-0.5 mb-4">What Start pre-loads the ring with, ready to tap and go.</p>
       <div class="flex gap-2 flex-wrap">
         @for (minutes of DURATION_PRESETS; track minutes) {
           <button
@@ -163,30 +165,32 @@
           (input)="onCustomDefaultDurationInput($any($event.target).value)"
           placeholder="Custom"
           aria-label="Custom default duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
-          class="flex-1 min-w-[4.5rem] px-3 py-2 rounded-lg text-sm text-center border bg-transparent placeholder:text-ink-faint transition-colors"
-          [class]="isCustomDefaultDuration() ? 'border-accent-line bg-accent-wash text-accent-ink' : 'border-line-soft text-ink-dim hover:border-line-strong'"
+          class="input flex-1 min-w-[4.5rem] text-sm text-center"
+          [class]="isCustomDefaultDuration() ? 'border-accent-line bg-accent-wash text-accent-ink' : ''"
         />
       </div>
     </div>
 
     <!-- Interface -->
-    <div class="rounded-xl border border-slate-800 bg-slate-900 px-6 py-5 flex items-center justify-between">
+    <div class="card px-6 py-5 flex items-center justify-between">
       <div>
-        <p class="text-sm font-medium text-slate-200">Show keyboard shortcut hints</p>
-        <p class="text-xs text-slate-500 mt-0.5">Display the space/switch hints under the timer during a session.</p>
+        <p class="text-sm font-medium text-ink-strong">Show keyboard shortcut hints</p>
+        <p class="text-xs text-ink-dim mt-0.5">Display the space/switch hints under the timer during a session.</p>
       </div>
       <button
         type="button"
         role="switch"
         [attr.aria-checked]="showShortcutHints()"
         aria-label="Show keyboard shortcut hints"
-        class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 flex-shrink-0"
-        [class.bg-violet-600]="showShortcutHints()"
-        [class.bg-slate-700]="!showShortcutHints()"
+        class="relative w-10 h-6 rounded-full border transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised flex-shrink-0"
+        [class.bg-accent]="showShortcutHints()"
+        [class.border-accent]="showShortcutHints()"
+        [class.bg-surface-overlay]="!showShortcutHints()"
+        [class.border-line-strong]="!showShortcutHints()"
         (click)="toggleShortcutHints()"
       >
         <span
-          class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+          class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-surface-base shadow transition-transform duration-200"
           [class.translate-x-4]="showShortcutHints()"
         ></span>
       </button>
