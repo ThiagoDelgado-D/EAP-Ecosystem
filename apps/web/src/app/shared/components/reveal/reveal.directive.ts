@@ -40,6 +40,7 @@ export class RevealDirective implements OnInit, OnDestroy {
   }
 
   private prefersReducedMotion(): boolean {
+    if (typeof window.matchMedia !== 'function') return false;
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 }
