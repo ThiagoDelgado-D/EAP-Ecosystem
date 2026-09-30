@@ -18,8 +18,8 @@
         </div>
       } @else {
         <app-ideal-match
-          [resource]="idealResource()"
-          [energyLevel]="selectedEnergy()"
+          [recommendation]="topRecommendation()"
+          [resource]="topRecommendationResource()"
           [mentalState]="selectedMentalState()"
         />
       }
@@ -27,7 +27,6 @@
   </div>
 
   <div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-5 border-t border-slate-800 lg:border-t-0">
-    <app-focus-pulse />
-    <app-pending-tasks />
+    <app-active-paths />
   </div>
 </div>

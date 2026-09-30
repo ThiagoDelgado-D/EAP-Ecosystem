@@ -5,6 +5,7 @@
 - `CurrentUser` adopted as an injected dependency across learning-resource, learning-path, and pomodoro (ADR-0026) — identity resolved once at the HTTP boundary instead of validated as caller-supplied payload
 - `LearningResource` gained a `userId` column and full per-owner scoping across its use cases
 - `resource-type` and `topic` controllers now require authentication
+- Recommendation Engine (ADR-0027): persisted per-user `RecommendationContext` (energy level, available minutes, mental state), `getRecommendations`/`setRecommendationContext` use cases, cross-module read ports into `LearningResource` and active `LearningPath` nodes, and `GET/POST /api/v1/recommendations` — coexists with Pomodoro's own `suggestSessionTarget`, not a replacement
 
 ### Fixed
 
@@ -23,11 +24,11 @@
 ### Architecture Decision Records
 
 - ADR-0026: `CurrentUser` as an Injected Dependency
+- ADR-0027: Recommendation Engine
 
 ### Planned
 
 - WebSocket gateway for cross-device session sync — Post-MVP
-- Recommendation Engine: persisted per-user context (energy, available time, mental state), ranked cross-module suggestions with explained reasons, coexisting with Pomodoro's own session-scoped suggestion mechanism — see ADR-0027 (v0.10.0)
 
 ---
 

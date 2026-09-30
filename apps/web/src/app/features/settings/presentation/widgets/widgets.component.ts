@@ -26,25 +26,11 @@ const WIDGETS: WidgetCard[] = [
     color: '#818cf8',
   },
   {
-    key: WIDGET_KEY.FOCUS_PULSE,
-    label: 'Focus Pulse',
-    desc: 'Quick snapshot of your focus metrics.',
-    icon: 'M22 12h-4l-3 9L9 3l-3 9H2',
-    color: '#f87171',
-  },
-  {
     key: WIDGET_KEY.ARCHITECTS_PULSE,
     label: "Architect's Pulse",
     desc: 'System-level signal for deep work readiness.',
     icon: 'M12 2a10 10 0 100 20A10 10 0 0012 2zm0 0v20M2 12h20',
     color: '#38bdf8',
-  },
-  {
-    key: WIDGET_KEY.PENDING_TASKS,
-    label: 'Pending Tasks',
-    desc: 'Resources waiting to be completed.',
-    icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
-    color: '#fbbf24',
   },
 ];
 

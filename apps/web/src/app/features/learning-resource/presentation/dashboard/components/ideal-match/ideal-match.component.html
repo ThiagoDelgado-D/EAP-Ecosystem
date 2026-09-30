@@ -50,23 +50,42 @@
 
   <div class="relative z-10 p-5 flex flex-col h-full justify-end">
     <div class="flex items-center gap-2 mb-2 flex-wrap">
-      <span
-        class="inline-flex items-center gap-1.5 border border-violet-700/60 bg-violet-950/50 rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-300"
-      >
-        <span class="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0"></span>
-        {{ energyBadgeLabel() }}
-      </span>
+      @if (displayResource().score !== null) {
+        <span
+          class="inline-flex items-center gap-1.5 border border-violet-700/60 bg-violet-950/50 rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-300"
+        >
+          <span class="w-1.5 h-1.5 rounded-full bg-violet-500 flex-shrink-0"></span>
+          Match score {{ displayResource().score }}
+        </span>
+      }
       <app-enum-badge [value]="mentalState()" [options]="mentalStateOptions" [readonly]="true" />
-      <span class="badge bg-line-soft border-line-strong text-ink-dim">{{ displayResource().duration }}m</span>
+      @if (displayResource().duration !== null) {
+        <span class="badge bg-line-soft border-line-strong text-ink-dim">{{ displayResource().duration }}m</span>
+      }
     </div>
 
     <h3 class="t-display text-[17px] mb-1">
       {{ displayResource().title }}
     </h3>
 
-    <p class="text-xs text-slate-400 leading-relaxed mb-4 line-clamp-2">
-      {{ displayResource().desc }}
-    </p>
+    @if (displayResource().why.length) {
+      <ul class="text-xs text-slate-400 leading-relaxed mb-4 flex flex-col gap-1">
+        @for (reason of displayResource().why; track reason) {
+          <li class="flex items-start gap-1.5">
+            <span class="text-violet-500 leading-[1.4]">&middot;</span>
+            <span>{{ reason }}</span>
+          </li>
+        }
+      </ul>
+    } @else if (displayResource().desc) {
+      <p class="text-xs text-slate-400 leading-relaxed mb-4 line-clamp-2">
+        {{ displayResource().desc }}
+      </p>
+    } @else {
+      <p class="text-xs text-slate-500 leading-relaxed mb-4">
+        Set your context above to get a suggestion.
+      </p>
+    }
 
     <div class="flex items-center gap-2">
       @if (displayResource().url) {
