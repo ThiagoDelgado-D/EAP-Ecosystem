@@ -1,6 +1,6 @@
 import { Component, OnDestroy, effect, input, signal } from '@angular/core';
 
-const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\<>*#@';
+const GLYPHS = String.raw`ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\<>*#@`;
 
 @Component({
   selector: 'app-scramble',
@@ -42,7 +42,7 @@ export class ScrambleComponent implements OnDestroy {
               .map((ch, i) => {
                 if (ch === ' ') return ' ';
                 if (i < revealed) return ch;
-                return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+                return GLYPHS[Math.floor(Math.random() * GLYPHS.length)]; // NOSONAR(S2245): cosmetic scramble glyph, not security-sensitive.
               })
               .join(''),
           );

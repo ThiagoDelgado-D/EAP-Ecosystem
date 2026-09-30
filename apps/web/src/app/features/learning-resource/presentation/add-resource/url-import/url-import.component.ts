@@ -120,6 +120,7 @@ export class UrlImportComponent implements OnInit, OnDestroy {
     this.progressInterval = setInterval(() => {
       const current = this.progress();
       if (current < 95) {
+        // NOSONAR(S2245): fake progress-bar increment, not security-sensitive.
         const next = current + Math.floor(Math.random() * 10) + 1;
         this.progress.set(Math.min(next, 95));
       }
