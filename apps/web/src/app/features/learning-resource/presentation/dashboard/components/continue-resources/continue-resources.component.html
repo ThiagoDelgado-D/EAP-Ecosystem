@@ -1,0 +1,47 @@
+<div class="card p-5 h-full">
+  <div class="flex items-baseline justify-between">
+    <p class="eyebrow">Continue where you left off</p>
+    <a routerLink="/resources" class="link-underline text-[0.74rem] font-semibold text-accent-ink">
+      view all
+    </a>
+  </div>
+  @if (resources().length) {
+    <ul class="mt-3 flex flex-col">
+      @for (resource of resources(); track resource.id) {
+        <li>
+          <div class="group flex items-center gap-3 border-b border-line-soft py-3 last:border-0">
+            <div
+              class="cover relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl text-lg"
+              [style]="coverStyle(resource.title)"
+              aria-hidden
+            >
+              <span class="relative z-10 font-display text-white/90">{{ resource.title.trim().charAt(0).toUpperCase() }}</span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <a
+                [routerLink]="['/resources', resource.id]"
+                class="block truncate text-[0.88rem] font-semibold text-ink-strong transition-colors group-hover:text-accent-ink"
+              >
+                {{ resource.title }}
+              </a>
+              <div class="mt-1.5 flex items-center gap-2">
+                <span class="text-[0.66rem] text-ink-faint">{{ lastViewedLabel(resource) }} &middot; {{ resource.estimatedDuration.value }}m left</span>
+              </div>
+            </div>
+            <a
+              [routerLink]="['/pomodoro']"
+              class="btn btn-outline btn-sm !px-2 opacity-70 transition-all group-hover:opacity-100"
+              [attr.aria-label]="'Resume ' + resource.title"
+            >
+              &#9654;
+            </a>
+          </div>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="mt-2 text-[0.9rem] text-ink-dim">
+      Nothing in progress yet. Pick something from the engine and start a 25-minute block.
+    </p>
+  }
+</div>

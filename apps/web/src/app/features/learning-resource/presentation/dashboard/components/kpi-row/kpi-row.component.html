@@ -1,0 +1,52 @@
+<div class="card flex flex-col divide-y divide-line-soft overflow-hidden sm:flex-row sm:divide-x sm:divide-y-0">
+  <div class="group relative p-5 transition-colors hover:bg-surface-overlay sm:flex-1">
+    <p class="eyebrow mb-2">Live resources</p>
+    <p class="tnum text-[2rem] leading-none font-semibold text-ink-strong">{{ pendingResourceCount() + inProgressCount() }}</p>
+    <span class="mt-1 block text-[0.72rem] text-ink-dim">
+      {{ inProgressCount() }} in progress &middot; {{ catalogLabel() }} ahead
+    </span>
+  </div>
+
+  <div class="group relative p-5 transition-colors hover:bg-surface-overlay sm:flex-1">
+    <p class="eyebrow mb-2">Focus this week</p>
+    <p class="tnum text-[2rem] leading-none font-semibold text-ink-strong">{{ weeklyFocusLabel() }}</p>
+    <span class="mt-1 flex items-center gap-1.5 text-[0.72rem]">
+      @if (weekDeltaPct() !== null) {
+        <span
+          class="font-semibold"
+          [style.color]="weekDeltaPct()! >= 0 ? 'var(--color-accent)' : 'var(--tone-ember, var(--color-accent))'"
+        >
+          {{ weekDeltaPct()! >= 0 ? '▲' : '▼' }} {{ weekDeltaPct()! >= 0 ? weekDeltaPct() : -(weekDeltaPct()!) }}%
+        </span>
+        <span class="text-ink-dim">vs prior weeks</span>
+      } @else {
+        <span class="text-ink-dim">no baseline yet</span>
+      }
+    </span>
+  </div>
+
+  <div class="group relative p-5 transition-colors hover:bg-surface-overlay sm:flex-[1.4]">
+    <p class="eyebrow mb-2">Weekly goal</p>
+    <div class="flex items-end gap-1">
+      @for (day of weekDays(); track day.key) {
+        <span
+          class="bar w-2.5 rounded-full"
+          [style.height.px]="Math.max(4, (day.focusMinutes / maxDay()) * 46)"
+          [style.background]="barColor(day.focusMinutes)"
+          [title]="day.label + ': ' + day.focusMinutes + 'm'"
+        ></span>
+      } @empty {
+        <span class="text-[0.72rem] text-ink-dim">No focus days yet.</span>
+      }
+    </div>
+    <span class="mt-1.5 block text-[0.72rem] text-ink-dim">
+      <span class="tnum font-semibold text-ink-body">{{ goalPct() }}%</span> of {{ goalMinutes() }}m
+    </span>
+  </div>
+
+  <div class="group relative p-5 transition-colors hover:bg-surface-overlay sm:flex-1">
+    <p class="eyebrow mb-2">Streak</p>
+    <p class="tnum text-[2rem] leading-none font-semibold text-ink-strong">{{ streakDays() }}d</p>
+    <span class="mt-1 block text-[0.72rem] text-ink-dim">days in a row with focus</span>
+  </div>
+</div>

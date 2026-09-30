@@ -1,0 +1,31 @@
+<div class="card card-alt p-5 h-full">
+  <div class="flex items-baseline justify-between">
+    <p class="eyebrow">Where your attention is</p>
+    <a routerLink="/resources" class="link-underline text-[0.74rem] font-semibold text-accent-ink">
+      library
+    </a>
+  </div>
+  @if (topics().length) {
+    <ul class="mt-4 flex flex-col gap-3">
+      @for (topic of topics(); track topic.id) {
+        <li class="group flex items-center gap-3">
+          <span class="w-36 shrink-0 truncate text-[0.8rem] font-medium text-ink-body">{{ topic.name }}</span>
+          <span class="relative h-2.5 flex-1 overflow-hidden rounded-full bg-surface-overlay">
+            <span
+              class="absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-700 group-hover:brightness-110"
+              [style.width.%]="widthPct(topic.pendingMinutes)"
+            ></span>
+          </span>
+          <span class="tnum w-16 shrink-0 text-right text-[0.7rem] text-ink-faint">
+            {{ minutesLabel(topic.pendingMinutes) }}
+          </span>
+        </li>
+      }
+    </ul>
+    <p class="mt-4 border-t border-line-soft pt-3 text-[0.74rem] leading-relaxed text-ink-dim">
+      Pending minutes per topic. Useful to spot where learning debt is piling up.
+    </p>
+  } @else {
+    <p class="mt-2 text-[0.9rem] text-ink-dim">No pending minutes by topic yet.</p>
+  }
+</div>

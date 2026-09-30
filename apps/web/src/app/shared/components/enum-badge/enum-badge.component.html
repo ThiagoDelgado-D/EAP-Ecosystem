@@ -76,8 +76,8 @@
           role="option"
           [attr.aria-selected]="opt.value === value"
           (click)="select($event, opt)"
-          class="w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors hover:bg-slate-800/70"
-          [ngClass]="opt.value === value ? 'text-white font-semibold' : 'text-slate-400'"
+          class="w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-colors hover:bg-surface-overlay/70"
+          [ngClass]="opt.value === value ? 'text-white font-semibold' : 'text-ink-body'"
         >
           <!-- Colored dot -->
           <span
@@ -91,7 +91,7 @@
           <!-- Checkmark for active -->
           @if (opt.value === value) {
             <svg
-              class="h-3 w-3 shrink-0 text-slate-400"
+              class="h-3 w-3 shrink-0 text-ink-body"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
