@@ -1,6 +1,6 @@
 import { Component, OnDestroy, effect, input, signal } from '@angular/core';
 
-const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\<>*#@';
+const GLYPHS = String.raw`ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\<>*#@`;
 
 @Component({
   selector: 'app-scramble',

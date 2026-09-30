@@ -16,7 +16,7 @@ export class RevealDirective implements OnInit, OnDestroy {
     native.style.setProperty('--d', `${this.delay()}ms`);
 
     if (this.prefersReducedMotion() || typeof IntersectionObserver === 'undefined') {
-      native.setAttribute('data-in', 'true');
+      native.dataset['in'] = 'true';
       return;
     }
 
@@ -24,7 +24,7 @@ export class RevealDirective implements OnInit, OnDestroy {
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            native.setAttribute('data-in', 'true');
+            native.dataset['in'] = 'true';
             this.observer?.unobserve(native);
           }
         }
