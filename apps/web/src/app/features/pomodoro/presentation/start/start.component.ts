@@ -4,6 +4,14 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
+import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
+import {
+  buildWeekDayLog,
+  computeWeeklySummary,
+  summaryWindowSince,
+} from '@features/pomodoro/application/weekly-summary.calculator';
+import { CounterComponent } from '@shared/components/counter/counter.component';
+import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import {
@@ -34,7 +42,7 @@ function formatMinutesClock(minutes: number): string {
 @Component({
   selector: 'app-pomodoro-start',
   standalone: true,
-  imports: [FormsModule, PomodoroRingComponent],
+  imports: [FormsModule, PomodoroRingComponent, CounterComponent, RevealDirective],
   templateUrl: './start.component.html',
 })
 export class StartComponent {
@@ -43,6 +51,9 @@ export class StartComponent {
   private readonly overlayHost = inject(PomodoroOverlayHostService);
   readonly store = inject(PomodoroSessionStore);
   readonly picker = inject(PomodoroPickerService);
+  private readonly historyRepository = inject(PomodoroRepository);
+
+  readonly Math = Math;
 
   readonly DURATION_PRESETS = DURATION_PRESETS;
   readonly MAX_PLANNED_DURATION_MIN = MAX_PLANNED_DURATION_MIN;
@@ -68,6 +79,21 @@ export class StartComponent {
   readonly hasMoreActions = computed(() => !this.hasAttachedMaterial() || this.canOfferIntention());
   readonly topSuggestion = computed<SuggestedCandidate | null>(() => this.store.suggestions()[0] ?? null);
   readonly canSuggestQuickStart = computed(() => !this.hasAttachedMaterial() && this.topSuggestion() !== null);
+
+  readonly goalMinutes = 600;
+  readonly weekDays = signal<
+    { key: string; label: string; focusMinutes: number; sessions: number; isToday: boolean }[]
+  >([]);
+  readonly weekTotalMinutes = signal(0);
+  readonly weekDeltaPct = signal<number | null>(null);
+  readonly todaySessions = signal<
+    { id: string; startedAt: Date; plannedMin: number; focusMin: number; done: boolean; active: boolean }[]
+  >([]);
+  readonly todayMinutes = signal(0);
+
+  readonly maxWeekDay = computed(() =>
+    Math.max(this.goalMinutes / 5, ...this.weekDays().map((d) => d.focusMinutes), 30),
+  );
   readonly primaryStartLabel = computed(() =>
     this.hasAttachedMaterial() ? this.selectedTargetLabel()?.title ?? 'Start' : 'Start free focus',
   );
@@ -75,6 +101,61 @@ export class StartComponent {
   constructor() {
     void this.picker.load();
     void this.store.loadSuggestions();
+    void this.loadContext();
+  }
+
+  private async loadContext(): Promise<void> {
+    const now = new Date();
+    try {
+      const history = await this.historyRepository.getHistory(summaryWindowSince(now));
+      const summary = computeWeeklySummary(history, now);
+      this.weekTotalMinutes.set(Math.round(summary.thisWeek.focus.totalSec / 60));
+      const delta = summary.delta?.focusTotalSec.relativeChange ?? null;
+      this.weekDeltaPct.set(delta === null ? null : Math.round(delta * 100));
+
+      const dayLog = buildWeekDayLog(history, now);
+      this.weekDays.set(
+        dayLog.map((d) => ({
+          key: d.date.toISOString().slice(0, 10),
+          label: d.date.toLocaleDateString('en-US', { weekday: 'narrow' }),
+          focusMinutes: Math.round(d.focusSec / 60),
+          sessions: d.sessionCount,
+          isToday: d.date.toDateString() === now.toDateString(),
+        })),
+      );
+
+      const segmentsBySession = new Map<string, number>();
+      for (const segment of history.segments) {
+        const duration = Math.max(0, (segment.endSec ?? segment.startSec) - segment.startSec);
+        segmentsBySession.set(segment.sessionId, (segmentsBySession.get(segment.sessionId) ?? 0) + duration);
+      }
+      const todayRows = history.sessions
+        .filter((s) => s.startedAt.toDateString() === now.toDateString())
+        .map((s) => ({
+          id: s.id,
+          startedAt: s.startedAt,
+          plannedMin: s.plannedMin,
+          focusMin: Math.round((segmentsBySession.get(s.id) ?? 0) / 60),
+          done: !!s.completedAt,
+          active: !s.completedAt,
+        }))
+        .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime());
+      this.todaySessions.set(todayRows);
+      this.todayMinutes.set(todayRows.reduce((sum, r) => sum + r.focusMin, 0));
+    } catch {
+      // context panels stay empty — the timer flow is unaffected
+    }
+  }
+
+  dayBarColor(minutes: number): string {
+    if (minutes === 0) return 'var(--color-line-strong)';
+    return minutes >= this.goalMinutes / 5
+      ? 'var(--color-accent)'
+      : 'var(--tone-ochre, var(--color-accent))';
+  }
+
+  sessionTime(date: Date): string {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   }
 
   @HostListener('window:keydown', ['$event'])
