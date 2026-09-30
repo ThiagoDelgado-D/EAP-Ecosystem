@@ -5,6 +5,8 @@ RUN corepack enable
 
 WORKDIR /app
 
+ENV YARN_ENABLE_SCRIPTS=false
+
 # Copy Yarn config and root manifests first for better layer caching
 COPY .yarnrc.yml package.json yarn.lock ./
 
@@ -33,6 +35,9 @@ FROM nginx:alpine AS production
 COPY --from=builder /app/apps/web/dist/web/browser /usr/share/nginx/html
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
+# nginx:alpine's master process needs root to bind port 80; its worker
+# processes already drop to the unprivileged "nginx" user on their own.
+# Not switched to a non-root user here for that reason.
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]

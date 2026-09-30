@@ -1,5 +1,5 @@
 <div class="mx-auto w-full max-w-[86rem] px-4 sm:px-7 flex flex-col gap-6 pt-1 pb-4">
-  <header class="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+  <header appReveal class="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
     <div class="min-w-0">
       <p class="eyebrow flex flex-wrap items-center gap-x-2 gap-y-1">
         <span>{{ todayLabel }}</span>
@@ -36,6 +36,8 @@
       </div>
     } @else {
       <div
+        appReveal
+        [appRevealDelay]="80"
         class="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] transition-opacity duration-200"
         [class.opacity-60]="loading()"
       >
@@ -60,6 +62,7 @@
   </div>
 
   <app-kpi-row
+    appReveal
     [pendingResourceCount]="pendingResourceCount()"
     [inProgressCount]="inProgressCount()"
     [catalogMinutes]="catalogMinutes()"
@@ -71,12 +74,12 @@
   />
 
   <div class="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-    <app-continue-resources [resources]="continueResources()" />
-    <app-active-paths />
+    <app-continue-resources appReveal [resources]="continueResources()" />
+    <app-active-paths appReveal [appRevealDelay]="90" />
   </div>
 
   <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-    <app-recent-activity [resources]="recentResources()" />
-    <app-topic-attention [topics]="topicLoad()" />
+    <app-recent-activity appReveal [resources]="recentResources()" />
+    <app-topic-attention appReveal [appRevealDelay]="80" [topics]="topicLoad()" />
   </div>
 </div>

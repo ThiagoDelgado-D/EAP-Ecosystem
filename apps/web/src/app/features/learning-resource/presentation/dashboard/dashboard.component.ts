@@ -25,6 +25,7 @@ import { ContinueResourcesComponent } from './components/continue-resources/cont
 import { KpiRowComponent } from './components/kpi-row/kpi-row.component.js';
 import { RecentActivityComponent } from './components/recent-activity/recent-activity.component.js';
 import { TopicAttentionComponent } from './components/topic-attention/topic-attention.component.js';
+import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 
 const TO_API_ENERGY_LEVEL: Record<EnergyLevel, ApiEnergyLevel> = {
   Low: 'low',
@@ -54,6 +55,7 @@ function greeting(date = new Date()): string {
     KpiRowComponent,
     RecentActivityComponent,
     TopicAttentionComponent,
+    RevealDirective,
   ],
   providers: [
     LearningResourceService,

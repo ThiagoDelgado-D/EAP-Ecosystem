@@ -23,7 +23,7 @@ export function mockCryptoService(): CryptoService {
       let token = "";
 
       for (let i = 0; i < 10; i++) {
-        const rIndex = Math.floor(Math.random() * char.length);
+        const rIndex = Math.floor(Math.random() * char.length); // NOSONAR(S2245)
         const randomChar = char[rIndex];
         token += randomChar;
       }
@@ -35,17 +35,17 @@ export function mockCryptoService(): CryptoService {
       return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
         /[xy]/g,
         function (c) {
-          const r = (Math.random() * 16) | 0,
+          const r = (Math.random() * 16) | 0, // NOSONAR(S2245)
             v = c === "x" ? r : (r & 0x3) | 0x8;
           return v.toString(16);
-        }
+        },
       ) as UUID;
     },
     async generateNumericCode(length: number): Promise<string> {
       await ms(10);
       const max = Math.pow(10, length);
       const min = Math.pow(10, length - 1);
-      return String(Math.floor(min + Math.random() * (max - min)));
+      return String(Math.floor(min + Math.random() * (max - min))); // NOSONAR(S2245)
     },
   };
 }

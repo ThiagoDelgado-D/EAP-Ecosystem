@@ -1,4 +1,5 @@
 import { Component, input, computed } from '@angular/core';
+import { CounterComponent } from '@shared/components/counter/counter.component';
 
 export interface WeekDay {
   key: string;
@@ -17,6 +18,7 @@ function formatMinutes(minutes: number): string {
 @Component({
   selector: 'app-kpi-row',
   standalone: true,
+  imports: [CounterComponent],
   templateUrl: './kpi-row.component.html',
 })
 export class KpiRowComponent {
@@ -30,10 +32,12 @@ export class KpiRowComponent {
   readonly streakDays = input<number>(0);
   readonly goalMinutes = input<number>(600);
 
-  readonly weeklyFocusLabel = computed(() => {
+  readonly weeklyFocusHours = computed(() => {
     const minutes = this.weeklyFocusMinutes();
-    return minutes === null ? '--' : formatMinutes(minutes);
+    return minutes === null ? 0 : Math.round(minutes / 60);
   });
+
+  readonly liveCount = computed(() => this.pendingResourceCount() + this.inProgressCount());
 
   readonly catalogLabel = computed(() => formatMinutes(this.catalogMinutes()));
 

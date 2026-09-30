@@ -8,7 +8,7 @@
     <div>
       <p class="eyebrow flex items-center gap-1.5">Suggestion engine</p>
       <h2 class="display mt-2 text-[clamp(1.7rem,3.4vw,2.5rem)] font-semibold">
-        {{ displayResource().title }}
+        <app-scramble [text]="displayResource().title" [speed]="26" />
       </h2>
     </div>
     @if (displayResource().score !== null) {
