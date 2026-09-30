@@ -60,6 +60,7 @@ export class ScrambleComponent implements OnDestroy {
 
   private prefersReducedMotion(): boolean {
     if (this.reduceRef.current) return true;
+    if (typeof window.matchMedia !== 'function') return false;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.reduceRef.current = reduced;
     return reduced;
