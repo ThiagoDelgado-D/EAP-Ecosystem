@@ -244,11 +244,8 @@ export class HomeComponent implements OnInit {
     this.activeTab.set(tab);
   }
 
-  private buildCurrentParams(): ResourceQueryParams {
-    const params: ResourceQueryParams = {
-      page: this.service.currentPage(),
-      pageSize: this.pageSize(),
-    };
+  private buildParams(page: number): ResourceQueryParams {
+    const params: ResourceQueryParams = { page, pageSize: this.pageSize() };
     if (this.difficultyFilterValue()) params.difficulty = this.difficultyFilterValue()!;
     if (this.energyFilterValue()) params.energyLevel = this.energyFilterValue()!;
     if (this.statusFilterValue()) params.status = this.statusFilterValue()!;
@@ -258,14 +255,12 @@ export class HomeComponent implements OnInit {
     return params;
   }
 
+  private buildCurrentParams(): ResourceQueryParams {
+    return this.buildParams(this.service.currentPage());
+  }
+
   async applyFilter(): Promise<void> {
-    const params: ResourceQueryParams = { page: 1, pageSize: this.pageSize() };
-    if (this.difficultyFilterValue()) params.difficulty = this.difficultyFilterValue()!;
-    if (this.energyFilterValue()) params.energyLevel = this.energyFilterValue()!;
-    if (this.statusFilterValue()) params.status = this.statusFilterValue()!;
-    if (this.mentalStateFilterValue()) params.mentalState = this.mentalStateFilterValue()!;
-    if (this.typeFilterValue()) params.resourceTypeId = this.typeFilterValue()!;
-    if (this.searchQuery().trim()) params.q = this.searchQuery().trim();
+    const params = this.buildParams(1);
     await this.service.load(params);
 
     if (this.service.total() === 0 && params.q) {
