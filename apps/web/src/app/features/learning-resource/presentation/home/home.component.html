@@ -324,16 +324,14 @@
           </div>
 
           <div class="flex flex-1 flex-col gap-2 p-4">
-            <h3
-              class="display line-clamp-2 text-[1.05rem] leading-snug font-semibold cursor-pointer transition-colors group-hover:text-accent-ink"
-              tabindex="0"
-              role="button"
-              [attr.aria-label]="resource.title"
-              (click)="onCardClick(resource)"
-              (keydown.enter)="onCardClick(resource)"
-              (keydown.space)="onCardClick(resource); $event.preventDefault()"
-            >
-              {{ resource.title }}
+            <h3>
+              <a
+                [routerLink]="['/resources', resource.id]"
+                class="display line-clamp-2 text-[1.05rem] leading-snug font-semibold transition-colors group-hover:text-accent-ink"
+                (click)="trackCardView(resource)"
+              >
+                {{ resource.title }}
+              </a>
             </h3>
             <p class="text-[0.72rem] text-ink-dim">
               @if (sourceOf(resource)) {
@@ -396,16 +394,14 @@
 
             <div class="min-w-0 flex-1">
               <div class="flex items-start gap-2">
-                <h3
-                  class="display min-w-0 flex-1 cursor-pointer truncate text-[1.06rem] leading-tight font-semibold transition-colors group-hover:text-accent-ink"
-                  tabindex="0"
-                  role="button"
-                  [attr.aria-label]="resource.title"
-                  (click)="onCardClick(resource)"
-                  (keydown.enter)="onCardClick(resource)"
-                  (keydown.space)="onCardClick(resource); $event.preventDefault()"
-                >
-                  {{ resource.title }}
+                <h3 class="min-w-0 flex-1">
+                  <a
+                    [routerLink]="['/resources', resource.id]"
+                    class="display block truncate text-[1.06rem] leading-tight font-semibold transition-colors group-hover:text-accent-ink"
+                    (click)="trackCardView(resource)"
+                  >
+                    {{ resource.title }}
+                  </a>
                 </h3>
                 <button
                   type="button"

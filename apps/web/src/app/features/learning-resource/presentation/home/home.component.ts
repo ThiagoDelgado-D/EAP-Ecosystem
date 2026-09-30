@@ -318,7 +318,7 @@ export class HomeComponent implements OnInit {
     await this.service.load({ ...current, page });
   }
 
-  onCardClick(resource: LearningResource): void {
+  trackCardView(resource: LearningResource): void {
     this.libraryService.trackRecent(resource.id);
     sessionStorage.setItem(
       'eap:resource-list-params',
@@ -333,6 +333,10 @@ export class HomeComponent implements OnInit {
         q: this.searchQuery(),
       }),
     );
+  }
+
+  onCardClick(resource: LearningResource): void {
+    this.trackCardView(resource);
     this.router.navigate(['/resources', resource.id]);
   }
 
