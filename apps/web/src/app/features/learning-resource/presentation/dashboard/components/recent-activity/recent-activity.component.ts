@@ -32,6 +32,6 @@ export class RecentActivityComponent {
   }
 
   relativeLabel(resource: LearningResource): string {
-    return relativeTime(resource.updatedAt);
+    return relativeTime(resource.lastViewed ?? resource.updatedAt);
   }
 }

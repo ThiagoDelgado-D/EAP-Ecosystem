@@ -239,7 +239,10 @@ export class DashboardComponent implements OnInit {
     this.catalogMinutes.set(Math.round(catalog));
     this.inProgressCount.set(inProgress.length);
     const recent = [...inProgress, ...pending]
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .sort(
+        (a, b) =>
+          (b.lastViewed ?? b.updatedAt).getTime() - (a.lastViewed ?? a.updatedAt).getTime(),
+      )
       .slice(0, 6);
     this.recentResources.set(recent);
     const topics = this.topicService.topics();

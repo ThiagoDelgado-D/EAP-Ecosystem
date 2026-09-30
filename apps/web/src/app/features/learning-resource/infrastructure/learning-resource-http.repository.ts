@@ -203,18 +203,33 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     return date;
   }
 
+  private parseOptionalDate(value: string | null | undefined): Date | undefined {
+    if (!value) return undefined;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      console.warn(`Invalid date string: ${value}`);
+      return undefined;
+    }
+    return date;
+  }
+
   private toDomain(dto: LearningResourceDto): LearningResource {
     return {
       id: dto.resourceId,
       title: dto.title,
+      url: dto.url ?? undefined,
+      imageUrl: dto.imageUrl ?? undefined,
+      notes: dto.notes ?? undefined,
       difficulty: this.capitalizeDifficulty(dto.difficulty),
       energyLevel: this.capitalizeEnergyLevel(dto.energyLevel),
+      mentalState: this.parseMentalState(dto.mentalState),
       status: this.capitalizeStatus(dto.status),
       typeId: dto.typeId,
       topicIds: dto.topicIds,
       estimatedDuration: { value: dto.estimatedDurationMinutes, isEstimated: true },
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      lastViewed: this.parseOptionalDate(dto.lastViewed),
+      createdAt: this.parseDate(dto.createdAt),
+      updatedAt: this.parseDate(dto.updatedAt),
     };
   }
 

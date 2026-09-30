@@ -213,17 +213,27 @@ export class LearningResourceService {
       if (v === 'completed') return 'Completed';
       return 'Pending';
     };
+    const parseDate = (value: string | null | undefined): Date | undefined => {
+      if (!value) return undefined;
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? undefined : date;
+    };
+    const now = new Date();
     return {
       id: dto.resourceId,
       title: dto.title,
+      url: dto.url ?? undefined,
+      imageUrl: dto.imageUrl ?? undefined,
+      notes: dto.notes ?? undefined,
       difficulty: capitalize(dto.difficulty) as DifficultyLevel,
       energyLevel: capitalize(dto.energyLevel) as EnergyLevel,
       status: toStatus(dto.status),
       typeId: dto.typeId,
       topicIds: dto.topicIds,
       estimatedDuration: { value: dto.estimatedDurationMinutes, isEstimated: true },
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      lastViewed: parseDate(dto.lastViewed),
+      createdAt: parseDate(dto.createdAt) ?? now,
+      updatedAt: parseDate(dto.updatedAt) ?? now,
     };
   }
 
