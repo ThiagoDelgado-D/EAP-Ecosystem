@@ -602,6 +602,12 @@
   border-color: var(--color-ink-strong);
 }
 
+.tone-chip {
+  border-color: color-mix(in oklab, var(--tone, var(--color-accent)) 35%, transparent);
+  background: color-mix(in oklab, var(--tone, var(--color-accent)) 12%, transparent);
+  color: color-mix(in oklab, var(--tone, var(--color-accent)) 85%, var(--color-ink-body));
+}
+
 .ring-track {
   stroke: var(--color-line-soft);
 }

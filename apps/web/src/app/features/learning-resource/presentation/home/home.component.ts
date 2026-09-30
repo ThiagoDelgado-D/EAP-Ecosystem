@@ -20,6 +20,10 @@ import type {
 } from '../../domain/learning-resource.model';
 import type { ResourceType } from '../../domain/resource-type.model';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service.js';
+import { TopicService } from '@features/learning-resource/application/topic.service.js';
+import { TopicRepository } from '@features/learning-resource/domain/topic.repository.js';
+import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository.js';
+import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import { ToastService } from '@core/toast/toast.service';
 import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
 import { PaginatorComponent } from '@shared/components/paginator/paginator.component';
@@ -33,6 +37,7 @@ import {
   DIFFICULTY_LEVELS,
   ENERGY_LEVELS,
   RESOURCE_STATUSES,
+  RESOURCE_STATUS_LABELS,
   MENTAL_STATE_TYPES,
   MENTAL_STATE_LABELS,
 } from '@features/learning-resource/domain/learning-resource.constants';
@@ -57,6 +62,44 @@ const FALLBACK_TYPE_META = {
   color: 'bg-slate-800 text-slate-400',
 };
 
+const TYPE_TONE: Record<string, string> = {
+  video: 'info',
+  article: 'pine',
+  book: 'ochre',
+  course: 'ember',
+  audio: 'plum',
+  document: 'slate',
+  toolkit: 'info',
+};
+
+const TYPE_GLYPH: Record<string, string> = {
+  video: '▶',
+  article: '¶',
+  book: '❡',
+  course: '≡',
+  audio: '◍',
+  document: '{}',
+  toolkit: '⑂',
+};
+
+const STATUS_TONE: Record<ResourceStatus, string> = {
+  Pending: 'slate',
+  InProgress: 'ochre',
+  Completed: 'pine',
+};
+
+const DIFFICULTY_TONE: Record<DifficultyLevel, string> = {
+  Low: 'pine',
+  Medium: 'ochre',
+  High: 'ember',
+};
+
+const ENERGY_TONE: Record<EnergyLevel, string> = {
+  Low: 'info',
+  Medium: 'ochre',
+  High: 'ember',
+};
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -65,20 +108,24 @@ const FALLBACK_TYPE_META = {
   providers: [
     LearningResourceService,
     ResourceTypeService,
+    TopicService,
     { provide: LearningResourceRepository, useClass: LearningResourceHttpRepository },
     { provide: ResourceTypeRepository, useClass: ResourceTypeHttpRepository },
+    { provide: TopicRepository, useClass: TopicHttpRepository },
   ],
-  imports: [FormsModule, RouterModule, EnumBadgeComponent, PaginatorComponent],
+  imports: [FormsModule, RouterModule, EnumBadgeComponent, PaginatorComponent, RevealDirective],
 })
 export class HomeComponent implements OnInit {
   private readonly service = inject(LearningResourceService);
   private readonly typeService = inject(ResourceTypeService);
+  private readonly topicService = inject(TopicService);
   private readonly toastService = inject(ToastService);
   private readonly http = inject(HttpClient);
   readonly libraryService = inject(ResourceLibraryService);
 
   readonly allResources = this.service.resources;
   readonly resourceTypes = this.typeService.resourceTypes;
+  readonly topics = this.topicService.topics;
   readonly loading = this.service.loading;
   readonly error = this.service.error;
   readonly currentPage = this.service.currentPage;
@@ -102,6 +149,7 @@ export class HomeComponent implements OnInit {
   energyFilterValue = signal<EnergyLevel | null>(null);
   statusFilterValue = signal<ResourceStatus | null>(null);
   mentalStateFilterValue = signal<MentalStateType | null>(null);
+  typeFilterValue = signal<string | null>(null);
 
   readonly difficulties: readonly DifficultyLevel[] = DIFFICULTY_LEVELS;
   readonly energyLevels: readonly EnergyLevel[] = ENERGY_LEVELS;
@@ -112,6 +160,11 @@ export class HomeComponent implements OnInit {
 
   readonly toggleLoadingId = signal<string | null>(null);
   private suggestionsSeq = 0;
+
+  readonly STATUS_TONE = STATUS_TONE;
+  readonly DIFFICULTY_TONE = DIFFICULTY_TONE;
+  readonly ENERGY_TONE = ENERGY_TONE;
+  readonly STATUS_LABELS = RESOURCE_STATUS_LABELS;
 
   readonly difficultyOptions = DIFFICULTY_BADGE_OPTIONS;
   readonly energyOptions = ENERGY_BADGE_OPTIONS;
@@ -136,21 +189,15 @@ export class HomeComponent implements OnInit {
 
   readonly displayedResources = this.tabFilteredResources;
 
-  readonly pulseStats = computed(() => {
+  readonly statusCounts = computed(() => {
     const all = this.allResources();
     if (!all.length) return null;
 
     const completed = all.filter((r) => r.status === 'Completed').length;
     const inProgress = all.filter((r) => r.status === 'InProgress').length;
     const pending = all.filter((r) => r.status === 'Pending').length;
-    const pct = Math.round((completed / all.length) * 100);
 
-    let label: string;
-    if (pct >= 75) label = 'Peak Phase';
-    else if (pct >= 40) label = 'Ready';
-    else label = 'Building';
-
-    return { completed, inProgress, pending, total: all.length, pct, label };
+    return { completed, inProgress, pending };
   });
 
   readonly hasActiveFilters = computed(
@@ -160,6 +207,7 @@ export class HomeComponent implements OnInit {
         this.energyFilterValue() ||
         this.statusFilterValue() ||
         this.mentalStateFilterValue() ||
+        this.typeFilterValue() ||
         this.searchQuery().trim()
       ),
   );
@@ -178,39 +226,41 @@ export class HomeComponent implements OnInit {
         if (state.energyLevel) this.energyFilterValue.set(state.energyLevel);
         if (state.status) this.statusFilterValue.set(state.status);
         if (state.mentalState) this.mentalStateFilterValue.set(state.mentalState);
+        if (state.resourceTypeId) this.typeFilterValue.set(state.resourceTypeId);
         if (state.q) this.searchQuery.set(state.q);
       }
     } catch {
       // malformed entry — fall back to defaults
     }
     if (pageSize !== DEFAULT_PAGE_SIZE) this.pageSize.set(pageSize);
-    await Promise.all([this.service.load({ page, pageSize }), this.typeService.loadAll()]);
+    await Promise.all([
+      this.service.load({ page, pageSize }),
+      this.typeService.loadAll(),
+      this.topicService.loadAll(),
+    ]);
   }
 
   setTab(tab: TabMode): void {
     this.activeTab.set(tab);
   }
 
-  private buildCurrentParams(): ResourceQueryParams {
-    const params: ResourceQueryParams = {
-      page: this.service.currentPage(),
-      pageSize: this.pageSize(),
-    };
+  private buildParams(page: number): ResourceQueryParams {
+    const params: ResourceQueryParams = { page, pageSize: this.pageSize() };
     if (this.difficultyFilterValue()) params.difficulty = this.difficultyFilterValue()!;
     if (this.energyFilterValue()) params.energyLevel = this.energyFilterValue()!;
     if (this.statusFilterValue()) params.status = this.statusFilterValue()!;
     if (this.mentalStateFilterValue()) params.mentalState = this.mentalStateFilterValue()!;
+    if (this.typeFilterValue()) params.resourceTypeId = this.typeFilterValue()!;
     if (this.searchQuery().trim()) params.q = this.searchQuery().trim();
     return params;
   }
 
+  private buildCurrentParams(): ResourceQueryParams {
+    return this.buildParams(this.service.currentPage());
+  }
+
   async applyFilter(): Promise<void> {
-    const params: ResourceQueryParams = { page: 1, pageSize: this.pageSize() };
-    if (this.difficultyFilterValue()) params.difficulty = this.difficultyFilterValue()!;
-    if (this.energyFilterValue()) params.energyLevel = this.energyFilterValue()!;
-    if (this.statusFilterValue()) params.status = this.statusFilterValue()!;
-    if (this.mentalStateFilterValue()) params.mentalState = this.mentalStateFilterValue()!;
-    if (this.searchQuery().trim()) params.q = this.searchQuery().trim();
+    const params = this.buildParams(1);
     await this.service.load(params);
 
     if (this.service.total() === 0 && params.q) {
@@ -252,6 +302,7 @@ export class HomeComponent implements OnInit {
     this.energyFilterValue.set(null);
     this.statusFilterValue.set(null);
     this.mentalStateFilterValue.set(null);
+    this.typeFilterValue.set(null);
     this.searchQuery.set('');
     this.suggestions.set([]);
     await this.service.load({ page: 1, pageSize: this.pageSize() });
@@ -267,7 +318,7 @@ export class HomeComponent implements OnInit {
     await this.service.load({ ...current, page });
   }
 
-  onCardClick(resource: LearningResource): void {
+  trackCardView(resource: LearningResource): void {
     this.libraryService.trackRecent(resource.id);
     sessionStorage.setItem(
       'eap:resource-list-params',
@@ -278,9 +329,14 @@ export class HomeComponent implements OnInit {
         energyLevel: this.energyFilterValue(),
         status: this.statusFilterValue(),
         mentalState: this.mentalStateFilterValue(),
+        resourceTypeId: this.typeFilterValue(),
         q: this.searchQuery(),
       }),
     );
+  }
+
+  onCardClick(resource: LearningResource): void {
+    this.trackCardView(resource);
     this.router.navigate(['/resources', resource.id]);
   }
 
@@ -293,6 +349,74 @@ export class HomeComponent implements OnInit {
     const type = this.resourceTypes().find((t: ResourceType) => t.id === typeId);
     if (!type) return FALLBACK_TYPE_META;
     return TYPE_META[type.code.toLowerCase()] ?? { ...FALLBACK_TYPE_META, label: type.displayName };
+  }
+
+  typeTone(typeId: string): string {
+    const type = this.resourceTypes().find((t: ResourceType) => t.id === typeId);
+    const key = type?.code.toLowerCase() ?? 'document';
+    return TYPE_TONE[key] ?? 'pine';
+  }
+
+  typeGlyph(typeId: string): string {
+    const type = this.resourceTypes().find((t: ResourceType) => t.id === typeId);
+    const key = type?.code.toLowerCase() ?? 'document';
+    return TYPE_GLYPH[key] ?? 'R';
+  }
+
+  toneVar(tone: string): string {
+    return `var(--tone-${tone})`;
+  }
+
+  sourceOf(resource: LearningResource): string | null {
+    if (!resource.url) return null;
+    try {
+      return new URL(resource.url).hostname.replace(/^www\./, '');
+    } catch {
+      return null;
+    }
+  }
+
+  topicColor(topicId: string): string | undefined {
+    return this.topics().find((t) => t.id === topicId)?.color ?? undefined;
+  }
+
+  coverStyle(resource: LearningResource): string {
+    const color = resource.topicIds
+      .map((id) => this.topicColor(id))
+      .find((c): c is string => !!c);
+    if (color) return `--cover-h: 135deg; --cover-a: ${color};`;
+    return `--cover-h: 135deg; --cover-a: var(--tone-${this.typeTone(resource.typeId)});`;
+  }
+
+  topicChips(resource: LearningResource): { name: string; color?: string }[] {
+    const byId = new Map(this.topics().map((t) => [t.id, t]));
+    return resource.topicIds
+      .map((id) => byId.get(id))
+      .filter((t): t is NonNullable<typeof t> => !!t)
+      .slice(0, 2)
+      .map((t) => ({ name: t.name, color: t.color ?? undefined }));
+  }
+
+  readonly pageMinutes = computed(() =>
+    this.displayedResources().reduce((sum, r) => sum + (r.estimatedDuration.value ?? 0), 0),
+  );
+
+  relativeLabel(resource: LearningResource): string {
+    const date = resource.lastViewed ?? resource.updatedAt;
+    const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
+    if (days <= 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 7) return `${days}d ago`;
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  revealDelay(index: number): number {
+    return Math.min(index * 55, 330);
+  }
+
+  setStatusFilter(value: ResourceStatus | null): void {
+    this.statusFilterValue.set(value);
+    void this.applyFilter();
   }
 
   async onToggle(

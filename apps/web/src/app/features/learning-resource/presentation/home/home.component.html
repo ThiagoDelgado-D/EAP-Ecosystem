@@ -1,79 +1,26 @@
-<div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-5">
-  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-    <div>
-      <p class="text-xs uppercase tracking-widest text-slate-500 font-medium mb-1">Knowledge Hub</p>
-      <h1 class="text-2xl sm:text-3xl font-bold text-slate-100 leading-tight">
-        Resources <span class="text-slate-500 font-normal">Library</span>
+<div class="mx-auto w-full max-w-[86rem] px-4 sm:px-7 flex flex-col gap-6 pt-1 pb-4">
+  <header appReveal class="grid items-end gap-5 lg:grid-cols-[minmax(0,1fr)_auto]">
+    <div class="min-w-0">
+      <p class="eyebrow">
+        {{ total() }} live resources &middot; {{ pageMinutes() }}m on this page
+      </p>
+      <h1 class="display mt-2 text-[clamp(2rem,5vw,3.2rem)] font-semibold">
+        Library <span class="text-accent-ink">with real costs</span>
       </h1>
-      <p class="text-sm text-slate-500 mt-1">
-        Curated learning materials. Designed for focus, engineered for resilience.
+      <p class="mt-3 max-w-2xl text-[0.92rem] leading-relaxed text-ink-body">
+        Each resource declares how much time it asks for, how much energy it takes, and where it
+        stands. Tap any badge to cycle it: the change saves instantly.
       </p>
     </div>
-
-    <div class="flex items-center gap-2 shrink-0">
-      <div class="relative">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input
-          type="text"
-          placeholder="Search…"
-          aria-label="Search resources"
-          [ngModel]="searchQuery()"
-          (ngModelChange)="searchQuery.set($event)"
-          (keydown.enter)="applyFilter()"
-          class="bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-8 py-2 text-sm text-slate-300 placeholder:text-slate-600 w-44 sm:w-56 focus:outline-none focus:border-violet-500 transition-colors"
-        />
-        @if (searchQuery()) {
-          <button
-            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
-            (click)="clearSearch()"
-            aria-label="Clear search"
-          >
-            <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        }
-      </div>
-      <a
-        routerLink="/add"
-        class="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
-      >
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Add resource
+    <div class="flex flex-col items-start gap-2">
+      <a routerLink="/add" class="btn btn-primary">Capture resource</a>
+      <a routerLink="/paths" class="link-underline text-[0.76rem] text-ink-dim hover:text-ink-strong">
+        or add it to a path &rarr;
       </a>
     </div>
-  </div>
+  </header>
 
-  <div class="flex items-center gap-1 border-b border-slate-800 pb-0">
+  <div appReveal class="flex items-center gap-1 border-b border-line-soft">
     @for (tab of tabs; track tab.value) {
       <button
         type="button"
@@ -82,8 +29,8 @@
           [
             'px-4 py-2 text-sm font-medium transition-colors relative',
             activeTab() === tab.value
-              ? 'text-slate-100 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-violet-500 after:rounded-full'
-              : 'text-slate-500 hover:text-slate-300',
+              ? 'text-ink-strong after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-accent after:rounded-full'
+              : 'text-ink-dim hover:text-ink-body',
           ].join(' ')
         "
       >
@@ -92,452 +39,328 @@
     }
 
     <div class="flex-1"></div>
-    <div class="flex items-center gap-1 border border-slate-700 rounded-lg p-1 mb-1">
-      <button
-        [class]="
-          viewMode() === 'grid'
-            ? 'p-1.5 rounded-md bg-slate-700 text-slate-200'
-            : 'p-1.5 rounded-md text-slate-500 hover:text-slate-300 transition-colors'
-        "
-        (click)="viewMode.set('grid')"
-        aria-label="Grid view"
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-        </svg>
-      </button>
-      <button
-        [class]="
-          viewMode() === 'list'
-            ? 'p-1.5 rounded-md bg-slate-700 text-slate-200'
-            : 'p-1.5 rounded-md text-slate-500 hover:text-slate-300 transition-colors'
-        "
-        (click)="viewMode.set('list')"
-        aria-label="List view"
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
-    </div>
   </div>
 
-  <div class="flex flex-wrap items-center gap-2">
-    <span class="text-xs text-slate-500 uppercase tracking-wider font-medium">Filter by</span>
+  <div appReveal class="card p-4 sm:p-5">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div class="relative flex-1">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="absolute top-1/2 left-4 -translate-y-1/2 text-ink-faint pointer-events-none"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search by title…"
+            aria-label="Search resources"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            (keydown.enter)="applyFilter()"
+            class="input w-full rounded-full py-3 pl-11 pr-10 text-[0.92rem]"
+          />
+          @if (searchQuery()) {
+            <button
+              type="button"
+              (click)="clearSearch()"
+              class="absolute top-1/2 right-3 -translate-y-1/2 text-ink-faint transition-colors hover:text-ink-strong"
+              aria-label="Clear search"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          }
+        </div>
 
-    <select
-      class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
-      [(ngModel)]="mentalStateFilterValue"
-      aria-label="Filter by mental state"
-      (ngModelChange)="applyFilter()"
-    >
-      <option [ngValue]="null">Mental State</option>
-      @for (ms of mentalStates; track ms.value) {
-        <option [ngValue]="ms.value">{{ ms.label }}</option>
-      }
-    </select>
+        <div class="flex items-center gap-2">
+          <div class="inline-flex items-center gap-1 rounded-full border border-line-soft bg-surface-overlay p-1">
+            <button
+              type="button"
+              (click)="viewMode.set('list')"
+              aria-label="List view"
+              [class]="
+                viewMode() === 'list'
+                  ? 'grid h-7 w-8 place-items-center rounded-full bg-ink-strong text-surface-base transition-all'
+                  : 'grid h-7 w-8 place-items-center rounded-full text-ink-dim hover:text-ink-strong transition-all'
+              "
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              (click)="viewMode.set('grid')"
+              aria-label="Grid view"
+              [class]="
+                viewMode() === 'grid'
+                  ? 'grid h-7 w-8 place-items-center rounded-full bg-ink-strong text-surface-base transition-all'
+                  : 'grid h-7 w-8 place-items-center rounded-full text-ink-dim hover:text-ink-strong transition-all'
+              "
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
-    <select
-      class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
-      [(ngModel)]="difficultyFilterValue"
-      aria-label="Filter by difficulty"
-      (ngModelChange)="applyFilter()"
-    >
-      <option [ngValue]="null">Difficulty</option>
-      @for (d of difficulties; track d) {
-        <option [ngValue]="d">{{ d }}</option>
-      }
-    </select>
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+        <div class="flex items-center gap-2">
+          <span class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Status</span>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" class="chip" [attr.data-on]="!statusFilterValue() || undefined" (click)="setStatusFilter(null)">
+              All
+            </button>
+            @for (s of statuses; track s) {
+              <button
+                type="button"
+                class="chip tone-chip"
+                [style.--tone]="toneVar(STATUS_TONE[s])"
+                [attr.data-on]="statusFilterValue() === s || undefined"
+                (click)="setStatusFilter(statusFilterValue() === s ? null : s)"
+              >
+                {{ STATUS_LABELS[s] }}
+              </button>
+            }
+          </div>
+        </div>
 
-    <select
-      class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
-      [(ngModel)]="energyFilterValue"
-      aria-label="Filter by energy"
-      (ngModelChange)="applyFilter()"
-    >
-      <option [ngValue]="null">Energy</option>
-      @for (e of energyLevels; track e) {
-        <option [ngValue]="e">{{ e }}</option>
-      }
-    </select>
+        <div class="flex items-center gap-2">
+          <span class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Difficulty</span>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" class="chip" [attr.data-on]="!difficultyFilterValue() || undefined" (click)="difficultyFilterValue.set(null); applyFilter()">
+              All
+            </button>
+            @for (d of difficulties; track d) {
+              <button
+                type="button"
+                class="chip tone-chip"
+                [style.--tone]="toneVar(DIFFICULTY_TONE[d])"
+                [attr.data-on]="difficultyFilterValue() === d || undefined"
+                (click)="difficultyFilterValue.set(difficultyFilterValue() === d ? null : d); applyFilter()"
+              >
+                {{ d }}
+              </button>
+            }
+          </div>
+        </div>
 
-    <select
-      class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-slate-300 hover:border-slate-600 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
-      [(ngModel)]="statusFilterValue"
-      aria-label="Filter by status"
-      (ngModelChange)="applyFilter()"
-    >
-      <option [ngValue]="null">Status</option>
-      @for (s of statuses; track s) {
-        <option [ngValue]="s">{{ s }}</option>
-      }
-    </select>
+        <div class="flex items-center gap-2">
+          <span class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Energy</span>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" class="chip" [attr.data-on]="!energyFilterValue() || undefined" (click)="energyFilterValue.set(null); applyFilter()">
+              All
+            </button>
+            @for (e of energyLevels; track e) {
+              <button
+                type="button"
+                class="chip tone-chip"
+                [style.--tone]="toneVar(ENERGY_TONE[e])"
+                [attr.data-on]="energyFilterValue() === e || undefined"
+                (click)="energyFilterValue.set(energyFilterValue() === e ? null : e); applyFilter()"
+              >
+                {{ e }}
+              </button>
+            }
+          </div>
+        </div>
 
-    @if (hasActiveFilters()) {
-      <button
-        class="flex items-center gap-1 text-xs text-slate-500 hover:text-violet-400 border border-slate-700 rounded-lg px-3 py-1.5 transition-colors"
-        (click)="clearFilters()"
-      >
-        <svg
-          width="11"
-          height="11"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-        Clear All
-      </button>
+        <div class="flex items-center gap-2">
+          <span class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Type</span>
+          <select
+            class="input w-auto rounded-full py-1 pl-3 pr-7 text-[0.74rem]"
+            [(ngModel)]="typeFilterValue"
+            aria-label="Filter by type"
+            (ngModelChange)="applyFilter()"
+          >
+            <option [ngValue]="null">All</option>
+            @for (t of resourceTypes(); track t.id) {
+              <option [ngValue]="t.id">{{ t.displayName }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Mind</span>
+          <select
+            class="input w-auto rounded-full py-1 pl-3 pr-7 text-[0.74rem]"
+            [(ngModel)]="mentalStateFilterValue"
+            aria-label="Filter by mental state"
+            (ngModelChange)="applyFilter()"
+          >
+            <option [ngValue]="null">All</option>
+            @for (ms of mentalStates; track ms.value) {
+              <option [ngValue]="ms.value">{{ ms.label }}</option>
+            }
+          </select>
+        </div>
+
+        <span class="ml-auto flex items-center gap-2 text-[0.74rem] text-ink-dim">
+          <span class="tnum font-semibold text-ink-strong">{{ total() }}</span> results
+          @if (hasActiveFilters()) {
+            <button type="button" class="chip" (click)="clearFilters()">clear</button>
+          }
+        </span>
+      </div>
+    </div>
+
+    @if (statusCounts()) {
+      <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line-soft pt-3 text-[0.72rem] text-ink-dim">
+        <button type="button" class="link-underline inline-flex items-center gap-1.5" (click)="setStatusFilter('InProgress')">
+          <span class="tnum font-semibold text-ink-strong">{{ statusCounts()!.inProgress }}</span> active
+        </button>
+        <button type="button" class="link-underline inline-flex items-center gap-1.5" (click)="setStatusFilter('Completed')">
+          <span class="tnum font-semibold text-ink-strong">{{ statusCounts()!.completed }}</span> done
+        </button>
+        <button type="button" class="link-underline inline-flex items-center gap-1.5" (click)="setStatusFilter('Pending')">
+          <span class="tnum font-semibold text-ink-strong">{{ statusCounts()!.pending }}</span> pending
+        </button>
+      </div>
     }
   </div>
 
   @if (loading()) {
-    <div class="flex items-center justify-center gap-2 text-slate-500 text-sm py-16">
-      <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-      </svg>
-      Loading resources…
+    <div class="card h-56 animate-pulse"></div>
+  } @else if (error()) {
+    <div class="card border-energy-high/40 bg-energy-high/20 p-4 text-sm text-energy-high text-center">
+      {{ error() }}
     </div>
-  }
-
-  @if (error()) {
-    <div class="text-red-400 text-sm py-4 text-center">{{ error() }}</div>
-  }
-
-  @if (!loading() && !error() && viewMode() === 'grid') {
-    @if (displayedResources().length === 0) {
-      <div class="flex flex-col items-center justify-center py-24 gap-4">
-        <div
-          class="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            class="text-slate-500"
-          >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </div>
-        <div class="text-center">
-          <p class="text-sm font-medium text-slate-200 mb-1">No resources found</p>
-          <p class="text-xs text-slate-500">
-            @if (activeTab() === 'saved') {
-              Save some resources to see them here.
-            } @else if (activeTab() === 'recent') {
-              Open a resource to track it here.
-            } @else {
-              Try adjusting your filters or add a new resource.
-            }
-          </p>
-        </div>
+  } @else if (displayedResources().length === 0) {
+    <div class="card card-alt flex flex-col items-start gap-3 p-8">
+      <span class="grid h-11 w-11 place-items-center rounded-[14px_4px_14px_4px] bg-surface-overlay text-accent">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </span>
+      <div>
+        <h3 class="display text-2xl">No resources found</h3>
+        <p class="mt-1 max-w-md text-sm text-ink-dim">
+          @if (activeTab() === 'saved') {
+            Save some resources to see them here.
+          } @else if (activeTab() === 'recent') {
+            Open a resource to track it here.
+          } @else {
+            Try adjusting your filters or capture something new.
+          }
+        </p>
+      </div>
+      <div class="mt-1 flex flex-wrap gap-2">
         @if (activeTab() === 'all') {
-          <a
-            routerLink="/add"
-            class="bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          >
-            + Add your first resource
-          </a>
+          <a routerLink="/add" class="btn btn-primary btn-sm">Capture resource</a>
+        }
+        @if (hasActiveFilters()) {
+          <button type="button" class="btn btn-outline btn-sm" (click)="clearFilters()">Clear filters</button>
         }
       </div>
-    } @else {
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-        @for (resource of displayedResources(); track resource.id) {
+    </div>
+  } @else if (viewMode() === 'grid') {
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      @for (resource of displayedResources(); track resource.id; let i = $index) {
+        <article
+          appReveal
+          [appRevealDelay]="revealDelay(i)"
+          class="card card-lift group flex h-full flex-col overflow-hidden"
+        >
           <div
-            class="group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700 hover:bg-slate-800/40 transition-all duration-200 cursor-pointer flex flex-col"
-            tabindex="0"
-            role="button"
-            (click)="onCardClick(resource)"
-            (keydown.enter)="onCardClick(resource)"
-            (keydown.space)="onCardClick(resource); $event.preventDefault()"
-          >
-            <div class="relative h-36 overflow-hidden flex-shrink-0">
-              @if (resource.imageUrl) {
-                <img
-                  [src]="resource.imageUrl"
-                  [alt]="resource.title"
-                  class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"
-                ></div>
-              } @else {
-                <div
-                  class="w-full h-full flex items-center justify-center"
-                  [class]="getTypeMeta(resource.typeId).color.split(' ')[0]"
-                >
-                  @switch (getTypeMeta(resource.typeId).icon) {
-                    @case ('video') {
-                      <svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        class="opacity-40"
-                        [class]="getTypeMeta(resource.typeId).color.split(' ')[1]"
-                      >
-                        <polygon points="5,3 19,12 5,21" />
-                      </svg>
-                    }
-                    @case ('audio') {
-                      <svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        class="opacity-40"
-                        [class]="getTypeMeta(resource.typeId).color.split(' ')[1]"
-                      >
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                        <line x1="12" y1="19" x2="12" y2="23" />
-                        <line x1="8" y1="23" x2="16" y2="23" />
-                      </svg>
-                    }
-                    @case ('book') {
-                      <svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        class="opacity-40"
-                        [class]="getTypeMeta(resource.typeId).color.split(' ')[1]"
-                      >
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                      </svg>
-                    }
-                    @case ('course') {
-                      <svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        class="opacity-40"
-                        [class]="getTypeMeta(resource.typeId).color.split(' ')[1]"
-                      >
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                      </svg>
-                    }
-                    @case ('toolkit') {
-                      <svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        class="opacity-40"
-                        [class]="getTypeMeta(resource.typeId).color.split(' ')[1]"
-                      >
-                        <path
-                          d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77
-                                   a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91
-                                   a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
-                        />
-                      </svg>
-                    }
-                    @default {
-                      <svg
-                        width="36"
-                        height="36"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        class="opacity-40"
-                        [class]="getTypeMeta(resource.typeId).color.split(' ')[1]"
-                      >
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                      </svg>
-                    }
-                  }
-                </div>
-              }
-
-              <span
-                class="absolute top-2 left-2 text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-900/80 backdrop-blur-sm text-slate-300"
-              >
-                {{ getTypeMeta(resource.typeId).label }}
-              </span>
-
-              <button
-                (click)="toggleSaved($event, resource.id)"
-                class="absolute top-2 right-2 w-7 h-7 rounded-full bg-slate-900/80 backdrop-blur-sm flex items-center justify-center hover:bg-slate-800 transition-colors"
-                [attr.aria-label]="
-                  libraryService.isSaved(resource.id) ? 'Unsave resource' : 'Save resource'
-                "
-                [attr.aria-pressed]="libraryService.isSaved(resource.id)"
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  [attr.fill]="libraryService.isSaved(resource.id) ? 'currentColor' : 'none'"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  [class]="
-                    libraryService.isSaved(resource.id) ? 'text-violet-400' : 'text-slate-400'
-                  "
-                >
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                </svg>
-              </button>
-            </div>
-
-            <div class="p-4 flex flex-col gap-2 flex-1">
-              <h2
-                class="text-sm font-semibold text-slate-100 leading-snug group-hover:text-violet-300 transition-colors line-clamp-2"
-              >
-                {{ resource.title }}
-              </h2>
-
-              <div class="flex flex-wrap gap-1.5 mt-auto pt-2">
-                <span class="inline-flex items-center gap-1" (click)="$event.stopPropagation()">
-                  <span class="text-[9px] text-slate-500 font-medium uppercase tracking-wide"
-                    >Diff</span
-                  >
-                  <app-enum-badge
-                    [value]="resource.difficulty"
-                    [options]="difficultyOptions"
-                    [loading]="toggleLoadingId() === resource.id + ':difficulty'"
-                    (changed)="onToggle($event, resource, 'difficulty')"
-                  />
-                </span>
-                <span class="inline-flex items-center gap-1" (click)="$event.stopPropagation()">
-                  <span class="text-[9px] text-slate-500 font-medium uppercase tracking-wide"
-                    >Energy</span
-                  >
-                  <app-enum-badge
-                    [value]="resource.energyLevel"
-                    [options]="energyOptions"
-                    [loading]="toggleLoadingId() === resource.id + ':energy'"
-                    (changed)="onToggle($event, resource, 'energy')"
-                  />
-                </span>
-                <span class="badge bg-line-soft border-line-strong text-ink-dim">
-                  {{ resource.estimatedDuration.value }} min
-                </span>
-                <span class="ml-auto" (click)="$event.stopPropagation()">
-                  <app-enum-badge
-                    [value]="resource.status"
-                    [options]="statusOptions"
-                    [loading]="toggleLoadingId() === resource.id + ':status'"
-                    (changed)="onToggle($event, resource, 'status')"
-                  />
-                </span>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
-  }
-
-  @if (!loading() && !error() && viewMode() === 'list') {
-    @if (displayedResources().length === 0) {
-      <div class="text-center py-16 text-slate-500 text-sm">No resources found.</div>
-    } @else {
-      <div class="flex flex-col divide-y divide-slate-800">
-        @for (resource of displayedResources(); track resource.id) {
-          <div
-            class="group flex items-center gap-4 py-3 hover:bg-slate-800/40 px-3 rounded-lg transition-colors cursor-pointer"
+            class="relative block cursor-pointer"
             (click)="onCardClick(resource)"
             tabindex="0"
             role="button"
-            (click)="onCardClick(resource)"
+            [attr.aria-label]="resource.title"
             (keydown.enter)="onCardClick(resource)"
             (keydown.space)="onCardClick(resource); $event.preventDefault()"
           >
             <div
-              class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-              [class]="getTypeMeta(resource.typeId).color"
+              class="cover relative grid h-28 w-full place-items-center overflow-hidden text-3xl"
+              [style]="coverStyle(resource)"
+              aria-hidden
+            >
+              <span class="display relative z-10 text-white/90">{{ typeGlyph(resource.typeId) }}</span>
+            </div>
+            <span
+              class="absolute top-2.5 left-2.5 rounded-full px-2 py-0.5 text-[0.64rem] font-bold uppercase tracking-wide text-ink-strong backdrop-blur"
+              style="background: color-mix(in oklab, var(--color-surface-base) 72%, transparent)"
+            >
+              {{ getTypeMeta(resource.typeId).label }}
+            </span>
+            <button
+              type="button"
+              (click)="toggleSaved($event, resource.id)"
+              class="absolute top-2 right-2 grid h-8 w-8 place-items-center rounded-full backdrop-blur transition-all duration-300 hover:scale-110"
+              [class.text-accent-ink]="libraryService.isSaved(resource.id)"
+              [class.text-ink-faint]="!libraryService.isSaved(resource.id)"
+              style="background: color-mix(in oklab, var(--color-surface-base) 72%, transparent)"
+              [attr.aria-label]="libraryService.isSaved(resource.id) ? 'Unsave resource' : 'Save resource'"
+              [attr.aria-pressed]="libraryService.isSaved(resource.id)"
             >
               <svg
-                width="14"
-                height="14"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
-                fill="none"
+                [attr.fill]="libraryService.isSaved(resource.id) ? 'currentColor' : 'none'"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.9"
+                [style.color]="libraryService.isSaved(resource.id) ? 'var(--tone-ochre)' : null"
               >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
-            </div>
+            </button>
+          </div>
 
-            <div class="flex-1 min-w-0">
-              <span
-                class="text-sm font-medium text-slate-100 group-hover:text-violet-300 transition-colors truncate block"
+          <div class="flex flex-1 flex-col gap-2 p-4">
+            <h3>
+              <a
+                [routerLink]="['/resources', resource.id]"
+                class="display line-clamp-2 text-[1.05rem] leading-snug font-semibold transition-colors group-hover:text-accent-ink"
+                (click)="trackCardView(resource)"
               >
                 {{ resource.title }}
-              </span>
-              <span class="text-xs text-slate-500">
-                {{ getTypeMeta(resource.typeId).label }} ·
-                {{ resource.estimatedDuration.value }} min
-              </span>
-            </div>
+              </a>
+            </h3>
+            <p class="text-[0.72rem] text-ink-dim">
+              @if (sourceOf(resource)) {
+                {{ sourceOf(resource) }} &middot;
+              }
+              {{ resource.estimatedDuration.value }} min &middot; {{ relativeLabel(resource) }}
+            </p>
+            @if (resource.notes) {
+              <p class="line-clamp-3 text-[0.8rem] leading-relaxed text-ink-body">{{ resource.notes }}</p>
+            }
 
-            <div class="flex items-center gap-2 shrink-0">
-              <span class="inline-flex items-center gap-1" (click)="$event.stopPropagation()">
-                <span class="text-[9px] text-slate-500 font-medium uppercase tracking-wide"
-                  >Diff</span
-                >
-                <app-enum-badge
-                  [value]="resource.difficulty"
-                  [options]="difficultyOptions"
-                  [loading]="toggleLoadingId() === resource.id + ':difficulty'"
-                  (changed)="onToggle($event, resource, 'difficulty')"
-                />
-              </span>
-              <span class="inline-flex items-center gap-1" (click)="$event.stopPropagation()">
-                <span class="text-[9px] text-slate-500 font-medium uppercase tracking-wide"
-                  >Energy</span
-                >
-                <app-enum-badge
-                  [value]="resource.energyLevel"
-                  [options]="energyOptions"
-                  [loading]="toggleLoadingId() === resource.id + ':energy'"
-                  (changed)="onToggle($event, resource, 'energy')"
-                />
-              </span>
-              <span (click)="$event.stopPropagation()">
+            <div
+              class="mt-auto flex flex-wrap items-center gap-1.5 pt-2"
+              (click)="$event.stopPropagation()"
+              (keydown)="$event.stopPropagation()"
+            >
+              <app-enum-badge
+                [value]="resource.difficulty"
+                [options]="difficultyOptions"
+                [loading]="toggleLoadingId() === resource.id + ':difficulty'"
+                (changed)="onToggle($event, resource, 'difficulty')"
+              />
+              <app-enum-badge
+                [value]="resource.energyLevel"
+                [options]="energyOptions"
+                [loading]="toggleLoadingId() === resource.id + ':energy'"
+                (changed)="onToggle($event, resource, 'energy')"
+              />
+              <span class="ml-auto">
                 <app-enum-badge
                   [value]="resource.status"
                   [options]="statusOptions"
@@ -545,44 +368,125 @@
                   (changed)="onToggle($event, resource, 'status')"
                 />
               </span>
-
-              <button
-                (click)="toggleSaved($event, resource.id)"
-                class="p-1 rounded text-slate-600 hover:text-violet-400 transition-colors"
-                [attr.aria-label]="
-                  libraryService.isSaved(resource.id) ? 'Unsave resource' : 'Save resource'
-                "
-                [attr.aria-pressed]="libraryService.isSaved(resource.id)"
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  [attr.fill]="libraryService.isSaved(resource.id) ? 'currentColor' : 'none'"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  [class]="libraryService.isSaved(resource.id) ? 'text-violet-400' : ''"
-                >
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                </svg>
-              </button>
             </div>
           </div>
-        }
-      </div>
-    }
+        </article>
+      }
+    </div>
+  } @else {
+    <ul class="flex flex-col gap-3">
+      @for (resource of displayedResources(); track resource.id; let i = $index) {
+        <li appReveal [appRevealDelay]="revealDelay(i)">
+          <article class="card card-lift group flex gap-4 overflow-hidden p-4 pl-5">
+            <span class="accent-line"></span>
+            <div
+              class="cover relative grid h-14 w-14 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-xl text-lg"
+              [style]="coverStyle(resource)"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="resource.title"
+              (click)="onCardClick(resource)"
+              (keydown.enter)="onCardClick(resource)"
+              (keydown.space)="onCardClick(resource); $event.preventDefault()"
+            >
+              <span class="display relative z-10 text-white/90">{{ typeGlyph(resource.typeId) }}</span>
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex items-start gap-2">
+                <h3 class="min-w-0 flex-1">
+                  <a
+                    [routerLink]="['/resources', resource.id]"
+                    class="display block truncate text-[1.06rem] leading-tight font-semibold transition-colors group-hover:text-accent-ink"
+                    (click)="trackCardView(resource)"
+                  >
+                    {{ resource.title }}
+                  </a>
+                </h3>
+                <button
+                  type="button"
+                  (click)="toggleSaved($event, resource.id)"
+                  class="grid h-8 w-8 shrink-0 place-items-center rounded-full transition-all duration-300 hover:scale-110"
+                  [class.text-ink-faint]="!libraryService.isSaved(resource.id)"
+                  [style.color]="libraryService.isSaved(resource.id) ? 'var(--tone-ochre)' : null"
+                  [attr.aria-label]="libraryService.isSaved(resource.id) ? 'Unsave resource' : 'Save resource'"
+                  [attr.aria-pressed]="libraryService.isSaved(resource.id)"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    [attr.fill]="libraryService.isSaved(resource.id) ? 'currentColor' : 'none'"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                  >
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                </button>
+              </div>
+
+              <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.74rem] text-ink-dim">
+                <span class="font-semibold text-ink-body">{{ getTypeMeta(resource.typeId).label }}</span>
+                @if (sourceOf(resource)) {
+                  <span>&middot; {{ sourceOf(resource) }}</span>
+                }
+                <span>&middot; {{ resource.estimatedDuration.value }} min</span>
+                <span>&middot; {{ relativeLabel(resource) }}</span>
+              </p>
+
+              @if (resource.notes) {
+                <p class="mt-1.5 line-clamp-2 max-w-3xl text-[0.82rem] leading-relaxed text-ink-body">{{ resource.notes }}</p>
+              }
+
+              <div
+                class="mt-2.5 flex flex-wrap items-center gap-1.5"
+                (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
+              >
+                <app-enum-badge
+                  [value]="resource.difficulty"
+                  [options]="difficultyOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':difficulty'"
+                  (changed)="onToggle($event, resource, 'difficulty')"
+                />
+                <app-enum-badge
+                  [value]="resource.energyLevel"
+                  [options]="energyOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':energy'"
+                  (changed)="onToggle($event, resource, 'energy')"
+                />
+                <app-enum-badge
+                  [value]="resource.status"
+                  [options]="statusOptions"
+                  [loading]="toggleLoadingId() === resource.id + ':status'"
+                  (changed)="onToggle($event, resource, 'status')"
+                />
+                @if (topicChips(resource).length) {
+                  <span class="ml-auto hidden items-center gap-1.5 md:flex">
+                    @for (chip of topicChips(resource); track chip.name) {
+                      <span
+                        class="chip tone-chip !text-[0.64rem]"
+                        [style.--tone]="chip.color ?? 'var(--color-accent)'"
+                      >{{ chip.name }}</span>
+                    }
+                  </span>
+                }
+              </div>
+            </div>
+          </article>
+        </li>
+      }
+    </ul>
   }
 
   @if (!loading() && !error() && total() === 0 && suggestions().length > 0) {
     <div class="flex flex-col items-center gap-3 py-4">
-      <p class="text-xs text-slate-500">
-        ¿Quisiste decir…?
-      </p>
+      <p class="text-xs text-ink-dim">Did you mean…?</p>
       <div class="flex flex-wrap justify-center gap-2">
         @for (suggestion of suggestions(); track suggestion) {
           <button
             type="button"
-            class="text-xs px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-violet-400 hover:border-violet-500 hover:bg-slate-700 transition-colors"
+            class="chip"
             (click)="applySuggestion(suggestion)"
           >
             {{ suggestion }}
@@ -601,80 +505,5 @@
       (pageChange)="goToPage($event)"
       (pageSizeChange)="onPageSizeChange($event)"
     />
-  }
-
-  @if (!loading() && !error() && pulseStats()) {
-    <div
-      class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5"
-    >
-      <div class="relative w-20 h-20 flex-shrink-0">
-        <svg viewBox="0 0 36 36" class="w-20 h-20 -rotate-90">
-          <circle
-            cx="18"
-            cy="18"
-            r="15.9"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            class="text-slate-800"
-          />
-          <circle
-            cx="18"
-            cy="18"
-            r="15.9"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            [attr.stroke-dasharray]="(pulseStats()?.pct ?? 0) + ', 100'"
-            stroke-linecap="round"
-            class="text-violet-500"
-          />
-        </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center">
-          <span class="text-lg font-bold text-slate-100 leading-none">
-            {{ pulseStats()!.pct }}%
-          </span>
-          <span class="text-[9px] text-slate-500 uppercase tracking-wide mt-0.5">Energy</span>
-        </div>
-      </div>
-
-      <div class="flex-1 min-w-0">
-        <p class="text-xs uppercase tracking-widest text-slate-500 font-medium mb-1">
-          Architect's Pulse
-        </p>
-        <p class="text-sm text-slate-300 leading-relaxed mb-2">
-          You've completed
-          <span class="text-slate-100 font-semibold">{{ pulseStats()!.completed }}</span>
-          of
-          <span class="text-slate-100 font-semibold">{{ pulseStats()!.total }}</span>
-          resources this month. {{ pulseStats()!.inProgress }} in progress.
-        </p>
-        <div class="flex items-center gap-3 text-xs">
-          <span class="flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            <span class="text-slate-400">Ready</span>
-          </span>
-          <span class="flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
-            <span class="text-slate-400">{{ pulseStats()!.label }}</span>
-          </span>
-        </div>
-      </div>
-
-      <div class="flex sm:flex-col gap-2 text-center shrink-0">
-        <div class="bg-slate-800 rounded-lg px-3 py-2 min-w-[64px]">
-          <p class="text-base font-bold text-slate-100">{{ pulseStats()!.completed }}</p>
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide">Done</p>
-        </div>
-        <div class="bg-slate-800 rounded-lg px-3 py-2 min-w-[64px]">
-          <p class="text-base font-bold text-slate-100">{{ pulseStats()!.inProgress }}</p>
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide">Active</p>
-        </div>
-        <div class="bg-slate-800 rounded-lg px-3 py-2 min-w-[64px]">
-          <p class="text-base font-bold text-slate-100">{{ pulseStats()!.pending }}</p>
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide">Queued</p>
-        </div>
-      </div>
-    </div>
   }
 </div>
