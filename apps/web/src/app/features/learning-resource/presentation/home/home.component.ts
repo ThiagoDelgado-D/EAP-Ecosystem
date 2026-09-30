@@ -346,7 +346,8 @@ export class HomeComponent implements OnInit {
     this.libraryService.toggleSaved(id);
   }
 
-  getTypeMeta(typeId: string): { label: string; icon: string; color: string } {    const type = this.resourceTypes().find((t: ResourceType) => t.id === typeId);
+  getTypeMeta(typeId: string): { label: string; icon: string; color: string } {
+    const type = this.resourceTypes().find((t: ResourceType) => t.id === typeId);
     if (!type) return FALLBACK_TYPE_META;
     return TYPE_META[type.code.toLowerCase()] ?? { ...FALLBACK_TYPE_META, label: type.displayName };
   }
