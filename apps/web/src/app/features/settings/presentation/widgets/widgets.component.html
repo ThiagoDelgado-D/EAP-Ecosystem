@@ -1,11 +1,6 @@
-<div class="p-6 max-w-2xl">
-  <div class="mb-6">
-    <h1 class="text-lg font-semibold text-slate-100">Dashboard Widgets</h1>
-    <p class="text-sm text-slate-400 mt-1">Control which widgets appear and in what order. Changes apply immediately.</p>
-  </div>
-
+<div>
   @if (loading()) {
-    <div class="flex items-center gap-2 text-sm text-slate-500">
+    <div class="flex items-center gap-2 text-sm text-ink-faint">
       <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M21 12a9 9 0 11-6.219-8.56"/>
       </svg>
@@ -15,15 +10,15 @@
 
     <!-- Active section -->
     <div>
-      <p class="text-xs font-medium tracking-widest uppercase text-slate-500 mb-3">
+      <p class="text-xs font-medium tracking-widest uppercase text-ink-faint mb-3">
         Active — {{ activeWidgets().length }} widgets
       </p>
 
       <div class="flex flex-col gap-2">
         @for (widget of activeWidgets(); track widget.key; let i = $index; let last = $last) {
-          <div class="flex items-center gap-3 px-4 py-3.5 rounded-xl border bg-slate-800/60 border-slate-700 transition-all">
+          <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl border bg-surface-overlay/60 border-line-strong transition-all">
 
-            <span class="text-xs font-medium text-slate-500 w-4 text-center flex-shrink-0">{{ i + 1 }}</span>
+            <span class="text-xs font-medium text-ink-faint w-4 text-center flex-shrink-0">{{ i + 1 }}</span>
 
             <div
               class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -36,8 +31,8 @@
             </div>
 
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-slate-200">{{ widget.label }}</p>
-              <p class="text-xs text-slate-500 mt-0.5">{{ widget.desc }}</p>
+              <p class="text-sm font-medium text-ink-strong">{{ widget.label }}</p>
+              <p class="text-xs text-ink-faint mt-0.5">{{ widget.desc }}</p>
             </div>
 
             <!-- Reorder arrows -->
@@ -47,7 +42,7 @@
                 (click)="moveUp(i)"
                 [disabled]="i === 0"
                 aria-label="Move up"
-                class="p-0.5 rounded text-slate-600 hover:text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-slate-400"
+                class="p-0.5 rounded text-ink-faint hover:text-ink-body disabled:opacity-20 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-line"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="18 15 12 9 6 15"/>
@@ -58,7 +53,7 @@
                 (click)="moveDown(i)"
                 [disabled]="last"
                 aria-label="Move down"
-                class="p-0.5 rounded text-slate-600 hover:text-slate-300 disabled:opacity-20 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-slate-400"
+                class="p-0.5 rounded text-ink-faint hover:text-ink-body disabled:opacity-20 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-accent-line"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="6 9 12 15 18 9"/>
@@ -82,7 +77,7 @@
         }
 
         @if (activeWidgets().length === 0) {
-          <p class="text-sm text-slate-600 py-3">No active widgets. Enable some below.</p>
+          <p class="text-sm text-ink-faint py-3">No active widgets. Enable some below.</p>
         }
       </div>
     </div>
@@ -90,15 +85,15 @@
     <!-- Inactive section -->
     @if (inactiveWidgets().length > 0) {
       <div class="mt-6">
-        <p class="text-xs font-medium tracking-widest uppercase text-slate-500 mb-3">
+        <p class="text-xs font-medium tracking-widest uppercase text-ink-faint mb-3">
           Inactive — {{ inactiveWidgets().length }} available
         </p>
 
         <div class="flex flex-col gap-2">
           @for (widget of inactiveWidgets(); track widget.key) {
-            <div class="flex items-center gap-3 px-4 py-3.5 rounded-xl border bg-slate-900 border-slate-800 transition-all">
+            <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl border bg-surface-raised border-line-soft transition-all">
 
-              <span class="text-xs text-slate-700 w-4 text-center flex-shrink-0">—</span>
+              <span class="text-xs text-ink-dim w-4 text-center flex-shrink-0">—</span>
 
               <div
                 class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 opacity-40"
@@ -111,15 +106,15 @@
               </div>
 
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-slate-400">{{ widget.label }}</p>
-                <p class="text-xs text-slate-600 mt-0.5">{{ widget.desc }}</p>
+                <p class="text-sm font-medium text-ink-dim">{{ widget.label }}</p>
+                <p class="text-xs text-ink-faint mt-0.5">{{ widget.desc }}</p>
               </div>
 
               <!-- Toggle -->
               <button
                 type="button"
                 (click)="toggle(widget)"
-                class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none bg-slate-700"
+                class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none bg-surface-overlay"
                 [attr.aria-checked]="false"
                 [attr.aria-label]="widget.label"
                 role="switch"
@@ -133,7 +128,7 @@
     }
 
     @if (error()) {
-      <p class="mt-4 text-sm text-red-400">{{ error() }}</p>
+      <p class="mt-4 text-sm text-energy-high">{{ error() }}</p>
     }
   }
 </div>

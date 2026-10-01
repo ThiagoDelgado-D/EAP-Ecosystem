@@ -10,15 +10,9 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
   standalone: true,
   imports: [FormsModule, SearchableSelectComponent],
   template: `
-    <div class="max-w-[680px] mx-auto px-14 py-10">
-      <div class="mb-8">
-        <h1 class="text-xl font-semibold text-slate-100">Preferences</h1>
-        <p class="text-sm text-slate-400 mt-1">Customize your experience and appearance.</p>
-      </div>
-
-      <!-- Initial loading -->
+    <div>
       @if (loading() && !appearance()) {
-        <div class="flex items-center gap-2 text-sm text-slate-500">
+        <div class="flex items-center gap-2 text-sm text-ink-faint">
           <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12a9 9 0 11-6.219-8.56" />
           </svg>
@@ -27,11 +21,11 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
 
       <!-- Load failed, no data to show -->
       } @else if (!appearance() && error()) {
-        <div class="rounded-xl border border-red-900/50 bg-red-950/20 p-5 flex items-center justify-between gap-4">
-          <p class="text-sm text-red-400">{{ error() }}</p>
+        <div class="rounded-xl border border-energy-high/50 bg-energy-high/20 p-5 flex items-center justify-between gap-4">
+          <p class="text-sm text-energy-high">{{ error() }}</p>
           <button
             type="button"
-            class="flex-shrink-0 text-sm text-slate-400 hover:text-slate-200 border border-slate-700 hover:border-slate-600 px-3 py-1.5 rounded-lg transition-colors"
+            class="flex-shrink-0 text-sm text-ink-dim hover:text-ink-strong border border-line-strong hover:border-line-strong px-3 py-1.5 rounded-lg transition-colors"
             (click)="reload()"
           >
             Try again
@@ -40,18 +34,18 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
 
       <!-- Content -->
       } @else if (appearance()) {
-        <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-4">
 
           <!-- Language & Region -->
-          <div class="rounded-xl border border-slate-800 bg-slate-900 divide-y divide-slate-800">
+          <div class="rounded-xl border border-line-soft bg-surface-raised divide-y divide-line-soft">
 
-            <div class="flex items-center justify-between px-6 py-5">
+            <div class="flex items-center justify-between px-4 py-3">
               <div class="flex-1 pr-8">
-                <p class="text-sm font-medium text-slate-200">Language</p>
-                <p class="text-xs text-slate-500 mt-0.5">Interface display language.</p>
+                <p class="text-sm font-medium text-ink-strong">Language</p>
+                <p class="text-xs text-ink-faint mt-0.5">Interface display language.</p>
               </div>
               <select
-                class="w-44 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-violet-600"
+                class="w-44 px-3 py-2 rounded-lg bg-surface-overlay border border-line-strong text-sm text-ink-strong focus:outline-none focus:border-accent"
                 [ngModel]="appearance()!.language"
                 (ngModelChange)="save({ language: $event })"
               >
@@ -60,10 +54,10 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
               </select>
             </div>
 
-            <div class="flex items-center justify-between px-6 py-5">
+            <div class="flex items-center justify-between px-4 py-3">
               <div class="flex-1 pr-8">
-                <p class="text-sm font-medium text-slate-200">Timezone</p>
-                <p class="text-xs text-slate-500 mt-0.5">All times in the app reflect this timezone.</p>
+                <p class="text-sm font-medium text-ink-strong">Timezone</p>
+                <p class="text-xs text-ink-faint mt-0.5">All times in the app reflect this timezone.</p>
               </div>
               <app-searchable-select
                 class="w-64"
@@ -73,13 +67,13 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
               />
             </div>
 
-            <div class="flex items-center justify-between px-6 py-5">
+            <div class="flex items-center justify-between px-4 py-3">
               <div class="flex-1 pr-8">
-                <p class="text-sm font-medium text-slate-200">Start of week</p>
-                <p class="text-xs text-slate-500 mt-0.5">Change which day your week starts on.</p>
+                <p class="text-sm font-medium text-ink-strong">Start of week</p>
+                <p class="text-xs text-ink-faint mt-0.5">Change which day your week starts on.</p>
               </div>
               <select
-                class="w-44 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:border-violet-600"
+                class="w-44 px-3 py-2 rounded-lg bg-surface-overlay border border-line-strong text-sm text-ink-strong focus:outline-none focus:border-accent"
                 [ngModel]="appearance()!.startOfWeek"
                 (ngModelChange)="save({ startOfWeek: $event })"
               >
@@ -92,21 +86,21 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
           </div>
 
           <!-- Accessibility -->
-          <div class="rounded-xl border border-slate-800 bg-slate-900 divide-y divide-slate-800">
+          <div class="rounded-xl border border-line-soft bg-surface-raised divide-y divide-line-soft">
 
-            <div class="flex items-center justify-between px-6 py-5">
+            <div class="flex items-center justify-between px-4 py-3">
               <div>
-                <p class="text-sm font-medium text-slate-200">Reduce motion</p>
-                <p class="text-xs text-slate-500 mt-0.5">Minimize animations across the interface.</p>
+                <p class="text-sm font-medium text-ink-strong">Reduce motion</p>
+                <p class="text-xs text-ink-faint mt-0.5">Minimize animations across the interface.</p>
               </div>
               <button
                 type="button"
                 role="switch"
                 [attr.aria-checked]="appearance()!.reduceMotion"
                 aria-label="Reduce motion"
-                class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 flex-shrink-0"
-                [class.bg-violet-600]="appearance()!.reduceMotion"
-                [class.bg-slate-700]="!appearance()!.reduceMotion"
+                class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised flex-shrink-0"
+                [class.bg-accent]="appearance()!.reduceMotion"
+                [class.bg-surface-overlay]="!appearance()!.reduceMotion"
                 (click)="save({ reduceMotion: !appearance()!.reduceMotion })"
               >
                 <span
@@ -116,19 +110,19 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
               </button>
             </div>
 
-            <div class="flex items-center justify-between px-6 py-5">
+            <div class="flex items-center justify-between px-4 py-3">
               <div>
-                <p class="text-sm font-medium text-slate-200">Compact mode</p>
-                <p class="text-xs text-slate-500 mt-0.5">Show more content with reduced spacing.</p>
+                <p class="text-sm font-medium text-ink-strong">Compact mode</p>
+                <p class="text-xs text-ink-faint mt-0.5">Show more content with reduced spacing.</p>
               </div>
               <button
                 type="button"
                 role="switch"
                 [attr.aria-checked]="appearance()!.compactMode"
                 aria-label="Compact mode"
-                class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 flex-shrink-0"
-                [class.bg-violet-600]="appearance()!.compactMode"
-                [class.bg-slate-700]="!appearance()!.compactMode"
+                class="relative w-10 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised flex-shrink-0"
+                [class.bg-accent]="appearance()!.compactMode"
+                [class.bg-surface-overlay]="!appearance()!.compactMode"
                 (click)="save({ compactMode: !appearance()!.compactMode })"
               >
                 <span
@@ -142,7 +136,7 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
 
           <!-- Save error (below content, non-blocking) -->
           @if (error()) {
-            <p class="text-sm text-red-400 flex items-center gap-1.5">
+            <p class="text-sm text-energy-high flex items-center gap-1.5">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0">
                 <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
               </svg>
