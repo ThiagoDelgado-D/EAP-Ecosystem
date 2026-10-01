@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CaptureSheetService } from '@core/capture/capture-sheet.service';
 
 @Component({
   selector: 'app-quick-actions',
@@ -7,4 +8,10 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   templateUrl: './quick-actions.component.html',
 })
-export class QuickActionsComponent {}
+export class QuickActionsComponent {
+  private readonly capture = inject(CaptureSheetService);
+
+  openCapture(): void {
+    this.capture.open('manual');
+  }
+}
