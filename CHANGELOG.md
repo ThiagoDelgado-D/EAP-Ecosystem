@@ -6,6 +6,10 @@
 - `LearningResource` gained a `userId` column and full per-owner scoping across its use cases
 - `resource-type` and `topic` controllers now require authentication
 - Recommendation Engine (ADR-0027): persisted per-user `RecommendationContext` (energy level, available minutes, mental state), `getRecommendations`/`setRecommendationContext` use cases, cross-module read ports into `LearningResource` and active `LearningPath` nodes, and `GET/POST /api/v1/recommendations` — coexists with Pomodoro's own `suggestSessionTarget`, not a replacement
+- Dashboard's "Ideal Match" widget now consumes the real Recommendation Engine instead of a `resources[0]` placeholder, with dismiss-and-rerank and resource-level filtering
+- Dashboard visual identity rebuild: warm palette, theme toggle, and reveal/scramble/counter motion primitives
+- "Active paths" card shows a real node-level trail and next-step instead of an abstract `done/total` counter
+- Dashboard resource color tones now derive from `Topic.color` instead of a title hash or flat accent
 
 ### Fixed
 
@@ -16,6 +20,7 @@
 - `DELETE /auth/sessions/:id` validates the session id as a UUID before querying, returning 400 instead of an unhandled 500
 - Weekly summary: an abandoned break missing `endedAt` no longer inflates a prior week's totals
 - `GET /learning-resources` list response now matches the detail endpoint's shape, and no longer leaks `userId`
+- Dashboard's "Recent Activity" and recent-resources sort now key off `lastViewed` instead of `updatedAt`, so editing a resource's notes no longer bumps it to the top
 
 ### Changed
 

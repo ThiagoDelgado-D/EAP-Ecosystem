@@ -1,91 +1,141 @@
-<div class="p-4 sm:p-5 lg:p-6 flex flex-col gap-6">
-  <div class="flex items-start justify-between gap-3">
-    <div>
-      <h1 class="text-xl font-extrabold text-slate-100 tracking-tight">Learning Paths</h1>
-      <p class="text-[12.5px] text-slate-400 mt-1.5 leading-relaxed max-w-md">
-        Sequences and maps of nodes — link resources from your library, or leave stubs to fill in
-        later.
+<div class="mx-auto w-full max-w-[86rem] px-4 sm:px-7 flex flex-col gap-6 pt-1 pb-4">
+  <header appReveal class="grid items-end gap-5 lg:grid-cols-[minmax(0,1fr)_auto]">
+    <div class="min-w-0">
+      <p class="eyebrow">
+        {{ totals().paths }} paths &middot; {{ totals().done }}/{{ totals().steps }} steps done
+      </p>
+      <h1 class="display mt-2 text-[clamp(2rem,5vw,3.2rem)] font-semibold">
+        Paths <span class="text-accent-ink">with shape</span>
+      </h1>
+      <p class="mt-3 max-w-2xl text-[0.92rem] leading-relaxed text-ink-body">
+        A path orders resources and milestones into a sequence with real progress. Each one has an
+        editable graph: move nodes, connect prerequisites, cut what no longer helps.
       </p>
     </div>
-    <button
-      type="button"
-      (click)="openCreateWizard()"
-      class="inline-flex items-center gap-1.5 bg-violet-400 hover:bg-violet-300 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
-    >
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M12 5v14M5 12h14" />
-      </svg>
-      New Path
-    </button>
-  </div>
+    <div appReveal [appRevealDelay]="120">
+      <button type="button" (click)="openCreateWizard()" class="btn btn-primary">New Path</button>
+    </div>
+  </header>
 
   @if (pathService.loading()) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      @for (i of [1, 2, 3]; track i) {
-        <div class="rounded-xl border border-slate-800 bg-slate-900 h-[150px] animate-pulse"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="card h-[220px] animate-pulse"></div>
       }
     </div>
   } @else if (pathService.error()) {
-    <div class="rounded-xl border border-red-900/40 bg-red-950/20 p-4 text-sm text-red-400">
+    <div class="card border-energy-high/40 bg-energy-high/20 p-4 text-sm text-energy-high text-center">
       {{ pathService.error() }}
     </div>
+  } @else if (!entries().length) {
+    <div class="card card-alt flex flex-col items-start gap-3 p-8">
+      <span class="grid h-11 w-11 place-items-center rounded-[14px_4px_14px_4px] bg-surface-overlay text-accent">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6z" />
+          <path d="M12 12v9M12 6V3" />
+        </svg>
+      </span>
+      <div>
+        <h3 class="display text-2xl">No paths yet</h3>
+        <p class="mt-1 max-w-md text-sm text-ink-dim">
+          A path is a sequence of resources and milestones with progress. Start with three steps
+          and adjust as you go.
+        </p>
+      </div>
+      <button type="button" (click)="openCreateWizard()" class="btn btn-primary btn-sm mt-1">
+        New Path
+      </button>
+    </div>
   } @else {
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      @for (path of pathService.paths(); track path.id) {
+    <div class="grid gap-4 lg:grid-cols-2">
+      @for (item of entries(); track item.entry.path.id; let i = $index) {
         <a
-          [routerLink]="['/paths', path.id]"
-          class="rounded-xl border border-slate-800 bg-slate-900 p-[18px] flex flex-col gap-[13px] hover:border-slate-700 hover:-translate-y-0.5 hover:shadow-[0_10px_34px_rgba(0,0,0,0.4)] transition-all duration-150"
+          appReveal
+          [appRevealDelay]="i * 70"
+          [routerLink]="['/paths', item.entry.path.id]"
+          class="card card-lift group relative flex h-full flex-col overflow-hidden p-5"
         >
-          <div class="flex justify-between items-start gap-2.5">
-            <div class="text-sm font-extrabold text-slate-100 tracking-tight leading-tight">
-              {{ path.title }}
-            </div>
-            <span
-              class="inline-flex items-center gap-[5px] shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
-              [class]="
-                path.mode === PATH_MODE.GRAPH
-                  ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20'
-                  : 'bg-violet-400/10 text-violet-400 border border-violet-400/20'
-              "
-            >
-              <span
-                class="w-[5px] h-[5px]"
-                [class]="path.mode === PATH_MODE.GRAPH ? 'rounded-full bg-emerald-400' : 'rounded-[1px] bg-violet-400'"
-              ></span>
-              {{ path.mode === PATH_MODE.GRAPH ? 'Graph' : 'Sequential' }}
-            </span>
-          </div>
-
-          <div class="text-[11.5px] text-slate-400 leading-relaxed line-clamp-2 min-h-[36px]">
-            {{ path.description }}
-          </div>
-
-          <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-            <div
-              class="h-full bg-violet-400 rounded-full transition-all"
-              [style.width.%]="progressPct(path)"
-            ></div>
-          </div>
-
-          <div class="flex justify-between items-center">
-            <div class="flex gap-[11px]">
-              <span class="text-[11px] text-slate-600">
-                <b class="text-slate-400 font-semibold">{{ path.stats?.done ?? 0 }}</b
-                >/{{ path.stats?.total ?? 0 }} done
+          <span
+            class="pointer-events-none absolute -top-16 -right-16 h-44 w-44 rounded-full opacity-25 blur-2xl transition-opacity duration-700 group-hover:opacity-45"
+            [style.background]="toneVar(toneFor(item.entry.path.title))"
+          ></span>
+          <div class="relative flex items-start justify-between gap-4">
+            <div class="min-w-0">
+              <span class="eyebrow" [style.color]="toneVar(toneFor(item.entry.path.title))">
+                {{ item.nodes.length }} steps &middot;
+                {{ item.entry.path.mode === PATH_MODE.GRAPH ? 'Graph' : 'Sequential' }}
               </span>
-              <span class="text-[11px] text-slate-600">
-                <b class="text-violet-400 font-semibold">{{ path.stats?.linked ?? 0 }}</b> linked
-              </span>
-              @if (stubsCount(path) > 0) {
-                <span class="text-[11px] text-slate-500">{{ stubsCount(path) }} stubs</span>
+              <h2 class="display mt-1.5 text-[1.4rem] leading-tight font-semibold">
+                {{ item.entry.path.title }}
+              </h2>
+              @if (item.entry.path.description) {
+                <p class="mt-1.5 line-clamp-2 max-w-md text-[0.84rem] leading-relaxed text-ink-body">
+                  {{ item.entry.path.description }}
+                </p>
               }
             </div>
-            <span
-              class="text-[11px] font-bold"
-              [class]="progressPct(path) === 100 ? 'text-emerald-400' : 'text-slate-600'"
-            >
-              {{ progressPct(path) }}%
-            </span>
+            <div class="shrink-0 text-right">
+              <p
+                class="tnum display text-[2.2rem] leading-none font-semibold"
+                [style.color]="toneVar(toneFor(item.entry.path.title))"
+              >
+                {{ progressPct(item.nodes) }}<span class="text-[1rem]">%</span>
+              </p>
+              <p class="tnum text-[0.68rem] text-ink-faint">
+                {{ doneCount(item.nodes) }}/{{ item.nodes.length }}
+              </p>
+            </div>
+          </div>
+
+          <div class="relative mt-4">
+            <div class="relative w-full overflow-hidden rounded-full bg-surface-overlay" style="height: 6px">
+              <div
+                class="absolute inset-y-0 left-0 rounded-full transition-[width] duration-700"
+                [style.width.%]="progressPct(item.nodes)"
+                [style.background]="toneVar(toneFor(item.entry.path.title))"
+              ></div>
+            </div>
+          </div>
+
+          <div class="relative mt-4 flex items-center gap-1.5">
+            @for (node of item.nodes.slice(0, 10); track node.id; let idx = $index) {
+              <span class="flex items-center gap-1.5">
+                <span
+                  class="grid h-6 w-6 place-items-center rounded-full text-[0.58rem] font-bold transition-transform duration-500 group-hover:scale-110"
+                  [style.background]="
+                    node.progress === 'done'
+                      ? toneVar(toneFor(item.entry.path.title))
+                      : node.progress === 'in_progress'
+                        ? 'var(--tone-ochre)'
+                        : 'var(--color-surface-overlay)'
+                  "
+                  [style.color]="node.progress === 'pending' ? 'var(--color-ink-dim)' : 'var(--color-surface-base)'"
+                  [style.border]="node.progress === 'pending' ? '1px solid var(--color-line-strong)' : 'none'"
+                  [style.transitionDelay]="idx * 30 + 'ms'"
+                  [title]="node.title"
+                >
+                  {{ idx + 1 }}
+                </span>
+                @if (idx < Math.min(item.nodes.length, 10) - 1) {
+                  <span class="h-px w-2.5 bg-line-strong transition-all duration-500 group-hover:w-4"></span>
+                }
+              </span>
+            }
+            @if (item.nodes.length > 10) {
+              <span class="text-[0.66rem] text-ink-faint">+{{ item.nodes.length - 10 }}</span>
+            }
+          </div>
+
+          <div class="relative mt-4 flex items-center gap-2 border-t border-line-soft pt-3 text-[0.78rem]">
+            @if (nextNode(item.nodes); as next) {
+              <span class="font-semibold" [style.color]="toneVar(toneFor(item.entry.path.title))">next:</span>
+              <span class="min-w-0 flex-1 truncate font-semibold text-ink-body">{{ next.title }}</span>
+            } @else {
+              <span class="font-semibold" [style.color]="toneVar(toneFor(item.entry.path.title))">
+                Path complete
+              </span>
+            }
+            <span class="shrink-0 text-ink-faint transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-ink-strong">&#8599;</span>
           </div>
         </a>
       }
@@ -93,15 +143,15 @@
       <button
         type="button"
         (click)="openCreateWizard()"
-        class="rounded-xl border-[1.5px] border-dashed border-slate-700 p-[18px] min-h-[150px] flex flex-col items-center justify-center gap-2.5 cursor-pointer hover:border-slate-600 transition-colors"
+        class="rounded-[22px_22px_22px_8px] border-[1.5px] border-dashed border-line-strong p-5 min-h-[150px] flex flex-col items-center justify-center gap-2.5 cursor-pointer hover:border-accent transition-colors"
       >
-        <div class="w-[34px] h-[34px] rounded-lg bg-slate-800 flex items-center justify-center">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-violet-400">
+        <div class="w-[34px] h-[34px] rounded-lg bg-surface-overlay flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-accent">
             <path d="M12 5v14M5 12h14" />
           </svg>
         </div>
-        <span class="text-xs text-slate-400 font-semibold">Create a new path</span>
-        <span class="text-[11px] text-slate-600">Guided wizard picks the mode</span>
+        <span class="text-xs text-ink-body font-semibold">Create a new path</span>
+        <span class="text-[11px] text-ink-faint">Guided wizard picks the mode</span>
       </button>
     </div>
   }
