@@ -1,0 +1,227 @@
+@if (isOpen()) {
+  <div class="fixed inset-y-0 right-0 z-[65] flex justify-end" role="dialog" aria-modal="false" aria-label="Capture resource">
+    <aside
+      class="relative flex h-full w-full sm:w-[26rem] flex-col overflow-hidden border-l border-line-soft bg-surface-base shadow-2xl"
+    >
+      <header class="flex items-start justify-between gap-4 px-6 pt-5">
+        <div>
+          <h2 class="display text-2xl">Capture resource</h2>
+          <p class="mt-1 text-sm text-ink-dim">Four ways in, so nothing stays a loose bookmark.</p>
+        </div>
+        <button
+          type="button"
+          (click)="close()"
+          class="p-2 -m-1 rounded-lg text-ink-dim hover:text-ink-strong hover:bg-surface-overlay transition-colors"
+          aria-label="Close capture panel"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </header>
+
+      <div class="px-6 mt-5">
+        <div class="inline-flex items-center gap-1.5 rounded-full border border-line-soft bg-surface-overlay p-1.5" role="tablist">
+          @for (t of tabs; track t.value) {
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="tab() === t.value"
+              (click)="openTab(t.value)"
+              [class]="
+                tab() === t.value
+                  ? 'rounded-full font-semibold px-4 py-2 text-[0.84rem] bg-ink-strong text-surface-base transition-all'
+                  : 'rounded-full font-semibold px-4 py-2 text-[0.84rem] text-ink-dim hover:text-ink-strong transition-all'
+              "
+            >
+              {{ t.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-6 py-5">
+        @if (tab() === 'manual' || tab() === 'url') {
+          <div class="flex flex-col gap-4">
+            @if (tab() === 'url') {
+              <div>
+                <label for="capture-url" class="label block mb-1.5">URL</label>
+                <div class="flex gap-2">
+                  <input
+                    id="capture-url"
+                    type="url"
+                    [ngModel]="url()"
+                    (ngModelChange)="url.set($event)"
+                    placeholder="https://…"
+                    class="input flex-1"
+                  />
+                  <button
+                    type="button"
+                    (click)="fetchUrlMetadata()"
+                    [disabled]="previewLoading() || !url().trim()"
+                    class="btn btn-outline btn-sm shrink-0"
+                  >
+                    {{ previewLoading() ? 'Reading…' : 'Fetch' }}
+                  </button>
+                </div>
+              </div>
+            }
+
+            <div>
+              <label for="capture-title" class="label block mb-1.5">Title *</label>
+              <input
+                id="capture-title"
+                type="text"
+                [ngModel]="title()"
+                (ngModelChange)="title.set($event)"
+                placeholder="What is it, in your words"
+                class="input"
+              />
+            </div>
+
+            @if (tab() === 'manual') {
+              <div>
+                <label for="capture-url-manual" class="label block mb-1.5">URL</label>
+                <input
+                  id="capture-url-manual"
+                  type="url"
+                  [ngModel]="url()"
+                  (ngModelChange)="url.set($event)"
+                  placeholder="https://… (optional)"
+                  class="input"
+                />
+              </div>
+            }
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="capture-type" class="label block mb-1.5">Type</label>
+                <select id="capture-type" class="input" [ngModel]="typeId()" (ngModelChange)="typeId.set($event)">
+                  @for (t of resourceTypes(); track t.id) {
+                    <option [ngValue]="t.id">{{ t.displayName }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label for="capture-status" class="label block mb-1.5">Initial state</label>
+                <select id="capture-status" class="input" [ngModel]="status()" (ngModelChange)="status.set($event)">
+                  @for (s of statuses; track s) {
+                    <option [ngValue]="s">{{ RESOURCE_STATUS_LABELS[s] }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="capture-notes" class="label block mb-1.5">Summary</label>
+              <textarea
+                id="capture-notes"
+                rows="3"
+                [ngModel]="notes()"
+                (ngModelChange)="notes.set($event)"
+                placeholder="Two lines on what it will give you"
+                class="input resize-none leading-relaxed"
+              ></textarea>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div class="min-w-0">
+                <p class="label mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis" [title]="'Difficulty · ' + difficulty()">Difficulty · {{ difficulty() }}</p>
+                <div class="flex items-center gap-1">
+                  <button type="button" class="chip" (click)="stepDifficulty(-1)" aria-label="Lower difficulty">−</button>
+                  <span class="tnum flex-1 text-center text-[0.8rem] font-semibold">{{ difficulty() }}</span>
+                  <button type="button" class="chip" (click)="stepDifficulty(1)" aria-label="Raise difficulty">+</button>
+                </div>
+              </div>
+              <div class="min-w-0">
+                <p class="label mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis" [title]="'Energy · ' + energy()">Energy · {{ energy() }}</p>
+                <div class="flex items-center gap-1">
+                  <button type="button" class="chip" (click)="stepEnergy(-1)" aria-label="Lower energy">−</button>
+                  <span class="tnum flex-1 text-center text-[0.8rem] font-semibold">{{ energy() }}</span>
+                  <button type="button" class="chip" (click)="stepEnergy(1)" aria-label="Raise energy">+</button>
+                </div>
+              </div>
+              <div class="min-w-0">
+                <p class="label mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis" [title]="'Duration · ' + duration() + 'm'">Duration · {{ duration() }}m</p>
+                <div class="flex items-center gap-1">
+                  <button type="button" class="chip" (click)="adjustDuration(-5)" aria-label="Less time">−</button>
+                  <span class="tnum flex-1 text-center text-[0.8rem] font-semibold">{{ duration() }}</span>
+                  <button type="button" class="chip" (click)="adjustDuration(5)" aria-label="More time">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label for="capture-mind" class="label block mb-1.5">Mental state</label>
+              <select id="capture-mind" class="input" [ngModel]="mentalState()" (ngModelChange)="mentalState.set($event)">
+                <option [ngValue]="null">None</option>
+                @for (ms of mentalStates; track ms.value) {
+                  <option [ngValue]="ms.value">{{ ms.label }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <p class="label mb-1.5">Topics</p>
+              @if (topics().length) {
+                <div class="flex flex-wrap gap-1.5">
+                  @for (t of topics(); track t.id) {
+                    <button
+                      type="button"
+                      class="chip"
+                      [style.--tone]="t.color ?? 'var(--color-accent)'"
+                      [class.tone-chip]="!!t.color"
+                      [attr.data-on]="topicIds().includes(t.id) || undefined"
+                      (click)="toggleTopic(t.id)"
+                    >
+                      {{ t.name }}
+                    </button>
+                  }
+                </div>
+              } @else {
+                <p class="text-xs text-ink-faint">No topics yet — create them in Resources.</p>
+              }
+            </div>
+
+            @if (error()) {
+              <p class="text-sm text-energy-high">{{ error() }}</p>
+            }
+          </div>
+        } @else {
+          <div class="flex flex-col items-start gap-3">
+            <p class="text-sm text-ink-body leading-relaxed">
+              @if (tab() === 'voice') {
+                Dictate your resource with transcription and review.
+              } @else {
+                Batch upload JSON, PDF or Markdown with validation.
+              }
+            </p>
+            <a
+              [routerLink]="tab() === 'voice' ? '/add/voice' : '/add/import'"
+              (click)="close()"
+              class="btn btn-outline btn-sm"
+            >
+              Open full page
+            </a>
+          </div>
+        }
+      </div>
+
+      <footer class="flex items-center gap-3 px-6 py-4 border-t border-line-soft">
+        <span class="tnum min-w-0 flex-1 truncate text-xs text-ink-faint">{{ draftLabel() }}</span>
+        <button type="button" (click)="close()" class="btn btn-ghost btn-sm">Cancel</button>
+        @if (tab() === 'manual' || tab() === 'url') {
+          <button
+            type="button"
+            (click)="save()"
+            [disabled]="!canSave()"
+            [title]="saveDisabledReason()"
+            class="btn btn-primary btn-sm"
+          >
+            {{ saving() ? 'Saving…' : 'Save resource' }}
+          </button>
+        }
+      </footer>
+    </aside>
+  </div>
+}
