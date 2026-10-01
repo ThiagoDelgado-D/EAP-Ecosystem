@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal, HostListener, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, RouterLinkActive } from '@angular/router';
+import { CaptureSheetComponent } from '@features/learning-resource/presentation/capture-sheet/capture-sheet.component';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
 import { ThemeService } from '@core/theme/theme.service';
@@ -8,7 +9,7 @@ import { ThemeService } from '@core/theme/theme.service';
 @Component({
   selector: 'app-shell-layout',
   standalone: true,
-  imports: [RouterModule, RouterLinkActive],
+  imports: [RouterModule, RouterLinkActive, CaptureSheetComponent],
   templateUrl: './shell-layout.component.html',
 })
 export class ShellLayoutComponent implements OnInit {
