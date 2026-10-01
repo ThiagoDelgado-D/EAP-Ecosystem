@@ -361,12 +361,21 @@
                 (changed)="onToggle($event, resource, 'energy')"
               />
               <span class="ml-auto">
-                <app-enum-badge
-                  [value]="resource.status"
-                  [options]="statusOptions"
-                  [loading]="toggleLoadingId() === resource.id + ':status'"
-                  (changed)="onToggle($event, resource, 'status')"
-                />
+                <button
+                  type="button"
+                  class="chip tone-chip"
+                  [style.--tone]="toneVar(STATUS_TONE[resource.status])"
+                  [title]="statusAdvanceHint(resource)"
+                  [disabled]="toggleLoadingId() === resource.id + ':status' || !nextStatus(resource.status)"
+                  [class.opacity-50]="toggleLoadingId() === resource.id + ':status'"
+                  (click)="cycleStatus(resource)"
+                >
+                  <span
+                    class="h-1.5 w-1.5 rounded-full"
+                    [style.background]="toneVar(STATUS_TONE[resource.status])"
+                  ></span>
+                  {{ STATUS_LABELS[resource.status] }}
+                </button>
               </span>
             </div>
           </div>
@@ -455,12 +464,21 @@
                   [loading]="toggleLoadingId() === resource.id + ':energy'"
                   (changed)="onToggle($event, resource, 'energy')"
                 />
-                <app-enum-badge
-                  [value]="resource.status"
-                  [options]="statusOptions"
-                  [loading]="toggleLoadingId() === resource.id + ':status'"
-                  (changed)="onToggle($event, resource, 'status')"
-                />
+                <button
+                  type="button"
+                  class="chip tone-chip"
+                  [style.--tone]="toneVar(STATUS_TONE[resource.status])"
+                  [title]="statusAdvanceHint(resource)"
+                  [disabled]="toggleLoadingId() === resource.id + ':status' || !nextStatus(resource.status)"
+                  [class.opacity-50]="toggleLoadingId() === resource.id + ':status'"
+                  (click)="cycleStatus(resource)"
+                >
+                  <span
+                    class="h-1.5 w-1.5 rounded-full"
+                    [style.background]="toneVar(STATUS_TONE[resource.status])"
+                  ></span>
+                  {{ STATUS_LABELS[resource.status] }}
+                </button>
                 @if (topicChips(resource).length) {
                   <span class="ml-auto hidden items-center gap-1.5 md:flex">
                     @for (chip of topicChips(resource); track chip.name) {

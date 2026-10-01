@@ -419,6 +419,24 @@ export class HomeComponent implements OnInit {
     void this.applyFilter();
   }
 
+  nextStatus(status: ResourceStatus): ResourceStatus | null {
+    if (status === 'Pending') return 'InProgress';
+    if (status === 'InProgress') return 'Completed';
+    return null;
+  }
+
+  statusAdvanceHint(resource: LearningResource): string {
+    const next = this.nextStatus(resource.status);
+    if (!next) return `Status: ${RESOURCE_STATUS_LABELS[resource.status]}. Nothing to advance.`;
+    return `Status: ${RESOURCE_STATUS_LABELS[resource.status]}. Click to advance to ${RESOURCE_STATUS_LABELS[next]}.`;
+  }
+
+  async cycleStatus(resource: LearningResource): Promise<void> {
+    const next = this.nextStatus(resource.status);
+    if (!next) return;
+    await this.onToggle(next, resource, 'status');
+  }
+
   async onToggle(
     value: string,
     resource: LearningResource,
