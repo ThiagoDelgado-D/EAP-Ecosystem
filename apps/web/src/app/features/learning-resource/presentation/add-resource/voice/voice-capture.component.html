@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-surface-inset px-4 py-8 sm:px-6 lg:px-8">
+<div class="mx-auto w-full px-4 sm:px-6 pt-1 pb-4">
   <div class="max-w-2xl mx-auto">
     <button
       (click)="goBack()"
@@ -59,7 +59,7 @@
         <button
           (click)="restart()"
           aria-label="Record again"
-          class="bg-accent hover:bg-accent text-white font-medium px-5 py-2 rounded-lg text-sm"
+          class="btn btn-primary btn-sm"
         >
           Try Again
         </button>
@@ -73,7 +73,7 @@
         <button
           (click)="restart()"
           aria-label="Record again"
-          class="bg-accent hover:bg-accent text-white font-medium px-5 py-2 rounded-lg text-sm"
+          class="btn btn-primary btn-sm"
         >
           Try Again
         </button>
@@ -148,7 +148,7 @@
             <button
               (click)="startRecording()"
               aria-label="Start voice recording"
-              class="bg-accent hover:bg-accent text-white font-medium px-8 py-3 rounded-lg transition-colors flex items-center gap-2"
+              class="btn btn-primary"
             >
               <svg
                 width="16"
@@ -187,7 +187,7 @@
               (click)="continueToConfirmation()"
               aria-label="Continue to confirmation"
               [disabled]="!dataReady() || !transcript()"
-              class="bg-accent hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-8 py-3 rounded-lg transition-colors"
+              class="btn btn-primary"
             >
               Continue →
             </button>
@@ -262,7 +262,7 @@
                   (click)="toggleTopic(topic.id)"
                   [class]="
                     selectedTopicIds().includes(topic.id)
-                      ? 'bg-accent text-white border-accent-line'
+                      ? 'bg-ink-strong text-surface-base border-ink-strong'
                       : 'bg-surface-overlay text-ink-body border-line-strong hover:border-line-strong'
                   "
                   class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
@@ -293,7 +293,7 @@
             <button
               (click)="saveResource()"
               aria-label="Save resource"
-              class="bg-accent hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium"
+              class="btn btn-primary btn-sm"
             >
               @if (saving()) {
                 Saving...

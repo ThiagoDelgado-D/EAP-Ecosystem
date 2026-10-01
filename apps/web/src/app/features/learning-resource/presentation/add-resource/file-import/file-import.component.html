@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-surface-inset px-4 py-8 sm:px-6 lg:px-8">
+<div class="mx-auto w-full px-4 sm:px-6 pt-1 pb-4">
   <div class="max-w-2xl mx-auto">
     <button
       (click)="goBack()"
@@ -242,7 +242,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
         <p class="text-sm text-ink-faint mb-6">{{ parseError() }}</p>
         <button
           (click)="reset()"
-          class="bg-accent hover:bg-accent text-white font-medium px-5 py-2 rounded-lg text-sm"
+          class="btn btn-primary btn-sm"
         >
           Try Another File
         </button>
@@ -363,7 +363,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                         [attr.aria-label]="'Toggle topic ' + topic.name"
                         [class]="
                           row.selectedTopicIds.includes(topic.id)
-                            ? 'bg-accent text-white border-accent-line'
+                            ? 'bg-ink-strong text-surface-base border-ink-strong'
                             : 'bg-surface-overlay text-ink-body border-line-strong hover:border-line-strong'
                         "
                         class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
