@@ -54,6 +54,9 @@ export class PomodoroSessionStore {
   private readonly injector = inject(EnvironmentInjector);
   private miniWidgetOrchestratorLoaded = false;
 
+  // Tests can await this so the lazy orchestrator import settles before the file's env tears down.
+  miniWidgetOrchestratorReady: Promise<void> = Promise.resolve();
+
   readonly activeSession = signal<Session | null>(null);
   readonly segments = signal<Segment[]>([]);
   readonly justAutoClosed = signal<{ session: Session; segments: Segment[] } | null>(null);
@@ -220,7 +223,7 @@ export class PomodoroSessionStore {
   private ensureMiniWidgetOrchestrator(): void {
     if (this.miniWidgetOrchestratorLoaded) return;
     this.miniWidgetOrchestratorLoaded = true;
-    import('./pomodoro-mini-widget-orchestrator.service')
+    this.miniWidgetOrchestratorReady = import('./pomodoro-mini-widget-orchestrator.service')
       .then(({ PomodoroMiniWidgetOrchestratorService }) => {
         this.injector.get(PomodoroMiniWidgetOrchestratorService);
       })

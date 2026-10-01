@@ -14,6 +14,8 @@ import { EndComponent } from './end.component';
 
 const now = new Date('2026-09-11T10:00:00.000Z');
 
+let activeStore: PomodoroSessionStore | undefined;
+
 function setup(options: { resourceTypes?: ResourceType[]; topics?: Topic[] } = {}) {
   const navigateByUrl = vi.fn();
   const { providers, learningPathRepository, learningResourceRepository } =
@@ -35,6 +37,7 @@ function setup(options: { resourceTypes?: ResourceType[]; topics?: Topic[] } = {
   });
 
   const store = TestBed.inject(PomodoroSessionStore);
+  activeStore = store;
   const component = TestBed.createComponent(EndComponent).componentInstance;
   return {
     component,
@@ -49,6 +52,11 @@ function setup(options: { resourceTypes?: ResourceType[]; topics?: Topic[] } = {
 }
 
 describe('EndComponent', () => {
+  afterEach(async () => {
+    await activeStore?.miniWidgetOrchestratorReady;
+    activeStore = undefined;
+  });
+
   test('should flag a free-only session and offer nothing to adjust', async () => {
     const { component, store } = setup();
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
