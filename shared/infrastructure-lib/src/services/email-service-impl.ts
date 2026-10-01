@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 import handlebars from "handlebars";
 import type {
   EmailService,
@@ -40,7 +40,7 @@ type CompiledEntry = {
 };
 
 export class EmailServiceImpl implements EmailService<string> {
-  private readonly transporter: nodemailer.Transporter;
+  private readonly transporter: Transporter;
   private readonly compiled = new Map<string, CompiledEntry>();
   private readonly defaultFrom: string;
 
