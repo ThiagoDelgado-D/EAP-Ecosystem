@@ -173,7 +173,7 @@ export class LearningPathDetailComponent implements OnInit {
       title: 'Eliminar nodo',
       message: `¿Seguro que querés eliminar "${node.title}"? Esta acción no se puede deshacer.`,
       confirmLabel: 'Eliminar',
-      confirmButtonClass: 'bg-red-600 hover:bg-red-500 text-white',
+      confirmButtonClass: 'bg-energy-high hover:brightness-110 text-white',
     });
     if (!confirmed) return;
 
@@ -250,7 +250,7 @@ export class LearningPathDetailComponent implements OnInit {
       title: 'Eliminar conexión',
       message: '¿Seguro que querés eliminar esta conexión entre nodos?',
       confirmLabel: 'Eliminar',
-      confirmButtonClass: 'bg-red-600 hover:bg-red-500 text-white',
+      confirmButtonClass: 'bg-energy-high hover:brightness-110 text-white',
     });
     if (!confirmed) return;
 
@@ -269,7 +269,7 @@ export class LearningPathDetailComponent implements OnInit {
       title: 'Eliminar Learning Path',
       message: `¿Seguro que querés eliminar "${path.title}"? Se van a borrar todos sus nodos y conexiones. Esta acción no se puede deshacer.`,
       confirmLabel: 'Eliminar',
-      confirmButtonClass: 'bg-red-600 hover:bg-red-500 text-white',
+      confirmButtonClass: 'bg-energy-high hover:brightness-110 text-white',
     });
     if (!confirmed) return;
 

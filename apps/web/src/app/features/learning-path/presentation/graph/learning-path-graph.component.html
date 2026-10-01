@@ -1,6 +1,6 @@
 <div
   #canvas
-  class="relative w-full h-[600px] rounded-xl border border-slate-800 bg-slate-950 overflow-hidden touch-none"
+  class="relative w-full h-[600px] rounded-xl border border-line-soft bg-surface-inset overflow-hidden touch-none"
 >
   <div
     class="absolute inset-0 origin-top-left"
@@ -62,21 +62,21 @@
         (pointercancel)="onNodePointerCancel()"
       >
         <div
-          class="relative rounded-[10px] p-3 flex items-start gap-2 bg-slate-900 transition-all cursor-grab"
+          class="relative rounded-[10px] p-3 flex items-start gap-2 bg-surface-raised transition-all cursor-grab"
           [class]="
             !entry.node.learningResourceId
-              ? 'border-[1.5px] border-dashed border-slate-700'
-              : 'border border-slate-800'
+              ? 'border-[1.5px] border-dashed border-line-strong'
+              : 'border border-line-soft'
           "
         >
           <div
             class="w-5 h-5 rounded-full shrink-0 flex items-center justify-center border-[1.5px] mt-0.5"
             [class]="
               entry.node.progress === NODE_PROGRESS.DONE
-                ? 'bg-emerald-400/10 border-emerald-400'
+                ? 'bg-accent/10 border-accent-line'
                 : entry.node.progress === NODE_PROGRESS.IN_PROGRESS
-                  ? 'bg-violet-400/10 border-violet-400 lp-pulse-ring'
-                  : 'bg-slate-900 border-slate-700'
+                  ? 'bg-accent/10 border-accent-line lp-pulse-ring'
+                  : 'bg-surface-raised border-line-strong'
             "
           >
             @if (entry.node.progress === NODE_PROGRESS.DONE) {
@@ -88,13 +88,13 @@
           <div class="flex-1 min-w-0">
             <span
               class="flex items-center gap-1.5 flex-wrap text-[12.5px] font-bold truncate"
-              [class]="entry.node.learningResourceId ? 'text-slate-100' : 'text-slate-400'"
+              [class]="entry.node.learningResourceId ? 'text-ink-strong' : 'text-ink-dim'"
             >
               {{ entry.node.title }}
             </span>
             @if (!entry.node.learningResourceId) {
               <span
-                class="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 mt-1 rounded text-slate-500 border border-dashed border-slate-700"
+                class="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 mt-1 rounded text-ink-faint border border-dashed border-line-strong"
               >
                 Stub
               </span>
@@ -103,7 +103,7 @@
 
           <div
             title="Arrastrá para conectar con otro nodo"
-            class="absolute -bottom-1.5 -right-1.5 w-4 h-4 rounded-full bg-slate-700 border border-slate-500 cursor-crosshair hover:bg-violet-500 hover:border-violet-400 touch-none"
+            class="absolute -bottom-1.5 -right-1.5 w-4 h-4 rounded-full bg-surface-overlay border border-line-strong cursor-crosshair hover:bg-accent hover:border-accent-line touch-none"
             (pointerdown)="onEdgeHandlePointerDown($event, entry.node, entry.x, entry.y)"
             (pointermove)="onEdgeHandlePointerMove($event)"
             (pointerup)="onEdgeHandlePointerUp($event)"
