@@ -1,157 +1,310 @@
-<div class="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] gap-7 px-6 py-10 [&_button]:focus:outline-none [&_button]:focus-visible:ring-2 [&_button]:focus-visible:ring-accent-line [&_button]:focus-visible:ring-offset-2 [&_button]:focus-visible:ring-offset-surface-base">
-  <div class="text-center">
-    <h1 class="text-xl font-extrabold text-ink-strong tracking-tight">Ready when you are</h1>
-    <p class="text-[12.5px] text-ink-dim mt-1.5">One tap to begin. Attach material now, or whenever you want.</p>
-  </div>
+<div class="mx-auto w-full max-w-[86rem] px-4 sm:px-7 flex flex-col gap-6 pt-1 pb-4">
+  <header appReveal class="grid items-end gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+    <div class="min-w-0">
+      <p class="eyebrow">Focus blocks</p>
+      <h1 class="display mt-2 text-[clamp(2rem,5vw,3.2rem)] font-semibold">
+        One block, <span style="color: var(--tone-ember, var(--color-accent))">one goal</span>
+      </h1>
+      <p class="mt-3 max-w-2xl text-[0.92rem] leading-relaxed text-ink-body">
+        One tap to begin. Attach material now, or whenever you want.
+      </p>
+    </div>
+    <div class="text-right">
+      <p class="text-[0.7rem] uppercase tracking-[0.12em] font-bold text-ink-dim">Today</p>
+      <p class="display tnum text-[2rem] leading-none font-semibold">
+        <app-counter [value]="todayMinutes()" suffix="m" />
+      </p>
+      <p class="mt-1 text-[0.68rem] text-ink-dim">{{ todaySessions().length }} blocks</p>
+    </div>
+  </header>
 
-  <app-pomodoro-ring>
-    <span class="t-num text-[80px] text-ink-strong">{{ durationClock() }}</span>
-    <span class="t-kicker text-ink-faint max-w-[220px] truncate text-center">
-      {{ hasAttachedMaterial() ? selectedTargetLabel()?.title : 'Free focus' }}
-    </span>
-    <div class="flex items-center gap-6 mt-5">
-      <div class="relative">
-        <button
-          type="button"
-          (click)="toggleStartMenu($event)"
-          [disabled]="!canStart() || store.starting()"
-          aria-label="Start focus session"
-          title="Start"
-          [class]="startMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
-          class="disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5z" /></svg>
-        </button>
-
-        @if (startMenuOpen()) {
-          <div
-            class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[240px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
-            (click)="$event.stopPropagation()"
-            (keydown)="$event.stopPropagation()"
-          >
+  <div class="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
+    <div
+      appReveal
+      [appRevealDelay]="80"
+      class="card relative overflow-hidden p-6 sm:p-8 flex flex-col items-center gap-7 [&_button]:focus:outline-none [&_button]:focus-visible:ring-2 [&_button]:focus-visible:ring-accent-line [&_button]:focus-visible:ring-offset-2 [&_button]:focus-visible:ring-offset-surface-base"
+    >
+      <app-pomodoro-ring>
+        <span class="t-num text-[80px] text-ink-strong">{{ durationClock() }}</span>
+        <span class="t-kicker text-ink-faint max-w-[220px] truncate text-center">
+          {{ hasAttachedMaterial() ? selectedTargetLabel()?.title : 'Free focus' }}
+        </span>
+        <div class="flex items-center gap-6 mt-5">
+          <div class="relative">
             <button
               type="button"
-              (click)="choosePrimaryStart()"
-              class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left truncate"
+              (click)="toggleStartMenu($event)"
+              [disabled]="!canStart() || store.starting()"
+              aria-label="Start focus session"
+              title="Start"
+              [class]="startMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
+              class="disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {{ primaryStartLabel() }}
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7V5z" /></svg>
             </button>
-            @if (canSuggestQuickStart()) {
-              <button
-                type="button"
-                (click)="chooseStartSuggested()"
-                class="px-3.5 py-2.5 rounded-md border border-line-soft hover:border-line-strong transition-colors text-left"
+
+            @if (startMenuOpen()) {
+              <div
+                class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[240px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+                (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
               >
-                <div class="t-kicker text-[9.5px] text-ink-faint mb-0.5">Continue</div>
-                <div class="text-[12.5px] font-semibold text-ink-body truncate">{{ topSuggestion()?.nodeTitle }}</div>
-                <div class="text-[10px] text-ink-faint truncate">{{ topSuggestion()?.pathTitle }}</div>
-              </button>
+                <button
+                  type="button"
+                  (click)="choosePrimaryStart()"
+                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left truncate"
+                >
+                  {{ primaryStartLabel() }}
+                </button>
+                @if (canSuggestQuickStart()) {
+                  <button
+                    type="button"
+                    (click)="chooseStartSuggested()"
+                    class="px-3.5 py-2.5 rounded-md border border-line-soft hover:border-line-strong transition-colors text-left"
+                  >
+                    <div class="t-kicker text-[9.5px] text-ink-faint mb-0.5">Continue</div>
+                    <div class="text-[12.5px] font-semibold text-ink-body truncate">{{ topSuggestion()?.nodeTitle }}</div>
+                    <div class="text-[10px] text-ink-faint truncate">{{ topSuggestion()?.pathTitle }}</div>
+                  </button>
+                }
+              </div>
             }
           </div>
-        }
-      </div>
 
-      @if (hasMoreActions()) {
-        <div class="relative">
-          <button
-            type="button"
-            (click)="toggleMoreMenu($event)"
-            aria-label="More actions"
-            title="More actions"
-            [class]="moreMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
-            class="transition-colors"
-          >
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
-          </button>
+          @if (hasMoreActions()) {
+            <div class="relative">
+              <button
+                type="button"
+                (click)="toggleMoreMenu($event)"
+                aria-label="More actions"
+                title="More actions"
+                [class]="moreMenuOpen() ? 'text-ink-strong' : 'text-ink-faint hover:text-ink-strong'"
+                class="transition-colors"
+              >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+              </button>
 
-          @if (moreMenuOpen()) {
-            <div
-              class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
-              (click)="$event.stopPropagation()"
-              (keydown)="$event.stopPropagation()"
-            >
-              @if (!hasAttachedMaterial()) {
-                <button
-                  type="button"
-                  (click)="chooseAttachMaterial()"
-                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left"
+              @if (moreMenuOpen()) {
+                <div
+                  class="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2 w-[200px] bg-surface-raised border border-line-soft rounded-lg p-2 flex flex-col gap-1.5 shadow-xl z-10"
+                  (click)="$event.stopPropagation()"
+                  (keydown)="$event.stopPropagation()"
                 >
-                  Attach material
-                </button>
-              }
-              @if (canOfferIntention()) {
-                <button
-                  type="button"
-                  (click)="chooseAddIntention()"
-                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors text-left"
-                >
-                  Add an intention
-                </button>
+                  @if (!hasAttachedMaterial()) {
+                    <button
+                      type="button"
+                      (click)="chooseAttachMaterial()"
+                      class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors text-left"
+                    >
+                      Attach material
+                    </button>
+                  }
+                  @if (canOfferIntention()) {
+                    <button
+                      type="button"
+                      (click)="chooseAddIntention()"
+                      class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors text-left"
+                    >
+                      Add an intention
+                    </button>
+                  }
+                </div>
               }
             </div>
           }
         </div>
+        @if (!hideShortcutHints() && canStart() && !store.starting()) {
+          <span class="text-[10px] text-ink-faint">press <b class="text-ink-dim">Enter</b></span>
+        }
+      </app-pomodoro-ring>
+
+      <div class="flex gap-1.5 items-center flex-wrap justify-center">
+        @for (minutes of DURATION_PRESETS; track minutes) {
+          <button
+            type="button"
+            (click)="pickDuration(minutes)"
+            [class]="selectedDuration() === minutes ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+            class="t-mono px-3 py-1.5 rounded-md text-xs font-bold border transition-colors"
+          >
+            {{ minutes }}
+          </button>
+        }
+        <input
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          [attr.maxlength]="maxDurationDigits"
+          [value]="customDurationInput()"
+          (input)="onCustomDurationInput($any($event.target).value)"
+          placeholder="Custom"
+          aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
+          [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+          class="t-mono w-16 px-2 py-1.5 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-faint placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-base transition-colors"
+        />
+      </div>
+
+      @if (hasAttachedMaterial()) {
+        <div class="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border border-line-soft bg-surface-raised">
+          <span class="text-xs text-ink-body truncate max-w-[200px]">{{ selectedTargetLabel()?.title }}</span>
+          <button
+            type="button"
+            (click)="clearAttachedMaterial()"
+            class="w-4 h-4 rounded-full flex items-center justify-center text-ink-faint hover:text-ink-body hover:bg-surface-overlay transition-colors"
+            aria-label="Detach material, go back to free focus"
+          >
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+      }
+
+      @if (showIntentInput() || intent()) {
+        <div class="w-full max-w-sm">
+          <label for="start-intent-input" class="sr-only">Intention</label>
+          <input
+            id="start-intent-input"
+            type="text"
+            [ngModel]="intent()"
+            (ngModelChange)="intent.set($event)"
+            placeholder="What do you want to walk away with?"
+            class="input w-full text-sm"
+          />
+        </div>
+      }
+
+      @if (store.error()) {
+        <div class="text-sm text-energy-high">{{ store.error() }}</div>
       }
     </div>
-    @if (!hideShortcutHints() && canStart() && !store.starting()) {
-      <span class="text-[10px] text-ink-faint">press <b class="text-ink-dim">Enter</b></span>
-    }
-  </app-pomodoro-ring>
 
-  <div class="flex gap-1.5 items-center">
-    @for (minutes of DURATION_PRESETS; track minutes) {
-      <button
-        type="button"
-        (click)="pickDuration(minutes)"
-        [class]="selectedDuration() === minutes ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
-        class="t-mono px-3 py-1.5 rounded-md text-xs font-bold border transition-colors"
-      >
-        {{ minutes }}
-      </button>
-    }
-    <input
-      type="text"
-      inputmode="numeric"
-      pattern="[0-9]*"
-      [attr.maxlength]="maxDurationDigits"
-      [value]="customDurationInput()"
-      (input)="onCustomDurationInput($any($event.target).value)"
-      placeholder="Custom"
-      aria-label="Custom duration in minutes, up to {{ MAX_PLANNED_DURATION_MIN }}"
-      [class]="isCustomDurationActive() ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
-      class="t-mono w-16 px-2 py-1.5 rounded-md text-xs font-bold text-center border bg-transparent placeholder:text-ink-faint placeholder:font-normal placeholder:normal-case focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-line focus-visible:ring-offset-1 focus-visible:ring-offset-surface-base transition-colors"
-    />
+    <div class="flex flex-col gap-5">
+      @if (canSuggestQuickStart() && topSuggestion(); as suggestion) {
+        <div appReveal [appRevealDelay]="120" class="card relative overflow-hidden p-6">
+          <div
+            class="pointer-events-none absolute -top-20 -right-16 h-56 w-56 rounded-full blur-3xl breathe"
+            style="background: color-mix(in oklab, var(--tone-ember, var(--color-accent)) 18%, transparent)"
+          ></div>
+          <div class="relative min-w-0">
+            <p class="eyebrow">Engine suggestion</p>
+            <h2 class="display mt-2 text-[1.5rem] leading-tight font-semibold truncate">
+              {{ suggestion.nodeTitle }}
+            </h2>
+            <p class="mt-1 text-[0.76rem] text-ink-dim">
+              {{ suggestion.pathTitle }} &middot;
+              <span class="tnum font-semibold text-ink-body">{{ suggestion.score }}</span> score
+            </p>
+          </div>
+          @if (suggestion.why.length) {
+            <ul class="relative mt-3 flex flex-col gap-1.5">
+              @for (reason of suggestion.why.slice(0, 3); track reason; let i = $index) {
+                <li class="flex items-start gap-2.5 text-[0.82rem] leading-snug text-ink-body">
+                  <span
+                    class="tnum mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full text-[0.58rem] font-bold"
+                    style="background: var(--tone-ochre-soft, color-mix(in oklab, var(--color-accent) 14%, transparent)); color: var(--color-accent-ink)"
+                  >
+                    {{ i + 1 }}
+                  </span>
+                  {{ reason }}
+                </li>
+              }
+            </ul>
+          }
+          <div class="relative mt-5">
+            <button type="button" class="btn btn-primary" (click)="chooseStartSuggested()">
+              Start with this block
+            </button>
+          </div>
+        </div>
+      }
+
+      <div appReveal [appRevealDelay]="160" class="card card-alt p-5">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+          <p class="eyebrow">This week</p>
+          <p class="text-[0.72rem] text-ink-dim">
+            <app-counter [value]="weekTotalMinutes()" suffix="m" class="tnum font-semibold text-ink-strong" />
+            @if (weekDeltaPct() !== null) {
+              <span
+                class="font-semibold"
+                [style.color]="weekDeltaPct()! >= 0 ? 'var(--color-accent)' : 'var(--tone-ember, var(--color-accent))'"
+              >
+                {{ weekDeltaPct()! >= 0 ? '+' : '' }}{{ weekDeltaPct() }}%
+              </span>
+              <span> vs prior</span>
+            }
+          </p>
+        </div>
+        <div class="mt-4 flex items-end gap-1.5">
+          @for (day of weekDays(); track day.key) {
+            <div class="group/bar relative flex flex-1 flex-col items-center gap-1.5">
+              <div class="relative flex h-28 w-full items-end rounded-full bg-surface-overlay">
+                <div
+                  class="bar w-full rounded-full"
+                  [style.height.%]="Math.max(3, (day.focusMinutes / maxWeekDay()) * 100)"
+                  [style.background]="dayBarColor(day.focusMinutes)"
+                ></div>
+                @if (day.isToday) {
+                  <span class="breathe absolute -top-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-energy-high"></span>
+                }
+                <div class="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-20 -translate-x-1/2 rounded-xl border border-line-soft bg-surface-raised px-2.5 py-1.5 text-[0.68rem] whitespace-nowrap opacity-0 shadow-xl transition-opacity duration-200 group-hover/bar:opacity-100">
+                  <span class="font-semibold text-ink-strong">{{ day.focusMinutes }}m</span>
+                  <span class="text-ink-dim"> &middot; {{ day.sessions }} ses.</span>
+                </div>
+              </div>
+              <span
+                class="text-[0.62rem] font-bold uppercase"
+                [class.text-energy-high]="day.isToday"
+                [class.text-ink-faint]="!day.isToday"
+              >
+                {{ day.label }}
+              </span>
+            </div>
+          } @empty {
+            <span class="text-[0.72rem] text-ink-dim">No focus days yet.</span>
+          }
+        </div>
+      </div>
+    </div>
   </div>
 
-  @if (hasAttachedMaterial()) {
-    <div class="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border border-line-soft bg-surface-raised">
-      <span class="text-xs text-ink-body truncate max-w-[200px]">{{ selectedTargetLabel()?.title }}</span>
-      <button
-        type="button"
-        (click)="clearAttachedMaterial()"
-        class="w-4 h-4 rounded-full flex items-center justify-center text-ink-faint hover:text-ink-body hover:bg-surface-overlay transition-colors"
-        aria-label="Detach material, go back to free focus"
-      >
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
-      </button>
+  <div appReveal class="card p-5">
+    <div class="flex items-baseline justify-between">
+      <p class="eyebrow">Today's log</p>
+      <span class="tnum text-[0.72rem] text-ink-faint">{{ todayMinutes() }}m</span>
     </div>
-  }
-
-  @if (showIntentInput() || intent()) {
-    <div class="w-full max-w-sm">
-      <label for="start-intent-input" class="sr-only">Intention</label>
-      <input
-        id="start-intent-input"
-        type="text"
-        [ngModel]="intent()"
-        (ngModelChange)="intent.set($event)"
-        placeholder="What do you want to walk away with?"
-        class="w-full px-3 py-2 rounded-lg text-sm bg-surface-inset border border-line-soft text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line"
-      />
-    </div>
-  }
-
-  @if (store.error()) {
-    <div class="text-sm text-energy-high">{{ store.error() }}</div>
-  }
+    @if (todaySessions().length) {
+      <ol class="mt-3 grid gap-x-8 md:grid-cols-2">
+        @for (session of todaySessions(); track session.id) {
+          <li class="flex items-center gap-3 border-b border-line-soft py-2.5">
+            <span
+              class="grid h-7 w-7 shrink-0 place-items-center rounded-full"
+              style="background: var(--tone-ember-soft, color-mix(in oklab, var(--color-accent) 12%, transparent)); color: var(--tone-ember, var(--color-accent))"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="9" />
+                <polyline points="12 7 12 12 15 14" />
+              </svg>
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-[0.84rem] font-medium text-ink-strong">
+                {{ sessionTime(session.startedAt) }} &middot; {{ session.plannedMin }}m planned
+              </p>
+              <p class="text-[0.7rem] text-ink-dim">{{ session.focusMin }}m focused</p>
+            </div>
+            <span
+              class="h-1.5 w-1.5 shrink-0 rounded-full"
+              [style.background]="
+                session.active
+                  ? 'var(--tone-ember, var(--color-accent))'
+                  : 'var(--color-accent)'
+              "
+              [title]="session.active ? 'in progress' : 'done'"
+            ></span>
+          </li>
+        }
+      </ol>
+    } @else {
+      <p class="mt-4 text-[0.86rem] leading-relaxed text-ink-dim">
+        No blocks logged today yet. The first one is the hardest.
+      </p>
+    }
+  </div>
 </div>

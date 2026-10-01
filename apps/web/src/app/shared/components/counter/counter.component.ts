@@ -22,7 +22,7 @@ export class CounterComponent implements OnDestroy {
       const ms = this.duration();
       cancelAnimationFrame(this.raf);
 
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         this.display.set(target);
         this.from = target;
         return;
