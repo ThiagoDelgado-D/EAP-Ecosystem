@@ -1,11 +1,11 @@
 <div class="w-full max-w-lg">
-  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-10 shadow-xl">
+  <div class="bg-surface-raised border border-line-soft rounded-2xl p-10 shadow-xl">
     <div class="flex flex-col items-center mb-6">
       <div
-        class="w-14 h-14 bg-violet-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-violet-900/40"
+        class="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mb-3 shadow-lg"
       >
         <svg
-          class="w-7 h-7 text-white"
+          class="w-7 h-7 text-surface-base"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -18,14 +18,14 @@
           />
         </svg>
       </div>
-      <span class="text-white font-bold text-lg leading-none">EAP</span>
-      <span class="text-violet-400 text-xs tracking-widest font-medium mt-0.5">ECOSYSTEM</span>
+      <span class="text-surface-base font-bold text-lg leading-none">EAP</span>
+      <span class="text-accent-ink text-xs tracking-widest font-medium mt-0.5">ECOSYSTEM</span>
     </div>
 
     <div class="text-center mb-6">
-      <h1 class="text-2xl font-bold text-slate-100 mb-1">Check your inbox.</h1>
-      <p class="text-sm text-slate-500 leading-relaxed">
-        We sent a 6–digit code to <strong class="text-slate-300">{{ email() }}</strong
+      <h1 class="text-2xl font-bold text-ink-strong mb-1">Check your inbox.</h1>
+      <p class="text-sm text-ink-faint leading-relaxed">
+        We sent a 6–digit code to <strong class="text-ink-body">{{ email() }}</strong
         >.<br />
         It expires in 10 minutes.
       </p>
@@ -42,19 +42,19 @@
           (input)="onDigitInput(i, $event)"
           (keydown)="onKeyDown(i, $event)"
           [attr.aria-label]="'Digit ' + ($index + 1) + ' of the code'"
-          class="w-11 h-12 text-center text-xl font-bold bg-slate-800 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:border-violet-500 transition-colors caret-transparent"
+          class="w-11 h-12 text-center text-xl font-bold bg-surface-overlay border border-line-strong rounded-xl text-ink-strong focus:outline-none focus:border-accent-line transition-colors caret-transparent"
         />
       }
     </div>
 
     @if (error()) {
-      <p class="text-xs text-red-400 text-center mb-3">{{ error() }}</p>
+      <p class="text-xs text-energy-high text-center mb-3">{{ error() }}</p>
     }
 
     <button
       (click)="submit()"
       [disabled]="!isComplete() || loading()"
-      class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium py-3 rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+      class="w-full bg-surface-overlay hover:bg-surface-overlay border border-line-strong text-ink-strong font-medium py-3 rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
     >
       @if (loading()) {
         Verifying...
@@ -67,7 +67,7 @@
       <button
         (click)="changeEmail.emit()"
         [disabled]="loading()"
-        class="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+        class="flex items-center gap-1 text-xs text-ink-faint hover:text-ink-body transition-colors"
       >
         <svg
           class="w-3 h-3"
@@ -83,7 +83,7 @@
       <button
         (click)="resend()"
         [disabled]="loading() || resendSeconds() > 0"
-        class="text-xs text-slate-500 hover:text-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        class="text-xs text-ink-faint hover:text-ink-body disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         @if (resendSeconds() > 0) {
           Resend in {{ resendSeconds() }}s
@@ -95,8 +95,8 @@
   </div>
 
   <div class="flex justify-center items-center gap-2 mt-5">
-    <div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
-    <div class="w-6 h-1.5 rounded-full bg-violet-500"></div>
-    <div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+    <div class="w-1.5 h-1.5 rounded-full bg-surface-overlay"></div>
+    <div class="w-6 h-1.5 rounded-full bg-accent"></div>
+    <div class="w-1.5 h-1.5 rounded-full bg-surface-overlay"></div>
   </div>
 </div>
