@@ -1,21 +1,13 @@
-<div class="px-8 py-8 max-w-[1100px]">
-  <div class="mb-6">
-    <h1 class="text-xl font-semibold text-slate-100">Feature Modules</h1>
-    <p class="text-sm text-slate-400 mt-1">
-      Each module is fully opt-in. Disabled modules don't register routes, download chunks, or make
-      API calls. Changes apply on next page load.
-    </p>
-  </div>
-
+<div>
   <div
-    class="flex items-start gap-3 px-4 py-3 mb-6 rounded-xl border border-violet-800/40 bg-violet-950/20"
+    class="flex items-start gap-3 px-4 py-3 mb-4 rounded-xl border border-accent-line/40 bg-accent-wash/20"
   >
     <svg
       width="16"
       height="16"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#a78bfa"
+      stroke="var(--color-accent-ink)"
       stroke-width="2"
       stroke-linecap="round"
       stroke-linejoin="round"
@@ -23,15 +15,15 @@
     >
       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
     </svg>
-    <p class="text-sm text-slate-300 leading-relaxed">
-      <span class="font-semibold text-violet-300">The Lego Principle.</span>
+    <p class="text-sm text-ink-body leading-relaxed">
+      <span class="font-semibold text-accent-ink">The Lego Principle.</span>
       EAP is an ecosystem of blocks — each one doing one thing well. The Resource Library is the
       only always-on core. Everything else, you choose.
     </p>
   </div>
 
   @if (loading()) {
-    <div class="flex items-center gap-2 text-sm text-slate-500">
+    <div class="flex items-center gap-2 text-sm text-ink-faint">
       <svg
         class="animate-spin w-4 h-4"
         viewBox="0 0 24 24"
@@ -47,7 +39,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       @for (module of catalog; track module.key) {
         <div
-          class="flex flex-col rounded-xl border p-5 transition-all bg-slate-900 border-slate-800"
+          class="flex flex-col rounded-xl border p-4 transition-all bg-surface-raised border-line-soft"
           [class.opacity-50]="module.badge === 'planned'"
         >
           <div class="flex items-start justify-between mb-3">
@@ -74,10 +66,10 @@
                 class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
                 [class]="
                   module.badge === 'planned'
-                    ? 'text-amber-400 bg-amber-950/60'
+                    ? 'text-[var(--tone-ochre)] bg-accent-wash/60'
                     : module.badge === 'live'
-                      ? 'text-slate-200 bg-slate-800'
-                      : 'text-slate-400 bg-slate-800'
+                      ? 'text-ink-strong bg-surface-overlay'
+                      : 'text-ink-dim bg-surface-overlay'
                 "
               >
                 {{
@@ -90,7 +82,7 @@
               </span>
               @if (module.isCore) {
                 <span
-                  class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded text-slate-500 bg-slate-800"
+                  class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded text-ink-faint bg-surface-overlay"
                 >
                   Core
                 </span>
@@ -98,13 +90,13 @@
             </div>
           </div>
 
-          <p class="text-sm font-semibold text-slate-100 mb-1">{{ module.label }}</p>
-          <p class="text-xs text-slate-500 leading-relaxed flex-1">{{ module.description }}</p>
+          <p class="text-sm font-semibold text-ink-strong mb-1">{{ module.label }}</p>
+          <p class="text-xs text-ink-faint leading-relaxed flex-1">{{ module.description }}</p>
 
-          <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
+          <div class="flex items-center justify-between mt-4 pt-3 border-t border-line-soft">
             <span
               class="text-xs"
-              [class.text-slate-600]="!module.alwaysOn && !isOn(module.key)"
+              [class.text-ink-faint]="!module.alwaysOn && !isOn(module.key)"
               [style.color]="(module.alwaysOn || isOn(module.key)) ? module.accentColor : null"
             >
               {{ statusLabel(module) }}
@@ -115,8 +107,8 @@
                 type="button"
                 [disabled]="!isToggleable(module)"
                 (click)="toggle(module)"
-                class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:cursor-not-allowed"
-                [class.bg-slate-700]="!module.alwaysOn && !isOn(module.key)"
+                class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised disabled:cursor-not-allowed"
+                [class.bg-surface-overlay]="!module.alwaysOn && !isOn(module.key)"
                 [style.background-color]="(module.alwaysOn || isOn(module.key)) ? module.accentColor : null"
                 [attr.aria-checked]="module.alwaysOn || isOn(module.key)"
                 [attr.aria-label]="module.alwaysOn ? ('Status: ' + module.label + ' (always on)') : ('Toggle ' + module.label)"
@@ -134,7 +126,7 @@
     </div>
 
     @if (error()) {
-      <p class="mt-4 text-sm text-red-400">{{ error() }}</p>
+      <p class="mt-4 text-sm text-energy-high">{{ error() }}</p>
     }
 
   }
