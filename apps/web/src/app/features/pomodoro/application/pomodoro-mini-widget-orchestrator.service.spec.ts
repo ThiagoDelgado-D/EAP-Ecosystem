@@ -45,7 +45,8 @@ function waitForShown(
 }
 
 describe('PomodoroMiniWidgetOrchestratorService', () => {
-  afterEach(() => {
+  afterEach(async () => {
+    await TestBed.inject(PomodoroSessionStore).miniWidgetOrchestratorReady;
     TestBed.inject(OverlayContainer).ngOnDestroy();
   });
 
