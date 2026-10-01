@@ -1,156 +1,119 @@
-<div class="flex flex-1 min-h-0">
-  <aside class="w-56 flex-shrink-0 border-r border-slate-800 bg-slate-900 overflow-y-auto">
-    <div class="p-4">
-      <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4 px-2">
-        Settings
-      </h2>
+<div class="mx-auto w-full max-w-[86rem] px-4 sm:px-7 flex flex-col gap-6 pt-1 pb-4">
+  <header appReveal>
+    <p class="eyebrow">Backend-persisted preferences &middot; restored on sign-in</p>
+    <h1 class="display mt-2 text-[clamp(2rem,5vw,3.2rem)] font-semibold">
+      Tune EAP <span class="text-accent-ink">to fit you</span>
+    </h1>
+    <p class="mt-3 max-w-2xl text-[0.92rem] leading-relaxed text-ink-body">
+      Appearance, active modules, dashboard widgets and live sessions. Everything you touch here
+      saves instantly and reflects in the UI without reloading.
+    </p>
+  </header>
 
-      <nav class="flex flex-col gap-4">
-        <!-- Account group -->
-        <div>
-          <p class="text-[10px] uppercase tracking-widest text-slate-600 px-2 mb-1">Account</p>
-          <div class="flex flex-col gap-0.5">
-            <a
-              routerLink="account"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
+  <div class="grid gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
+    <nav class="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto" aria-label="Settings sections">
+      <ul class="flex gap-1 overflow-x-auto lg:flex-col">
+        @for (section of sections; track section.id) {
+          <li class="shrink-0">
+            <button
+              type="button"
+              (click)="scrollTo(section.id)"
+              [class]="
+                activeSection() === section.id
+                  ? 'group flex w-full items-center gap-2.5 rounded-[14px_4px_14px_4px] px-3 py-2 text-left text-[0.84rem] font-semibold text-ink-strong bg-surface-raised shadow transition-all duration-300'
+                  : 'group flex w-full items-center gap-2.5 rounded-[14px_4px_14px_4px] px-3 py-2 text-left text-[0.84rem] text-ink-dim hover:bg-surface-overlay hover:text-ink-strong transition-all duration-300'
+              "
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              My account
-            </a>
-            <a
-              routerLink="preferences"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
-              Preferences
-            </a>
-            <a
-              routerLink="notifications"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              Notifications
-            </a>
-          </div>
-        </div>
+              <span class="whitespace-nowrap">{{ section.label }}</span>
+              @if (activeSection() === section.id) {
+                <span class="ml-auto h-1.5 w-1.5 rounded-full bg-energy-high"></span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+      <div class="mt-4 hidden rounded-[18px_6px_18px_6px] border border-line-soft bg-surface-raised p-3 lg:block">
+        <p class="label">Your account</p>
+        <p class="mt-1 truncate text-[0.86rem] font-semibold text-ink-strong">{{ displayName() }}</p>
+        @if (accountEmail()) {
+          <p class="truncate text-[0.72rem] text-ink-dim">{{ accountEmail() }}</p>
+        }
+      </div>
+    </nav>
 
-        <!-- Workspace group -->
-        <div>
-          <p class="text-[10px] uppercase tracking-widest text-slate-600 px-2 mb-1">Workspace</p>
-          <div class="flex flex-col gap-0.5">
-            <a
-              routerLink="modules"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              Modules
-            </a>
-            <a
-              routerLink="widgets"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-                <rect x="14" y="14" width="7" height="7" />
-              </svg>
-              Dashboard Widgets
-            </a>
-            <a
-              routerLink="pomodoro"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              Pomodoro
-            </a>
-          </div>
-        </div>
+    <div class="flex flex-col gap-6 min-w-0">
+      <section id="account" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Account</p>
+        <h2 class="display text-[1.25rem] font-semibold">Who is signed in</h2>
+        <div class="mt-4"><app-account /></div>
+      </section>
 
-        <!-- Security group -->
-        <div>
-          <p class="text-[10px] uppercase tracking-widest text-slate-600 px-2 mb-1">Security</p>
-          <div class="flex flex-col gap-0.5">
-            <a
-              routerLink="sessions"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-                <line x1="8" y1="21" x2="16" y2="21" />
-                <line x1="12" y1="17" x2="12" y2="21" />
-              </svg>
-              Active Sessions
-            </a>
-            <a
-              routerLink="security"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-              Login & Security
-            </a>
-          </div>
-        </div>
+      <section id="appearance" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Appearance</p>
+        <h2 class="display text-[1.25rem] font-semibold">Look and feel</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">Saved to your profile and restored each sign-in.</p>
+        <div class="mt-4"><app-preferences /></div>
+      </section>
 
-        <!-- Data group -->
-        <div>
-          <p class="text-[10px] uppercase tracking-widest text-slate-600 px-2 mb-1">Data</p>
-          <div class="flex flex-col gap-0.5">
-            <a
-              routerLink="import-export"
-              routerLinkActive="bg-slate-800 text-violet-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <polyline points="8 17 12 21 16 17" />
-                <line x1="12" y1="12" x2="12" y2="21" />
-                <path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 103 16.29" />
-              </svg>
-              Import & Export
-            </a>
-            <a
-              routerLink="danger-zone"
-              routerLinkActive="bg-slate-800 text-red-400!"
-              class="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-slate-400 hover:bg-red-950 hover:text-red-400 transition-colors"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-              Danger Zone
-            </a>
-          </div>
-        </div>
-      </nav>
+      <section id="modules" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Modules</p>
+        <h2 class="display text-[1.25rem] font-semibold">Active modules</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">What you disable leaves navigation and stops being queried.</p>
+        <div class="mt-4"><app-modules /></div>
+      </section>
+
+      <section id="widgets" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Widgets</p>
+        <h2 class="display text-[1.25rem] font-semibold">Dashboard widgets</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">Choose which blocks appear on Home.</p>
+        <div class="mt-4"><app-widgets /></div>
+      </section>
+
+      <section id="pomodoro" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Pomodoro</p>
+        <h2 class="display text-[1.25rem] font-semibold">Focus sessions</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">Sound, default view and hints for focus sessions.</p>
+        <div class="mt-4"><app-pomodoro-settings /></div>
+      </section>
+
+      <section id="sessions" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Sessions</p>
+        <h2 class="display text-[1.25rem] font-semibold">Active sessions</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">Devices with a live token. Revoke any without closing this one.</p>
+        <div class="mt-4"><app-sessions /></div>
+      </section>
+
+      <section id="security" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Security</p>
+        <h2 class="display text-[1.25rem] font-semibold">Login &amp; security</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">Manage sign-in methods and security settings.</p>
+        <div class="mt-4"><app-security /></div>
+      </section>
+
+      <section id="notifications" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Notifications</p>
+        <h2 class="display text-[1.25rem] font-semibold">Notifications</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">Control what you get notified about.</p>
+        <div class="mt-4"><app-notifications /></div>
+      </section>
+
+      <section id="data" class="card scroll-mt-24 p-6">
+        <p class="eyebrow mb-1">Data</p>
+        <h2 class="display text-[1.25rem] font-semibold">Import &amp; export</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">Back up your data or migrate from another tool.</p>
+        <div class="mt-4"><app-import-export /></div>
+      </section>
+
+      <section
+        id="danger"
+        class="scroll-mt-24 overflow-hidden rounded-[22px_22px_22px_8px] border p-6"
+        style="border-color: color-mix(in oklab, var(--tone-ember, var(--color-accent)) 35%, transparent); background: color-mix(in oklab, var(--tone-ember, var(--color-accent)) 6%, var(--color-surface-raised))"
+      >
+        <p class="eyebrow" style="color: var(--tone-ember, var(--color-accent))">Danger zone</p>
+        <h2 class="display mt-1 text-[1.25rem] font-semibold">Irreversible actions</h2>
+        <p class="mt-1 text-[0.84rem] text-ink-dim">These touch your live account. There is no undo.</p>
+        <div class="mt-4"><app-danger-zone /></div>
+      </section>
     </div>
-  </aside>
-
-  <main class="flex-1 overflow-y-auto">
-    <router-outlet />
-  </main>
+  </div>
 </div>
