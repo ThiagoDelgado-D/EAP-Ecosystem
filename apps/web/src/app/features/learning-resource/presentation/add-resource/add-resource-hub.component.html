@@ -1,9 +1,9 @@
-<div class="min-h-screen bg-slate-950 px-4 sm:px-8 py-8 sm:py-12">
+<div class="min-h-screen bg-surface-inset px-4 sm:px-8 py-8 sm:py-12">
   <div class="max-w-4xl mx-auto mb-8 sm:mb-10">
     <div class="flex items-center gap-3 mb-6">
       <button
         (click)="goBack()"
-        class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300 transition-colors"
+        class="flex items-center gap-1.5 text-sm text-ink-faint hover:text-ink-body transition-colors"
       >
         <svg
           width="15"
@@ -19,8 +19,8 @@
       </button>
     </div>
 
-    <h1 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-2">Creation Hub</h1>
-    <p class="text-sm sm:text-base text-slate-500 max-w-lg">
+    <h1 class="text-2xl sm:text-3xl font-bold text-ink-strong mb-2">Creation Hub</h1>
+    <p class="text-sm sm:text-base text-ink-faint max-w-lg">
       Select your preferred input method to begin a new entry in the EAP ecosystem.
     </p>
   </div>
@@ -36,14 +36,14 @@
             'group relative text-left w-full rounded-2xl p-5 sm:p-6',
             'border transition-all duration-200',
             method.available
-              ? 'bg-slate-900 border-slate-800 hover:border-violet-700/60 hover:bg-slate-800/80 cursor-pointer'
-              : 'bg-slate-900/60 border-slate-800/60 cursor-not-allowed opacity-70',
+              ? 'bg-surface-raised border-line-soft hover:border-accent-line/60 hover:bg-surface-overlay/80 cursor-pointer'
+              : 'bg-surface-raised/60 border-line-soft/60 cursor-not-allowed opacity-70',
           ].join(' ')
         "
       >
         @if (!method.available) {
           <span
-            class="absolute top-4 right-4 text-[10px] sm:text-xs px-2 py-1 rounded-full bg-slate-800 text-slate-500 border border-slate-700 font-medium tracking-wide"
+            class="absolute top-4 right-4 text-[10px] sm:text-xs px-2 py-1 rounded-full bg-surface-overlay text-ink-faint border border-line-strong font-medium tracking-wide"
           >
             Coming soon
           </span>
@@ -57,12 +57,12 @@
                 'transition-transform duration-200',
                 method.available ? 'group-hover:scale-105' : '',
                 method.iconVariant === 'form'
-                  ? 'bg-violet-950/70 text-violet-400'
+                  ? 'bg-accent-wash/70 text-accent-ink'
                   : method.iconVariant === 'url'
-                    ? 'bg-emerald-950/70 text-emerald-400'
+                    ? 'bg-accent-wash/70 text-accent-ink'
                     : method.iconVariant === 'voice'
-                      ? 'bg-amber-950/70 text-amber-400'
-                      : 'bg-sky-950/70 text-sky-400',
+                      ? 'bg-accent-wash/70 text-[var(--tone-ochre)]'
+                      : 'bg-accent-wash/70 text-accent-ink',
               ].join(' ')
             "
           >
@@ -137,24 +137,24 @@
           [class]="
             [
               'text-base sm:text-lg font-semibold mb-1.5 transition-colors duration-200',
-              method.available ? 'text-slate-100 group-hover:text-violet-300' : 'text-slate-400',
+              method.available ? 'text-ink-strong group-hover:text-accent-ink' : 'text-ink-dim',
             ].join(' ')
           "
         >
           {{ method.title }}
         </h2>
-        <p class="text-sm text-slate-500 mb-5 leading-relaxed">
+        <p class="text-sm text-ink-faint mb-5 leading-relaxed">
           {{ method.description }}
         </p>
 
         <ul class="flex flex-col gap-1.5 mb-6">
           @for (feature of method.features; track feature) {
-            <li class="flex items-center gap-2 text-xs sm:text-sm text-slate-500">
+            <li class="flex items-center gap-2 text-xs sm:text-sm text-ink-faint">
               <svg
                 [class]="
                   method.available
-                    ? 'text-violet-500 flex-shrink-0'
-                    : 'text-slate-600 flex-shrink-0'
+                    ? 'text-accent-ink flex-shrink-0'
+                    : 'text-ink-faint flex-shrink-0'
                 "
                 width="13"
                 height="13"
@@ -173,7 +173,7 @@
         @if (method.available) {
           <div class="flex items-center">
             <span
-              class="inline-flex items-center gap-2 border border-slate-600 text-slate-300 group-hover:border-violet-500 group-hover:text-violet-300 text-sm font-medium px-4 py-2 rounded-full transition-all duration-200"
+              class="inline-flex items-center gap-2 border border-line-strong text-ink-body group-hover:border-accent-line group-hover:text-accent-ink text-sm font-medium px-4 py-2 rounded-full transition-all duration-200"
             >
               {{ method.ctaLabel }}
               <svg

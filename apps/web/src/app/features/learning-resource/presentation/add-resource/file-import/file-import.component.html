@@ -1,8 +1,8 @@
-<div class="min-h-screen bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
+<div class="min-h-screen bg-surface-inset px-4 py-8 sm:px-6 lg:px-8">
   <div class="max-w-2xl mx-auto">
     <button
       (click)="goBack()"
-      class="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
+      class="mb-6 inline-flex items-center gap-2 text-sm text-ink-dim hover:text-ink-strong transition-colors"
     >
       <svg
         width="14"
@@ -20,7 +20,7 @@
     @if (viewState() === 'idle') {
       <div class="text-center mb-10">
         <div
-          class="w-16 h-16 rounded-2xl bg-sky-950/70 flex items-center justify-center mx-auto mb-4"
+          class="w-16 h-16 rounded-2xl bg-accent-wash/70 flex items-center justify-center mx-auto mb-4"
         >
           <svg
             width="28"
@@ -29,24 +29,24 @@
             fill="none"
             stroke="currentColor"
             stroke-width="1.5"
-            class="text-sky-400"
+            class="text-accent-ink"
           >
             <polyline points="16 16 12 12 8 16" />
             <line x1="12" y1="12" x2="12" y2="21" />
             <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
           </svg>
         </div>
-        <h1 class="text-2xl font-bold text-slate-100 mb-2">Import Externals</h1>
-        <p class="text-sm text-slate-500">Drop a CSV or JSON file to bulk-import resources.</p>
+        <h1 class="text-2xl font-bold text-ink-strong mb-2">Import Externals</h1>
+        <p class="text-sm text-ink-faint">Drop a CSV or JSON file to bulk-import resources.</p>
       </div>
 
       <label
         (dragover)="onDragOver($event)"
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
-        [class.border-sky-500]="isDragOver()"
-        [class.bg-sky-950\/20]="isDragOver()"
-        class="block w-full border-2 border-dashed border-slate-700 rounded-xl p-12 text-center cursor-pointer hover:border-slate-500 transition-colors"
+        [class.border-accent-line]="isDragOver()"
+        [class.bg-accent-wash\/20]="isDragOver()"
+        class="block w-full border-2 border-dashed border-line-strong rounded-xl p-12 text-center cursor-pointer hover:border-line-strong transition-colors"
       >
         <input type="file" accept=".csv,.json" (change)="onFileSelected($event)" class="hidden" />
         <svg
@@ -56,41 +56,41 @@
           fill="none"
           stroke="currentColor"
           stroke-width="1"
-          class="text-slate-600 mx-auto mb-4"
+          class="text-ink-faint mx-auto mb-4"
         >
           <polyline points="16 16 12 12 8 16" />
           <line x1="12" y1="12" x2="12" y2="21" />
           <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
         </svg>
-        <p class="text-sm text-slate-400 mb-1">
+        <p class="text-sm text-ink-dim mb-1">
           @if (isDragOver()) {
             Drop to import
           } @else {
             Drag & drop your file here, or click to browse
           }
         </p>
-        <p class="text-xs text-slate-600">Supports .csv and .json</p>
+        <p class="text-xs text-ink-faint">Supports .csv and .json</p>
       </label>
 
-      <div class="mt-8 bg-slate-900 border border-slate-800 rounded-xl p-5">
-        <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">
+      <div class="mt-8 bg-surface-raised border border-line-soft rounded-xl p-5">
+        <h3 class="text-xs uppercase tracking-wider text-ink-faint font-semibold mb-4">
           Expected format
         </h3>
         <div class="flex gap-2 mb-4">
           <button
             (click)="exampleTab.set('csv')"
-            [class.bg-slate-700]="exampleTab() === 'csv'"
-            [class.text-slate-200]="exampleTab() === 'csv'"
-            [class.text-slate-500]="exampleTab() !== 'csv'"
+            [class.bg-surface-overlay]="exampleTab() === 'csv'"
+            [class.text-ink-strong]="exampleTab() === 'csv'"
+            [class.text-ink-faint]="exampleTab() !== 'csv'"
             class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
           >
             CSV
           </button>
           <button
             (click)="exampleTab.set('json')"
-            [class.bg-slate-700]="exampleTab() === 'json'"
-            [class.text-slate-200]="exampleTab() === 'json'"
-            [class.text-slate-500]="exampleTab() !== 'json'"
+            [class.bg-surface-overlay]="exampleTab() === 'json'"
+            [class.text-ink-strong]="exampleTab() === 'json'"
+            [class.text-ink-faint]="exampleTab() !== 'json'"
             class="px-3 py-1 rounded-md text-xs font-medium transition-colors"
           >
             JSON
@@ -100,7 +100,7 @@
         @if (exampleTab() === 'csv') {
           <div class="relative">
             <pre
-              class="text-xs text-slate-400 leading-relaxed bg-slate-800 rounded-lg p-4 overflow-x-auto whitespace-pre"
+              class="text-xs text-ink-dim leading-relaxed bg-surface-overlay rounded-lg p-4 overflow-x-auto whitespace-pre"
             >
 title,url,difficulty,energyLevel,estimatedDurationMinutes,resourceTypeCode,topicNames,notes
 Clean Architecture,https://example.com/book,High,High,480,book,"programming,architecture",Classic by Robert Martin
@@ -109,7 +109,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
             >
             <button
               (click)="copyExample('csv')"
-              class="absolute top-3 right-3 text-slate-500 hover:text-slate-300 transition-colors"
+              class="absolute top-3 right-3 text-ink-faint hover:text-ink-body transition-colors"
               title="Copy example"
             >
               @if (copied()) {
@@ -139,8 +139,8 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
               }
             </button>
           </div>
-          <p class="text-xs text-slate-600 mt-3">
-            Only <span class="text-slate-400">title</span> is required. Topic names separated by
+          <p class="text-xs text-ink-faint mt-3">
+            Only <span class="text-ink-dim">title</span> is required. Topic names separated by
             commas inside quotes.
           </p>
         }
@@ -148,7 +148,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
         @if (exampleTab() === 'json') {
           <div class="relative">
             <pre
-              class="text-xs text-slate-400 leading-relaxed bg-slate-800 rounded-lg p-4 overflow-x-auto whitespace-pre"
+              class="text-xs text-ink-dim leading-relaxed bg-surface-overlay rounded-lg p-4 overflow-x-auto whitespace-pre"
             >
 [
   &#123;
@@ -172,7 +172,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
             >
             <button
               (click)="copyExample('json')"
-              class="absolute top-3 right-3 text-slate-500 hover:text-slate-300 transition-colors"
+              class="absolute top-3 right-3 text-ink-faint hover:text-ink-body transition-colors"
               title="Copy example"
             >
               @if (copied()) {
@@ -202,8 +202,8 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
               }
             </button>
           </div>
-          <p class="text-xs text-slate-600 mt-3">
-            Only <span class="text-slate-400">title</span> is required. All other fields are
+          <p class="text-xs text-ink-faint mt-3">
+            Only <span class="text-ink-dim">title</span> is required. All other fields are
             optional.
           </p>
         }
@@ -213,16 +213,16 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
     @if (viewState() === 'parsing') {
       <div class="text-center py-16">
         <div
-          class="w-12 h-12 border-4 border-slate-800 border-t-sky-500 rounded-full animate-spin mx-auto mb-4"
+          class="w-12 h-12 border-4 border-line-soft border-t-accent rounded-full animate-spin mx-auto mb-4"
         ></div>
-        <p class="text-sm text-slate-400">Parsing file...</p>
+        <p class="text-sm text-ink-dim">Parsing file...</p>
       </div>
     }
 
     @if (viewState() === 'error') {
       <div class="text-center py-16">
         <div
-          class="w-16 h-16 rounded-2xl bg-red-950/70 flex items-center justify-center mx-auto mb-6"
+          class="w-16 h-16 rounded-2xl bg-energy-high/10/70 flex items-center justify-center mx-auto mb-6"
         >
           <svg
             width="28"
@@ -231,18 +231,18 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
             fill="none"
             stroke="currentColor"
             stroke-width="1.5"
-            class="text-red-400"
+            class="text-energy-high"
           >
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <circle cx="12" cy="16" r="0.5" fill="currentColor" stroke="none" />
           </svg>
         </div>
-        <h2 class="text-xl font-semibold text-slate-100 mb-2">Could not parse file</h2>
-        <p class="text-sm text-slate-500 mb-6">{{ parseError() }}</p>
+        <h2 class="text-xl font-semibold text-ink-strong mb-2">Could not parse file</h2>
+        <p class="text-sm text-ink-faint mb-6">{{ parseError() }}</p>
         <button
           (click)="reset()"
-          class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-5 py-2 rounded-lg text-sm"
+          class="bg-accent hover:bg-accent text-white font-medium px-5 py-2 rounded-lg text-sm"
         >
           Try Another File
         </button>
@@ -251,20 +251,20 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
 
     @if (viewState() === 'done' && parseResult(); as result) {
       <div class="text-center mb-8">
-        <h1 class="text-2xl font-bold text-slate-100 mb-1">{{ result.fileName }}</h1>
-        <p class="text-sm text-slate-500">
+        <h1 class="text-2xl font-bold text-ink-strong mb-1">{{ result.fileName }}</h1>
+        <p class="text-sm text-ink-faint">
           {{ result.totalRows }} {{ result.totalRows === 1 ? 'resource' : 'resources' }} detected
           @if (result.parseErrors.length > 0) {
-            · <span class="text-amber-400">{{ result.parseErrors.length }} parse warnings</span>
+            · <span class="text-[var(--tone-ochre)]">{{ result.parseErrors.length }} parse warnings</span>
           }
         </p>
       </div>
 
       @if (result.parseErrors.length > 0) {
-        <div class="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 mb-6">
-          <p class="text-xs font-semibold text-amber-400 mb-2">Parse warnings</p>
+        <div class="bg-accent-wash/30 border border-[var(--tone-ochre)]/50 rounded-xl p-4 mb-6">
+          <p class="text-xs font-semibold text-[var(--tone-ochre)] mb-2">Parse warnings</p>
           @for (err of result.parseErrors; track $index) {
-            <p class="text-xs text-amber-500">{{ err }}</p>
+            <p class="text-xs text-[var(--tone-ochre)]">{{ err }}</p>
           }
         </div>
       }
@@ -272,14 +272,14 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
       <div class="flex justify-end gap-3">
         <button
           (click)="reset()"
-          class="border border-slate-700 text-slate-300 hover:border-slate-500 px-5 py-2 rounded-lg text-sm font-medium"
+          class="border border-line-strong text-ink-body hover:border-line-strong px-5 py-2 rounded-lg text-sm font-medium"
         >
           Import Different File
         </button>
         <button
           (click)="proceedToPreview()"
           [disabled]="!dataReady()"
-          class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-8 py-2 rounded-lg text-sm"
+          class="bg-accent hover:bg-accent text-white font-medium px-8 py-2 rounded-lg text-sm"
         >
           Review & Import →
         </button>
@@ -289,21 +289,21 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
     @if (viewState() === 'preview') {
       <div class="mb-6 flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-slate-100 mb-1">Review Resources</h1>
-          <p class="text-sm text-slate-500">
+          <h1 class="text-2xl font-bold text-ink-strong mb-1">Review Resources</h1>
+          <p class="text-sm text-ink-faint">
             {{ selectedRows.length }} of {{ validatedRows().length }} selected
           </p>
         </div>
         <div class="flex gap-2">
           <button
             (click)="toggleAll(true)"
-            class="text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 border border-slate-700 rounded-lg transition-colors"
+            class="text-xs text-ink-dim hover:text-ink-strong px-3 py-1.5 border border-line-strong rounded-lg transition-colors"
           >
             Select all valid
           </button>
           <button
             (click)="toggleAll(false)"
-            class="text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 border border-slate-700 rounded-lg transition-colors"
+            class="text-xs text-ink-dim hover:text-ink-strong px-3 py-1.5 border border-line-strong rounded-lg transition-colors"
           >
             Deselect all
           </button>
@@ -313,10 +313,10 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
       <div class="space-y-2 mb-6">
         @for (row of validatedRows(); track row.index) {
           <div
-            class="bg-slate-900 border rounded-xl p-4 transition-colors"
-            [class.border-slate-800]="row.status === 'valid'"
-            [class.border-amber-800\/50]="row.status === 'warning'"
-            [class.border-red-800\/50]="row.status === 'error'"
+            class="bg-surface-raised border rounded-xl p-4 transition-colors"
+            [class.border-line-soft]="row.status === 'valid'"
+            [class.border-[var(--tone-ochre)]\/50]="row.status === 'warning'"
+            [class.border-energy-high\/50]="row.status === 'error'"
             [class.opacity-50]="row.status === 'error'"
           >
             <div class="flex items-start gap-3">
@@ -326,7 +326,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                 [disabled]="row.status === 'error' || row.selectedTopicIds.length === 0"
                 (change)="toggleRowSelection(row.index)"
                 [attr.aria-label]="'Select resource: ' + row.resolvedTitle"
-                class="mt-1 accent-violet-500 cursor-pointer disabled:cursor-not-allowed"
+                class="mt-1 accent-accent cursor-pointer disabled:cursor-not-allowed"
               />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
@@ -334,16 +334,16 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                     <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
                   }
                   @if (row.status === 'warning') {
-                    <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
+                    <span class="w-2 h-2 rounded-full bg-accent flex-shrink-0"></span>
                   }
                   @if (row.status === 'error') {
-                    <span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></span>
+                    <span class="w-2 h-2 rounded-full bg-energy-high flex-shrink-0"></span>
                   }
-                  <p class="text-sm font-medium text-slate-200 truncate">
+                  <p class="text-sm font-medium text-ink-strong truncate">
                     {{ row.resolvedTitle || '(no title)' }}
                   </p>
                 </div>
-                <div class="flex flex-wrap gap-2 text-xs text-slate-500 mb-2">
+                <div class="flex flex-wrap gap-2 text-xs text-ink-faint mb-2">
                   <span>{{ row.resolvedDifficulty }}</span>
                   <span>·</span>
                   <span>{{ row.resolvedDurationMinutes }} min</span>
@@ -363,8 +363,8 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                         [attr.aria-label]="'Toggle topic ' + topic.name"
                         [class]="
                           row.selectedTopicIds.includes(topic.id)
-                            ? 'bg-violet-600 text-white border-violet-500'
-                            : 'bg-slate-800 text-slate-300 border-slate-700 hover:border-slate-500'
+                            ? 'bg-accent text-white border-accent-line'
+                            : 'bg-surface-overlay text-ink-body border-line-strong hover:border-line-strong'
                         "
                         class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
                       >
@@ -373,7 +373,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                     }
                   </div>
                   @if (row.selectedTopicIds.length === 0) {
-                    <p class="text-xs text-amber-400 mt-1">
+                    <p class="text-xs text-[var(--tone-ochre)] mt-1">
                       ⚠️ Select at least one topic for this resource
                     </p>
                   }
@@ -384,8 +384,8 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                     @for (err of row.errors; track err.field) {
                       <p
                         class="text-xs"
-                        [class.text-red-400]="err.blocking"
-                        [class.text-amber-500]="!err.blocking"
+                        [class.text-energy-high]="err.blocking"
+                        [class.text-[var(--tone-ochre)]]="!err.blocking"
                       >
                         {{ err.blocking ? '✗' : '⚠' }} {{ err.message }}
                       </p>
@@ -401,14 +401,14 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
       <div class="flex justify-end gap-3">
         <button
           (click)="reset()"
-          class="border border-slate-700 text-slate-300 hover:border-slate-500 px-5 py-2 rounded-lg text-sm font-medium"
+          class="border border-line-strong text-ink-body hover:border-line-strong px-5 py-2 rounded-lg text-sm font-medium"
         >
           Start Over
         </button>
         <button
           (click)="importSelected()"
           [disabled]="selectedRows.length === 0"
-          class="bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-8 py-2 rounded-lg text-sm"
+          class="bg-accent hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-8 py-2 rounded-lg text-sm"
         >
           Import {{ selectedRows.length }}
           {{ selectedRows.length === 1 ? 'resource' : 'resources' }} →
@@ -419,13 +419,13 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
     @if (viewState() === 'importing') {
       <div class="text-center py-16">
         <div
-          class="w-12 h-12 border-4 border-slate-800 border-t-sky-500 rounded-full animate-spin mx-auto mb-6"
+          class="w-12 h-12 border-4 border-line-soft border-t-accent rounded-full animate-spin mx-auto mb-6"
         ></div>
-        <p class="text-slate-200 font-medium mb-2">Importing resources...</p>
-        <p class="text-sm text-slate-500 mb-6">{{ importProgress() }} / {{ importTotal() }}</p>
-        <div class="w-full max-w-sm mx-auto bg-slate-800 rounded-full h-2">
+        <p class="text-ink-strong font-medium mb-2">Importing resources...</p>
+        <p class="text-sm text-ink-faint mb-6">{{ importProgress() }} / {{ importTotal() }}</p>
+        <div class="w-full max-w-sm mx-auto bg-surface-overlay rounded-full h-2">
           <div
-            class="bg-sky-500 h-2 rounded-full transition-all"
+            class="bg-accent h-2 rounded-full transition-all"
             [style.width.%]="importTotal() > 0 ? (importProgress() / importTotal()) * 100 : 0"
           ></div>
         </div>
@@ -437,7 +437,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
         <div
           class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
           [class.bg-green-950\/70]="importFailures().length === 0"
-          [class.bg-amber-950\/70]="importFailures().length > 0"
+          [class.bg-accent-wash\/70]="importFailures().length > 0"
         >
           @if (importFailures().length === 0) {
             <svg
@@ -459,7 +459,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
               fill="none"
               stroke="currentColor"
               stroke-width="1.5"
-              class="text-amber-400"
+              class="text-[var(--tone-ochre)]"
             >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
@@ -468,7 +468,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
           }
         </div>
 
-        <h2 class="text-xl font-semibold text-slate-100 mb-2">
+        <h2 class="text-xl font-semibold text-ink-strong mb-2">
           @if (importFailures().length === 0) {
             Import complete
           } @else {
@@ -476,25 +476,25 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
           }
         </h2>
 
-        <p class="text-sm text-slate-400 mb-6">
+        <p class="text-sm text-ink-dim mb-6">
           {{ importSuccesses() }} {{ importSuccesses() === 1 ? 'resource' : 'resources' }} imported
           successfully.
         </p>
 
         @if (importFailures().length > 0) {
           <div
-            class="bg-red-950/30 border border-red-800/50 rounded-xl p-4 mb-6 text-left max-w-md mx-auto"
+            class="bg-energy-high/10/30 border border-energy-high/50 rounded-xl p-4 mb-6 text-left max-w-md mx-auto"
           >
-            <p class="text-xs font-semibold text-red-400 mb-2">Failed to import</p>
+            <p class="text-xs font-semibold text-energy-high mb-2">Failed to import</p>
             @for (title of importFailures(); track $index) {
-              <p class="text-xs text-red-500">✗ {{ title }}</p>
+              <p class="text-xs text-energy-high">✗ {{ title }}</p>
             }
           </div>
         }
 
         <button
           (click)="goToResources()"
-          class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-8 py-3 rounded-lg text-sm"
+          class="bg-accent hover:bg-accent text-white font-medium px-8 py-3 rounded-lg text-sm"
         >
           Go to Resources →
         </button>
