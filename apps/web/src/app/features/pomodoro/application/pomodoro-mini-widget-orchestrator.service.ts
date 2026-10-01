@@ -36,15 +36,9 @@ export class PomodoroMiniWidgetOrchestratorService {
     });
   }
 
-  private miniWidgetComponentPromise?: Promise<
-    typeof import('@features/pomodoro/presentation/mini-widget/pomodoro-mini-widget.component')
-  >;
-
   private async showMiniWidget(): Promise<void> {
-    this.miniWidgetComponentPromise ??= import(
-      '@features/pomodoro/presentation/mini-widget/pomodoro-mini-widget.component'
-    );
-    const { PomodoroMiniWidgetComponent } = await this.miniWidgetComponentPromise;
+    const { PomodoroMiniWidgetComponent } =
+      await import('@features/pomodoro/presentation/mini-widget/pomodoro-mini-widget.component');
     this.overlayHost.show(MINI_WIDGET_KEY, PomodoroMiniWidgetComponent, 'floating-bottom-right');
   }
 }
