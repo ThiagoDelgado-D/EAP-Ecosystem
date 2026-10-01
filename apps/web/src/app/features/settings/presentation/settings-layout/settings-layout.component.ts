@@ -25,6 +25,21 @@ interface SettingsSection {
   detail: string;
 }
 
+type SettingsSectionTuple = [id: string, label: string, title: string, detail: string];
+
+const SETTINGS_SECTIONS_DATA: SettingsSectionTuple[] = [
+  ['account', 'Account', 'Account', 'Who is signed in.'],
+  ['appearance', 'Appearance', 'Appearance', 'Saved to your profile and restored each sign-in.'],
+  ['modules', 'Modules', 'Active modules', 'What you disable leaves navigation and stops being queried.'],
+  ['widgets', 'Widgets', 'Dashboard widgets', 'Choose which blocks appear on Home.'],
+  ['pomodoro', 'Pomodoro', 'Pomodoro', 'Sound, default view and hints for focus sessions.'],
+  ['sessions', 'Sessions', 'Active sessions', 'Devices with a live token. Revoke any without closing this one.'],
+  ['security', 'Security', 'Login & security', 'Manage sign-in methods and security settings.'],
+  ['notifications', 'Notifications', 'Notifications', 'Control what you get notified about.'],
+  ['data', 'Data', 'Import & export', 'Back up your data or migrate from another tool.'],
+  ['danger', 'Danger zone', 'Danger zone', 'Irreversible actions for your account.'],
+];
+
 @Component({
   selector: 'app-settings-layout',
   standalone: true,
@@ -54,63 +69,12 @@ export class SettingsLayoutComponent implements AfterViewInit, OnDestroy {
 
   readonly displayName = this.authStore.displayName;
   readonly accountEmail = () => this.authStore.currentUser()?.email ?? null;
-  readonly sections: SettingsSection[] = [
-    { id: 'account', label: 'Account', title: 'Account', detail: 'Who is signed in.' },
-    {
-      id: 'appearance',
-      label: 'Appearance',
-      title: 'Appearance',
-      detail: 'Saved to your profile and restored each sign-in.',
-    },
-    {
-      id: 'modules',
-      label: 'Modules',
-      title: 'Active modules',
-      detail: 'What you disable leaves navigation and stops being queried.',
-    },
-    {
-      id: 'widgets',
-      label: 'Widgets',
-      title: 'Dashboard widgets',
-      detail: 'Choose which blocks appear on Home.',
-    },
-    {
-      id: 'pomodoro',
-      label: 'Pomodoro',
-      title: 'Pomodoro',
-      detail: 'Sound, default view and hints for focus sessions.',
-    },
-    {
-      id: 'sessions',
-      label: 'Sessions',
-      title: 'Active sessions',
-      detail: 'Devices with a live token. Revoke any without closing this one.',
-    },
-    {
-      id: 'security',
-      label: 'Security',
-      title: 'Login & security',
-      detail: 'Manage sign-in methods and security settings.',
-    },
-    {
-      id: 'notifications',
-      label: 'Notifications',
-      title: 'Notifications',
-      detail: 'Control what you get notified about.',
-    },
-    {
-      id: 'data',
-      label: 'Data',
-      title: 'Import & export',
-      detail: 'Back up your data or migrate from another tool.',
-    },
-    {
-      id: 'danger',
-      label: 'Danger zone',
-      title: 'Danger zone',
-      detail: 'Irreversible actions for your account.',
-    },
-  ];
+  readonly sections: SettingsSection[] = SETTINGS_SECTIONS_DATA.map(([id, label, title, detail]) => ({
+    id,
+    label,
+    title,
+    detail,
+  }));
 
   readonly activeSection = signal('account');
 
