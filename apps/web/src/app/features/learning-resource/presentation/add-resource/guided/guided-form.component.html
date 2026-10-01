@@ -1,8 +1,8 @@
-<div class="min-h-screen bg-slate-950 px-4 sm:px-8 py-8 sm:py-10">
+<div class="min-h-screen bg-surface-inset px-4 sm:px-8 py-8 sm:py-10">
   <div class="max-w-2xl mx-auto">
     <button
       (click)="goBack()"
-      class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-300 transition-colors mb-8"
+      class="flex items-center gap-1.5 text-sm text-ink-faint hover:text-ink-body transition-colors mb-8"
     >
       <svg
         width="15"
@@ -22,8 +22,8 @@
         <div
           [class]="
             currentStep >= 1
-              ? 'w-7 h-7 rounded-full bg-violet-600 text-white text-xs font-semibold flex items-center justify-center'
-              : 'w-7 h-7 rounded-full bg-slate-800 text-slate-500 text-xs font-semibold flex items-center justify-center'
+              ? 'w-7 h-7 rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center'
+              : 'w-7 h-7 rounded-full bg-surface-overlay text-ink-faint text-xs font-semibold flex items-center justify-center'
           "
         >
           @if (currentStep > 1) {
@@ -43,27 +43,27 @@
         </div>
         <span
           [class]="
-            currentStep >= 1 ? 'text-sm font-medium text-slate-100' : 'text-sm text-slate-500'
+            currentStep >= 1 ? 'text-sm font-medium text-ink-strong' : 'text-sm text-ink-faint'
           "
           >Essential info</span
         >
       </div>
 
-      <div class="flex-1 h-px" [class]="currentStep >= 2 ? 'bg-violet-600' : 'bg-slate-700'"></div>
+      <div class="flex-1 h-px" [class]="currentStep >= 2 ? 'bg-accent' : 'bg-surface-overlay'"></div>
 
       <div class="flex items-center gap-2">
         <div
           [class]="
             currentStep >= 2
-              ? 'w-7 h-7 rounded-full bg-violet-600 text-white text-xs font-semibold flex items-center justify-center'
-              : 'w-7 h-7 rounded-full bg-slate-800 text-slate-500 text-xs font-semibold flex items-center justify-center'
+              ? 'w-7 h-7 rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center'
+              : 'w-7 h-7 rounded-full bg-surface-overlay text-ink-faint text-xs font-semibold flex items-center justify-center'
           "
         >
           2
         </div>
         <span
           [class]="
-            currentStep >= 2 ? 'text-sm font-medium text-slate-100' : 'text-sm text-slate-500'
+            currentStep >= 2 ? 'text-sm font-medium text-ink-strong' : 'text-sm text-ink-faint'
           "
           >Details</span
         >
@@ -74,8 +74,8 @@
       <div class="flex flex-col gap-6">
         @for (i of [1, 2, 3, 4]; track i) {
           <div class="flex flex-col gap-2">
-            <div class="h-4 w-24 bg-slate-800 rounded animate-pulse"></div>
-            <div class="h-10 w-full bg-slate-800 rounded-lg animate-pulse"></div>
+            <div class="h-4 w-24 bg-surface-overlay rounded animate-pulse"></div>
+            <div class="h-10 w-full bg-surface-overlay rounded-lg animate-pulse"></div>
           </div>
         }
       </div>
@@ -83,41 +83,41 @@
       @if (currentStep === 1) {
         <form [formGroup]="step1Form" class="space-y-6">
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-1.5">
-              Title <span class="text-red-400">*</span>
+            <label class="block text-sm font-medium text-ink-strong mb-1.5">
+              Title <span class="text-energy-high">*</span>
             </label>
             <input
               type="text"
               formControlName="title"
               placeholder="e.g., Understanding Angular Signals"
-              class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 transition-colors"
+              class="w-full px-3 py-2.5 bg-surface-raised border border-line-strong rounded-lg text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line transition-colors"
             />
             @if (step1Form.get('title')?.invalid && step1Form.get('title')?.touched) {
-              <p class="text-xs text-red-400 mt-1.5">Title is required (max 200 characters)</p>
+              <p class="text-xs text-energy-high mt-1.5">Title is required (max 200 characters)</p>
             }
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-1.5">
-              Resource Type <span class="text-red-400">*</span>
+            <label class="block text-sm font-medium text-ink-strong mb-1.5">
+              Resource Type <span class="text-energy-high">*</span>
             </label>
             <select
               formControlName="typeId"
-              class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-violet-500 transition-colors cursor-pointer"
+              class="w-full px-3 py-2.5 bg-surface-raised border border-line-strong rounded-lg text-sm text-ink-strong focus:outline-none focus:border-accent-line transition-colors cursor-pointer"
             >
-              <option value="" class="bg-slate-900">Select a type</option>
+              <option value="" class="bg-surface-raised">Select a type</option>
               @for (type of resourceTypes(); track type.id) {
-                <option [value]="type.id" class="bg-slate-900">{{ type.displayName }}</option>
+                <option [value]="type.id" class="bg-surface-raised">{{ type.displayName }}</option>
               }
             </select>
             @if (step1Form.get('typeId')?.invalid && step1Form.get('typeId')?.touched) {
-              <p class="text-xs text-red-400 mt-1.5">Please select a resource type</p>
+              <p class="text-xs text-energy-high mt-1.5">Please select a resource type</p>
             }
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-1.5">
-              Topics <span class="text-red-400">*</span>
+            <label class="block text-sm font-medium text-ink-strong mb-1.5">
+              Topics <span class="text-energy-high">*</span>
             </label>
             <div class="flex flex-wrap gap-2">
               @for (topic of topics(); track topic.id) {
@@ -126,8 +126,8 @@
                   (click)="onTopicToggle(topic.id)"
                   [class]="
                     isTopicSelected(topic.id)
-                      ? 'px-3 py-1.5 rounded-full text-xs font-medium bg-violet-600 text-white transition-all'
-                      : 'px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700 hover:border-slate-500 hover:text-slate-200 transition-all'
+                      ? 'px-3 py-1.5 rounded-full text-xs font-medium bg-accent text-white transition-all'
+                      : 'px-3 py-1.5 rounded-full text-xs font-medium bg-surface-overlay text-ink-dim border border-line-strong hover:border-line-strong hover:text-ink-strong transition-all'
                   "
                 >
                   {{ topic.name }}
@@ -135,33 +135,33 @@
               }
             </div>
             @if (step1Form.get('topicIds')?.invalid && step1Form.get('topicIds')?.touched) {
-              <p class="text-xs text-red-400 mt-1.5">Select at least one topic</p>
+              <p class="text-xs text-energy-high mt-1.5">Select at least one topic</p>
             }
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-1.5">
-              URL <span class="text-slate-500 font-normal">(optional)</span>
+            <label class="block text-sm font-medium text-ink-strong mb-1.5">
+              URL <span class="text-ink-faint font-normal">(optional)</span>
             </label>
             <input
               type="url"
               formControlName="url"
               placeholder="https://…"
-              class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 transition-colors"
+              class="w-full px-3 py-2.5 bg-surface-raised border border-line-strong rounded-lg text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line transition-colors"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-1.5">
-              Thumbnail URL <span class="text-slate-500 font-normal">(optional)</span>
+            <label class="block text-sm font-medium text-ink-strong mb-1.5">
+              Thumbnail URL <span class="text-ink-faint font-normal">(optional)</span>
             </label>
             <input
               type="url"
               formControlName="imageUrl"
               placeholder="https://… (used as card thumbnail)"
-              class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 transition-colors"
+              class="w-full px-3 py-2.5 bg-surface-raised border border-line-strong rounded-lg text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line transition-colors"
             />
-            <p class="text-xs text-slate-600 mt-1">
+            <p class="text-xs text-ink-faint mt-1">
               Leave blank to show a placeholder based on the resource type.
             </p>
           </div>
@@ -171,8 +171,8 @@
       @if (currentStep === 2) {
         <form [formGroup]="step2Form" class="space-y-6">
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-3">
-              Difficulty <span class="text-red-400">*</span>
+            <label class="block text-sm font-medium text-ink-strong mb-3">
+              Difficulty <span class="text-energy-high">*</span>
             </label>
             <div class="grid grid-cols-3 gap-3">
               @for (d of difficulties; track d) {
@@ -182,7 +182,7 @@
                   [class]="
                     step2Form.get('difficulty')?.value === d
                       ? getDifficultySelectedClass(d)
-                      : 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-slate-700 bg-slate-900 hover:border-slate-600 text-slate-500 transition-all'
+                      : 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-line-strong bg-surface-raised hover:border-line-strong text-ink-faint transition-all'
                   "
                 >
                   <span class="text-xl">{{ getDifficultyIcon(d) }}</span>
@@ -193,8 +193,8 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-3">
-              Energy Level <span class="text-red-400">*</span>
+            <label class="block text-sm font-medium text-ink-strong mb-3">
+              Energy Level <span class="text-energy-high">*</span>
             </label>
             <div class="grid grid-cols-3 gap-3">
               @for (e of energyLevels; track e) {
@@ -204,7 +204,7 @@
                   [class]="
                     step2Form.get('energyLevel')?.value === e
                       ? getEnergySelectedClass(e)
-                      : 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-slate-700 bg-slate-900 hover:border-slate-600 text-slate-500 transition-all'
+                      : 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-line-strong bg-surface-raised hover:border-line-strong text-ink-faint transition-all'
                   "
                 >
                   <span class="text-xl">{{ getEnergyIcon(e) }}</span>
@@ -215,9 +215,9 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-3">
+            <label class="block text-sm font-medium text-ink-strong mb-3">
               Mental State
-              <span class="text-slate-500 font-normal">(optional)</span>
+              <span class="text-ink-faint font-normal">(optional)</span>
             </label>
             <div class="flex flex-wrap gap-2">
               @for (ms of mentalStates; track ms.value) {
@@ -226,49 +226,49 @@
                   (click)="toggleMentalState(ms.value)"
                   [class]="
                     step2Form.get('mentalState')?.value === ms.value
-                      ? 'px-3 py-2 rounded-lg text-sm font-medium border-2 border-violet-600 bg-violet-950/50 text-violet-300 transition-all'
-                      : 'px-3 py-2 rounded-lg text-sm font-medium border-2 border-slate-700 bg-slate-900 text-slate-500 hover:border-slate-600 hover:text-slate-300 transition-all'
+                      ? 'px-3 py-2 rounded-lg text-sm font-medium border-2 border-accent bg-accent-wash/50 text-accent-ink transition-all'
+                      : 'px-3 py-2 rounded-lg text-sm font-medium border-2 border-line-strong bg-surface-raised text-ink-faint hover:border-line-strong hover:text-ink-body transition-all'
                   "
                 >
                   {{ ms.label }}
                 </button>
               }
             </div>
-            <p class="text-xs text-slate-600 mt-2">
+            <p class="text-xs text-ink-faint mt-2">
               Helps the dashboard recommend this resource at the right cognitive moment.
             </p>
           </div>
 
           <div formGroupName="estimatedDuration">
-            <label class="block text-sm font-medium text-slate-200 mb-1.5">
+            <label class="block text-sm font-medium text-ink-strong mb-1.5">
               Estimated Duration
-              <span class="text-slate-500 font-normal">(minutes)</span>
-              <span class="text-red-400"> *</span>
+              <span class="text-ink-faint font-normal">(minutes)</span>
+              <span class="text-energy-high"> *</span>
             </label>
             <input
               type="number"
               formControlName="value"
-              class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 focus:outline-none focus:border-violet-500 transition-colors"
+              class="w-full px-3 py-2.5 bg-surface-raised border border-line-strong rounded-lg text-sm text-ink-strong focus:outline-none focus:border-accent-line transition-colors"
             />
-            <label class="flex items-center gap-2 mt-2 text-xs text-slate-500 cursor-pointer">
+            <label class="flex items-center gap-2 mt-2 text-xs text-ink-faint cursor-pointer">
               <input
                 type="checkbox"
                 formControlName="isEstimated"
-                class="rounded border-slate-600 bg-slate-800 accent-violet-500"
+                class="rounded border-line-strong bg-surface-overlay accent-accent"
               />
               This is an estimate
             </label>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-slate-200 mb-1.5">
-              Notes <span class="text-slate-500 font-normal">(optional)</span>
+            <label class="block text-sm font-medium text-ink-strong mb-1.5">
+              Notes <span class="text-ink-faint font-normal">(optional)</span>
             </label>
             <textarea
               formControlName="notes"
               rows="3"
               placeholder="Add any additional notes…"
-              class="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 transition-colors resize-none"
+              class="w-full px-3 py-2.5 bg-surface-raised border border-line-strong rounded-lg text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line transition-colors resize-none"
             >
             </textarea>
           </div>
@@ -276,11 +276,11 @@
       }
     }
 
-    <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-800">
+    <div class="flex justify-between items-center mt-8 pt-6 border-t border-line-soft">
       @if (currentStep === 2) {
         <button
           (click)="prevStep()"
-          class="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+          class="text-sm text-ink-faint hover:text-ink-body transition-colors"
         >
           ← Back
         </button>
@@ -291,7 +291,7 @@
       @if (currentStep === 1) {
         <button
           (click)="nextStep()"
-          class="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-lg transition-colors"
+          class="px-5 py-2 bg-accent hover:bg-accent text-white text-sm font-medium rounded-lg transition-colors"
         >
           Next →
         </button>
@@ -299,7 +299,7 @@
         <button
           (click)="onSubmit()"
           [disabled]="isSubmitting"
-          class="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-5 py-2 bg-accent hover:bg-accent text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ isSubmitting ? 'Creating…' : 'Create Resource' }}
         </button>
@@ -307,7 +307,7 @@
     </div>
 
     @if (submitError) {
-      <p class="mt-4 text-sm text-red-400 text-center">{{ submitError }}</p>
+      <p class="mt-4 text-sm text-energy-high text-center">{{ submitError }}</p>
     }
   </div>
 </div>
