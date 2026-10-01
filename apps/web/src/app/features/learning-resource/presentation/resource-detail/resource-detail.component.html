@@ -1,310 +1,263 @@
-<div class="min-h-screen bg-slate-950">
-  <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between mb-6">
-      <button
-        (click)="goBack()"
-        class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors"
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-        Back to Library
-      </button>
+<div class="mx-auto w-full max-w-[86rem] px-4 sm:px-7 flex flex-col gap-6 pt-1 pb-4">
+  <button
+    type="button"
+    (click)="goBack()"
+    class="group inline-flex w-fit items-center gap-1.5 text-[0.78rem] font-semibold text-ink-dim transition-colors hover:text-ink-strong"
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition-transform duration-300 group-hover:-translate-x-1">
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+    Library
+  </button>
 
-      <div class="flex gap-2">
-        <button
-          (click)="editResource()"
-          [disabled]="loading()"
-          [class.opacity-50]="loading()"
-          [class.cursor-not-allowed]="loading()"
-          class="text-xs text-slate-400 hover:text-slate-200 border border-slate-700 rounded-lg px-3 py-1.5 transition-colors disabled:pointer-events-none"
-        >
-          Edit
-        </button>
-        <button
-          (click)="deleteResource()"
-          [disabled]="loading()"
-          [class.opacity-50]="loading()"
-          [class.cursor-not-allowed]="loading()"
-          class="text-xs text-red-400 hover:text-red-300 border border-red-800/50 rounded-lg px-3 py-1.5 transition-colors disabled:pointer-events-none"
-        >
-          Delete
-        </button>
-      </div>
+  @if (loading()) {
+    <div class="card h-64 animate-pulse"></div>
+  } @else if (error()) {
+    <div class="card border-energy-high/40 bg-energy-high/20 p-4 text-sm text-energy-high text-center">
+      Failed to load resource. Please try again.
     </div>
-
-    @if (loading()) {
-      <div class="flex justify-center py-16">
-        <div
-          class="w-12 h-12 border-4 border-slate-800 border-t-violet-500 rounded-full animate-spin"
-        ></div>
-      </div>
-    }
-
-    @if (error()) {
-      <div class="text-center py-16 text-red-400">Failed to load resource. Please try again.</div>
-    }
-
-    @if (resource(); as r) {
-      <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
-        <div>
-          <div class="mb-4">
-            <span
-              [class]="getTypeMeta(r.typeId).color"
-              class="inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase"
-            >
-              {{ getTypeMeta(r.typeId).label }}
-            </span>
-          </div>
-
-          <h1 class="text-4xl sm:text-5xl font-black text-white leading-tight mb-6 tracking-tight">
-            {{ r.title }}
-          </h1>
-
-          <!-- Metadata pills — interactive badges for toggleable fields -->
-          <div class="flex flex-wrap items-center gap-2 mb-8">
-
-            <!-- Type — static, not toggleable -->
-            <span
-              [class]="getTypeMeta(r.typeId).color"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
-            >
-              {{ getTypeMeta(r.typeId).label }}
-            </span>
-
-            <span class="w-px h-4 bg-slate-800 shrink-0"></span>
-
-            <!-- Difficulty -->
-            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
-              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Difficulty</span>
-              <app-enum-badge [value]="r.difficulty" [options]="difficultyOptions"
-                [loading]="toggleLoadingField() === 'difficulty'"
-                (changed)="onToggle($event, 'difficulty')" />
-            </span>
-
-            <!-- Energy -->
-            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
-              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Energy</span>
-              <app-enum-badge [value]="r.energyLevel" [options]="energyOptions"
-                [loading]="toggleLoadingField() === 'energy'"
-                (changed)="onToggle($event, 'energy')" />
-            </span>
-
-            <!-- Focus / Mental State -->
-            @if (r.mentalState) {
-              <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
-                <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Focus</span>
-                <app-enum-badge [value]="r.mentalState" [options]="mentalStateOptions"
-                  [loading]="toggleLoadingField() === 'mentalState'"
-                  (changed)="onToggle($event, 'mentalState')" />
-              </span>
-            }
-
-            <!-- Status -->
-            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
-              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-400">Status</span>
-              <app-enum-badge [value]="r.status" [options]="statusOptions"
-                [loading]="toggleLoadingField() === 'status'"
-                (changed)="onToggle($event, 'status')" />
-            </span>
-
-            <!-- Duration — static, last since its height is shorter than the interactive badges -->
-            <span class="inline-flex items-center gap-1.5 bg-slate-800/40 border border-slate-700/50 rounded-lg px-2.5 py-1">
-              <span class="text-[9px] font-semibold uppercase tracking-widest text-slate-300">Duration</span>
-              <span class="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                {{ r.estimatedDuration.value }} min
-              </span>
-            </span>
-          </div>
-
+  } @else if (resource(); as r) {
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
+      <div class="lg:sticky lg:top-24 lg:self-start">
+        <div class="relative overflow-hidden rounded-[26px_26px_26px_8px]">
           @if (r.imageUrl) {
+            <img [src]="r.imageUrl" [alt]="r.title" class="h-52 w-full object-cover" />
+          } @else {
             <div
-              class="relative rounded-2xl overflow-hidden mb-8 border border-slate-800 bg-slate-900 aspect-video"
+              class="cover relative grid h-52 w-full place-items-center overflow-hidden text-6xl"
+              [style]="coverStyle(r.title, getTypeMeta(r.typeId).tone)"
+              aria-hidden
             >
-              <img
-                [src]="r.imageUrl"
-                alt="{{ r.title }}"
-                class="w-full h-full object-cover opacity-90"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent"></div>
-              <button
-                class="absolute bottom-4 left-4 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-medium px-4 py-2 rounded-full hover:bg-white/20 transition-colors"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                Preview Abstract
-              </button>
+              <span class="display relative z-10 text-white/90">{{ getTypeMeta(r.typeId).glyph }}</span>
             </div>
           }
-
-          <div class="mb-8">
-            <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center gap-3">
-              Executive Summary
-              <span class="flex-1 h-px bg-slate-800"></span>
-            </h2>
-            @if (r.notes) {
-              <div
-                class="prose prose-invert prose-sm max-w-none text-slate-300 leading-relaxed prose-strong:text-violet-300 prose-a:text-violet-400 prose-a:underline"
+          <div class="absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-1.5 p-4 bg-gradient-to-t from-black/55 to-transparent">
+            <span
+              class="rounded-full px-2 py-0.5 text-[0.64rem] font-bold uppercase tracking-wide backdrop-blur"
+              style="background: color-mix(in oklab, var(--color-surface-base) 72%, transparent)"
+              [style.color]="'var(--tone-' + getTypeMeta(r.typeId).tone + ')'"
+            >
+              {{ getTypeMeta(r.typeId).label }}
+            </span>
+            @if (isSaved()) {
+              <span
+                class="rounded-full px-2 py-0.5 text-[0.64rem] font-bold uppercase tracking-wide backdrop-blur"
+                style="background: color-mix(in oklab, var(--color-surface-base) 72%, transparent); color: var(--tone-ochre)"
               >
-                <div [innerHTML]="r.notes | markdown | async"></div>
-              </div>
-            } @else {
-              <p class="text-slate-500 italic text-sm">No notes available for this resource.</p>
-            }
-          </div>
-
-          <div
-            class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500 border-t border-slate-800 pt-4"
-          >
-            <span
-              ><span class="text-slate-400 font-medium">Created:</span>
-              {{ r.createdAt | date: 'medium' }}</span
-            >
-            <span
-              ><span class="text-slate-400 font-medium">Updated:</span>
-              {{ r.updatedAt | date: 'medium' }}</span
-            >
-            @if (r.url) {
-              <span>
-                <span class="text-slate-400 font-medium">URL:</span>
-                <a
-                  [href]="r.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-violet-400 hover:underline ml-1 break-all"
-                  >{{ r.url }}</a
-                >
+                ★ saved
               </span>
             }
+            <span class="tnum ml-auto text-[0.72rem] font-semibold text-white/90">
+              {{ r.estimatedDuration.value }}m
+            </span>
           </div>
         </div>
 
-        <div class="space-y-4">
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <p class="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-3">
-              Energy Level
-            </p>
-            <div class="flex items-end gap-3 mb-3">
-              <span class="text-5xl font-black text-white leading-none">
-                {{ r.energyLevel === 'High' ? '94' : r.energyLevel === 'Medium' ? '62' : '30' }}%
-              </span>
-              <span class="text-xs text-emerald-400 font-medium mb-1">Optimal Flow State</span>
-            </div>
-            <div class="w-full bg-slate-800 rounded-full h-1.5">
-              <div
-                class="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 transition-all"
-                [style.width]="
-                  r.energyLevel === 'High' ? '94%' : r.energyLevel === 'Medium' ? '62%' : '30%'
-                "
-              ></div>
-            </div>
-          </div>
+        <h1 class="display mt-5 text-[clamp(1.7rem,3.4vw,2.35rem)] font-semibold">
+          {{ r.title }}
+        </h1>
 
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg bg-violet-950 flex items-center justify-center">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    class="text-violet-400"
-                  >
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
-                </div>
-                <span class="text-sm font-semibold text-slate-100">Captured Insights</span>
-              </div>
-              <span
-                class="text-[10px] text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full font-medium"
-                >0 Notes</span
-              >
-            </div>
+        <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.78rem] text-ink-dim">
+          @if (sourceHost(r)) {
+            <span class="font-semibold text-ink-body">{{ sourceHost(r) }}</span>
+            <span>&middot;</span>
+          }
+          <span>{{ STATUS_LABELS[r.status] }}</span>
+        </p>
 
-            <div class="text-center py-6 text-slate-600">
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                class="mx-auto mb-2 opacity-40"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
-              <p class="text-xs">No insights captured yet</p>
-            </div>
-
-            <div class="mt-2 rounded-xl bg-slate-800/60 border border-slate-700 p-3">
-              <textarea
-                rows="2"
-                placeholder="Capture a new insight..."
-                class="w-full bg-transparent text-xs text-slate-300 placeholder-slate-600 resize-none outline-none"
-              ></textarea>
-              <div class="flex justify-end mt-2">
-                <button
-                  class="text-[10px] font-semibold bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  Save Note
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <button
-            class="w-full flex items-center justify-between bg-slate-800/60 hover:bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 transition-colors group"
+        @if (r.url) {
+          <a
+            [href]="r.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group mt-4 flex items-center gap-2 rounded-[16px_5px_16px_5px] border border-line-soft bg-surface-raised p-3 text-[0.76rem] text-ink-dim transition-all hover:-translate-y-0.5 hover:border-line-strong hover:text-ink-strong"
           >
-            <div class="flex items-center gap-3">
-              <div class="w-7 h-7 rounded-lg bg-sky-950 flex items-center justify-center">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  class="text-sky-400"
-                >
-                  <rect x="2" y="3" width="20" height="14" rx="2" />
-                  <line x1="8" y1="21" x2="16" y2="21" />
-                  <line x1="12" y1="17" x2="12" y2="21" />
-                </svg>
-              </div>
-              <span class="text-sm font-medium text-slate-200">Initialize Deep Work</span>
-            </div>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="text-slate-500 group-hover:text-slate-300 transition-colors"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
+            <span class="min-w-0 flex-1 truncate">{{ urlDisplay(r) }}</span>
+            <span class="shrink-0 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">&#8599;</span>
+          </a>
+        }
+
+        <div class="mt-5 grid grid-cols-3 gap-2">
+          <div
+            class="rounded-[16px_5px_16px_5px] border border-line-soft p-2.5 text-center transition-transform duration-300 hover:-translate-y-0.5"
+            style="background: color-mix(in oklab, var(--tone-ochre) 8%, var(--color-surface-raised))"
+          >
+            <p class="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-ink-dim">Difficulty</p>
+            <p class="tnum mt-1 text-[1.05rem] font-semibold" style="color: var(--tone-ochre)">{{ r.difficulty }}</p>
+          </div>
+          <div
+            class="rounded-[16px_5px_16px_5px] border border-line-soft p-2.5 text-center transition-transform duration-300 hover:-translate-y-0.5"
+            style="background: color-mix(in oklab, var(--tone-ember, var(--color-accent)) 8%, var(--color-surface-raised))"
+          >
+            <p class="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-ink-dim">Energy</p>
+            <p class="tnum mt-1 text-[1.05rem] font-semibold" style="color: var(--tone-ember, var(--color-accent))">{{ r.energyLevel }}</p>
+          </div>
+          <div
+            class="rounded-[16px_5px_16px_5px] border border-line-soft p-2.5 text-center transition-transform duration-300 hover:-translate-y-0.5"
+            style="background: color-mix(in oklab, var(--color-accent) 8%, var(--color-surface-raised))"
+          >
+            <p class="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-ink-dim">Minutes</p>
+            <p class="tnum mt-1 text-[1.05rem] font-semibold text-accent-ink">{{ r.estimatedDuration.value }}</p>
+          </div>
         </div>
       </div>
-    }
-  </div>
+
+      <div class="flex flex-col gap-5 min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          @if (r.url) {
+            <a [href]="r.url" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+              Open source
+            </a>
+          }
+          <button type="button" (click)="editResource()" class="btn btn-outline">
+            Edit
+          </button>
+          <button type="button" class="btn btn-ghost" (click)="toggleSaved()">
+            {{ isSaved() ? '★ Saved' : '☆ Save' }}
+          </button>
+          <button type="button" class="btn btn-ghost ml-auto text-energy-high" (click)="deleteResource()">
+            Delete
+          </button>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex flex-wrap items-center gap-2">
+            <p class="eyebrow mr-2">Attributes</p>
+            <app-enum-badge
+              [value]="r.difficulty"
+              [options]="difficultyOptions"
+              [loading]="toggleLoadingField() === 'difficulty'"
+              (changed)="onToggle($event, 'difficulty')"
+            />
+            <app-enum-badge
+              [value]="r.energyLevel"
+              [options]="energyOptions"
+              [loading]="toggleLoadingField() === 'energy'"
+              (changed)="onToggle($event, 'energy')"
+            />
+            <app-enum-badge
+              [value]="r.status"
+              [options]="statusOptions"
+              [loading]="toggleLoadingField() === 'status'"
+              (changed)="onToggle($event, 'status')"
+            />
+            @if (r.mentalState) {
+              <app-enum-badge
+                [value]="r.mentalState"
+                [options]="mentalStateOptions"
+                [loading]="toggleLoadingField() === 'mentalState'"
+                (changed)="onToggle($event, 'mentalState')"
+              />
+            }
+          </div>
+        </div>
+
+        <div class="card overflow-hidden">
+          <div class="flex gap-1 overflow-x-auto border-b border-line-soft px-3 py-2">
+            <button
+              type="button"
+              (click)="tab.set('summary')"
+              [class]="
+                tab() === 'summary'
+                  ? 'rounded-full px-3.5 py-1.5 text-[0.82rem] font-semibold bg-ink-strong text-surface-base transition-all'
+                  : 'rounded-full px-3.5 py-1.5 text-[0.82rem] font-semibold text-ink-dim hover:bg-surface-overlay hover:text-ink-strong transition-all'
+              "
+            >
+              Summary
+            </button>
+            <button
+              type="button"
+              (click)="tab.set('notes')"
+              [class]="
+                tab() === 'notes'
+                  ? 'rounded-full px-3.5 py-1.5 text-[0.82rem] font-semibold bg-ink-strong text-surface-base transition-all'
+                  : 'rounded-full px-3.5 py-1.5 text-[0.82rem] font-semibold text-ink-dim hover:bg-surface-overlay hover:text-ink-strong transition-all'
+              "
+            >
+              Notes
+            </button>
+          </div>
+
+          <div class="p-5">
+            @if (tab() === 'summary') {
+              <div class="flex flex-col gap-4">
+                @if (r.notes) {
+                  <div class="prose max-w-none text-[0.95rem] leading-relaxed">
+                    <div [innerHTML]="r.notes | markdown | async"></div>
+                  </div>
+                } @else {
+                  <p class="text-[0.95rem] leading-relaxed text-ink-dim">
+                    No summary yet. Add two lines so you remember why you saved it.
+                  </p>
+                }
+                <dl class="grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3">
+                  <div>
+                    <dt class="text-[0.7rem] uppercase tracking-[0.12em] font-bold text-ink-dim">Type</dt>
+                    <dd class="mt-0.5 truncate text-[0.86rem] text-ink-strong">{{ getTypeMeta(r.typeId).label }}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-[0.7rem] uppercase tracking-[0.12em] font-bold text-ink-dim">Duration</dt>
+                    <dd class="tnum mt-0.5 truncate text-[0.86rem] text-ink-strong">{{ r.estimatedDuration.value }}m</dd>
+                  </div>
+                  <div>
+                    <dt class="text-[0.7rem] uppercase tracking-[0.12em] font-bold text-ink-dim">Status</dt>
+                    <dd class="mt-0.5 truncate text-[0.86rem] text-ink-strong">{{ STATUS_LABELS[r.status] }}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-[0.7rem] uppercase tracking-[0.12em] font-bold text-ink-dim">Mental state</dt>
+                    <dd class="mt-0.5 truncate text-[0.86rem] text-ink-strong">
+                      {{ r.mentalState ? MENTAL_LABELS[r.mentalState] : '—' }}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-[0.7rem] uppercase tracking-[0.12em] font-bold text-ink-dim">Updated</dt>
+                    <dd class="mt-0.5 truncate text-[0.86rem] text-ink-strong">{{ relativeLabel(r.updatedAt) }}</dd>
+                  </div>
+                  <div>
+                    <dt class="text-[0.7rem] uppercase tracking-[0.12em] font-bold text-ink-dim">Last opened</dt>
+                    <dd class="mt-0.5 truncate text-[0.86rem] text-ink-strong">
+                      {{ r.lastViewed ? relativeLabel(r.lastViewed) : 'never' }}
+                    </dd>
+                  </div>
+                </dl>
+                @if (topicChips(r).length) {
+                  <div class="flex flex-wrap gap-1.5 border-t border-line-soft pt-3">
+                    @for (chip of topicChips(r); track chip.name) {
+                      <span
+                        class="chip tone-chip !text-[0.66rem]"
+                        [style.--tone]="chip.color ?? 'var(--color-accent)'"
+                      >{{ chip.name }}</span>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="flex flex-col gap-2">
+                <textarea
+                  [ngModel]="notesDraft()"
+                  (ngModelChange)="notesDraft.set($event)"
+                  placeholder="What stuck with you, what you would apply, where you got stuck…"
+                  rows="10"
+                  class="input min-h-[14rem] resize-y leading-relaxed"
+                ></textarea>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="saveNotes()"
+                    [disabled]="savingNotes()"
+                    class="btn btn-primary btn-sm"
+                  >
+                    {{ savingNotes() ? 'Saving…' : 'Save notes' }}
+                  </button>
+                  @if (notesDraft() !== (r.notes ?? '')) {
+                    <span class="text-[0.72rem] text-ink-dim">Unsaved changes</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 </div>
