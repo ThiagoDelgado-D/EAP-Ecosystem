@@ -66,7 +66,7 @@ export class SettingsLayoutComponent implements AfterViewInit, OnDestroy {
       id: 'modules',
       label: 'Modules',
       title: 'Active modules',
-      detail: "What you disable leaves navigation and stops being queried.",
+      detail: 'What you disable leaves navigation and stops being queried.',
     },
     {
       id: 'widgets',
@@ -134,8 +134,7 @@ export class SettingsLayoutComponent implements AfterViewInit, OnDestroy {
     const scroller = this.scroller;
     if (!scroller) return;
     const last = this.sections[this.sections.length - 1]!.id;
-    const atBottom =
-      scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 24;
+    const atBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 24;
     if (atBottom) {
       this.activeSection.set(last);
       return;
