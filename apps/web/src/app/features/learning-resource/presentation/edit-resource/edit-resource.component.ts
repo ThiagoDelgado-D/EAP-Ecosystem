@@ -224,7 +224,7 @@ export class EditResourceComponent implements OnInit {
     if (selected) {
       return `${base} ${LEVEL_SELECTED_BTN_CLASS[level]}`;
     }
-    return `${base} border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-500 hover:text-slate-300`;
+    return `${base} border-line-strong bg-surface-overlay/50 text-ink-dim hover:border-line-strong hover:text-ink-body`;
   }
 
   getEnergyBtnClass(level: EnergyLevel): string {
@@ -234,7 +234,7 @@ export class EditResourceComponent implements OnInit {
     if (selected) {
       return `${base} ${LEVEL_SELECTED_BTN_CLASS[level]}`;
     }
-    return `${base} border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-500 hover:text-slate-300`;
+    return `${base} border-line-strong bg-surface-overlay/50 text-ink-dim hover:border-line-strong hover:text-ink-body`;
   }
 
   goBack(): void {
