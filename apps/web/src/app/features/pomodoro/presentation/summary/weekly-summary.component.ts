@@ -42,6 +42,20 @@ export class WeeklySummaryComponent {
   readonly attributing = signal<string | null>(null);
 
   readonly formatMinutes = formatMinutes;
+  readonly goalMinutes = 600;
+
+  weekBarHeightPct(day: DayLog): number {
+    const maxMin = Math.max(this.goalMinutes / 5, ...this.dayLog().map((d) => d.focusSec / 60), 30);
+    return Math.max(4, (day.focusSec / 60 / maxMin) * 100);
+  }
+
+  weekBarColor(day: DayLog): string {
+    const minutes = day.focusSec / 60;
+    if (minutes === 0) return 'var(--color-line-strong)';
+    return minutes >= this.goalMinutes / 5
+      ? 'var(--color-accent)'
+      : 'var(--tone-ochre, var(--color-accent))';
+  }
 
   constructor() {
     void this.picker.load();
@@ -147,6 +161,12 @@ export class WeeklySummaryComponent {
     if (delta.relativeChange === null) return '';
     const pct = Math.round(Math.abs(delta.relativeChange) * 100);
     return `${delta.absoluteChange > 0 ? '+' : '-'}${pct}%`;
+  }
+
+  deltaColor(delta: MetricDelta): string {
+    return delta.absoluteChange >= 0
+      ? 'var(--color-accent)'
+      : 'var(--tone-ember, var(--color-accent))';
   }
 
   formatDayDelta(delta: MetricDelta): string {

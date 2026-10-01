@@ -1,37 +1,36 @@
-<div class="p-4 sm:p-5 lg:p-6 max-w-6xl mx-auto flex flex-col gap-5">
+<div class="mx-auto w-full max-w-[86rem] px-4 sm:px-7 flex flex-col gap-6 pt-1 pb-4">
   <div>
-    <a routerLink="/pomodoro" class="text-xs text-ink-faint hover:text-ink-body underline underline-offset-2">
-      ← Back
+    <a routerLink="/pomodoro" class="link-underline text-xs text-ink-faint hover:text-ink-body">
+      &larr; Back
     </a>
-    <h1 class="text-2xl font-extrabold text-ink-strong tracking-tight mt-2">Weekly summary</h1>
-    <div class="text-sm text-ink-dim mt-1.5">
-      Week of {{ weekStart | date: 'MMM d' }}
-    </div>
+    <p class="eyebrow mt-3">Week of {{ weekStart | date: 'MMM d' }}</p>
+    <h1 class="display mt-2 text-[clamp(2rem,5vw,3.2rem)] font-semibold">Weekly summary</h1>
   </div>
 
   @if (loading()) {
-    <div class="rounded-xl border border-line-hairline bg-surface-raised h-64 animate-pulse"></div>
+    <div class="card h-64 animate-pulse"></div>
   } @else if (failed()) {
-    <div class="rounded-xl border border-line-hairline p-5 text-center">
+    <div class="card p-5 text-center">
       <div class="text-sm text-ink-body mb-3">Couldn't load your weekly summary.</div>
       <button
         type="button"
         (click)="load()"
-        class="px-4 py-2 rounded-lg text-xs font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
+        class="btn btn-outline btn-sm"
       >
         Try again
       </button>
     </div>
   } @else if (summary(); as summary) {
     @if (summary.observations.length > 0) {
-      <div class="rounded-xl border border-accent-line bg-accent-wash p-4 flex flex-col gap-2">
+      <div class="card card-alt p-5 flex flex-col gap-2">
+        <p class="eyebrow mb-1">Observations</p>
         @for (observation of summary.observations; track observation) {
-          <div class="text-sm text-accent-ink leading-relaxed">{{ observation }}</div>
+          <div class="text-sm text-ink-body leading-relaxed">{{ observation }}</div>
         }
       </div>
     }
 
-    <div class="rounded-xl border border-line-hairline p-4">
+    <div class="card p-5">
       <div class="t-kicker mb-3">This week</div>
       <div class="flex items-end justify-between gap-6 flex-wrap">
         <div class="flex gap-9 flex-wrap">
@@ -40,7 +39,7 @@
             <div class="t-kicker mt-1.5">
               focus
               @if (summary.delta; as delta) {
-                <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.focusTotalSec) }}</span>
+                <span class="t-mono ml-1" [style.color]="deltaColor(delta.focusTotalSec)">{{ formatDelta(delta.focusTotalSec) }}</span>
               }
             </div>
           </div>
@@ -53,7 +52,7 @@
             <div class="t-kicker mt-1.5">
               avg.
               @if (summary.delta; as delta) {
-                <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.avgSessionSec) }}</span>
+                <span class="t-mono ml-1" [style.color]="deltaColor(delta.avgSessionSec)">{{ formatDelta(delta.avgSessionSec) }}</span>
               }
             </div>
           </div>
@@ -62,7 +61,7 @@
             <div class="t-kicker mt-1.5">
               active days
               @if (summary.delta; as delta) {
-                <span class="t-mono ml-1 text-ink-dim">{{ formatDayDelta(delta.activeDays) }}</span>
+                <span class="t-mono ml-1" [style.color]="deltaColor(delta.activeDays)">{{ formatDayDelta(delta.activeDays) }}</span>
               }
             </div>
           </div>
@@ -77,7 +76,7 @@
             <div class="t-kicker mt-1.5">
               break
               @if (summary.delta; as delta) {
-                <span class="t-mono ml-1 text-ink-dim">{{ formatDelta(delta.breakTotalSec) }}</span>
+                <span class="t-mono ml-1" [style.color]="deltaColor(delta.breakTotalSec)">{{ formatDelta(delta.breakTotalSec) }}</span>
               }
             </div>
           </div>
@@ -87,15 +86,24 @@
           </div>
         </div>
 
-        <div class="flex items-end gap-1.5 h-11 flex-shrink-0">
+        <div class="flex items-end gap-1.5 h-28 flex-shrink-0 min-w-[180px] flex-1 max-w-[320px]">
           @for (day of dayLog(); track day.date.getTime()) {
-            <div class="flex flex-col items-center gap-1.5" [title]="(day.date | date: 'EEE') + ' · ' + dayFocusLabel(day)">
-              <div
-                class="w-[9px] rounded-sm"
-                [style.height.px]="dayBarHeightPx(day)"
-                [style.background]="isToday(day.date) ? 'var(--color-accent-hover)' : day.focusSec > 0 ? 'var(--color-line-strong)' : 'var(--color-line-hairline)'"
-              ></div>
-              <span class="t-mono text-[8.5px]" [class.text-accent-ink]="isToday(day.date)" [class.font-semibold]="isToday(day.date)" [class.text-ink-faint]="!isToday(day.date)">
+            <div class="group/bar relative flex flex-1 flex-col items-center gap-1.5 h-full justify-end">
+              <div class="relative flex w-full flex-1 items-end rounded-full bg-surface-overlay">
+                <div
+                  class="bar w-full rounded-full"
+                  [style.height.%]="weekBarHeightPct(day)"
+                  [style.background]="weekBarColor(day)"
+                ></div>
+                @if (isToday(day.date)) {
+                  <span class="breathe absolute -top-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-energy-high"></span>
+                }
+                <div class="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-20 -translate-x-1/2 rounded-xl border border-line-soft bg-surface-raised px-2.5 py-1.5 text-[0.68rem] whitespace-nowrap opacity-0 shadow-xl transition-opacity duration-200 group-hover/bar:opacity-100">
+                  <span class="font-semibold text-ink-strong">{{ dayFocusLabel(day) }}</span>
+                  <span class="text-ink-dim"> &middot; {{ day.sessionCount }} ses.</span>
+                </div>
+              </div>
+              <span class="t-mono text-[8.5px]" [class.text-accent-ink]="isToday(day.date)" [class.font-semibold]="isToday(day.date)" [class.text-ink-dim]="!isToday(day.date)">
                 {{ isToday(day.date) ? 'today' : dayLetter(day.date) }}
               </span>
             </div>
@@ -110,14 +118,14 @@
       }
     </div>
 
-    <div class="rounded-xl border border-line-hairline p-4">
+    <div class="card p-5">
       <div class="flex items-center justify-between mb-3">
         <div class="t-kicker">Day by day</div>
-        <div class="flex gap-1">
+            <div class="flex items-center gap-1">
           <button
             type="button"
             (click)="setScope(WEEK_LOG_SCOPE.ALL)"
-            [class]="scope() === WEEK_LOG_SCOPE.ALL ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+            [class]="scope() === WEEK_LOG_SCOPE.ALL ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-dim hover:border-line-strong'"
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-colors"
           >
             all <span>{{ allCount() }}</span>
@@ -125,7 +133,7 @@
           <button
             type="button"
             (click)="setScope(WEEK_LOG_SCOPE.UNATTRIBUTED)"
-            [class]="scope() === WEEK_LOG_SCOPE.UNATTRIBUTED ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+            [class]="scope() === WEEK_LOG_SCOPE.UNATTRIBUTED ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-dim hover:border-line-strong'"
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-colors"
           >
             unattributed <span>{{ unattributedCount() }}</span>
@@ -133,7 +141,7 @@
           <button
             type="button"
             (click)="setScope(WEEK_LOG_SCOPE.ADVANCED)"
-            [class]="scope() === WEEK_LOG_SCOPE.ADVANCED ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-faint hover:border-line-strong'"
+            [class]="scope() === WEEK_LOG_SCOPE.ADVANCED ? 'border-accent-line text-accent-ink bg-accent-wash' : 'border-line-soft text-ink-dim hover:border-line-strong'"
             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-colors"
           >
             advanced <span>{{ advancedCount() }}</span>
@@ -150,13 +158,13 @@
           <div class="py-3 border-b border-line-hairline last:border-b-0 last:pb-0 first:pt-0">
             <div class="flex items-baseline justify-between mb-1">
               <span class="t-kicker" [class.text-accent-ink]="isToday(day.date)">{{ day.date | date: 'EEE, MMM d' }}</span>
-              <span class="t-mono text-xs text-ink-faint">
+              <span class="t-mono text-xs text-ink-dim">
                 {{ day.sessionCount }} · {{ dayFocusLabel(day) }}
               </span>
             </div>
 
             @if (visibleSessions(day).length === 0) {
-              <div class="text-xs text-ink-faint py-1">
+              <div class="text-xs text-ink-dim py-1">
                 {{ day.sessionCount === 0 ? 'No sessions' : 'Nothing in this filter' }}
               </div>
             }
@@ -168,12 +176,12 @@
                   (click)="toggleSession(daySession.session.id)"
                   class="w-full flex items-center gap-3 py-2.5 text-left"
                 >
-                  <span class="t-mono text-xs text-ink-faint w-12 flex-shrink-0">{{ daySession.session.startedAt | date: 'shortTime' }}</span>
+                  <span class="t-mono text-xs text-ink-dim w-12 flex-shrink-0">{{ daySession.session.startedAt | date: 'shortTime' }}</span>
 
                   <span class="flex-1 min-w-0">
                     <span class="flex items-center gap-2 flex-wrap">
                       @if (primaryTarget(daySession); as primary) {
-                        <span class="text-sm font-semibold truncate" [class.text-ink-faint]="primary.target.kind === 'free'" [class.text-ink-strong]="primary.target.kind !== 'free'">
+                        <span class="text-sm font-semibold truncate" [class.text-ink-dim]="primary.target.kind === 'free'" [class.text-ink-strong]="primary.target.kind !== 'free'">
                           {{ targetLabel(primary).title }}
                         </span>
                         @if (targetsForSession(daySession).length > 1) {
@@ -189,7 +197,7 @@
                     }
                   </span>
 
-                  <span class="w-28 h-[5px] rounded-sm overflow-hidden flex flex-shrink-0 border border-line-hairline">
+                  <span class="w-28 h-[5px] rounded-sm overflow-hidden flex flex-shrink-0 border border-line-soft bg-surface-overlay">
                     @for (total of targetsForSession(daySession); track total.key) {
                       <span
                         class="h-full"
@@ -232,7 +240,7 @@
                               <span class="t-mono text-[11px] text-ink-faint">{{ targetPercent(total, daySession) }}%</span>
                               <span class="t-mono text-xs text-ink-body">{{ formatMinutes(total.secs) }}</span>
                             </div>
-                            <div class="h-[3px] rounded-sm bg-line-hairline overflow-hidden">
+                            <div class="h-[3px] rounded-sm bg-line-soft overflow-hidden">
                               <div class="h-full" [style.width.%]="targetWidthPercent(total, daySession)" [style.background]="segmentBackground(total)"></div>
                             </div>
                           </div>
