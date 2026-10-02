@@ -18,6 +18,7 @@ import { ResourceTypeRepository } from '@features/learning-resource/domain/resou
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
+import { TopicChipListComponent } from '@shared/components/topic-chip-list/topic-chip-list.component';
 
 type RecordingState =
   | 'idle'
@@ -32,7 +33,7 @@ type ViewState = 'recording' | 'confirmation';
 @Component({
   selector: 'app-voice-capture',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TopicChipListComponent],
   templateUrl: './voice-capture.component.html',
   providers: [
     LearningResourceService,
