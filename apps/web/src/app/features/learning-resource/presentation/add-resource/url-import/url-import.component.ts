@@ -16,13 +16,14 @@ import type {
 } from '@features/learning-resource/domain/learning-resource.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
+import { TopicChipListComponent } from '@shared/components/topic-chip-list/topic-chip-list.component';
 
 type ViewState = 'idle' | 'loading' | 'error' | 'success';
 
 @Component({
   selector: 'app-url-import',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TopicChipListComponent],
   providers: [
     ResourceTypeService,
     UrlPreviewService,

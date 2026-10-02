@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-surface-inset px-4 py-8 sm:px-6 lg:px-8">
+<div class="mx-auto w-full px-4 sm:px-6 pt-1 pb-4">
   <div class="max-w-4xl mx-auto">
     <button
       (click)="goBack()"
@@ -56,7 +56,7 @@
               <button
                 (click)="fetchMetadata()"
                 [disabled]="!urlInput.trim()"
-                class="bg-accent hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-lg transition-colors"
+                class="btn btn-primary"
               >
                 Get Info
               </button>
@@ -147,7 +147,7 @@
           <button
             (click)="fetchMetadata()"
             [disabled]="!urlInput.trim()"
-            class="bg-accent hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            class="btn btn-primary"
           >
             Get Info
           </button>
@@ -234,22 +234,11 @@
 
           <div class="mb-6">
             <label class="block text-xs text-ink-faint mb-2">Topics (select at least one)</label>
-            <div class="flex flex-wrap gap-2">
-              @for (topic of topics(); track topic.id) {
-                <button
-                  type="button"
-                  (click)="toggleTopic(topic.id)"
-                  [class]="
-                    selectedTopicIds().includes(topic.id)
-                      ? 'bg-accent text-white border-accent-line'
-                      : 'bg-surface-overlay text-ink-body border-line-strong hover:border-line-strong'
-                  "
-                  class="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors"
-                >
-                  {{ topic.name }}
-                </button>
-              }
-            </div>
+            <app-topic-chip-list
+              [topics]="topics()"
+              [selectedIds]="selectedTopicIds()"
+              (toggled)="toggleTopic($event)"
+            />
             @if (selectedTopicIds().length === 0) {
               <p class="text-xs text-[var(--tone-ochre)] mt-2">
                 ⚠️ You must select at least one topic to save.
@@ -272,7 +261,7 @@
             <button
               (click)="saveResource()"
               [disabled]="selectedTopicIds().length === 0"
-              class="bg-accent hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium"
+              class="btn btn-primary btn-sm"
             >
               Add to Ecosystem →
             </button>

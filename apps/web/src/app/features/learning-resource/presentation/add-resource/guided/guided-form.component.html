@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-surface-inset px-4 sm:px-8 py-8 sm:py-10">
+<div class="mx-auto w-full px-4 sm:px-6 pt-1 pb-4">
   <div class="max-w-2xl mx-auto">
     <button
       (click)="goBack()"
@@ -17,12 +17,18 @@
       Back to methods
     </button>
 
+    <p class="eyebrow">Capture · Guided</p>
+    <h1 class="display mt-2 text-[clamp(1.8rem,4vw,2.6rem)] font-semibold">Guided capture</h1>
+    <p class="mt-2 mb-8 max-w-xl text-[0.9rem] leading-relaxed text-ink-body">
+      A structured, step-by-step walkthrough for complex entries.
+    </p>
+
     <div class="flex items-center gap-3 mb-10">
       <div class="flex items-center gap-2">
         <div
           [class]="
             currentStep >= 1
-              ? 'w-7 h-7 rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center'
+              ? 'w-7 h-7 rounded-full bg-ink-strong text-surface-base text-xs font-semibold flex items-center justify-center'
               : 'w-7 h-7 rounded-full bg-surface-overlay text-ink-faint text-xs font-semibold flex items-center justify-center'
           "
         >
@@ -55,7 +61,7 @@
         <div
           [class]="
             currentStep >= 2
-              ? 'w-7 h-7 rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center'
+              ? 'w-7 h-7 rounded-full bg-ink-strong text-surface-base text-xs font-semibold flex items-center justify-center'
               : 'w-7 h-7 rounded-full bg-surface-overlay text-ink-faint text-xs font-semibold flex items-center justify-center'
           "
         >
@@ -291,7 +297,7 @@
       @if (currentStep === 1) {
         <button
           (click)="nextStep()"
-          class="px-5 py-2 bg-accent hover:bg-accent text-white text-sm font-medium rounded-lg transition-colors"
+          class="btn btn-primary btn-sm"
         >
           Next →
         </button>
@@ -299,7 +305,7 @@
         <button
           (click)="onSubmit()"
           [disabled]="isSubmitting"
-          class="px-5 py-2 bg-accent hover:bg-accent text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn btn-primary btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {{ isSubmitting ? 'Creating…' : 'Create Resource' }}
         </button>
