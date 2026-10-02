@@ -8,7 +8,7 @@ import { FEATURE_KEY, type FeatureKey } from '@features/auth/domain/auth.model';
   standalone: true,
   template: `
     <div class="min-h-screen bg-slate-950 flex items-center justify-center">
-      <p class="text-slate-400 text-sm">Signing you in...</p>
+      <p class="text-ink-dim text-sm">Signing you in...</p>
     </div>
   `,
 })

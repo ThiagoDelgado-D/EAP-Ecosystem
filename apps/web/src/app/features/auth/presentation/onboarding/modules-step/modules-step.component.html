@@ -1,9 +1,9 @@
 <div class="w-full max-w-lg">
-  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl">
+  <div class="bg-surface-raised border border-line-soft rounded-2xl p-8 shadow-xl">
     <div class="text-center mb-6">
-      <p class="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-3">Step 2 of 2</p>
-      <h1 class="text-2xl font-bold text-slate-100 mb-2">Build your system, {{ firstName() }}.</h1>
-      <p class="text-sm text-slate-400 leading-relaxed">
+      <p class="text-xs font-semibold tracking-widest text-ink-faint uppercase mb-3">Step 2 of 2</p>
+      <h1 class="text-2xl font-bold text-ink-strong mb-2">Build your system, {{ firstName() }}.</h1>
+      <p class="text-sm text-ink-dim leading-relaxed">
         Choose which modules to activate. You can change this anytime in Settings.<br />
         Disabled modules don't load routes or make API calls.
       </p>
@@ -55,7 +55,7 @@
                 >
               }
             </div>
-            <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">{{ module.desc }}</p>
+            <p class="text-xs text-ink-faint mt-0.5 leading-relaxed">{{ module.desc }}</p>
           </div>
 
           <div
@@ -73,21 +73,21 @@
     </div>
 
     @if (error()) {
-      <p class="text-xs text-red-400 mb-3 text-center">{{ error() }}</p>
+      <p class="text-xs text-energy-high mb-3 text-center">{{ error() }}</p>
     }
 
     <div class="flex gap-3">
       <button
         (click)="back.emit()"
         [disabled]="loading()"
-        class="px-5 py-3 rounded-xl text-sm font-medium text-slate-400 border border-slate-700 hover:border-slate-600 hover:text-slate-300 transition-colors disabled:opacity-50"
+        class="px-5 py-3 rounded-xl text-sm font-medium text-ink-dim border border-line-strong hover:border-line-strong hover:text-ink-body transition-colors disabled:opacity-50"
       >
         Back
       </button>
       <button
         (click)="submit()"
         [disabled]="loading()"
-        class="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-3 rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="btn btn-primary"
       >
         @if (loading()) {
           Setting up your space...
@@ -99,7 +99,7 @@
   </div>
 
   <div class="flex justify-center items-center gap-2 mt-5">
-    <div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
-    <div class="w-6 h-1.5 rounded-full bg-violet-500"></div>
+    <div class="w-1.5 h-1.5 rounded-full bg-surface-overlay"></div>
+    <div class="w-6 h-1.5 rounded-full bg-accent"></div>
   </div>
 </div>

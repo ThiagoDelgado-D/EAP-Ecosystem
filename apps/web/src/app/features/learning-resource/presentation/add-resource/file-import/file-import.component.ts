@@ -12,6 +12,7 @@ import { TopicRepository } from '@features/learning-resource/domain/topic.reposi
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
+import { TopicChipListComponent } from '@shared/components/topic-chip-list/topic-chip-list.component';
 
 export interface ParsedResourceRow {
   title: string;
@@ -38,7 +39,7 @@ type ViewState = 'idle' | 'parsing' | 'error' | 'preview' | 'importing' | 'summa
 @Component({
   selector: 'app-file-import',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TopicChipListComponent],
   templateUrl: './file-import.component.html',
   providers: [
     ResourceTypeService,

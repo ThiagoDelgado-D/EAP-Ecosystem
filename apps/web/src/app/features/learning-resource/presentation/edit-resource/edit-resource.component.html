@@ -186,7 +186,7 @@
           >
           <div class="flex items-center gap-2.5">
             @if (form.get('difficulty')?.value === 'High') {
-              <div class="w-7 h-7 rounded-full bg-energy-high/10/60 flex items-center justify-center">
+              <div class="w-7 h-7 rounded-full bg-energy-high/10 flex items-center justify-center">
                 <svg
                   class="w-4 h-4 text-energy-high"
                   fill="none"
@@ -214,7 +214,7 @@
                 </svg>
               </div>
             } @else {
-              <div class="w-7 h-7 rounded-full bg-accent-wash/60 flex items-center justify-center">
+              <div class="w-7 h-7 rounded-full bg-[var(--tone-ochre)]/15 flex items-center justify-center">
                 <svg
                   class="w-4 h-4 text-[var(--tone-ochre)]"
                   fill="none"
@@ -319,7 +319,7 @@
         <button
           type="submit"
           [disabled]="isSubmitting || !form.valid"
-          class="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-2xl text-sm font-semibold bg-accent hover:brightness-110 text-surface-base shadow-lg shadow-none disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+          class="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-2xl text-sm font-semibold bg-accent hover:brightness-110 text-surface-base shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
         >
           @if (isSubmitting) {
             <div
@@ -588,7 +588,7 @@
               <button
                 type="submit"
                 [disabled]="isSubmitting || !form.valid"
-                class="flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-semibold bg-accent hover:brightness-110 text-surface-base shadow-lg shadow-none disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                class="flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-semibold bg-accent hover:brightness-110 text-surface-base shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
               >
                 @if (isSubmitting) {
                   <div
@@ -702,7 +702,7 @@
               </p>
               <div class="flex items-center gap-3">
                 <div
-                  class="w-9 h-9 rounded-full bg-accent/15 border border-accent-line/20 flex items-center justify-center"
+                  class="w-9 h-9 rounded-full bg-[var(--tone-ochre)]/15 border border-[var(--tone-ochre)]/20 flex items-center justify-center"
                 >
                   <svg
                     class="w-5 h-5 text-[var(--tone-ochre)]"
