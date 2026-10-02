@@ -1,11 +1,11 @@
 <div class="w-full max-w-lg">
-  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-10 shadow-xl">
+  <div class="bg-surface-raised border border-line-soft rounded-2xl p-10 shadow-xl">
     <div class="flex flex-col items-center mb-8">
       <div
-        class="w-14 h-14 bg-violet-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-violet-900/40"
+        class="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center mb-3 shadow-lg"
       >
         <svg
-          class="w-7 h-7 text-white"
+          class="w-7 h-7 text-surface-base"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -18,13 +18,13 @@
           />
         </svg>
       </div>
-      <span class="text-white font-bold text-lg leading-none">EAP</span>
-      <span class="text-violet-400 text-xs tracking-widest font-medium mt-0.5">ECOSYSTEM</span>
+      <span class="text-surface-base font-bold text-lg leading-none">EAP</span>
+      <span class="text-accent-ink text-xs tracking-widest font-medium mt-0.5">ECOSYSTEM</span>
     </div>
 
     <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-slate-100 mb-1">Welcome. Let's set up your space.</h1>
-      <p class="text-sm text-slate-500 leading-relaxed">What should we call you?</p>
+      <h1 class="text-2xl font-bold text-ink-strong mb-1">Welcome. Let's set up your space.</h1>
+      <p class="text-sm text-ink-faint leading-relaxed">What should we call you?</p>
     </div>
 
     <div class="mb-4">
@@ -35,21 +35,21 @@
         placeholder="Your first name"
         [(ngModel)]="nameValue"
         (keydown.enter)="submit()"
-        class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-violet-500 transition-colors"
+        class="w-full bg-surface-overlay border border-line-strong rounded-xl px-4 py-3 text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line transition-colors"
       />
     </div>
 
     <button
       (click)="submit()"
       [disabled]="!isValid()"
-      class="w-full bg-violet-600 hover:bg-violet-500 text-white font-medium py-3 rounded-xl text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      class="btn btn-primary w-full"
     >
       Continue
     </button>
   </div>
 
   <div class="flex justify-center items-center gap-2 mt-5">
-    <div class="w-6 h-1.5 rounded-full bg-violet-500"></div>
-    <div class="w-1.5 h-1.5 rounded-full bg-slate-700"></div>
+    <div class="w-6 h-1.5 rounded-full bg-accent"></div>
+    <div class="w-1.5 h-1.5 rounded-full bg-surface-overlay"></div>
   </div>
 </div>
