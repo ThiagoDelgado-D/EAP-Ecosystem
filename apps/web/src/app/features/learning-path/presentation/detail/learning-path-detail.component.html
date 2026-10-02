@@ -10,7 +10,7 @@
   @if (detailService.loading()) {
     <div class="mx-4 sm:mx-5 lg:mx-6 rounded-xl border border-line-soft bg-surface-raised h-40 animate-pulse"></div>
   } @else if (detailService.error()) {
-    <div class="mx-4 sm:mx-5 lg:mx-6 rounded-xl border border-energy-high/40/40 bg-energy-high/10/20 p-4 text-sm text-energy-high">
+    <div class="mx-4 sm:mx-5 lg:mx-6 rounded-xl border border-energy-high/40 bg-energy-high/20 p-4 text-sm text-energy-high">
       {{ detailService.error() }}
     </div>
   } @else if (detailService.data(); as data) {
@@ -22,12 +22,12 @@
             class="w-10 h-10 rounded-[10px] shrink-0 flex items-center justify-center bg-accent/10 border border-accent-line/20"
           >
             @if (viewMode() === PATH_MODE.GRAPH) {
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-accent-ink">
                 <circle cx="6" cy="6" r="2.5" /><circle cx="18" cy="6" r="2.5" /><circle cx="12" cy="18" r="2.5" />
                 <path d="M7.5 7.5l3 8.5M16.5 7.5l-3 8.5" />
               </svg>
             } @else {
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-accent-ink">
                 <circle cx="6" cy="5" r="2" /><circle cx="6" cy="12" r="2" /><circle cx="6" cy="19" r="2" />
                 <path d="M6 7v3M6 14v3M11 5h8M11 12h8M11 19h8" />
               </svg>
@@ -42,13 +42,13 @@
                 class="inline-flex items-center gap-[5px] shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
                 [class]="
                   data.path.mode === PATH_MODE.GRAPH
-                    ? 'bg-accent/10 text-accent-ink border border-accent-line/20'
+                    ? 'bg-[var(--tone-ochre)]/10 text-[var(--tone-ochre)] border border-[var(--tone-ochre)]/20'
                     : 'bg-accent/10 text-accent-ink border border-accent-line/20'
                 "
               >
                 <span
                   class="w-[5px] h-[5px]"
-                  [class]="data.path.mode === PATH_MODE.GRAPH ? 'rounded-full bg-accent' : 'rounded-[1px] bg-accent'"
+                  [class]="data.path.mode === PATH_MODE.GRAPH ? 'rounded-full bg-[var(--tone-ochre)]' : 'rounded-[1px] bg-accent'"
                 ></span>
                 {{ data.path.mode === PATH_MODE.GRAPH ? 'Graph' : 'Sequential' }}
               </span>
@@ -204,7 +204,7 @@
                       "
                     >
                       @if (node.progress === NODE_PROGRESS.DONE) {
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="3">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-accent-ink">
                           <path d="M20 6L9 17l-5-5" />
                         </svg>
                       } @else {
