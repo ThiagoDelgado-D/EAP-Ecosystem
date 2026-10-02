@@ -120,7 +120,7 @@
                   <div class="text-[10.5px] text-ink-faint mt-0.5">{{ resource.difficulty }}</div>
                 </div>
                 @if (picked() === resource.id) {
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="3">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="text-accent-ink">
                     <path d="M20 6L9 17l-5-5" />
                   </svg>
                 }
@@ -232,7 +232,7 @@
           type="button"
           (click)="confirmLink()"
           [disabled]="!picked() || linking()"
-          class="px-3.5 py-2 rounded-lg bg-accent hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed text-ink-strong text-xs font-bold"
+          class="px-3.5 py-2 rounded-lg bg-accent hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-ink-strong text-xs font-bold"
         >
           {{ linking() ? 'Linking…' : 'Link resource' }}
         </button>
@@ -241,7 +241,7 @@
           type="button"
           (click)="confirmCreate()"
           [disabled]="!form().title.trim() || !form().resourceTypeId || form().topicIds.length === 0 || creating()"
-          class="px-3.5 py-2 rounded-lg bg-accent hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed text-ink-strong text-xs font-bold"
+          class="px-3.5 py-2 rounded-lg bg-accent hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed text-ink-strong text-xs font-bold"
         >
           {{ creating() ? 'Creating…' : 'Create & link' }}
         </button>
