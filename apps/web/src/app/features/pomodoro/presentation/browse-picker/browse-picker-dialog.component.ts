@@ -53,6 +53,8 @@ export class BrowsePickerDialogComponent {
   readonly filteredPathGroups = computed(() => filterPickerPathGroups(this.picker.allPaths(), this.query()));
   readonly filteredLibrary = computed(() => filterLibraryResources(this.picker.library(), this.query()));
 
+  private readonly expandedPathIds = signal<ReadonlySet<string>>(new Set());
+
   constructor() {
     void this.picker.load();
 
@@ -74,6 +76,18 @@ export class BrowsePickerDialogComponent {
 
   clearQuery(): void {
     this.query.set('');
+  }
+
+  isPathExpanded(pathId: string): boolean {
+    return !!this.query().trim() || this.expandedPathIds().has(pathId);
+  }
+
+  togglePath(pathId: string): void {
+    this.expandedPathIds.update((ids) => {
+      const next = new Set(ids);
+      if (!next.delete(pathId)) next.add(pathId);
+      return next;
+    });
   }
 
   pathColor(pathId: string): string {

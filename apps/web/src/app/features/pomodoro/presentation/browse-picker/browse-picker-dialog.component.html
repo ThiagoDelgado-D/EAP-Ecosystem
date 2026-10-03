@@ -1,4 +1,4 @@
-<div class="w-full max-w-2xl max-h-[80vh] bg-surface-raised border border-line-hairline rounded-xl flex flex-col [&_button]:focus:outline-none [&_button]:focus-visible:ring-2 [&_button]:focus-visible:ring-accent-line [&_button]:focus-visible:ring-offset-2 [&_button]:focus-visible:ring-offset-surface-raised">
+<div class="w-[min(35rem,calc(100vw-2rem))] max-h-[80vh] flex flex-col [&_button]:focus:outline-none [&_button]:focus-visible:ring-2 [&_button]:focus-visible:ring-accent-line [&_button]:focus-visible:ring-offset-2 [&_button]:focus-visible:ring-offset-surface-raised">
   <div class="p-6 pb-0 flex items-start justify-between gap-4">
     <div>
       <h2 class="text-lg font-extrabold text-ink-strong tracking-tight">Switch material</h2>
@@ -145,32 +145,54 @@
         @case ('all-paths') {
           @for (group of filteredPathGroups(); track group.path.id) {
             <div class="rounded-lg border border-line-hairline overflow-hidden shrink-0">
-              <div class="flex items-center gap-2.5 px-3 py-3 border-b border-line-hairline">
+              <button
+                type="button"
+                (click)="togglePath(group.path.id)"
+                [attr.aria-expanded]="isPathExpanded(group.path.id)"
+                [attr.aria-controls]="'picker-path-' + group.path.id"
+                [class.border-b]="isPathExpanded(group.path.id)"
+                class="w-full flex items-center gap-2.5 px-3 py-3 text-left border-line-hairline hover:bg-surface-overlay transition-colors"
+              >
                 <span class="w-1.5 h-1.5 rounded-sm flex-shrink-0" [style.background]="pathColor(group.path.id)"></span>
-                <span class="text-sm font-medium text-ink-body truncate">{{ group.path.title }}</span>
-              </div>
-              <div class="flex flex-col gap-1 p-2">
-                @for (node of group.nodes; track node.id) {
-                  <button
-                    type="button"
-                    (click)="pickNode({ path: group.path, node })"
-                    class="text-left flex items-center gap-3 px-3 py-2 rounded-md border border-transparent hover:border-line-soft hover:bg-surface-overlay transition-colors"
-                  >
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2">
-                        <span class="text-sm text-ink-body truncate">{{ node.title }}</span>
-                        @if (isStub(node)) {
-                          <span class="badge badge--unset">Stub</span>
-                        }
+                <span class="flex-1 min-w-0 text-sm font-medium text-ink-body truncate">{{ group.path.title }}</span>
+                <span class="t-mono text-xs text-ink-faint flex-shrink-0">{{ group.nodes.length }}</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="text-ink-faint flex-shrink-0 transition-transform duration-150"
+                  [class.rotate-180]="isPathExpanded(group.path.id)"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              @if (isPathExpanded(group.path.id)) {
+                <div [id]="'picker-path-' + group.path.id" class="flex flex-col gap-1 p-2">
+                  @for (node of group.nodes; track node.id) {
+                    <button
+                      type="button"
+                      (click)="pickNode({ path: group.path, node })"
+                      class="text-left flex items-center gap-3 px-3 py-2 rounded-md border border-transparent hover:border-line-soft hover:bg-surface-overlay transition-colors"
+                    >
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm text-ink-body truncate">{{ node.title }}</span>
+                          @if (isStub(node)) {
+                            <span class="badge badge--unset">Stub</span>
+                          }
+                        </div>
                       </div>
-                    </div>
-                    <span
-                      [class]="progressPillClass(node.progress)"
-                      class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
-                    >{{ nodeProgressLabel(node.progress) }}</span>
-                  </button>
-                }
-              </div>
+                      <span
+                        [class]="progressPillClass(node.progress)"
+                        class="px-2 py-0.5 rounded-full border text-[10px] font-semibold flex-shrink-0"
+                      >{{ nodeProgressLabel(node.progress) }}</span>
+                    </button>
+                  }
+                </div>
+              }
             </div>
           } @empty {
             <div class="text-sm text-ink-faint px-1 py-4">You haven't created any Learning Path yet.</div>
