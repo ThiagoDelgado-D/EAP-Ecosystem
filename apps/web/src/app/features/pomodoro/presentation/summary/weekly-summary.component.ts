@@ -142,7 +142,7 @@ export class WeeklySummaryComponent {
 
   async attributeSession(daySession: DaySession): Promise<void> {
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
-      panelClass: 'confirm-dark-dialog',
+      panelClass: 'app-dialog',
       autoFocus: false,
     });
     const target = await firstValueFrom(dialogRef.afterClosed());

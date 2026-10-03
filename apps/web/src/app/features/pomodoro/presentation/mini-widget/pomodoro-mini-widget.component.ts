@@ -49,7 +49,7 @@ export class PomodoroMiniWidgetComponent {
 
   async openSwitchDialog(): Promise<void> {
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
-      panelClass: 'confirm-dark-dialog',
+      panelClass: 'app-dialog',
       autoFocus: '#switch-material-search',
     });
     const target = await firstValueFrom(dialogRef.afterClosed());

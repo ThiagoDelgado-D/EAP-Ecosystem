@@ -7,21 +7,20 @@ import { ConfirmDialogOptions } from './confirm-dialog.types';
   standalone: true,
   template: `
     <div class="p-6 max-w-sm">
-      <h2 class="text-lg font-semibold text-slate-100 mb-2">
+      <h2 class="text-lg font-semibold text-ink-strong mb-2">
         {{ data.title || 'Confirm action' }}
       </h2>
-      <p class="text-sm text-slate-400 leading-normal mb-6">{{ data.message }}</p>
+      <p class="text-sm text-ink-dim leading-normal mb-6">{{ data.message }}</p>
       <div class="flex justify-end gap-3">
         <button
           (click)="onCancel()"
-          class="px-4 py-2 text-sm font-medium text-slate-300 hover:text-slate-100 transition-colors"
+          class="px-4 py-2 text-sm font-medium text-ink-body hover:text-ink-strong transition-colors"
         >
           {{ data.cancelLabel || 'Cancel' }}
         </button>
         <button
           (click)="onConfirm()"
-          [class]="data.confirmButtonClass || 'bg-red-600 hover:bg-red-500 text-white'"
-          class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+          class="px-4 py-2 text-sm font-medium rounded-lg bg-energy-high text-surface-raised hover:brightness-110 transition-[filter]"
         >
           {{ data.confirmLabel || 'Delete' }}
         </button>

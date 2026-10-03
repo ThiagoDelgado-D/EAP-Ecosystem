@@ -13,12 +13,13 @@ import { ToastService } from './toast.service';
     >
       @for (toast of toastService.toasts(); track toast.id) {
         <div
+          class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg bg-surface-raised border text-ink-strong text-sm font-medium"
           [class]="
             toast.type === 'success'
-              ? 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-ink dark:text-slate-100 text-sm font-medium'
+              ? 'border-line-strong'
               : toast.type === 'error'
-                ? 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm font-medium'
-                : 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-sm font-medium'
+                ? 'border-energy-high/40'
+                : 'border-status-in-progress/40'
           "
         >
           @if (toast.type === 'success') {
@@ -32,7 +33,7 @@ import { ToastService } from './toast.service';
               stroke-width="2.5"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="text-green-500 shrink-0"
+              class="text-accent-ink shrink-0"
             >
               <polyline points="20 6 9 17 4 12" />
             </svg>
@@ -47,7 +48,7 @@ import { ToastService } from './toast.service';
               stroke-width="2.5"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="text-red-500 shrink-0"
+              class="text-energy-high shrink-0"
             >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
@@ -64,7 +65,7 @@ import { ToastService } from './toast.service';
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="text-blue-500 shrink-0"
+              class="text-status-in-progress shrink-0"
             >
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="12" x2="12" y2="16" />
@@ -75,7 +76,7 @@ import { ToastService } from './toast.service';
           <button
             (click)="toastService.dismiss(toast.id)"
             aria-label="Dismiss notification"
-            class="ml-auto text-ink-muted dark:text-slate-400 hover:text-ink transition-colors"
+            class="ml-auto text-ink-faint hover:text-ink-strong transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
