@@ -3,5 +3,4 @@ export interface ConfirmDialogOptions {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  confirmButtonClass?: string;
 }
