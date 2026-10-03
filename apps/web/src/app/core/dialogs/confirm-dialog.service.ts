@@ -13,7 +13,7 @@ export class ConfirmDialogService {
       ConfirmDialogComponent,
       {
         data: options,
-        panelClass: 'confirm-dark-dialog',
+        panelClass: 'app-dialog',
         autoFocus: false,
         width: '400px',
       },

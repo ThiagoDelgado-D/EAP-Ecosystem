@@ -137,7 +137,7 @@ export class LearningPathDetailComponent implements OnInit {
     if (!path) return;
 
     const dialogRef = this.dialog.open(EditLearningPathDialogComponent, {
-      panelClass: 'confirm-dark-dialog',
+      panelClass: 'app-dialog',
       autoFocus: false,
       width: '480px',
       data: { path },
@@ -151,7 +151,7 @@ export class LearningPathDetailComponent implements OnInit {
 
   async openAddNode(): Promise<void> {
     const dialogRef = this.dialog.open(NodeFormDialogComponent, {
-      panelClass: 'confirm-dark-dialog',
+      panelClass: 'app-dialog',
       autoFocus: false,
       width: '480px',
       data: { pathId: this.pathId },
@@ -165,7 +165,7 @@ export class LearningPathDetailComponent implements OnInit {
 
   async openEditNode(node: LearningPathNode): Promise<void> {
     const dialogRef = this.dialog.open(NodeFormDialogComponent, {
-      panelClass: 'confirm-dark-dialog',
+      panelClass: 'app-dialog',
       autoFocus: false,
       width: '480px',
       data: { pathId: this.pathId, node },
@@ -182,7 +182,6 @@ export class LearningPathDetailComponent implements OnInit {
       title: 'Eliminar nodo',
       message: `¿Seguro que querés eliminar "${node.title}"? Esta acción no se puede deshacer.`,
       confirmLabel: 'Eliminar',
-      confirmButtonClass: 'bg-energy-high hover:brightness-110 text-white',
     });
     if (!confirmed) return;
 
@@ -259,7 +258,6 @@ export class LearningPathDetailComponent implements OnInit {
       title: 'Eliminar conexión',
       message: '¿Seguro que querés eliminar esta conexión entre nodos?',
       confirmLabel: 'Eliminar',
-      confirmButtonClass: 'bg-energy-high hover:brightness-110 text-white',
     });
     if (!confirmed) return;
 
@@ -278,7 +276,6 @@ export class LearningPathDetailComponent implements OnInit {
       title: 'Eliminar Learning Path',
       message: `¿Seguro que querés eliminar "${path.title}"? Se van a borrar todos sus nodos y conexiones. Esta acción no se puede deshacer.`,
       confirmLabel: 'Eliminar',
-      confirmButtonClass: 'bg-energy-high hover:brightness-110 text-white',
     });
     if (!confirmed) return;
 
