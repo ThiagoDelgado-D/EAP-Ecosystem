@@ -8,6 +8,7 @@ export const routes: Routes = [
   },
   {
     path: 'onboarding',
+    title: 'Welcome',
     loadChildren: () =>
       import('@features/auth/presentation/auth.routes').then((m) => m.onboardingRoutes),
   },

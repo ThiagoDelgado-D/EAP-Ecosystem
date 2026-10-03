@@ -8,6 +8,7 @@ export const authRoutes: Routes = [
     children: [
       {
         path: 'sign-in',
+        title: 'Sign In',
         loadComponent: () => import('./sign-in/sign-in.component').then((m) => m.SignInComponent),
       },
       {
@@ -19,6 +20,7 @@ export const authRoutes: Routes = [
   },
   {
     path: 'callback',
+    title: 'Signing In',
     loadComponent: () =>
       import('./oauth-callback/oauth-callback.component').then((m) => m.OAuthCallbackComponent),
   },
