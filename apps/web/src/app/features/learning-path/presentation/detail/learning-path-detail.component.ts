@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import {
@@ -12,6 +12,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service';
 import { ToastService } from '@core/toast/toast.service';
+import { PageTitleService } from '@core/title/page-title.service';
 import { LearningPathDetailService } from '@features/learning-path/application/learning-path-detail.service';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
@@ -51,12 +52,20 @@ export class LearningPathDetailComponent implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly toastService = inject(ToastService);
+  private readonly pageTitle = inject(PageTitleService);
   readonly detailService = inject(LearningPathDetailService);
 
   readonly PATH_MODE = PATH_MODE;
   readonly NODE_PROGRESS = NODE_PROGRESS;
 
   readonly pathId = this.route.snapshot.paramMap.get('id')!;
+
+  constructor() {
+    effect(() => {
+      const title = this.detailService.data()?.path.title;
+      if (title) this.pageTitle.set(title);
+    });
+  }
 
   readonly sortedNodes = computed(() => {
     const nodes = this.detailService.data()?.nodes ?? [];
