@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, inject, signal, OnInit, computed, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,6 +21,7 @@ import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastr
 import { MarkdownPipe } from '@shared/pipes/markdown.pipe.js';
 import { ToastService } from '@core/toast/toast.service.js';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service.js';
+import { PageTitleService } from '@core/title/page-title.service';
 import { ResourceLibraryService } from '@features/learning-resource/application/resource-library.service.js';
 import { TopicService } from '@features/learning-resource/application/topic.service.js';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository.js';
@@ -99,6 +100,7 @@ export class ResourceDetailComponent implements OnInit {
   private readonly libraryService = inject(ResourceLibraryService);
   private readonly toastService = inject(ToastService);
   private readonly confirmDialog = inject(ConfirmDialogService);
+  private readonly pageTitle = inject(PageTitleService);
 
   readonly resource = signal<LearningResource | null>(null);
   readonly loading = this.resourceService.loading;
@@ -111,6 +113,13 @@ export class ResourceDetailComponent implements OnInit {
   readonly savingNotes = signal(false);
 
   private resourceId: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const title = this.resource()?.title;
+      if (title) this.pageTitle.set(title);
+    });
+  }
 
   readonly difficultyOptions = DIFFICULTY_BADGE_OPTIONS;
   readonly energyOptions = ENERGY_BADGE_OPTIONS;
