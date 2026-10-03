@@ -148,6 +148,34 @@ describe('BrowsePickerDialogComponent', () => {
     expect(component.query()).toBe('');
   });
 
+  test('should start with every path collapsed in the "all paths" tab', () => {
+    const dataStructuresPathId = crypto.randomUUID();
+
+    expect(component.isPathExpanded(dataStructuresPathId)).toBe(false);
+  });
+
+  test('should expand only the toggled path and collapse it on a second toggle', () => {
+    const dataStructuresPathId = crypto.randomUUID();
+    const devOpsPathId = crypto.randomUUID();
+
+    component.togglePath(dataStructuresPathId);
+
+    expect(component.isPathExpanded(dataStructuresPathId)).toBe(true);
+    expect(component.isPathExpanded(devOpsPathId)).toBe(false);
+
+    component.togglePath(dataStructuresPathId);
+
+    expect(component.isPathExpanded(dataStructuresPathId)).toBe(false);
+  });
+
+  test('should expand every path while searching so matching nodes are never hidden', () => {
+    const collapsedPathId = crypto.randomUUID();
+
+    component.query.set('linked lists');
+
+    expect(component.isPathExpanded(collapsedPathId)).toBe(true);
+  });
+
   test('should flag stub nodes and describe each subtitle from the path title and the resource duration', async () => {
     const pathId = crypto.randomUUID();
     const linkedNodeId = crypto.randomUUID();
