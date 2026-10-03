@@ -29,7 +29,6 @@ export class DangerZoneComponent {
       message:
         'This will clear all your enabled modules and dashboard widget configuration. This action cannot be undone.',
       confirmLabel: 'Reset',
-      confirmButtonClass: 'bg-energy-high hover:bg-energy-high text-white',
     });
     if (!confirmed) return;
 
@@ -46,7 +45,6 @@ export class DangerZoneComponent {
       title: 'Sign out all other devices',
       message: 'All active sessions except your current one will be terminated immediately.',
       confirmLabel: 'Sign out others',
-      confirmButtonClass: 'bg-energy-high hover:bg-energy-high text-white',
     });
     if (!confirmed) return;
 
@@ -64,7 +62,6 @@ export class DangerZoneComponent {
       message:
         'Your account and all associated data will be permanently deleted. This action cannot be undone.',
       confirmLabel: 'Delete account',
-      confirmButtonClass: 'bg-energy-high hover:bg-energy-high text-white',
     });
     if (!confirmed) return;
 

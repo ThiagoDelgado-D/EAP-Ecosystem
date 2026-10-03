@@ -168,7 +168,6 @@ export class ResourceDetailComponent implements OnInit {
       title: 'Delete resource',
       message: `Are you sure you want to delete this resource? This action cannot be undone.`,
       confirmLabel: 'Delete',
-      confirmButtonClass: 'bg-energy-high hover:brightness-110 text-white',
     });
 
     if (!confirmed) return;

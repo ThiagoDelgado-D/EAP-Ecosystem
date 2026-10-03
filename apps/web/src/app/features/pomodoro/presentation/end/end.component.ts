@@ -290,7 +290,7 @@ export class EndComponent {
 
   async openAttachDialog(): Promise<void> {
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
-      panelClass: 'confirm-dark-dialog',
+      panelClass: 'app-dialog',
       autoFocus: false,
     });
     const target = await firstValueFrom(dialogRef.afterClosed());

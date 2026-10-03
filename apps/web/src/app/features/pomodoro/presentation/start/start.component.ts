@@ -220,7 +220,7 @@ export class StartComponent {
   async openAttachDialog(): Promise<void> {
     const previous = this.selectedTarget();
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
-      panelClass: 'confirm-dark-dialog',
+      panelClass: 'app-dialog',
       autoFocus: '#switch-material-search',
       data: previous ? { target: previous, label: this.selectedTargetLabel() } : null,
     });
