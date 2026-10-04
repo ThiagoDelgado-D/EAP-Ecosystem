@@ -219,17 +219,6 @@ export class NodeDetailPanelComponent {
     }
   }
 
-  async advanceStatus(): Promise<void> {
-    const node = this.node();
-    const cycle: NodeProgress[] = [NODE_PROGRESS.PENDING, NODE_PROGRESS.IN_PROGRESS, NODE_PROGRESS.DONE];
-    const next = cycle[(cycle.indexOf(node.progress) + 1) % cycle.length];
-    try {
-      await this.detailService.updateNodeProgress(this.pathId(), node.id, next);
-    } catch {
-      this.toastService.show('No se pudo actualizar el progreso', 'error');
-    }
-  }
-
   setStatus(progress: NodeProgress): void {
     if (this.node().progress === progress) return;
     void this.detailService

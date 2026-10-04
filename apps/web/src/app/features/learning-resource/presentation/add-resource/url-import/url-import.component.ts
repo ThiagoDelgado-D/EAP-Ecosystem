@@ -44,7 +44,6 @@ export class UrlImportComponent implements OnInit, OnDestroy {
   private typeInitInterval: ReturnType<typeof setInterval> | undefined;
 
   readonly previewData = this.previewService.previewData.asReadonly();
-  readonly loadingPreview = this.previewService.loading.asReadonly();
   readonly previewError = this.previewService.error.asReadonly();
   readonly resourceTypes = this.resourceTypeService.resourceTypes.asReadonly();
   readonly topics = this.topicService.topics.asReadonly();
@@ -174,11 +173,6 @@ export class UrlImportComponent implements OnInit, OnDestroy {
       this.previewService.error.set('Failed to save resource');
       this.saveError.set('Failed to save resource. Please try again.');
     }
-  }
-
-  retry(): void {
-    this.previewService.reset();
-    this.fetchMetadata();
   }
 
   goToManual(): void {

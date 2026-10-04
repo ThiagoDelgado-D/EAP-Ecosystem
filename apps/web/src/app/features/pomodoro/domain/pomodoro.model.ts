@@ -103,12 +103,6 @@ export type EndSessionResult =
   | { discarded: true }
   | { discarded: false; session: Session; segments: Segment[] };
 
-export interface PathMembershipCandidate {
-  pathId: string;
-  pathTitle: string;
-  nodeId: string;
-}
-
 export const CANDIDATE_ENERGY_LEVEL = {
   LOW: 'low',
   MEDIUM: 'medium',

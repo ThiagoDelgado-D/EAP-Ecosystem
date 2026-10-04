@@ -10,7 +10,6 @@ export class ResourceLibraryService {
   private readonly savedIdsSignal = signal<string[]>([]);
   private readonly recentIdsSignal = signal<string[]>([]);
 
-  readonly savedIds = this.savedIdsSignal.asReadonly();
   readonly recentIds = this.recentIdsSignal.asReadonly();
 
   private initialized = false;

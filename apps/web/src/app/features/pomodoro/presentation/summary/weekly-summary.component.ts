@@ -120,14 +120,6 @@ export class WeeklySummaryComponent {
     return 0;
   }
 
-  maxDayFocusSec(): number {
-    return Math.max(1, ...this.dayLog().map((day) => day.focusSec));
-  }
-
-  dayBarHeightPx(day: DayLog): number {
-    return Math.max(2, (day.focusSec / this.maxDayFocusSec()) * 34);
-  }
-
   dayLetter(date: Date): string {
     return date.toLocaleDateString('en-US', { weekday: 'narrow' });
   }

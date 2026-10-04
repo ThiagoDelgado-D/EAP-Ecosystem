@@ -193,16 +193,8 @@ export class EditResourceComponent implements OnInit {
     if (r) this.resource.set({ ...r, energyLevel: level });
   }
 
-  getTopicLabel(id: string): string {
-    return this.topics().find((t) => t.id === id)?.name ?? id;
-  }
-
   getTypeName(typeId: string): string {
     return this.resourceTypes().find((t) => t.id === typeId)?.displayName ?? 'Unknown';
-  }
-
-  getDifficultyBarClass(level: DifficultyLevel): string {
-    return LEVEL_BAR_CLASS[level];
   }
 
   getEnergyBarClass(level: EnergyLevel): string {

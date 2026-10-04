@@ -52,8 +52,6 @@ export class PaginatorComponent {
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
 
-  readonly pageSizeOptions = [5, 10, 20, 50];
-
   prev(): void {
     this.pageChange.emit(this.currentPage() - 1);
   }
