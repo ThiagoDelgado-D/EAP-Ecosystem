@@ -51,10 +51,6 @@ export class KpiRowComponent {
     Math.max(this.goalMinutes() / 5, ...this.weekDays().map((d) => d.focusMinutes), 30),
   );
 
-  barHeightPct(minutes: number): number {
-    return Math.max(8, (minutes / this.maxDay()) * 100);
-  }
-
   barColor(minutes: number): string {
     if (minutes === 0) return 'var(--color-line-strong)';
     return minutes >= this.goalMinutes() / 5 ? 'var(--color-accent)' : 'var(--tone-ochre, var(--color-accent))';
