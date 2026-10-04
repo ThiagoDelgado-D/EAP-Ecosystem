@@ -22,7 +22,7 @@
   --color-ink-strong: var(--c-ink);
   --color-ink-body: var(--c-ink-2);
   --color-ink-dim: var(--c-muted);
-  --color-ink-faint: color-mix(in oklab, var(--c-muted) 65%, var(--c-bg));
+  --color-ink-faint: color-mix(in oklab, var(--c-muted) 80%, var(--c-bg));
   --color-ink-ghost: color-mix(in oklab, var(--c-muted) 40%, var(--c-bg));
 
   --color-accent: var(--tone-pine);
@@ -58,7 +58,7 @@
   --c-surface-2: #f7f3ea;
   --c-ink: #1a1915;
   --c-ink-2: #45423a;
-  --c-muted: #7d7768;
+  --c-muted: #6c6657;
   --c-line: #e0dacd;
   --c-line-strong: #cec6b3;
   --c-meter-track: #d3c9b2;
@@ -67,7 +67,7 @@
 
   --tone-pine: #2c6a51;
   --tone-pine-soft: #dfeae2;
-  --tone-ochre: #a9782a;
+  --tone-ochre: #94640d;
   --tone-ochre-soft: #f2e7cf;
   --tone-ember: #b8502c;
   --tone-ember-soft: #f6e0d6;
