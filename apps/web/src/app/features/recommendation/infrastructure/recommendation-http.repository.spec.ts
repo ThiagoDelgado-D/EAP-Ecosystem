@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { RecommendationHttpRepository } from './recommendation-http.repository';
-import type { ScoredRecommendationDto } from './recommendation.dto';
+import type { RecommendationContextResponseDto, ScoredRecommendationDto } from './recommendation.dto';
 import { API_CONFIG } from '@core/config/api.config';
 
 describe('RecommendationHttpRepository', () => {
@@ -62,29 +62,35 @@ describe('RecommendationHttpRepository', () => {
   });
 
   test('getContext should GET /recommendations/context and keep only the calibration fields', async () => {
-    const resultPromise = repository.getContext();
-
-    const request = httpController.expectOne(`${API_CONFIG.baseUrl}/recommendations/context`);
-    expect(request.request.method).toBe('GET');
-    request.flush({
+    const tiredEveningReviewContext: RecommendationContextResponseDto = {
       userId: crypto.randomUUID(),
       energyLevel: 'low',
       availableMinutes: 15,
       mentalState: 'review',
-      updatedAt: '2026-10-05T09:00:00.000Z',
-    });
+      updatedAt: '2026-10-05T21:30:00.000Z',
+    };
 
-    expect(await resultPromise).toEqual({ energyLevel: 'low', availableMinutes: 15, mentalState: 'review' });
+    const restoredContextPromise = repository.getContext();
+
+    const contextRequest = httpController.expectOne(`${API_CONFIG.baseUrl}/recommendations/context`);
+    expect(contextRequest.request.method).toBe('GET');
+    contextRequest.flush(tiredEveningReviewContext);
+
+    expect(await restoredContextPromise).toEqual({
+      energyLevel: tiredEveningReviewContext.energyLevel,
+      availableMinutes: tiredEveningReviewContext.availableMinutes,
+      mentalState: tiredEveningReviewContext.mentalState,
+    });
   });
 
   test('getContext should return null when the user has never saved a context (404)', async () => {
-    const resultPromise = repository.getContext();
+    const firstVisitContextPromise = repository.getContext();
 
     httpController
       .expectOne(`${API_CONFIG.baseUrl}/recommendations/context`)
       .flush({ message: 'Recommendation context not found' }, { status: 404, statusText: 'Not Found' });
 
-    expect(await resultPromise).toBeNull();
+    expect(await firstVisitContextPromise).toBeNull();
   });
 
   test('setContext should POST /recommendations/context with the given payload', async () => {
