@@ -19,21 +19,22 @@ export function mockRecommendationRepository(
     recommendations: [...(initial.recommendations ?? [])],
     savedContexts: [],
 
-    async getRecommendations(): Promise<ScoredRecommendation[]> {
-      return this.context ? this.recommendations : [];
+    getRecommendations(): Promise<ScoredRecommendation[]> {
+      return Promise.resolve(this.context ? this.recommendations : []);
     },
 
-    async getContext(): Promise<RecommendationContext | null> {
-      return this.context;
+    getContext(): Promise<RecommendationContext | null> {
+      return Promise.resolve(this.context);
     },
 
-    async setContext(payload: SetRecommendationContextPayload): Promise<void> {
+    setContext(payload: SetRecommendationContextPayload): Promise<void> {
       this.savedContexts.push(payload);
       this.context = {
         energyLevel: payload.energyLevel,
         availableMinutes: payload.availableMinutes,
         mentalState: payload.mentalState,
       };
+      return Promise.resolve();
     },
   };
 }
