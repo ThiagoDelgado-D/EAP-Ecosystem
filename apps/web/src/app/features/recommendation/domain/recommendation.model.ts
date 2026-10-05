@@ -13,6 +13,12 @@ export interface ScoredRecommendation {
   why: string[];
 }
 
+export interface RecommendationContext {
+  energyLevel: EnergyLevel;
+  availableMinutes?: number;
+  mentalState?: MentalState;
+}
+
 export interface SetRecommendationContextPayload {
   energyLevel: EnergyLevel;
   availableMinutes?: number;
