@@ -14,3 +14,11 @@ export interface SetRecommendationContextRequestDto {
   availableMinutes?: number;
   mentalState?: MentalState;
 }
+
+export interface RecommendationContextResponseDto {
+  userId: string;
+  energyLevel: EnergyLevel;
+  availableMinutes?: number;
+  mentalState?: MentalState;
+  updatedAt: string;
+}

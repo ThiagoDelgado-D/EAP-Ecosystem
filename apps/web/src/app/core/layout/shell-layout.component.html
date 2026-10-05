@@ -34,6 +34,53 @@
     </div>
 
     <div class="flex items-center gap-2 sm:gap-3">
+      <div class="relative">
+        <button
+          type="button"
+          (click)="toggleStateMenu($event)"
+          class="chip chip-btn !py-1.5 !pr-2.5 !pl-2"
+          [class.tone-chip]="!!currentState()"
+          [style.--tone]="currentStateTone()"
+          [attr.aria-label]="currentState() ? ('Mental state: ' + stateLabel(currentState()!)) : 'How are you today?'"
+          aria-haspopup="true"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+          </svg>
+          <span class="hidden sm:inline">{{ currentState() ? stateLabel(currentState()!) : 'How are you?' }}</span>
+        </button>
+        @if (stateMenuOpen()) {
+          <div
+            class="absolute right-0 z-30 mt-2 w-60 overflow-hidden rounded-[18px_6px_18px_6px] border border-line-soft bg-surface-raised p-1.5 shadow-xl"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
+            <p class="px-2.5 pt-1.5 pb-2 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-ink-faint">
+              Mental state
+            </p>
+            @for (option of mentalStateOptions; track option.value) {
+              <button
+                type="button"
+                (click)="chooseMentalState(option.value)"
+                class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[0.82rem] transition-colors hover:bg-surface-overlay"
+              >
+                <span class="h-2 w-2 rounded-full" [style.background]="stateTone(option.value)"></span>
+                <span [class]="currentState() === option.value ? 'font-semibold text-ink-strong' : 'text-ink-body'">
+                  {{ option.label }}
+                </span>
+              </button>
+            }
+            <button
+              type="button"
+              (click)="chooseMentalState(null)"
+              class="mt-1 w-full rounded-xl px-2.5 py-1.5 text-left text-[0.76rem] text-ink-dim transition-colors hover:bg-surface-overlay"
+            >
+              Clear state
+            </button>
+          </div>
+        }
+      </div>
+
       <button
         type="button"
         (click)="themeService.toggle()"

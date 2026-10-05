@@ -1,9 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
-import type {
-  ScoredRecommendation,
-  SetRecommendationContextPayload,
-} from '@features/recommendation/domain/recommendation.model';
+import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
 
 @Injectable()
 export class RecommendationService {
@@ -13,11 +10,10 @@ export class RecommendationService {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  async refresh(context: SetRecommendationContextPayload): Promise<void> {
+  async refresh(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
     try {
-      await this.repository.setContext(context);
       const recommendations = await this.repository.getRecommendations();
       this.recommendations.set(recommendations);
     } catch {

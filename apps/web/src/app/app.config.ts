@@ -13,6 +13,9 @@ import { LearningPathRepository } from '@features/learning-path/domain/learning-
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
+import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
+import { RecommendationHttpRepository } from '@features/recommendation/infrastructure/recommendation-http.repository';
+import { CalibrationService } from '@features/recommendation/application/calibration.service';
 
 import { ANIMATION_MODULE_TYPE } from '@angular/platform-browser/animations';
 
@@ -26,7 +29,9 @@ export const appConfig: ApplicationConfig = {
     { provide: PomodoroRepository, useClass: PomodoroHttpRepository },
     { provide: LearningPathRepository, useClass: LearningPathHttpRepository },
     { provide: LearningResourceRepository, useClass: LearningResourceHttpRepository },
+    { provide: RecommendationRepository, useClass: RecommendationHttpRepository },
     PomodoroSessionStore,
     PomodoroPickerService,
+    CalibrationService,
   ],
 };

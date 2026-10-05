@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, computed, untracked } from '@angular/core';
 import { LearningResourceService } from '../../application/learning-resource.service';
 import { LearningResourceRepository } from '../../domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '../../infrastructure/learning-resource-http.repository';
@@ -7,13 +7,11 @@ import { LearningPathService } from '@features/learning-path/application/learnin
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
 import { RecommendationService } from '@features/recommendation/application/recommendation.service';
-import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
-import { RecommendationHttpRepository } from '@features/recommendation/infrastructure/recommendation-http.repository';
-import type { EnergyLevel as ApiEnergyLevel, MentalState as ApiMentalState } from '@features/recommendation/domain/recommendation.model';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { PomodoroHttpRepository } from '@features/pomodoro/infrastructure/pomodoro-http.repository';
 import { computeWeeklySummary, buildWeekDayLog, summaryWindowSince } from '@features/pomodoro/application/weekly-summary.calculator';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { CalibrationService } from '@features/recommendation/application/calibration.service';
 import { TopicService } from '@features/learning-resource/application/topic.service';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
@@ -26,12 +24,6 @@ import { KpiRowComponent } from './components/kpi-row/kpi-row.component.js';
 import { RecentActivityComponent } from './components/recent-activity/recent-activity.component.js';
 import { TopicAttentionComponent } from './components/topic-attention/topic-attention.component.js';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
-
-const TO_API_ENERGY_LEVEL: Record<EnergyLevel, ApiEnergyLevel> = {
-  Low: 'low',
-  Medium: 'medium',
-  High: 'high',
-};
 
 const AVAILABLE_MINUTES_OPTIONS = [15, 25, 45, 60, 90] as const;
 
@@ -65,7 +57,6 @@ function greeting(date = new Date()): string {
     LearningPathService,
     { provide: LearningPathRepository, useClass: LearningPathHttpRepository },
     RecommendationService,
-    { provide: RecommendationRepository, useClass: RecommendationHttpRepository },
     { provide: PomodoroRepository, useClass: PomodoroHttpRepository },
   ],
   templateUrl: './dashboard.component.html',
@@ -77,15 +68,16 @@ export class DashboardComponent implements OnInit {
   private readonly recommendationService = inject(RecommendationService);
   private readonly pomodoroRepository = inject(PomodoroRepository);
   private readonly authStore = inject(AuthStore);
+  private readonly calibration = inject(CalibrationService);
   private readonly topicService = inject(TopicService);
 
   readonly AVAILABLE_MINUTES_OPTIONS = AVAILABLE_MINUTES_OPTIONS;
   readonly displayName = this.authStore.displayName;
   readonly greetingLabel = greeting();
 
-  readonly selectedEnergy = signal<EnergyLevel>('Medium');
-  readonly selectedMentalState = signal<MentalStateType>('deep_focus');
-  readonly availableMinutes = signal<number>(45);
+  readonly selectedEnergy = this.calibration.energy;
+  readonly selectedMentalState = this.calibration.mentalState;
+  readonly availableMinutes = this.calibration.availableMinutes;
 
   readonly loading = this.resourceService.loading;
   readonly error = this.resourceService.error;
@@ -126,9 +118,16 @@ export class DashboardComponent implements OnInit {
   private refreshQueued = false;
   private filterDebounce: ReturnType<typeof setTimeout> | null = null;
 
+  constructor() {
+    effect(() => {
+      this.calibration.savedRevision();
+      if (untracked(this.hasLoaded)) this.requestFilterRefresh();
+    });
+  }
+
   async ngOnInit(): Promise<void> {
     await Promise.all([
-      this.applyFilter(),
+      this.calibration.load().then(() => this.applyFilter()),
       this.pathService.loadAllWithNodes(),
       this.topicService.loadAll(),
       this.loadContinueResources(),
@@ -138,18 +137,15 @@ export class DashboardComponent implements OnInit {
   }
 
   onEnergyChange(energy: EnergyLevel): void {
-    this.selectedEnergy.set(energy);
-    this.requestFilterRefresh();
+    void this.calibration.setEnergy(energy);
   }
 
   onMentalStateChange(state: MentalStateType): void {
-    this.selectedMentalState.set(state);
-    this.requestFilterRefresh();
+    void this.calibration.setMentalState(state);
   }
 
   onAvailableMinutesChange(minutes: number): void {
-    this.availableMinutes.set(minutes);
-    this.requestFilterRefresh();
+    void this.calibration.setAvailableMinutes(minutes);
   }
 
   private requestFilterRefresh(): void {
@@ -187,11 +183,7 @@ export class DashboardComponent implements OnInit {
         page: 1,
         pageSize: 10,
       }),
-      this.recommendationService.refresh({
-        energyLevel: TO_API_ENERGY_LEVEL[this.selectedEnergy()],
-        mentalState: this.selectedMentalState() as ApiMentalState,
-        availableMinutes: this.availableMinutes(),
-      }),
+      this.recommendationService.refresh(),
     ]);
     this.hasLoaded.set(true);
   }
