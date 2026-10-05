@@ -374,6 +374,6 @@
   }
 
   @if (selectedNode(); as node) {
-    <app-node-detail-panel [node]="node" [pathId]="pathId" (closed)="closeNodePanel()" />
+    <app-node-detail-panel [node]="node" [pathId]="pathId()" (closed)="closeNodePanel()" />
   }
 </div>
