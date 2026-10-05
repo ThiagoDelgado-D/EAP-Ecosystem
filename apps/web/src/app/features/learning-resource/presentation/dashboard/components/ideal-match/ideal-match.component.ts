@@ -2,10 +2,7 @@ import { Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ScrambleComponent } from '@shared/components/scramble/scramble.component';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
-import {
-  LearningResource,
-  MentalStateType,
-} from '@features/learning-resource/domain/learning-resource.model.js';
+import { LearningResource } from '@features/learning-resource/domain/learning-resource.model.js';
 import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
 
 function hashHue(title: string): number {
@@ -27,7 +24,6 @@ function recKey(rec: ScoredRecommendation): string {
 export class IdealMatchComponent {
   readonly recommendation = input.required<ScoredRecommendation | null>();
   readonly resource = input<LearningResource | null>(null);
-  readonly mentalState = input.required<MentalStateType>();
   readonly secondary = input<ScoredRecommendation[]>([]);
   readonly catalogMinutes = input(0);
 
