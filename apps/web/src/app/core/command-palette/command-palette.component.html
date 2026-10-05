@@ -1,5 +1,10 @@
 @if (isOpen()) {
-  <div class="fixed inset-0 z-[80] flex items-start justify-center px-4 pt-[12vh]">
+  <dialog
+    #paletteDialog
+    aria-label="Command palette"
+    (cancel)="$event.preventDefault()"
+    class="fixed inset-0 m-0 h-full max-h-none w-full max-w-none items-start justify-center border-0 bg-transparent px-4 pt-[12vh] text-ink-strong backdrop:bg-transparent open:flex"
+  >
     <button
       type="button"
       tabindex="-1"
@@ -9,9 +14,6 @@
     ></button>
 
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Command palette"
       class="relative w-full max-w-xl overflow-hidden rounded-[24px_24px_24px_8px] border border-line-soft bg-surface-raised shadow-[var(--shadow-lift)]"
     >
       <div class="flex items-center gap-3 border-b border-line-soft px-4 py-3">
@@ -19,8 +21,10 @@
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" />
         </svg>
+        <label for="command-palette-search" class="sr-only">Search or run a command</label>
         <input
           #searchInput
+          id="command-palette-search"
           type="text"
           role="combobox"
           aria-autocomplete="list"
@@ -145,5 +149,5 @@
         <span class="hidden sm:inline">{{ items().length }} {{ items().length === 1 ? 'result' : 'results' }}</span>
       </div>
     </div>
-  </div>
+  </dialog>
 }

@@ -43,6 +43,7 @@ export class CommandPaletteComponent {
   private readonly themeService = inject(ThemeService);
   private readonly injector = inject(Injector);
 
+  private readonly paletteDialog = viewChild<ElementRef<HTMLDialogElement>>('paletteDialog');
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   private readonly resultList = viewChild<ElementRef<HTMLElement>>('resultList');
   private focusBeforeOpen: HTMLElement | null = null;
@@ -166,7 +167,13 @@ export class CommandPaletteComponent {
     this.focusBeforeOpen = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.query.set('');
     this.cursor.set(0);
-    afterNextRender(() => this.searchInput()?.nativeElement.focus(), { injector: this.injector });
+    afterNextRender(
+      () => {
+        this.paletteDialog()?.nativeElement.showModal?.();
+        this.searchInput()?.nativeElement.focus();
+      },
+      { injector: this.injector },
+    );
     void this.loadIndex();
   }
 
