@@ -5,7 +5,11 @@ import type {
   LearningPathCandidatesPort,
   LearningResourceCandidatesPort,
 } from "@recommendation/domain";
-import { getRecommendations, setRecommendationContext } from "@recommendation/application";
+import {
+  getRecommendationContext,
+  getRecommendations,
+  setRecommendationContext,
+} from "@recommendation/application";
 import { SetRecommendationContextDto } from "./dto/request/index.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
@@ -29,6 +33,16 @@ export class RecommendationController {
       recommendationContextRepository: this.recommendationContextRepository,
       learningResourceCandidatesPort: this.learningResourceCandidatesPort,
       learningPathCandidatesPort: this.learningPathCandidatesPort,
+      currentUser,
+    });
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Get("context")
+  async getRecommendationContext(@CurrentUserDecorator() currentUser: CurrentUser) {
+    const result = await getRecommendationContext({
+      recommendationContextRepository: this.recommendationContextRepository,
       currentUser,
     });
     if (result instanceof BaseError) throw toHttpException(result);

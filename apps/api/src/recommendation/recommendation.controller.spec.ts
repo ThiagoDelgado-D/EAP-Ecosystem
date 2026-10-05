@@ -3,7 +3,7 @@ import {
   mockLearningResourceCandidatesPort,
   mockRecommendationContextRepository,
 } from "@recommendation/application";
-import { EnergyLevel } from "@recommendation/domain";
+import { EnergyLevel, MentalState } from "@recommendation/domain";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
@@ -138,6 +138,39 @@ describe("RecommendationController (integration)", () => {
       expect(response.body).toEqual([
         expect.objectContaining({ resourceId, title: "Intro to Kubernetes" }),
       ]);
+    });
+  });
+
+  describe("GET /api/v1/recommendations/context", () => {
+    test("returns 404 when the user hasn't set a recommendation context yet", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/recommendations/context")
+        .set(authHeader())
+        .expect(404);
+
+      expect(response.body.error).toBe("RECOMMENDATION_CONTEXT_NOT_FOUND_ERROR");
+    });
+
+    test("returns the context the user last saved", async () => {
+      recommendationContextRepository.contexts.push({
+        userId: ownerId,
+        energyLevel: EnergyLevel.HIGH,
+        availableMinutes: 25,
+        mentalState: MentalState.REVIEW,
+        updatedAt: new Date(),
+      });
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/recommendations/context")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        userId: ownerId,
+        energyLevel: "high",
+        availableMinutes: 25,
+        mentalState: "review",
+      });
     });
   });
 
