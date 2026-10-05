@@ -29,7 +29,7 @@ interface MentalStateOption {
 })
 export class SystemCheckComponent {
   readonly selectedEnergy = input.required<EnergyLevel>();
-  readonly selectedMentalState = input.required<MentalStateType>();
+  readonly selectedMentalState = input<MentalStateType | null>(null);
   readonly selectedAvailableMinutes = input.required<number>();
   readonly availableMinutesOptions = input.required<readonly number[]>();
 
