@@ -1,4 +1,5 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import {
@@ -46,7 +47,7 @@ import { LearningPathGraphComponent } from '../graph/learning-path-graph.compone
     LearningPathGraphComponent,
   ],
 })
-export class LearningPathDetailComponent implements OnInit {
+export class LearningPathDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
@@ -58,12 +59,26 @@ export class LearningPathDetailComponent implements OnInit {
   readonly PATH_MODE = PATH_MODE;
   readonly NODE_PROGRESS = NODE_PROGRESS;
 
-  readonly pathId = this.route.snapshot.paramMap.get('id')!;
+  private readonly paramMap = toSignal(this.route.paramMap, { requireSync: true });
+  private readonly queryParamMap = toSignal(this.route.queryParamMap, { requireSync: true });
+  readonly pathId = computed(() => this.paramMap().get('id')!);
 
   constructor() {
     effect(() => {
       const title = this.detailService.data()?.path.title;
       if (title) this.pageTitle.set(title);
+    });
+    effect(() => {
+      const pathId = this.pathId();
+      untracked(() => {
+        this.viewModeOverride.set(null);
+        this.selectedNodeId.set(null);
+        void this.detailService.load(pathId);
+      });
+    });
+    effect(() => {
+      const nodeId = this.queryParamMap().get('node');
+      if (nodeId) untracked(() => this.selectedNodeId.set(nodeId));
     });
   }
 
@@ -126,10 +141,14 @@ export class LearningPathDetailComponent implements OnInit {
 
   closeNodePanel(): void {
     this.selectedNodeId.set(null);
-  }
+    if (!this.queryParamMap().has('node')) return;
 
-  ngOnInit(): void {
-    void this.detailService.load(this.pathId);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { node: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   async openEditPath(): Promise<void> {
@@ -154,7 +173,7 @@ export class LearningPathDetailComponent implements OnInit {
       panelClass: 'app-dialog',
       autoFocus: false,
       width: '480px',
-      data: { pathId: this.pathId },
+      data: { pathId: this.pathId() },
     });
     const node = await firstValueFrom(dialogRef.afterClosed());
     if (node) {
@@ -168,7 +187,7 @@ export class LearningPathDetailComponent implements OnInit {
       panelClass: 'app-dialog',
       autoFocus: false,
       width: '480px',
-      data: { pathId: this.pathId, node },
+      data: { pathId: this.pathId(), node },
     });
     const updated = await firstValueFrom(dialogRef.afterClosed());
     if (updated) {
@@ -186,7 +205,7 @@ export class LearningPathDetailComponent implements OnInit {
     if (!confirmed) return;
 
     try {
-      await this.detailService.deleteNode(this.pathId, node.id);
+      await this.detailService.deleteNode(this.pathId(), node.id);
       this.toastService.show('Nodo eliminado', 'success');
     } catch {
       this.toastService.show('No se pudo eliminar el nodo', 'error');
@@ -196,7 +215,7 @@ export class LearningPathDetailComponent implements OnInit {
   async setProgress(node: LearningPathNode, progress: NodeProgress): Promise<void> {
     if (node.progress === progress) return;
     try {
-      await this.detailService.updateNodeProgress(this.pathId, node.id, progress);
+      await this.detailService.updateNodeProgress(this.pathId(), node.id, progress);
     } catch {
       this.toastService.show('No se pudo actualizar el progreso', 'error');
     }
@@ -228,7 +247,7 @@ export class LearningPathDetailComponent implements OnInit {
 
     this.reordering.set(true);
     try {
-      await this.detailService.reorderNodes(this.pathId, reordered);
+      await this.detailService.reorderNodes(this.pathId(), reordered);
     } catch {
       this.toastService.show('No se pudo reordenar los nodos', 'error');
     } finally {
@@ -239,7 +258,7 @@ export class LearningPathDetailComponent implements OnInit {
 
   async onNodeMoved(event: { node: LearningPathNode; x: number; y: number }): Promise<void> {
     try {
-      await this.detailService.updateNodePosition(this.pathId, event.node.id, event.x, event.y);
+      await this.detailService.updateNodePosition(this.pathId(), event.node.id, event.x, event.y);
     } catch {
       this.toastService.show('No se pudo guardar la posición del nodo', 'error');
     }
@@ -247,7 +266,7 @@ export class LearningPathDetailComponent implements OnInit {
 
   async onEdgeCreateRequested(event: { sourceNodeId: string; targetNodeId: string }): Promise<void> {
     try {
-      await this.detailService.addEdge(this.pathId, event.sourceNodeId, event.targetNodeId);
+      await this.detailService.addEdge(this.pathId(), event.sourceNodeId, event.targetNodeId);
     } catch {
       this.toastService.show('No se pudo crear la conexión', 'error');
     }
@@ -262,7 +281,7 @@ export class LearningPathDetailComponent implements OnInit {
     if (!confirmed) return;
 
     try {
-      await this.detailService.deleteEdge(this.pathId, edge.id);
+      await this.detailService.deleteEdge(this.pathId(), edge.id);
     } catch {
       this.toastService.show('No se pudo eliminar la conexión', 'error');
     }
@@ -280,7 +299,7 @@ export class LearningPathDetailComponent implements OnInit {
     if (!confirmed) return;
 
     try {
-      await this.detailService.deletePath(this.pathId);
+      await this.detailService.deletePath(this.pathId());
       this.toastService.show('Learning Path eliminado', 'success');
       this.router.navigate(['/paths']);
     } catch {
