@@ -61,6 +61,32 @@ describe('RecommendationHttpRepository', () => {
     expect(await resultPromise).toEqual([]);
   });
 
+  test('getContext should GET /recommendations/context and keep only the calibration fields', async () => {
+    const resultPromise = repository.getContext();
+
+    const request = httpController.expectOne(`${API_CONFIG.baseUrl}/recommendations/context`);
+    expect(request.request.method).toBe('GET');
+    request.flush({
+      userId: crypto.randomUUID(),
+      energyLevel: 'low',
+      availableMinutes: 15,
+      mentalState: 'review',
+      updatedAt: '2026-10-05T09:00:00.000Z',
+    });
+
+    expect(await resultPromise).toEqual({ energyLevel: 'low', availableMinutes: 15, mentalState: 'review' });
+  });
+
+  test('getContext should return null when the user has never saved a context (404)', async () => {
+    const resultPromise = repository.getContext();
+
+    httpController
+      .expectOne(`${API_CONFIG.baseUrl}/recommendations/context`)
+      .flush({ message: 'Recommendation context not found' }, { status: 404, statusText: 'Not Found' });
+
+    expect(await resultPromise).toBeNull();
+  });
+
   test('setContext should POST /recommendations/context with the given payload', async () => {
     const resultPromise = repository.setContext({ energyLevel: 'high', mentalState: 'deep_focus', availableMinutes: 30 });
 
