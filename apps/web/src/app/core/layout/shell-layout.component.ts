@@ -2,6 +2,8 @@ import { Component, computed, inject, signal, HostListener, PLATFORM_ID, OnInit 
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, RouterLinkActive } from '@angular/router';
 import { CaptureSheetComponent } from '@features/learning-resource/presentation/capture-sheet/capture-sheet.component';
+import { CommandPaletteComponent } from '@core/command-palette/command-palette.component';
+import { CommandPaletteService } from '@core/command-palette/command-palette.service';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
 import { ThemeService } from '@core/theme/theme.service';
@@ -24,7 +26,7 @@ const MENTAL_STATE_TONES: Record<MentalStateType, string> = {
 @Component({
   selector: 'app-shell-layout',
   standalone: true,
-  imports: [RouterModule, RouterLinkActive, CaptureSheetComponent],
+  imports: [RouterModule, RouterLinkActive, CaptureSheetComponent, CommandPaletteComponent],
   templateUrl: './shell-layout.component.html',
 })
 export class ShellLayoutComponent implements OnInit {
@@ -42,6 +44,9 @@ export class ShellLayoutComponent implements OnInit {
   readonly mobileDrawerOpen = signal(false);
 
   private readonly calibration = inject(CalibrationService);
+  private readonly commandPalette = inject(CommandPaletteService);
+
+  readonly commandPaletteShortcut = this.commandPalette.shortcutLabel;
   private readonly toast = inject(ToastService);
 
   readonly currentState = this.calibration.mentalState;
@@ -62,6 +67,10 @@ export class ShellLayoutComponent implements OnInit {
   currentStateTone(): string | null {
     const current = this.currentState();
     return current ? this.stateTone(current) : null;
+  }
+
+  openCommandPalette(): void {
+    this.commandPalette.open();
   }
 
   toggleStateMenu(event: MouseEvent): void {
