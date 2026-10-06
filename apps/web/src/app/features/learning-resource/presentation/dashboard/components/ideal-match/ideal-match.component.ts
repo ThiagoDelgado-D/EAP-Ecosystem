@@ -1,4 +1,4 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { RouterLink, type Params } from '@angular/router';
 import { ScrambleComponent } from '@shared/components/scramble/scramble.component';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
@@ -12,10 +12,6 @@ function hashHue(title: string): number {
   return h;
 }
 
-function recKey(rec: ScoredRecommendation): string {
-  return rec.resourceId ?? rec.nodeId ?? rec.title;
-}
-
 @Component({
   selector: 'app-ideal-match',
   standalone: true,
@@ -27,21 +23,13 @@ export class IdealMatchComponent {
   readonly resource = input<LearningResource | null>(null);
   readonly secondary = input<ScoredRecommendation[]>([]);
   readonly catalogMinutes = input(0);
+  readonly dismissedCount = input(0);
 
-  readonly discarded = signal<string[]>([]);
-
-  readonly ranked = computed(() => {
-    const top = this.recommendation();
-    const all = top ? [top, ...this.secondary()] : [...this.secondary()];
-    const skipped = new Set(this.discarded());
-    return all.filter((rec) => !skipped.has(recKey(rec)));
-  });
-
-  readonly effectiveTop = computed(() => this.ranked()[0] ?? null);
-  readonly effectiveSecondary = computed(() => this.ranked().slice(1));
+  readonly dismissed = output<ScoredRecommendation>();
+  readonly restored = output<void>();
 
   readonly displayResource = computed(() => {
-    const rec = this.effectiveTop();
+    const rec = this.recommendation();
     const r = this.resource();
     const matched = r && rec && rec.resourceId === r.id ? r : null;
     const energyRaw = matched?.energyLevel ?? 'Medium';
@@ -63,13 +51,9 @@ export class IdealMatchComponent {
   }
 
   dismissTop(): void {
-    const top = this.effectiveTop();
+    const top = this.recommendation();
     if (!top) return;
-    this.discarded.update((list) => [...list, recKey(top)]);
-  }
-
-  restoreDiscarded(): void {
-    this.discarded.set([]);
+    this.dismissed.emit(top);
   }
 
   readonly ringR = 30;
@@ -89,7 +73,7 @@ export class IdealMatchComponent {
   }
 
   maxSecondaryScore(): number {
-    return Math.max(1, ...this.effectiveSecondary().map((s) => s.score));
+    return Math.max(1, ...this.secondary().map((s) => s.score));
   }
 
   secondaryWidthPct(score: number): number {
