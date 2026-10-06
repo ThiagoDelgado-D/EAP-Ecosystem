@@ -1,19 +1,46 @@
 import { TestBed } from '@angular/core/testing';
+import type { Params } from '@angular/router';
+import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
+import type { PickerPathGroup } from '@features/pomodoro/application/pomodoro-picker.model';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import type { Session, SuggestedCandidate } from '@features/pomodoro/domain/pomodoro.model';
 import { StartComponent } from './start.component';
+import { learningResourceFixture, pathGroupFixture } from './recommended-entry.fixtures';
 
-function setup(suggestions: SuggestedCandidate[] = []) {
+interface RecommendedEntrySetup {
+  queryParams: Params;
+  library?: LearningResource[];
+  groups?: PickerPathGroup[];
+  availableMinutes?: number;
+}
+
+function setup(suggestions: SuggestedCandidate[] = [], entry?: RecommendedEntrySetup) {
   const navigateByUrl = vi.fn();
-  const { providers, pomodoroRepository } = createPomodoroComponentTestProviders(navigateByUrl);
+  const {
+    providers,
+    pomodoroRepository,
+    learningPathRepository,
+    learningResourceRepository,
+    recommendationRepository,
+  } = createPomodoroComponentTestProviders(navigateByUrl, entry?.queryParams);
   pomodoroRepository.suggestions = suggestions;
+  learningResourceRepository.resources = entry?.library ?? [];
+  learningPathRepository.paths = (entry?.groups ?? []).map((group) => group.path);
+  learningPathRepository.nodes = (entry?.groups ?? []).flatMap((group) => group.nodes);
+  if (entry?.availableMinutes !== undefined) {
+    recommendationRepository.context = {
+      energyLevel: 'medium',
+      availableMinutes: entry.availableMinutes,
+    };
+  }
 
   TestBed.configureTestingModule({ providers });
 
   const overlayHost = TestBed.inject(PomodoroOverlayHostService);
   const component = TestBed.createComponent(StartComponent).componentInstance;
+  component.ngOnInit();
   return { component, pomodoroRepository, overlayHost, navigateByUrl };
 }
 
@@ -332,5 +359,113 @@ describe('StartComponent', () => {
     component.onKeydown(enterKeydown(document.createElement('a')));
 
     expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  describe('when opened from a recommendation', () => {
+    const cleanArchitectureTalk = learningResourceFixture('Clean Architecture talk', 20);
+    const dataIntensiveChapter = learningResourceFixture(
+      'Designing Data-Intensive Applications, ch. 5',
+      60,
+    );
+    const frontendArchitecturePath = pathGroupFixture('Frontend Architecture Mastery', [
+      { title: 'Clean Architecture', learningResourceId: cleanArchitectureTalk.id },
+      { title: 'Hexagonal ports' },
+    ]);
+    const [cleanArchitectureNode, hexagonalPortsStub] = frontendArchitecturePath.nodes;
+    const library = [cleanArchitectureTalk, dataIntensiveChapter];
+    const groups = [frontendArchitecturePath];
+
+    async function settle(): Promise<void> {
+      await new Promise((resolve) => setTimeout(resolve));
+    }
+
+    test('should attach the recommended resource, sized to the time available', async () => {
+      vi.stubGlobal('localStorage', mockLocalStorage(null));
+      const { component } = setup([], {
+        queryParams: { resource: dataIntensiveChapter.id },
+        library,
+        groups,
+        availableMinutes: 45,
+      });
+
+      await settle();
+
+      expect(component.effectiveTarget()).toEqual({
+        kind: 'resource',
+        resourceId: dataIntensiveChapter.id,
+      });
+      expect(component.selectedTargetLabel()).toEqual({ title: dataIntensiveChapter.title });
+      expect(component.selectedDuration()).toBe(45);
+      expect(component.canStart()).toBe(true);
+    });
+
+    test('should attach the recommended path step, sized to its shorter estimate', async () => {
+      vi.stubGlobal('localStorage', mockLocalStorage(null));
+      const { component } = setup([], {
+        queryParams: { path: frontendArchitecturePath.path.id, node: cleanArchitectureNode!.id },
+        library,
+        groups,
+        availableMinutes: 45,
+      });
+
+      await settle();
+
+      expect(component.effectiveTarget()).toEqual({
+        kind: 'node',
+        learningPathId: frontendArchitecturePath.path.id,
+        learningPathNodeId: cleanArchitectureNode!.id,
+        resourceId: cleanArchitectureTalk.id,
+      });
+      expect(component.selectedTargetLabel()).toEqual({
+        title: 'Clean Architecture',
+        subtitle: 'Frontend Architecture Mastery',
+      });
+      expect(component.selectedDuration()).toBe(20);
+      expect(component.customDurationInput()).toBe('20');
+    });
+
+    test('should size a stub step to the time available', async () => {
+      vi.stubGlobal('localStorage', mockLocalStorage(null));
+      const { component } = setup([], {
+        queryParams: { path: frontendArchitecturePath.path.id, node: hexagonalPortsStub!.id },
+        library,
+        groups,
+        availableMinutes: 15,
+      });
+
+      await settle();
+
+      expect(component.selectedDuration()).toBe(15);
+    });
+
+    test('should fall back to free focus when the recommended item no longer exists', async () => {
+      vi.stubGlobal('localStorage', mockLocalStorage(null));
+      const { component } = setup([], {
+        queryParams: { resource: crypto.randomUUID() },
+        library,
+        groups,
+      });
+
+      await settle();
+
+      expect(component.hasAttachedMaterial()).toBe(false);
+      expect(component.selectedDuration()).toBe(25);
+    });
+
+    test('should start the recommended session in one tap', async () => {
+      vi.stubGlobal('localStorage', mockLocalStorage(null));
+      const { component, navigateByUrl } = setup([], {
+        queryParams: { resource: dataIntensiveChapter.id },
+        library,
+        groups,
+        availableMinutes: 45,
+      });
+      await settle();
+
+      await component.start();
+
+      expect(component.store.activeSession()?.plannedMin).toBe(45);
+      expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro/active');
+    });
   });
 });
