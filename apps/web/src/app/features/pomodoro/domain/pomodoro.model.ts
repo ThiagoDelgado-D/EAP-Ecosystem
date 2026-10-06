@@ -1,3 +1,5 @@
+import type { MentalStateType } from '@features/learning-resource/domain/learning-resource.model';
+
 export const DEFAULT_BREAK_DURATION_SEC = 300;
 export const MAX_PLANNED_DURATION_MIN = 480;
 export const DURATION_PRESETS: readonly number[] = [15, 25, 50, 90];
@@ -111,6 +113,11 @@ export const CANDIDATE_ENERGY_LEVEL = {
 
 export type CandidateEnergyLevel =
   (typeof CANDIDATE_ENERGY_LEVEL)[keyof typeof CANDIDATE_ENERGY_LEVEL];
+
+export interface SuggestionCalibration {
+  energy?: CandidateEnergyLevel;
+  mentalState?: MentalStateType;
+}
 
 export interface SuggestedCandidate {
   pathId: string;

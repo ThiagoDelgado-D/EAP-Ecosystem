@@ -1,6 +1,5 @@
 import type {
   Break,
-  CandidateEnergyLevel,
   ContinueSessionResult,
   EndSessionResult,
   GetActiveSessionResult,
@@ -10,6 +9,7 @@ import type {
   Session,
   StartSessionPayload,
   SuggestedCandidate,
+  SuggestionCalibration,
   SwitchTargetResult,
 } from './pomodoro.model';
 
@@ -27,7 +27,7 @@ export abstract class PomodoroRepository {
   abstract endSession(sessionId: string): Promise<EndSessionResult>;
   abstract continueSession(sessionId: string): Promise<ContinueSessionResult>;
   abstract extendSession(sessionId: string, minutes: number): Promise<Session>;
-  abstract getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]>;
+  abstract getSuggestion(calibration?: SuggestionCalibration): Promise<SuggestedCandidate[]>;
   abstract getHistory(since: Date, until?: Date): Promise<HistorySnapshot>;
   abstract attributeSession(sessionId: string, target: SegmentTarget): Promise<Segment[]>;
 }

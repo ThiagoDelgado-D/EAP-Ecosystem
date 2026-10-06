@@ -11,6 +11,7 @@ import {
   type Session,
   type StartSessionPayload,
   type SuggestedCandidate,
+  type SuggestionCalibration,
   type SwitchTargetResult,
 } from '@features/pomodoro/domain/pomodoro.model';
 
@@ -18,6 +19,7 @@ export interface MockedPomodoroRepository extends PomodoroRepository {
   sessions: Session[];
   segments: Segment[];
   suggestions: SuggestedCandidate[];
+  suggestionRequests: SuggestionCalibration[];
   breaks: Break[];
   reset(): void;
 }
@@ -67,6 +69,7 @@ export function mockPomodoroRepository(
     sessions: [...(initial.sessions ?? [])],
     segments: [...(initial.segments ?? [])],
     suggestions: [...(initial.suggestions ?? [])],
+    suggestionRequests: [],
     breaks: [...(initial.breaks ?? [])],
 
     async startSession(payload: StartSessionPayload): Promise<Session> {
@@ -144,7 +147,8 @@ export function mockPomodoroRepository(
       return ended;
     },
 
-    async getSuggestion(): Promise<SuggestedCandidate[]> {
+    async getSuggestion(calibration: SuggestionCalibration = {}): Promise<SuggestedCandidate[]> {
+      this.suggestionRequests.push(calibration);
       return this.suggestions;
     },
 
@@ -230,6 +234,7 @@ export function mockPomodoroRepository(
       this.sessions = [];
       this.segments = [];
       this.suggestions = [];
+      this.suggestionRequests = [];
       this.breaks = [];
     },
   };

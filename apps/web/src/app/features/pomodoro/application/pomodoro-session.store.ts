@@ -2,13 +2,13 @@ import { EnvironmentInjector, Injectable, computed, effect, inject, signal } fro
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
   Break,
-  CandidateEnergyLevel,
   EndSessionResult,
   Segment,
   SegmentTarget,
   Session,
   StartSessionPayload,
   SuggestedCandidate,
+  SuggestionCalibration,
 } from '@features/pomodoro/domain/pomodoro.model';
 import {
   playBoundaryChime,
@@ -261,11 +261,11 @@ export class PomodoroSessionStore {
     }
   }
 
-  async loadSuggestions(energy?: CandidateEnergyLevel): Promise<void> {
+  async loadSuggestions(calibration?: SuggestionCalibration): Promise<void> {
     this.suggestionsLoading.set(true);
     this.suggestionsError.set(false);
     try {
-      this.suggestions.set(await this.repository.getSuggestion(energy));
+      this.suggestions.set(await this.repository.getSuggestion(calibration));
     } catch {
       this.suggestions.set([]);
       this.suggestionsError.set(true);
