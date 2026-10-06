@@ -3,10 +3,12 @@ import {
   CandidateNodeEnergyLevel,
   CandidateNodeProgress,
   type CandidateNode,
+  type CandidateNodeMentalState,
 } from "@pomodoro/domain";
 
 export interface ScoringContext {
   energy?: CandidateNodeEnergyLevel;
+  mentalState?: CandidateNodeMentalState;
   lastSessionNodeId?: UUID;
   momentumByPathId: Map<UUID, number>;
   maxMomentumSeconds: number;
@@ -26,6 +28,7 @@ const IN_PROGRESS_SCORE = 50;
 const CONTINUES_LAST_SESSION_SCORE = 34;
 const ENERGY_MATCH_SCORE = 16;
 const LOW_ENERGY_MISMATCH_PENALTY = -14;
+const MENTAL_STATE_MATCH_SCORE = 12;
 const MAX_MOMENTUM_SCORE = 14;
 const NO_RESOURCE_PENALTY = -6;
 
@@ -69,6 +72,15 @@ const energyMatchSignal: Signal = (candidate, context) => {
   return null;
 };
 
+const mentalStateMatchSignal: Signal = (candidate, context) => {
+  if (!context.mentalState) return null;
+  if (candidate.resourceMentalState !== context.mentalState) return null;
+  return {
+    points: MENTAL_STATE_MATCH_SCORE,
+    reason: `fits your ${context.mentalState.replace("_", " ")} mindset`,
+  };
+};
+
 const pathMomentumSignal: Signal = (candidate, context) => {
   const seconds = context.momentumByPathId.get(candidate.pathId) ?? 0;
   if (seconds <= 0) return null;
@@ -85,6 +97,7 @@ const SIGNALS: Signal[] = [
   alreadyOpenSignal,
   continuesLastSessionSignal,
   energyMatchSignal,
+  mentalStateMatchSignal,
   pathMomentumSignal,
   noResourceYetSignal,
 ];
