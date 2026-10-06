@@ -89,20 +89,9 @@
 
   @if (effectiveTop()) {
     <div class="relative mt-6 flex flex-wrap items-center gap-2">
-      @if (displayResource().url) {
-        <a
-          [href]="displayResource().url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="btn btn-primary"
-        >
-          Focus now
-        </a>
-      } @else {
-        <button type="button" disabled class="btn btn-primary opacity-45 cursor-not-allowed">
-          Focus now
-        </button>
-      }
+      <a routerLink="/pomodoro" [queryParams]="focusQueryParams(effectiveTop()!)" class="btn btn-primary">
+        Focus now
+      </a>
       @if (displayResource().resource) {
         <a [routerLink]="['/resources', displayResource().resource!.id]" class="btn btn-outline">
           Open details
@@ -120,7 +109,12 @@
       <ul class="flex flex-col gap-2">
         @for (choice of effectiveSecondary(); track choice.resourceId ?? choice.nodeId ?? choice.title; let i = $index) {
           <li appReveal [appRevealDelay]="i * 80">
-            <div class="group flex items-center gap-3 rounded-[16px_5px_16px_5px] border border-transparent p-2 transition-all hover:border-line-soft hover:bg-surface-overlay">
+            <a
+              routerLink="/pomodoro"
+              [queryParams]="focusQueryParams(choice)"
+              [attr.aria-label]="'Focus on ' + choice.title"
+              class="group flex items-center gap-3 rounded-[16px_5px_16px_5px] border border-transparent p-2 transition-[border-color,background-color] hover:border-line-soft hover:bg-surface-overlay"
+            >
               <div
                 class="cover relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl text-lg"
                 [style]="coverStyle(choice.title, choice.score)"
@@ -142,7 +136,7 @@
                   <span class="tnum text-[0.66rem] text-ink-faint">{{ choice.score }}</span>
                 </div>
               </div>
-            </div>
+            </a>
           </li>
         }
       </ul>
