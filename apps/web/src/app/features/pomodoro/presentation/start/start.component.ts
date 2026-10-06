@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -36,6 +36,7 @@ import {
 } from '@features/pomodoro/domain/pomodoro.model';
 import { describeTargetLabel, type TargetLabel } from './target-description';
 import { estimatedMinutesFor, recommendedDurationMin, resolveRecommendedTarget } from './recommended-entry';
+import { toSuggestionCalibration } from './suggestion-calibration';
 
 function formatMinutesClock(minutes: number): string {
   return `${String(minutes).padStart(2, '0')}:00`;
@@ -84,6 +85,11 @@ export class StartComponent implements OnInit {
   readonly topSuggestion = computed<SuggestedCandidate | null>(() => this.store.suggestions()[0] ?? null);
   readonly canSuggestQuickStart = computed(() => !this.hasAttachedMaterial() && this.topSuggestion() !== null);
 
+  private readonly calibrationLoaded = signal(false);
+  private readonly suggestionCalibration = computed(() =>
+    toSuggestionCalibration(this.calibration.energy(), this.calibration.mentalState()),
+  );
+
   readonly goalMinutes = 600;
   readonly weekDays = signal<
     { key: string; label: string; focusMinutes: number; sessions: number; isToday: boolean }[]
@@ -102,9 +108,17 @@ export class StartComponent implements OnInit {
     this.hasAttachedMaterial() ? this.selectedTargetLabel()?.title ?? 'Start' : 'Start free focus',
   );
 
+  constructor() {
+    effect(() => {
+      const calibration = this.suggestionCalibration();
+      if (!this.calibrationLoaded()) return;
+      void this.store.loadSuggestions(calibration);
+    });
+  }
+
   ngOnInit(): void {
     void this.loadMaterial();
-    void this.store.loadSuggestions();
+    void this.calibration.load().then(() => this.calibrationLoaded.set(true));
     void this.loadContext();
   }
 
