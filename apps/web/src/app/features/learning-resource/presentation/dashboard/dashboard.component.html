@@ -47,6 +47,9 @@
           [resource]="topRecommendationResource()"
           [secondary]="secondaryRecommendations()"
           [catalogMinutes]="catalogMinutes()"
+          [dismissedCount]="dismissedCount()"
+          (dismissed)="onRecommendationDismissed($event)"
+          (restored)="onDismissalsRestored()"
         />
         <app-system-check
           [selectedEnergy]="selectedEnergy()"

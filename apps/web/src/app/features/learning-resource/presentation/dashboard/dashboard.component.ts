@@ -7,6 +7,8 @@ import { LearningPathService } from '@features/learning-path/application/learnin
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
 import { RecommendationService } from '@features/recommendation/application/recommendation.service';
+import { RecommendationDismissalsService } from '@features/recommendation/application/recommendation-dismissals.service';
+import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { PomodoroHttpRepository } from '@features/pomodoro/infrastructure/pomodoro-http.repository';
 import { computeWeeklySummary, buildWeekDayLog, summaryWindowSince } from '@features/pomodoro/application/weekly-summary.calculator';
@@ -57,6 +59,7 @@ function greeting(date = new Date()): string {
     LearningPathService,
     { provide: LearningPathRepository, useClass: LearningPathHttpRepository },
     RecommendationService,
+    RecommendationDismissalsService,
     { provide: PomodoroRepository, useClass: PomodoroHttpRepository },
   ],
   templateUrl: './dashboard.component.html',
@@ -66,6 +69,7 @@ export class DashboardComponent implements OnInit {
   private readonly resourceRepository = inject(LearningResourceRepository);
   private readonly pathService = inject(LearningPathService);
   private readonly recommendationService = inject(RecommendationService);
+  private readonly dismissals = inject(RecommendationDismissalsService);
   private readonly pomodoroRepository = inject(PomodoroRepository);
   private readonly authStore = inject(AuthStore);
   private readonly calibration = inject(CalibrationService);
@@ -84,8 +88,15 @@ export class DashboardComponent implements OnInit {
   readonly pendingResourceCount = this.resourceService.total;
   readonly hasLoaded = signal(false);
 
-  readonly recommendations = this.recommendationService.recommendations;
   readonly paths = this.pathService.paths;
+  readonly dismissedCount = this.dismissals.count;
+
+  readonly recommendations = computed(() => {
+    const dismissed = this.dismissals.dismissedIds();
+    return this.recommendationService
+      .recommendations()
+      .filter((rec) => !dismissed.has(rec.resourceId ?? '') && !dismissed.has(rec.nodeId ?? ''));
+  });
 
   readonly topRecommendation = computed(() => this.recommendations()[0] ?? null);
   readonly secondaryRecommendations = computed(() => this.recommendations().slice(1, 4));
@@ -146,6 +157,16 @@ export class DashboardComponent implements OnInit {
 
   onAvailableMinutesChange(minutes: number): void {
     void this.calibration.setAvailableMinutes(minutes);
+  }
+
+  onRecommendationDismissed(recommendation: ScoredRecommendation): void {
+    this.dismissals.dismiss(recommendation);
+    void this.recommendationService.refresh();
+  }
+
+  onDismissalsRestored(): void {
+    this.dismissals.restoreAll();
+    void this.recommendationService.refresh();
   }
 
   private requestFilterRefresh(): void {
