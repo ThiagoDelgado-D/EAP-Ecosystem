@@ -197,11 +197,13 @@ describe("RecommendationController (integration)", () => {
       });
 
       test("returns 400 when an excluded id is not a UUID", async () => {
-        await request(app.getHttpServer())
+        const response = await request(app.getHttpServer())
           .get("/api/v1/recommendations")
           .query({ exclude: "not-a-uuid" })
           .set(authHeader())
           .expect(400);
+
+        expect(response.body.message).toBeDefined();
       });
     });
   });
