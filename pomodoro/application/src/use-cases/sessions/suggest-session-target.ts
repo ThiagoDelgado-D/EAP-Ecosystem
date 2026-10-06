@@ -7,6 +7,7 @@ import {
 } from "domain-lib";
 import {
   CandidateNodeEnergyLevel,
+  CandidateNodeMentalState,
   type CandidateNodesPort,
   type ISessionRepository,
 } from "@pomodoro/domain";
@@ -26,16 +27,19 @@ export interface SuggestSessionTargetDependencies {
 
 export interface SuggestSessionTargetRequestModel {
   energy?: CandidateNodeEnergyLevel;
+  mentalState?: CandidateNodeMentalState;
 }
 
 export type SuggestedCandidateResponseModel = ScoredCandidate;
 
-const suggestSessionTargetSchema = createValidationSchema<
-  Pick<SuggestSessionTargetRequestModel, "energy">
->({
+const suggestSessionTargetSchema = createValidationSchema<SuggestSessionTargetRequestModel>({
   energy: optionalEnum(
     Object.values(CandidateNodeEnergyLevel) as CandidateNodeEnergyLevel[],
     "Energy",
+  ),
+  mentalState: optionalEnum(
+    Object.values(CandidateNodeMentalState) as CandidateNodeMentalState[],
+    "Mental state",
   ),
 });
 
@@ -47,7 +51,7 @@ export const suggestSessionTarget = async (
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.errors);
   }
-  const { energy } = validationResult;
+  const { energy, mentalState } = validationResult;
 
   const [candidates, lastTarget, momentum] = await Promise.all([
     candidateNodesPort.findCandidateNodes(currentUser.id),
@@ -58,6 +62,7 @@ export const suggestSessionTarget = async (
 
   const context: ScoringContext = {
     energy,
+    mentalState,
     lastSessionNodeId: lastTarget?.learningPathNodeId,
     momentumByPathId: new Map(
       momentum.map((entry) => [entry.learningPathId, entry.totalSeconds]),

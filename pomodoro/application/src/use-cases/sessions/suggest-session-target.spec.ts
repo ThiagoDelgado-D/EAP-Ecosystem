@@ -1,6 +1,7 @@
 import { InvalidDataError, mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
 import {
   CandidateNodeEnergyLevel,
+  CandidateNodeMentalState,
   CandidateNodeProgress,
 } from "@pomodoro/domain";
 import { beforeEach, describe, expect, test } from "vitest";
@@ -128,6 +129,41 @@ describe("suggestSessionTarget", () => {
     expect(result[0].why).toContain("fits high energy");
   });
 
+  test("Should forward the mental state query through to the scoring", async () => {
+    const creativeNodeId = await cryptoService.generateUUID();
+
+    candidateNodesPort.nodesByUser[currentUser.id] = [
+      {
+        pathId: await cryptoService.generateUUID(),
+        pathTitle: "TypeScript, Step by Step",
+        nodeId: await cryptoService.generateUUID(),
+        nodeTitle: "TypeScript Handbook",
+        progress: CandidateNodeProgress.PENDING,
+        prerequisitesDone: true,
+        resourceId: await cryptoService.generateUUID(),
+        resourceMentalState: CandidateNodeMentalState.LIGHT_READ,
+      },
+      {
+        pathId: await cryptoService.generateUUID(),
+        pathTitle: "System Design Prep",
+        nodeId: creativeNodeId,
+        nodeTitle: "Design a URL Shortener",
+        progress: CandidateNodeProgress.PENDING,
+        prerequisitesDone: true,
+        resourceId: await cryptoService.generateUUID(),
+        resourceMentalState: CandidateNodeMentalState.CREATIVE,
+      },
+    ];
+
+    const result = await suggestSessionTarget(deps(), {
+      mentalState: CandidateNodeMentalState.CREATIVE,
+    });
+    if (result instanceof InvalidDataError) throw result;
+
+    expect(result[0].nodeId).toBe(creativeNodeId);
+    expect(result[0].why).toContain("fits your creative mindset");
+  });
+
   test("Should rank the path with more logged minutes above a quieter one", async () => {
     const activePathId = await cryptoService.generateUUID();
     const quietPathId = await cryptoService.generateUUID();
@@ -228,6 +264,13 @@ describe("suggestSessionTarget", () => {
   test("Should return InvalidDataError when energy is not a known level", async () => {
     const result = await suggestSessionTarget(deps(), {
       energy: "extreme" as CandidateNodeEnergyLevel,
+    });
+    expect(result).toBeInstanceOf(InvalidDataError);
+  });
+
+  test("Should return InvalidDataError when mental state is not a known state", async () => {
+    const result = await suggestSessionTarget(deps(), {
+      mentalState: "daydreaming" as CandidateNodeMentalState,
     });
     expect(result).toBeInstanceOf(InvalidDataError);
   });
