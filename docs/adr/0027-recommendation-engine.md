@@ -147,6 +147,26 @@ state (an injectable Angular service exposing signals, read reactively by
 whichever components need it) — the exact shape of that store is a
 frontend-lane implementation decision, not fixed here.
 
+### Dismissals ("Not today")
+
+_Added 2026-10-06._ A learner can set a recommendation aside for the rest
+of the day. Dismissals are held by the client, each recording the
+dismissed candidate (a resource or a path node) and an expiry at the next
+local midnight. `getRecommendations` accepts the unexpired dismissals as a
+list of candidates to exclude and ranks without them, so the alternates
+re-flow and refill instead of the list simply shrinking. Restoring the
+day's dismissals clears that list.
+
+This deliberately differs from the Recommendation Context, which is
+persisted server-side so it survives a device switch. A dismissal lives
+less than a day and means nothing past it, so cross-device consistency
+isn't worth a persisted entity, its migration, and its own endpoints.
+Keeping the expiry on the client also follows ADR-0025's precedent: day
+boundaries are evaluated client-side because the server holds no user
+timezone. If cross-device dismissals become a real need, moving them
+server-side changes only where the exclusion list comes from, not how
+`getRecommendations` uses it.
+
 ## Consequences
 
 **Positive**
@@ -180,6 +200,11 @@ frontend-lane implementation decision, not fixed here.
   break module independence and the pattern Pomodoro's own
   `CandidateNodesPort` already established for the same kind of
   cross-module read.
+- **Server-persisted dismissals** (_added 2026-10-06_): a per-user
+  dismissal record with an expiry would carry "Not today" across devices,
+  but for state that expires within the day, that cost outweighs the
+  benefit. The exclusion list on `getRecommendations` keeps the move open
+  without reworking the use case.
 
 ## References
 
@@ -190,6 +215,8 @@ frontend-lane implementation decision, not fixed here.
 - ADR-0022: Pomodoro Focus Sessions (owns the `CandidateNodesPort` /
   `suggestSessionTarget` mechanism this ADR coexists with, not merges
   into)
+- ADR-0025: Pomodoro Weekly Summary (the client-side day-boundary
+  precedent the dismissal expiry follows)
 - `ARCHITECTURE.md`, "How Modules Communicate" (already used
   `recommendation` as its own worked example for the ports pattern and
   for future event-driven communication)
