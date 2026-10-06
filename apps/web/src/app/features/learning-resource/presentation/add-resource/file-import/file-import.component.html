@@ -279,7 +279,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
         <button
           (click)="proceedToPreview()"
           [disabled]="!dataReady()"
-          class="bg-accent hover:bg-accent text-white font-medium px-8 py-2 rounded-lg text-sm"
+          class="bg-accent hover:bg-accent text-surface-base font-medium px-8 py-2 rounded-lg text-sm"
         >
           Review & Import →
         </button>
@@ -395,7 +395,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
         <button
           (click)="importSelected()"
           [disabled]="selectedRows.length === 0"
-          class="bg-accent hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium px-8 py-2 rounded-lg text-sm"
+          class="bg-accent hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed text-surface-base font-medium px-8 py-2 rounded-lg text-sm"
         >
           Import {{ selectedRows.length }}
           {{ selectedRows.length === 1 ? 'resource' : 'resources' }} →
@@ -481,7 +481,7 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
 
         <button
           (click)="goToResources()"
-          class="bg-accent hover:bg-accent text-white font-medium px-8 py-3 rounded-lg text-sm"
+          class="bg-accent hover:bg-accent text-surface-base font-medium px-8 py-3 rounded-lg text-sm"
         >
           Go to Resources →
         </button>

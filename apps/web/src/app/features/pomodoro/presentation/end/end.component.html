@@ -251,7 +251,7 @@
         <button type="button" (click)="saveAndBreak()" [disabled]="saving()" class="flex-1 px-4 py-2.5 rounded-lg text-xs font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors">
           {{ saving() ? 'Saving...' : 'Take a break' }}
         </button>
-        <button type="button" (click)="saveAndClose()" [disabled]="saving()" class="flex-[2] px-4 py-2.5 rounded-lg text-xs font-semibold bg-accent hover:bg-accent-hover text-white disabled:opacity-50 transition-colors">
+        <button type="button" (click)="saveAndClose()" [disabled]="saving()" class="flex-[2] px-4 py-2.5 rounded-lg text-xs font-semibold bg-accent hover:bg-accent-hover text-surface-base disabled:opacity-50 transition-colors">
           {{ saving() ? 'Saving...' : pendingCount() > 0 ? 'Save & close' : 'Log ' + elapsedLabel() + ' & close' }}
         </button>
       </div>
