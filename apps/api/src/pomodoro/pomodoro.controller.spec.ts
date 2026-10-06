@@ -9,6 +9,7 @@ import {
 } from "@pomodoro/application";
 import {
   CandidateNodeEnergyLevel,
+  CandidateNodeMentalState,
   CandidateNodeProgress,
   SegmentTargetKind,
   DomainNotificationType,
@@ -822,6 +823,41 @@ describe("PomodoroController (integration)", () => {
 
       expect(response.body[0].nodeId).toBe(matchingNodeId);
       expect(response.body[0].why).toContain("fits high energy");
+    });
+
+    test("forwards the mental state query through to the response", async () => {
+      const reviewNodeId = await cryptoService.generateUUID();
+      candidateNodesPort.nodesByUser[ownerId] = [
+        {
+          pathId: await cryptoService.generateUUID(),
+          pathTitle: "System Design Prep",
+          nodeId: reviewNodeId,
+          nodeTitle: "CAP Theorem",
+          progress: CandidateNodeProgress.PENDING,
+          prerequisitesDone: true,
+          resourceId: await cryptoService.generateUUID(),
+          resourceMentalState: CandidateNodeMentalState.REVIEW,
+        },
+      ];
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/suggestion")
+        .query({ mentalState: CandidateNodeMentalState.REVIEW })
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body[0].nodeId).toBe(reviewNodeId);
+      expect(response.body[0].why).toContain("fits your review mindset");
+    });
+
+    test("Should return 400 when mental state is not a known state", async () => {
+      const invalidMentalStateResponse = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/suggestion")
+        .query({ mentalState: "daydreaming" })
+        .set(authHeader())
+        .expect(400);
+
+      expect(invalidMentalStateResponse.body.mentalState).toContain("Mental state");
     });
 
     test("Should return 400 when energy is not a known level", async () => {

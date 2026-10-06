@@ -18,6 +18,17 @@ export const CandidateNodeEnergyLevel = {
 export type CandidateNodeEnergyLevel =
   (typeof CandidateNodeEnergyLevel)[keyof typeof CandidateNodeEnergyLevel];
 
+export const CandidateNodeMentalState = {
+  DEEP_FOCUS: "deep_focus",
+  LIGHT_READ: "light_read",
+  CREATIVE: "creative",
+  QUICK_OP: "quick_op",
+  REVIEW: "review",
+} as const;
+
+export type CandidateNodeMentalState =
+  (typeof CandidateNodeMentalState)[keyof typeof CandidateNodeMentalState];
+
 export interface CandidateNode {
   pathId: UUID;
   pathTitle: string;
@@ -27,6 +38,7 @@ export interface CandidateNode {
   prerequisitesDone: boolean;
   resourceId?: UUID;
   resourceEnergyLevel?: CandidateNodeEnergyLevel;
+  resourceMentalState?: CandidateNodeMentalState;
 }
 
 export interface CandidateNodesPort {

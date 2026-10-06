@@ -1,6 +1,7 @@
 import { mockCryptoService, type UUID } from "domain-lib";
 import {
   CandidateNodeEnergyLevel,
+  CandidateNodeMentalState,
   CandidateNodeProgress,
   type CandidateNode,
 } from "@pomodoro/domain";
@@ -101,6 +102,62 @@ describe("scoreCandidates", () => {
 
     const result = scoreCandidates([highEnergyNode, lowEnergyNode], context);
     expect(result[0]!.nodeId).toBe(lowEnergyNode.nodeId);
+  });
+
+  test("Should score a node whose resource matches the requested mental state", async () => {
+    const reviewNode = await buildCandidate({
+      resourceId: await cryptoService.generateUUID(),
+      resourceMentalState: CandidateNodeMentalState.REVIEW,
+    });
+    const deepFocusNode = await buildCandidate({
+      resourceId: await cryptoService.generateUUID(),
+      resourceMentalState: CandidateNodeMentalState.DEEP_FOCUS,
+    });
+    const context: ScoringContext = {
+      ...baseContext,
+      mentalState: CandidateNodeMentalState.REVIEW,
+    };
+
+    const result = scoreCandidates([deepFocusNode, reviewNode], context);
+    expect(result[0]!.nodeId).toBe(reviewNode.nodeId);
+    expect(result[0]!.why).toContain("fits your review mindset");
+  });
+
+  test("Should not penalize a resource whose mental state does not match", async () => {
+    const deepFocusNode = await buildCandidate({
+      resourceId: await cryptoService.generateUUID(),
+      resourceMentalState: CandidateNodeMentalState.DEEP_FOCUS,
+    });
+    const context: ScoringContext = {
+      ...baseContext,
+      mentalState: CandidateNodeMentalState.QUICK_OP,
+    };
+
+    const result = scoreCandidates([deepFocusNode], context);
+    expect(result[0]!.score).toBe(0);
+    expect(result[0]!.why).toEqual([]);
+  });
+
+  test("Should weigh an energy match above a mental-state match", async () => {
+    const energyMatchNode = await buildCandidate({
+      resourceId: await cryptoService.generateUUID(),
+      resourceEnergyLevel: CandidateNodeEnergyLevel.LOW,
+      resourceMentalState: CandidateNodeMentalState.DEEP_FOCUS,
+    });
+    const mentalStateMatchNode = await buildCandidate({
+      resourceId: await cryptoService.generateUUID(),
+      resourceEnergyLevel: CandidateNodeEnergyLevel.MEDIUM,
+      resourceMentalState: CandidateNodeMentalState.LIGHT_READ,
+    });
+    const context: ScoringContext = {
+      ...baseContext,
+      energy: CandidateNodeEnergyLevel.LOW,
+      mentalState: CandidateNodeMentalState.LIGHT_READ,
+    };
+
+    const result = scoreCandidates([mentalStateMatchNode, energyMatchNode], context);
+    expect(result[0]!.nodeId).toBe(energyMatchNode.nodeId);
+    expect(result[1]!.why).toContain("fits your light read mindset");
   });
 
   test("Should favor the path with the most momentum", async () => {
