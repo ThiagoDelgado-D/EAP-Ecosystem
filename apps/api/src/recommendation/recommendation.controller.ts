@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Inject, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import { BaseError, type CurrentUser } from "domain-lib";
 import type {
   IRecommendationContextRepository,
@@ -10,7 +18,10 @@ import {
   getRecommendations,
   setRecommendationContext,
 } from "@recommendation/application";
-import { SetRecommendationContextDto } from "./dto/request/index.js";
+import {
+  GetRecommendationsDto,
+  SetRecommendationContextDto,
+} from "./dto/request/index.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { CurrentUser as CurrentUserDecorator } from "../auth/current-user.decorator.js";
@@ -28,13 +39,19 @@ export class RecommendationController {
   ) {}
 
   @Get()
-  async getRecommendations(@CurrentUserDecorator() currentUser: CurrentUser) {
-    const result = await getRecommendations({
-      recommendationContextRepository: this.recommendationContextRepository,
-      learningResourceCandidatesPort: this.learningResourceCandidatesPort,
-      learningPathCandidatesPort: this.learningPathCandidatesPort,
-      currentUser,
-    });
+  async getRecommendations(
+    @Query() query: GetRecommendationsDto,
+    @CurrentUserDecorator() currentUser: CurrentUser,
+  ) {
+    const result = await getRecommendations(
+      {
+        recommendationContextRepository: this.recommendationContextRepository,
+        learningResourceCandidatesPort: this.learningResourceCandidatesPort,
+        learningPathCandidatesPort: this.learningPathCandidatesPort,
+        currentUser,
+      },
+      { excludedCandidateIds: query.exclude },
+    );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }

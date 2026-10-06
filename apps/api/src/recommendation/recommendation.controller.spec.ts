@@ -1,4 +1,5 @@
 import {
+  generateLearningResourceCandidate,
   mockLearningPathCandidatesPort,
   mockLearningResourceCandidatesPort,
   mockRecommendationContextRepository,
@@ -138,6 +139,70 @@ describe("RecommendationController (integration)", () => {
       expect(response.body).toEqual([
         expect.objectContaining({ resourceId, title: "Intro to Kubernetes" }),
       ]);
+    });
+
+    describe("with dismissed candidates excluded", () => {
+      let kubernetesResourceId: UUID;
+      let dockerResourceId: UUID;
+      let terraformResourceId: UUID;
+
+      beforeEach(async () => {
+        recommendationContextRepository.contexts.push({
+          userId: ownerId,
+          energyLevel: EnergyLevel.LOW,
+          updatedAt: new Date(),
+        });
+        kubernetesResourceId = await cryptoService.generateUUID();
+        dockerResourceId = await cryptoService.generateUUID();
+        terraformResourceId = await cryptoService.generateUUID();
+        learningResourceCandidatesPort.candidatesByUser[ownerId] = [
+          generateLearningResourceCandidate({
+            resourceId: kubernetesResourceId,
+            title: "Intro to Kubernetes",
+          }),
+          generateLearningResourceCandidate({
+            resourceId: dockerResourceId,
+            title: "Docker Deep Dive",
+          }),
+          generateLearningResourceCandidate({
+            resourceId: terraformResourceId,
+            title: "Terraform Basics",
+          }),
+        ];
+      });
+
+      test("leaves out a single dismissed resource", async () => {
+        const response = await request(app.getHttpServer())
+          .get("/api/v1/recommendations")
+          .query({ exclude: kubernetesResourceId })
+          .set(authHeader())
+          .expect(200);
+
+        expect(response.body.map((r: { resourceId: UUID }) => r.resourceId))
+          .toEqual(expect.arrayContaining([dockerResourceId, terraformResourceId]));
+        expect(response.body).toHaveLength(2);
+      });
+
+      test("leaves out every resource passed as a repeated exclude parameter", async () => {
+        const response = await request(app.getHttpServer())
+          .get(
+            `/api/v1/recommendations?exclude=${kubernetesResourceId}&exclude=${dockerResourceId}`,
+          )
+          .set(authHeader())
+          .expect(200);
+
+        expect(response.body).toEqual([
+          expect.objectContaining({ resourceId: terraformResourceId }),
+        ]);
+      });
+
+      test("returns 400 when an excluded id is not a UUID", async () => {
+        await request(app.getHttpServer())
+          .get("/api/v1/recommendations")
+          .query({ exclude: "not-a-uuid" })
+          .set(authHeader())
+          .expect(400);
+      });
     });
   });
 
