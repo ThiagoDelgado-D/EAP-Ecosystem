@@ -51,6 +51,21 @@ describe('RecommendationHttpRepository', () => {
     expect(result).toEqual(dtos);
   });
 
+  test('getRecommendations should send each dismissed candidate as a repeated exclude parameter', async () => {
+    const dismissedResourceId = crypto.randomUUID();
+    const dismissedNodeId = crypto.randomUUID();
+
+    const resultPromise = repository.getRecommendations([dismissedResourceId, dismissedNodeId]);
+
+    const request = httpController.expectOne(
+      (req) => req.url === `${API_CONFIG.baseUrl}/recommendations`,
+    );
+    expect(request.request.params.getAll('exclude')).toEqual([dismissedResourceId, dismissedNodeId]);
+    request.flush([]);
+
+    expect(await resultPromise).toEqual([]);
+  });
+
   test('getRecommendations should return an empty array when the user has no context yet (404)', async () => {
     const resultPromise = repository.getRecommendations();
 

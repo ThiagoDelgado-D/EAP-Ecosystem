@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { RecommendationRepository } from '../domain/recommendation.repository';
 import type {
@@ -19,9 +19,12 @@ export class RecommendationHttpRepository extends RecommendationRepository {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${API_CONFIG.baseUrl}/recommendations`;
 
-  async getRecommendations(): Promise<ScoredRecommendation[]> {
+  async getRecommendations(excludedCandidateIds: string[] = []): Promise<ScoredRecommendation[]> {
+    const params = new HttpParams({ fromObject: { exclude: excludedCandidateIds } });
     try {
-      const dtos = await firstValueFrom(this.http.get<ScoredRecommendationDto[]>(this.baseUrl));
+      const dtos = await firstValueFrom(
+        this.http.get<ScoredRecommendationDto[]>(this.baseUrl, { params }),
+      );
       return dtos.map((dto) => this.toDomain(dto));
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 404) return [];

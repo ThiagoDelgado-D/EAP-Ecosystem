@@ -1,23 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthStore } from '@features/auth/application/auth.store';
-import type { AuthUser } from '@features/auth/domain/auth.model';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
 import {
   mockRecommendationRepository,
   type MockedRecommendationRepository,
 } from './mocks/mock-recommendation.repository';
 import { CalibrationService } from './calibration.service';
-
-function learner(firstName: string): AuthUser {
-  return {
-    id: crypto.randomUUID(),
-    firstName,
-    lastName: 'Learner',
-    email: `${firstName.toLowerCase()}@example.com`,
-    onboardingCompleted: true,
-    featureConfig: [],
-  };
-}
+import { learner } from './mocks/learner.fixture';
 
 describe('CalibrationService', () => {
   let recommendationRepository: MockedRecommendationRepository;

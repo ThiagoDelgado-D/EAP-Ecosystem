@@ -37,7 +37,7 @@
     }
   </div>
 
-  @if (effectiveTop()) {
+  @if (recommendation()) {
     @if (displayResource().resource) {
       <div class="relative mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.78rem] text-ink-dim">
         <span class="font-semibold text-ink-body">{{ displayResource().kindLabel }}</span>
@@ -79,17 +79,17 @@
         Pending catalog:
         <span class="tnum font-semibold text-ink-body">{{ catalogMinutes() }}m</span>
       </p>
-      @if (discarded().length) {
-        <button type="button" class="btn btn-outline btn-sm mt-4" (click)="restoreDiscarded()">
-          Restore {{ discarded().length }} dismissed
+      @if (dismissedCount()) {
+        <button type="button" class="btn btn-outline btn-sm mt-4" (click)="restored.emit()">
+          Restore {{ dismissedCount() }} dismissed
         </button>
       }
     </div>
   }
 
-  @if (effectiveTop()) {
+  @if (recommendation()) {
     <div class="relative mt-6 flex flex-wrap items-center gap-2">
-      <a routerLink="/pomodoro" [queryParams]="focusQueryParams(effectiveTop()!)" class="btn btn-primary">
+      <a routerLink="/pomodoro" [queryParams]="focusQueryParams(recommendation()!)" class="btn btn-primary">
         Focus now
       </a>
       @if (displayResource().resource) {
@@ -97,17 +97,22 @@
           Open details
         </a>
       }
-      <button type="button" class="btn btn-ghost ml-auto" (click)="dismissTop()">
+      @if (dismissedCount()) {
+        <button type="button" class="btn btn-ghost ml-auto" (click)="restored.emit()">
+          Restore {{ dismissedCount() }}
+        </button>
+      }
+      <button type="button" class="btn btn-ghost" [class.ml-auto]="!dismissedCount()" (click)="dismissTop()">
         Not today
       </button>
     </div>
   }
 
-  @if (effectiveSecondary().length) {
+  @if (secondary().length) {
     <div class="relative mt-7 border-t border-line-soft pt-4">
       <p class="eyebrow mb-3">Second choices</p>
       <ul class="flex flex-col gap-2">
-        @for (choice of effectiveSecondary(); track choice.resourceId ?? choice.nodeId ?? choice.title; let i = $index) {
+        @for (choice of secondary(); track choice.resourceId ?? choice.nodeId ?? choice.title; let i = $index) {
           <li appReveal [appRevealDelay]="i * 80">
             <a
               routerLink="/pomodoro"
