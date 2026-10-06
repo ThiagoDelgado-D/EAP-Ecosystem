@@ -1,6 +1,6 @@
-import { Component, HostListener, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
@@ -14,6 +14,7 @@ import { CounterComponent } from '@shared/components/counter/counter.component';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
+import { CalibrationService } from '@features/recommendation/application/calibration.service';
 import {
   POMODORO_VIEW_MODE,
   readDefaultDurationMin,
@@ -34,6 +35,7 @@ import {
   type SuggestedCandidate,
 } from '@features/pomodoro/domain/pomodoro.model';
 import { describeTargetLabel, type TargetLabel } from './target-description';
+import { estimatedMinutesFor, recommendedDurationMin, resolveRecommendedTarget } from './recommended-entry';
 
 function formatMinutesClock(minutes: number): string {
   return `${String(minutes).padStart(2, '0')}:00`;
@@ -45,8 +47,10 @@ function formatMinutesClock(minutes: number): string {
   imports: [FormsModule, PomodoroRingComponent, CounterComponent, RevealDirective],
   templateUrl: './start.component.html',
 })
-export class StartComponent {
+export class StartComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly calibration = inject(CalibrationService);
   private readonly dialog = inject(MatDialog);
   private readonly overlayHost = inject(PomodoroOverlayHostService);
   readonly store = inject(PomodoroSessionStore);
@@ -98,10 +102,33 @@ export class StartComponent {
     this.hasAttachedMaterial() ? this.selectedTargetLabel()?.title ?? 'Start' : 'Start free focus',
   );
 
-  constructor() {
-    void this.picker.load();
+  ngOnInit(): void {
+    void this.loadMaterial();
     void this.store.loadSuggestions();
     void this.loadContext();
+  }
+
+  private async loadMaterial(): Promise<void> {
+    await Promise.all([this.picker.load(), this.calibration.load()]);
+    this.applyRecommendedEntry();
+  }
+
+  private applyRecommendedEntry(): void {
+    if (this.selectedTarget()) return;
+    const groups = this.picker.allPaths();
+    const library = this.picker.library();
+    const target = resolveRecommendedTarget(this.route.snapshot.queryParamMap, groups, library);
+    if (!target) return;
+
+    this.selectedTarget.set(target);
+    this.selectedTargetLabel.set(describeTargetLabel(target, groups, library));
+    const minutes = recommendedDurationMin({
+      estimatedMin: estimatedMinutesFor(target, library),
+      availableMin: this.calibration.availableMinutes(),
+      defaultMin: readDefaultDurationMin(),
+    });
+    this.selectedDuration.set(minutes);
+    this.customDurationInput.set(DURATION_PRESETS.includes(minutes) ? '' : String(minutes));
   }
 
   private async loadContext(): Promise<void> {

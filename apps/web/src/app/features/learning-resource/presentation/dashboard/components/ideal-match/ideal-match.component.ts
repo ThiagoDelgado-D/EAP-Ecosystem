@@ -1,9 +1,10 @@
 import { Component, computed, input, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, type Params } from '@angular/router';
 import { ScrambleComponent } from '@shared/components/scramble/scramble.component';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import { LearningResource } from '@features/learning-resource/domain/learning-resource.model.js';
 import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
+import { recommendedEntryQueryParams } from '@features/pomodoro/presentation/start/recommended-entry';
 
 function hashHue(title: string): number {
   let h = 0;
@@ -49,7 +50,6 @@ export class IdealMatchComponent {
       desc: matched?.notes ?? null,
       duration: matched?.estimatedDuration.value ?? null,
       resource: matched,
-      url: matched?.url ?? null,
       score: rec?.score ?? null,
       why: rec?.why ?? [],
       kindLabel: 'Resource',
@@ -57,6 +57,10 @@ export class IdealMatchComponent {
       difficulty: matched?.difficulty ?? '—',
     };
   });
+
+  focusQueryParams(rec: ScoredRecommendation): Params {
+    return recommendedEntryQueryParams(rec);
+  }
 
   dismissTop(): void {
     const top = this.effectiveTop();
