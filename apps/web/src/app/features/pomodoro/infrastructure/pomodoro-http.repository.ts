@@ -4,7 +4,6 @@ import { firstValueFrom } from 'rxjs';
 import { PomodoroRepository } from '../domain/pomodoro.repository';
 import type {
   Break,
-  CandidateEnergyLevel,
   ContinueSessionResult,
   EndSessionResult,
   GetActiveSessionResult,
@@ -14,6 +13,7 @@ import type {
   Session,
   StartSessionPayload,
   SuggestedCandidate,
+  SuggestionCalibration,
   SwitchTargetResult,
 } from '../domain/pomodoro.model';
 import type {
@@ -105,11 +105,12 @@ export class PomodoroHttpRepository extends PomodoroRepository {
     return this.toBreakDomain(dto);
   }
 
-  async getSuggestion(energy?: CandidateEnergyLevel): Promise<SuggestedCandidate[]> {
+  async getSuggestion(calibration: SuggestionCalibration = {}): Promise<SuggestedCandidate[]> {
+    const params: Record<string, string> = {};
+    if (calibration.energy) params['energy'] = calibration.energy;
+    if (calibration.mentalState) params['mentalState'] = calibration.mentalState;
     const dtos = await firstValueFrom(
-      this.http.get<SuggestedCandidateDto[]>(`${this.baseUrl}/suggestion`, {
-        params: energy ? { energy } : {},
-      }),
+      this.http.get<SuggestedCandidateDto[]>(`${this.baseUrl}/suggestion`, { params }),
     );
     return dtos.map((dto) => ({ ...dto }));
   }

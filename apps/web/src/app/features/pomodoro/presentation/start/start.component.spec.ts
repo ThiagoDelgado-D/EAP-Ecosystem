@@ -6,6 +6,8 @@ import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomod
 import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import type { Session, SuggestedCandidate } from '@features/pomodoro/domain/pomodoro.model';
+import { CalibrationService } from '@features/recommendation/application/calibration.service';
+import type { RecommendationContext } from '@features/recommendation/domain/recommendation.model';
 import { StartComponent } from './start.component';
 import { learningResourceFixture, pathGroupFixture } from './recommended-entry.fixtures';
 
@@ -16,7 +18,11 @@ interface RecommendedEntrySetup {
   availableMinutes?: number;
 }
 
-function setup(suggestions: SuggestedCandidate[] = [], entry?: RecommendedEntrySetup) {
+function setup(
+  suggestions: SuggestedCandidate[] = [],
+  entry?: RecommendedEntrySetup,
+  calibrationContext?: RecommendationContext,
+) {
   const navigateByUrl = vi.fn();
   const {
     providers,
@@ -29,6 +35,7 @@ function setup(suggestions: SuggestedCandidate[] = [], entry?: RecommendedEntryS
   learningResourceRepository.resources = entry?.library ?? [];
   learningPathRepository.paths = (entry?.groups ?? []).map((group) => group.path);
   learningPathRepository.nodes = (entry?.groups ?? []).flatMap((group) => group.nodes);
+  if (calibrationContext) recommendationRepository.context = calibrationContext;
   if (entry?.availableMinutes !== undefined) {
     recommendationRepository.context = {
       energyLevel: 'medium',
@@ -42,6 +49,12 @@ function setup(suggestions: SuggestedCandidate[] = [], entry?: RecommendedEntryS
   const component = TestBed.createComponent(StartComponent).componentInstance;
   component.ngOnInit();
   return { component, pomodoroRepository, overlayHost, navigateByUrl };
+}
+
+async function settle(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve));
+  TestBed.tick();
+  await new Promise((resolve) => setTimeout(resolve));
 }
 
 const cleanArchSuggestion: SuggestedCandidate = {
@@ -167,7 +180,7 @@ describe('StartComponent', () => {
 
   test('should offer a quick-start suggestion only while still in free focus', async () => {
     const { component } = setup([cleanArchSuggestion]);
-    await Promise.resolve();
+    await settle();
 
     expect(component.topSuggestion()).toEqual(cleanArchSuggestion);
     expect(component.canSuggestQuickStart()).toBe(true);
@@ -179,9 +192,61 @@ describe('StartComponent', () => {
 
   test('should not offer a quick-start suggestion when none is available', async () => {
     const { component } = setup([]);
-    await Promise.resolve();
+    await settle();
 
     expect(component.canSuggestQuickStart()).toBe(false);
+  });
+
+  test('should ask for suggestions with the calibrated energy and mental state', async () => {
+    const { pomodoroRepository } = setup([], undefined, {
+      energyLevel: 'low',
+      mentalState: 'review',
+      availableMinutes: 30,
+    });
+    await settle();
+
+    expect(pomodoroRepository.suggestionRequests).toEqual([{ energy: 'low', mentalState: 'review' }]);
+  });
+
+  test('should leave the mental state out when the calibration has none', async () => {
+    const { pomodoroRepository } = setup([], undefined, { energyLevel: 'high' });
+    await settle();
+
+    expect(pomodoroRepository.suggestionRequests).toEqual([{ energy: 'high' }]);
+  });
+
+  test('should ask again when the calibrated energy or mental state changes', async () => {
+    const { pomodoroRepository } = setup([], undefined, {
+      energyLevel: 'medium',
+      mentalState: 'deep_focus',
+    });
+    await settle();
+    const calibration = TestBed.inject(CalibrationService);
+
+    await calibration.setEnergy('Low');
+    await settle();
+    await calibration.setMentalState('quick_op');
+    await settle();
+
+    expect(pomodoroRepository.suggestionRequests).toEqual([
+      { energy: 'medium', mentalState: 'deep_focus' },
+      { energy: 'low', mentalState: 'deep_focus' },
+      { energy: 'low', mentalState: 'quick_op' },
+    ]);
+  });
+
+  test('should not ask again when only the available minutes change', async () => {
+    const { pomodoroRepository } = setup([], undefined, {
+      energyLevel: 'medium',
+      mentalState: 'creative',
+      availableMinutes: 45,
+    });
+    await settle();
+
+    await TestBed.inject(CalibrationService).setAvailableMinutes(90);
+    await settle();
+
+    expect(pomodoroRepository.suggestionRequests).toHaveLength(1);
   });
 
   test('toggleStartMenu should open and close the start menu, stopping the click from bubbling', () => {
@@ -218,7 +283,7 @@ describe('StartComponent', () => {
 
   test('chooseStartSuggested should attach the top suggestion, close the menu, and start with it', async () => {
     const { component, navigateByUrl } = setup([cleanArchSuggestion]);
-    await Promise.resolve();
+    await settle();
     component.startMenuOpen.set(true);
 
     await component.chooseStartSuggested();
@@ -235,7 +300,7 @@ describe('StartComponent', () => {
 
   test('chooseStartSuggested should do nothing when there is no suggestion to start with', async () => {
     const { component, navigateByUrl } = setup([]);
-    await Promise.resolve();
+    await settle();
 
     await component.chooseStartSuggested();
 
@@ -374,10 +439,6 @@ describe('StartComponent', () => {
     const [cleanArchitectureNode, hexagonalPortsStub] = frontendArchitecturePath.nodes;
     const library = [cleanArchitectureTalk, dataIntensiveChapter];
     const groups = [frontendArchitecturePath];
-
-    async function settle(): Promise<void> {
-      await new Promise((resolve) => setTimeout(resolve));
-    }
 
     test('should attach the recommended resource, sized to the time available', async () => {
       vi.stubGlobal('localStorage', mockLocalStorage(null));
