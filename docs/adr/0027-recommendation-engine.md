@@ -136,6 +136,34 @@ eventually read its energy input from the persisted
 once that context exists. Recorded as a future consideration, not a
 commitment either way.
 
+**Resolved 2026-10-06.** `suggestSessionTarget` keeps receiving its
+inputs as request parameters rather than reading the persisted
+`RecommendationContext` itself. The client fills them from the
+calibration it already holds, so Start and the dashboard always rank
+against the same values. This is the same place Start already resolves
+its duration cascade from that calibration, and it adds no dependency
+from `pomodoro` onto `recommendation`. Reading the context server-side
+through a new Pomodoro-owned port was considered and set aside for now:
+it would give a single server-side source of truth, but it costs a new
+cross-module edge, and today there is only one client.
+
+The inputs grow from energy alone to energy plus mental state. Mental
+state enters Pomodoro's scorer as its own signal: a match-only bonus,
+weighted below energy, with no mismatch penalty. This mirrors how the
+Recommendation engine treats it. Available minutes stays out of the
+ranking, because it already decides the session's duration. Start waits
+for the calibration to load before it asks for suggestions, and asks
+again whenever energy or mental state changes. Both parameters stay
+optional, so a request without them ranks exactly as before.
+
+Deriving one input from the other — treating a focused mental state as
+high energy, or a tired one as low — was considered and rejected. Such a
+mapping is a decision made for the learner in advance, and it encodes one
+particular model of how focus works that won't hold for everyone. Energy
+and mental state are calibrated separately and score separately. Neither
+one ever sets, overrides or shifts the other, in the client or in either
+scorer.
+
 ### Consumption pattern
 
 The backend stays a stateless use case queried on demand
