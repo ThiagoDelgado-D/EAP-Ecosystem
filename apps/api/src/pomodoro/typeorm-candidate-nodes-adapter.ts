@@ -1,6 +1,7 @@
 import type { UUID } from "domain-lib";
 import {
   CandidateNodeEnergyLevel,
+  CandidateNodeMentalState,
   CandidateNodeProgress,
   type CandidateNode,
   type CandidateNodesPort,
@@ -14,6 +15,14 @@ import {
 import { type Repository } from "typeorm";
 import { arePrerequisitesDone } from "../learning-path/learning-path-prerequisites.js";
 import { loadActivePathGraph } from "../learning-path/learning-path-graph-loader.js";
+
+const findLinkedResource = (
+  node: LearningPathNodeEntity,
+  resourceById: Map<string, LearningResourceEntity>,
+): LearningResourceEntity | undefined => {
+  if (!node.learningResourceId) return undefined;
+  return resourceById.get(node.learningResourceId);
+};
 
 export class TypeOrmCandidateNodesAdapter implements CandidateNodesPort {
   constructor(
@@ -37,6 +46,7 @@ export class TypeOrmCandidateNodesAdapter implements CandidateNodesPort {
 
     return nodes.map((node) => {
       const path = pathById.get(node.pathId)!;
+      const resource = findLinkedResource(node, resourceById);
       return {
         pathId: path.id as UUID,
         pathTitle: path.title,
@@ -51,11 +61,8 @@ export class TypeOrmCandidateNodesAdapter implements CandidateNodesPort {
           nodeById,
         ),
         resourceId: (node.learningResourceId as UUID) ?? undefined,
-        resourceEnergyLevel: node.learningResourceId
-          ? (resourceById.get(node.learningResourceId)?.energyLevel as
-              | CandidateNodeEnergyLevel
-              | undefined)
-          : undefined,
+        resourceEnergyLevel: resource?.energyLevel as CandidateNodeEnergyLevel | undefined,
+        resourceMentalState: (resource?.mentalState as CandidateNodeMentalState | null) ?? undefined,
       };
     });
   }

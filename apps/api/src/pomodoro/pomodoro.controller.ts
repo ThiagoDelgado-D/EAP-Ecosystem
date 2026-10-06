@@ -13,6 +13,7 @@ import { BaseError, type CryptoService, type CurrentUser, type UUID } from "doma
 import type {
   CandidateNodesPort,
   CandidateNodeEnergyLevel,
+  CandidateNodeMentalState,
   IBreakRepository,
   ISessionRepository,
   LearningPathMembershipPort,
@@ -254,6 +255,7 @@ export class PomodoroController {
   @Get("suggestion")
   async suggestSessionTarget(
     @Query("energy") energy: CandidateNodeEnergyLevel | undefined,
+    @Query("mentalState") mentalState: CandidateNodeMentalState | undefined,
     @CurrentUserDecorator() currentUser: CurrentUser,
   ) {
     const result = await suggestSessionTarget(
@@ -262,7 +264,7 @@ export class PomodoroController {
         candidateNodesPort: this.candidateNodesPort,
         currentUser,
       },
-      { energy },
+      { energy, mentalState },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
