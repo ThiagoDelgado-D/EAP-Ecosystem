@@ -44,7 +44,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h1 class="text-base font-bold text-surface-base tracking-tight">Edit Resource</h1>
+        <h1 class="text-base font-bold text-ink-strong tracking-tight">Edit Resource</h1>
         <button
           type="submit"
           [disabled]="isSubmitting || !form.valid"
@@ -80,7 +80,7 @@
               formControlName="title"
               type="text"
               placeholder="Resource title…"
-              class="w-full bg-surface-overlay/60 border border-line-strong/70 rounded-xl px-4 py-2.5 text-sm text-surface-base placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent-line/50 focus:border-accent-line/50 transition-all"
+              class="w-full bg-surface-overlay/60 border border-line-strong/70 rounded-xl px-4 py-2.5 text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent-line/50 focus:border-accent-line/50 transition-all"
             />
           </div>
           @if (form.get('title')?.invalid && form.get('title')?.touched) {
@@ -278,7 +278,7 @@
                 formControlName="estimatedDurationMinutes"
                 type="number"
                 min="1"
-                class="w-16 bg-transparent text-2xl font-bold text-surface-base focus:outline-none text-right border-b border-line-strong focus:border-accent-line transition-colors"
+                class="w-16 bg-transparent text-2xl font-bold text-ink-strong focus:outline-none text-right border-b border-line-strong focus:border-accent-line transition-colors"
               />
               <span class="text-sm text-ink-dim font-medium">Minutes</span>
             </div>
@@ -300,7 +300,7 @@
           } @else {
             <select
               formControlName="typeId"
-              class="w-full bg-surface-overlay/60 border border-line-strong/70 rounded-xl px-3 py-2.5 text-sm text-surface-base focus:outline-none focus:ring-2 focus:ring-accent-line/50 focus:border-accent-line/50 transition-all appearance-none cursor-pointer"
+              class="w-full bg-surface-overlay/60 border border-line-strong/70 rounded-xl px-3 py-2.5 text-sm text-ink-strong focus:outline-none focus:ring-2 focus:ring-accent-line/50 focus:border-accent-line/50 transition-all appearance-none cursor-pointer"
             >
               <option value="" disabled>Select a type</option>
               @for (type of resourceTypes(); track type.id) {
@@ -368,7 +368,7 @@
             </svg>
             Back to Library
           </button>
-          <h1 class="text-3xl font-bold text-surface-base tracking-tight">Edit Resource</h1>
+          <h1 class="text-3xl font-bold text-ink-strong tracking-tight">Edit Resource</h1>
           <p class="text-sm text-ink-faint mt-1">
             Modify the core parameters of your architectural document. Accuracy in metadata improves
             discovery across the EAP Ecosystem.
@@ -396,7 +396,7 @@
                   formControlName="title"
                   type="text"
                   placeholder="e.g. Neural Architectures in Edge Systems"
-                  class="w-full bg-surface-overlay/50 border border-line-strong/60 rounded-xl px-4 py-3 text-sm text-surface-base placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent-line/40 focus:border-accent-line/50 transition-all"
+                  class="w-full bg-surface-overlay/50 border border-line-strong/60 rounded-xl px-4 py-3 text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent-line/40 focus:border-accent-line/50 transition-all"
                 />
                 @if (form.get('title')?.invalid && form.get('title')?.touched) {
                   <p class="text-xs text-energy-high flex items-center gap-1">
@@ -434,7 +434,7 @@
                     <div class="relative">
                       <select
                         formControlName="typeId"
-                        class="w-full appearance-none bg-surface-overlay/50 border border-line-strong/60 rounded-xl px-4 py-3 text-sm text-surface-base focus:outline-none focus:ring-2 focus:ring-accent-line/40 focus:border-accent-line/50 transition-all cursor-pointer pr-9"
+                        class="w-full appearance-none bg-surface-overlay/50 border border-line-strong/60 rounded-xl px-4 py-3 text-sm text-ink-strong focus:outline-none focus:ring-2 focus:ring-accent-line/40 focus:border-accent-line/50 transition-all cursor-pointer pr-9"
                       >
                         <option value="" disabled>Select a type</option>
                         @for (type of resourceTypes(); track type.id) {
@@ -465,7 +465,7 @@
                     type="number"
                     min="1"
                     placeholder="45"
-                    class="w-full bg-surface-overlay/50 border border-line-strong/60 rounded-xl px-4 py-3 text-sm text-surface-base placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent-line/40 focus:border-accent-line/50 transition-all"
+                    class="w-full bg-surface-overlay/50 border border-line-strong/60 rounded-xl px-4 py-3 text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-accent-line/40 focus:border-accent-line/50 transition-all"
                   />
                 </div>
               </div>
@@ -659,7 +659,7 @@
                   <span class="text-[10px] font-semibold text-ink-faint uppercase tracking-wider"
                     >Impact Rating</span
                   >
-                  <span class="text-sm font-bold text-surface-base"
+                  <span class="text-sm font-bold text-ink-strong"
                     >{{ impactRating() }}<span class="text-ink-faint text-xs">/10</span></span
                   >
                 </div>
@@ -718,7 +718,7 @@
                     />
                   </svg>
                 </div>
-                <p class="text-lg font-bold text-surface-base tracking-tight">{{ estimatedLoad() }}</p>
+                <p class="text-lg font-bold text-ink-strong tracking-tight">{{ estimatedLoad() }}</p>
               </div>
             </div>
           </div>
