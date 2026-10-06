@@ -400,6 +400,26 @@ configurable durations remain ADR-0024's problem, not this one.
   adopted) belongs to a dedicated Recommendation feature, scoped to next
   sprint.
 
+  **Resolved 2026-10-06.** Recommendation re-enters through the
+  dashboard's recommendation card rather than through Start. Choosing a
+  recommendation — the top pick or any of the alternates — opens Start
+  with that item already attached as material; the session still begins
+  with one tap from there. Start's own default stays free focus, so the
+  2026-09-23 revision above is unchanged: a recommendation only pre-fills
+  Start, exactly as picking material by hand would.
+
+  The pre-filled duration follows a fallback order. When both the
+  candidate's estimated minutes and the learner's available minutes (from
+  the Recommendation Context, ADR-0027) are known, the shorter of the two
+  is used; when only one is known, that one; otherwise the learner's
+  default duration. The result is capped at the existing maximum planned
+  duration and stays editable before starting. Opening Start directly,
+  without a recommendation, keeps using the default duration.
+
+  The extracted ranked-suggestion component was later removed as unused,
+  since it never gained a new caller; this entry point is built on the
+  Recommendation module's output instead.
+
 ## Rejected alternatives
 
 - **Single nullable `learningResourceId` FK on `Session`** (this ADR's own
