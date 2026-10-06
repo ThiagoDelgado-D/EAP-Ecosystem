@@ -1,4 +1,10 @@
-import { mockCryptoService, mockCurrentUser, type CurrentUser } from "domain-lib";
+import {
+  InvalidDataError,
+  mockCryptoService,
+  mockCurrentUser,
+  type CurrentUser,
+  type UUID,
+} from "domain-lib";
 import { beforeEach, describe, expect, test } from "vitest";
 import {
   generateLearningPathNodeCandidate,
@@ -9,7 +15,10 @@ import {
   mockRecommendationContextRepository,
 } from "../mocks/index.js";
 import { RecommendationContextNotFoundError } from "../errors/index.js";
-import { getRecommendations } from "./get-recommendations.js";
+import {
+  getRecommendations,
+  MAX_EXCLUDED_CANDIDATES,
+} from "./get-recommendations.js";
 
 describe("getRecommendations", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -40,7 +49,7 @@ describe("getRecommendations", () => {
   });
 
   test("returns a not-found error when the user has no recommendation context yet", async () => {
-    const result = await getRecommendations(deps());
+    const result = await getRecommendations(deps(), {});
 
     expect(result).toBeInstanceOf(RecommendationContextNotFoundError);
   });
@@ -61,7 +70,7 @@ describe("getRecommendations", () => {
     });
     learningPathCandidatesPort.candidatesByUser[currentUser.id] = [node];
 
-    const result = await getRecommendations(deps());
+    const result = await getRecommendations(deps(), {});
 
     expect(result).toEqual([
       expect.objectContaining({
@@ -80,8 +89,89 @@ describe("getRecommendations", () => {
       generateLearningResourceCandidate(),
     ];
 
-    const result = await getRecommendations(deps());
+    const result = await getRecommendations(deps(), {});
 
     expect(result).toEqual([]);
+  });
+
+  describe("excluded candidates", () => {
+    beforeEach(() => {
+      recommendationContextRepository.contexts.push(
+        generateRecommendationContext({ userId: currentUser.id }),
+      );
+    });
+
+    test("leaves out a resource dismissed by its id and keeps ranking the rest", async () => {
+      const dismissedResource = generateLearningResourceCandidate();
+      const remainingResource = generateLearningResourceCandidate();
+      learningResourceCandidatesPort.candidatesByUser[currentUser.id] = [
+        dismissedResource,
+        remainingResource,
+      ];
+
+      const result = await getRecommendations(deps(), {
+        excludedCandidateIds: [dismissedResource.resourceId],
+      });
+
+      expect(result).toEqual([
+        expect.objectContaining({ resourceId: remainingResource.resourceId }),
+      ]);
+    });
+
+    test("leaves out a path node without a resource when dismissed by its node id", async () => {
+      const dismissedNode = generateLearningPathNodeCandidate();
+      learningPathCandidatesPort.candidatesByUser[currentUser.id] = [
+        dismissedNode,
+      ];
+
+      const result = await getRecommendations(deps(), {
+        excludedCandidateIds: [dismissedNode.nodeId],
+      });
+
+      expect(result).toEqual([]);
+    });
+
+    test("leaves out a resource that is also the next node of a path when dismissed by either id", async () => {
+      const pathResource = generateLearningResourceCandidate();
+      learningResourceCandidatesPort.candidatesByUser[currentUser.id] = [
+        pathResource,
+      ];
+      const nextNode = generateLearningPathNodeCandidate({
+        resourceId: pathResource.resourceId,
+      });
+      learningPathCandidatesPort.candidatesByUser[currentUser.id] = [nextNode];
+
+      const byResource = await getRecommendations(deps(), {
+        excludedCandidateIds: [pathResource.resourceId],
+      });
+      const byNode = await getRecommendations(deps(), {
+        excludedCandidateIds: [nextNode.nodeId],
+      });
+
+      expect(byResource).toEqual([]);
+      expect(byNode).toEqual([]);
+    });
+
+    test("rejects an excluded id that is not a UUID", async () => {
+      const result = await getRecommendations(deps(), {
+        excludedCandidateIds: ["not-a-uuid" as UUID],
+      });
+
+      expect(result).toBeInstanceOf(InvalidDataError);
+    });
+
+    test("rejects more excluded ids than the allowed maximum", async () => {
+      const tooManyIds = await Promise.all(
+        Array.from({ length: MAX_EXCLUDED_CANDIDATES + 1 }, () =>
+          cryptoService.generateUUID(),
+        ),
+      );
+
+      const result = await getRecommendations(deps(), {
+        excludedCandidateIds: tooManyIds,
+      });
+
+      expect(result).toBeInstanceOf(InvalidDataError);
+    });
   });
 });
