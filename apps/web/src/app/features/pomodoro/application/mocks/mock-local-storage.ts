@@ -21,3 +21,16 @@ export function mockThrowingLocalStorage(): MockedLocalStorage {
     setItem: vi.fn(throwStorageBlocked),
   };
 }
+
+export function inMemoryLocalStorage(): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
+  const entries = new Map<string, string>();
+  return {
+    getItem: (key) => entries.get(key) ?? null,
+    setItem: (key, value) => {
+      entries.set(key, value);
+    },
+    removeItem: (key) => {
+      entries.delete(key);
+    },
+  };
+}

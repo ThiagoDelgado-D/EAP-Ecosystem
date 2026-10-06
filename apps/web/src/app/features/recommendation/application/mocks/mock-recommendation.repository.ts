@@ -9,6 +9,7 @@ export interface MockedRecommendationRepository extends RecommendationRepository
   context: RecommendationContext | null;
   recommendations: ScoredRecommendation[];
   savedContexts: SetRecommendationContextPayload[];
+  excludedCandidateIds: string[];
 }
 
 export function mockRecommendationRepository(
@@ -18,9 +19,17 @@ export function mockRecommendationRepository(
     context: initial.context ?? null,
     recommendations: [...(initial.recommendations ?? [])],
     savedContexts: [],
+    excludedCandidateIds: [],
 
-    getRecommendations(): Promise<ScoredRecommendation[]> {
-      return Promise.resolve(this.context ? this.recommendations : []);
+    getRecommendations(excludedCandidateIds: string[] = []): Promise<ScoredRecommendation[]> {
+      this.excludedCandidateIds = excludedCandidateIds;
+      if (!this.context) return Promise.resolve([]);
+      const excluded = new Set(excludedCandidateIds);
+      return Promise.resolve(
+        this.recommendations.filter(
+          (rec) => !excluded.has(rec.resourceId ?? '') && !excluded.has(rec.nodeId ?? ''),
+        ),
+      );
     },
 
     getContext(): Promise<RecommendationContext | null> {
