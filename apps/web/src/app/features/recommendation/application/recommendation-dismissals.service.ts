@@ -66,11 +66,18 @@ export class RecommendationDismissalsService {
 
   private readActive(): Dismissal[] {
     const key = this.storageKey();
+    if (!key) return this.unexpired(this.dismissals());
+
+    const stored = this.readStored(key);
+    if (!stored) return this.unexpired(this.dismissals());
+
+    return this.unexpired(
+      stored.map((d) => ({ candidateId: d.candidateId, expiresAt: new Date(d.expiresAt) })),
+    );
+  }
+
+  private unexpired(dismissals: Dismissal[]): Dismissal[] {
     const now = Date.now();
-    const stored = key ? this.readStored(key) : null;
-    const dismissals = stored
-      ? stored.map((d) => ({ candidateId: d.candidateId, expiresAt: new Date(d.expiresAt) }))
-      : this.dismissals();
     return dismissals.filter((d) => d.expiresAt.getTime() > now);
   }
 
@@ -96,8 +103,11 @@ export class RecommendationDismissalsService {
       expiresAt: d.expiresAt.toISOString(),
     }));
     try {
-      if (stored.length === 0) localStorage.removeItem(key);
-      else localStorage.setItem(key, JSON.stringify(stored));
+      if (stored.length === 0) {
+        localStorage.removeItem(key);
+        return;
+      }
+      localStorage.setItem(key, JSON.stringify(stored));
     } catch {
       return;
     }
