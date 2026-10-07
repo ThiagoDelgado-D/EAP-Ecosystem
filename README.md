@@ -14,7 +14,7 @@
 [![DDD](https://img.shields.io/badge/Domain--Driven_Design-DDD-8A2BE2.svg)](https://www.domainlanguage.com/ddd/)
 
 [![Commit Style](https://img.shields.io/badge/Commits-Conventional_Commits-FE5196.svg)](https://www.conventionalcommits.org/)
-[![Version](https://img.shields.io/badge/version-0.9.5-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
+[![Version](https://img.shields.io/badge/version-0.10.0-blue.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/releases)
 [![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem)
 [![Issues](https://img.shields.io/github/issues/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/issues)
 [![Last Commit](https://img.shields.io/github/last-commit/ThiagoDelgado-D/EAP-Ecosystem.svg)](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/commits/main)
@@ -35,7 +35,7 @@ guided form, URL import, voice capture, or file import. A Settings section lets 
 
 ---
 
-## 🎯 Current Status (v0.9.5)
+## 🎯 Current Status (v0.10.0)
 
 | Component                  | Status               | Notes                                                                             |
 | -------------------------- | -------------------- | --------------------------------------------------------------------------------- |
@@ -61,7 +61,8 @@ guided form, URL import, voice capture, or file import. A Settings section lets 
 | **Appearance Preferences** | ✅ Complete          | Timezone, date/time format, language, density persisted to DB (v0.8.7)            |
 | **Learning Paths**         | ✅ Complete          | Ordered resource sequences, stub promotion, progress tracking, interactive knowledge graph canvas — drag-to-reposition, add/delete edges (v0.9.0) |
 | **Pomodoro & Sessions**    | ✅ Complete          | Server-authoritative session/break lifecycle, full/mini/zen views, suggestion engine, weekly summary (v0.9.5) |
-| **Recommendation Engine**  | 📅 Planned (v0.10.0) | Rule-based suggestions from energy/state and pending resources                    |
+| **Recommendation Engine**  | ✅ Complete          | Rule-based ranking of resources and path steps from a persisted energy/time/mental-state calibration, shared with Pomodoro's suggestion (v0.10.0) |
+| **Command Palette**        | ✅ Complete          | Ctrl/⌘K search across resources, paths and nodes, plus commands (v0.10.0)         |
 
 See the [Roadmap](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) for the full plan.
 
