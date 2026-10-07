@@ -1,39 +1,126 @@
-## [Unreleased]
+## [0.10.0] - 2026-10-07
+
+### Recommendation Engine + Product UX Rebuild
+
+This release started as the Recommendation Engine deferred from 0.9.5 and
+ended up touching almost every screen. The engine itself (ADR-0027) ranks
+resources and active Learning Path nodes against a persisted calibration of
+energy, available minutes, and mental state, and that same calibration now
+drives the dashboard, the header, and Pomodoro's Start suggestion. Around it,
+the frontend was rebuilt onto one warm token system with light and dark
+themes, a global capture sheet, and a command palette. Before any of that,
+per-user data isolation and `CurrentUser` injection (ADR-0026) closed the
+pre-deploy security gate carried over from 0.9.5.
+
+---
 
 ### Added
 
-- `CurrentUser` adopted as an injected dependency across learning-resource, learning-path, and pomodoro (ADR-0026) — identity resolved once at the HTTP boundary instead of validated as caller-supplied payload
-- `LearningResource` gained a `userId` column and full per-owner scoping across its use cases
-- `resource-type` and `topic` controllers now require authentication
-- Recommendation Engine (ADR-0027): persisted per-user `RecommendationContext` (energy level, available minutes, mental state), `getRecommendations`/`setRecommendationContext` use cases, cross-module read ports into `LearningResource` and active `LearningPath` nodes, and `GET/POST /api/v1/recommendations` — coexists with Pomodoro's own `suggestSessionTarget`, not a replacement
-- Dashboard's "Ideal Match" widget now consumes the real Recommendation Engine instead of a `resources[0]` placeholder, with dismiss-and-rerank and resource-level filtering
-- Dashboard visual identity rebuild: warm palette, theme toggle, and reveal/scramble/counter motion primitives
-- "Active paths" card shows a real node-level trail and next-step instead of an abstract `done/total` counter
-- Dashboard resource color tones now derive from `Topic.color` instead of a title hash or flat accent
+#### Backend
+
+- `CurrentUser` adopted as an injected dependency across learning-resource,
+  learning-path, and pomodoro (ADR-0026) — identity resolved once at the HTTP
+  boundary instead of validated as caller-supplied payload
+- `LearningResource` gained a `userId` column and full per-owner scoping
+  across its use cases
+- Recommendation Engine (ADR-0027): persisted per-user
+  `RecommendationContext` (energy level, available minutes, mental state),
+  `getRecommendations`/`setRecommendationContext` use cases, cross-module
+  read ports into `LearningResource` and active `LearningPath` nodes, and
+  `GET/POST /api/v1/recommendations` — coexists with Pomodoro's own
+  `suggestSessionTarget`, not a replacement
+- `GET /recommendations/context` to read the persisted calibration back
+- `exclude` parameter on `GET /recommendations` so dismissed candidates are
+  left out of the ranking
+- Pomodoro's `suggestSessionTarget` accepts `mentalState` as a match-only
+  signal ranked below energy
+
+#### Frontend
+
+- Dashboard's "Ideal Match" consumes the real Recommendation Engine, with
+  dismiss-and-rerank and resource-level filtering
+- Calibration shared across the app (energy, available minutes, mental
+  state), with a mental-state chip in the header
+- "Focus now" and second choices open Pomodoro Start with the recommended
+  item attached; "Not today" dismissals persist through the day, refill the
+  list, and can be restored from the card
+- Pomodoro Start's suggestion follows the dashboard's calibration
+- Command palette (Ctrl/⌘K): search resources, paths, and nodes, and run
+  commands
+- Visual identity rebuild: warm palette, light/dark theme toggle, and
+  reveal/scramble/counter motion primitives
+- "Active paths" card shows a real node-level trail and next step instead of
+  a `done/total` counter
+- Resource color tones derive from `Topic.color` across widgets
+- Resources library: topic filtering and a reworked paginator; status badge
+  becomes a tap-to-advance chip
+- Resource detail rebuilt, with save/bookmark and editable notes
+- Learning Paths: node-level list redesign, plus meter/input primitives
+- Pomodoro Start rebuilt around a weekly chart, a suggestion card, and
+  today's log
+- Global capture bottom sheet replaces the standalone `/add` page
+- Settings collapsed into a single scrollable page with section anchors
+- Per-route tab titles (entity names on detail pages) and base page metadata
 
 ### Fixed
 
-- Pomodoro node-target sessions: `LearningPathMembershipPort` now verifies real path/node ownership before trusting a caller-supplied target (previously an IDOR)
-- `pomodoro_sessions`/`pomodoro_breaks` timestamp columns migrated to `timestamptz`
-- `domain-error-mapper` no longer discards `error.name` from the HTTP response body
-- `startBreak` now rejects starting a break while a session is already active
-- `DELETE /auth/sessions/:id` validates the session id as a UUID before querying, returning 400 instead of an unhandled 500
-- Weekly summary: an abandoned break missing `endedAt` no longer inflates a prior week's totals
-- `GET /learning-resources` list response now matches the detail endpoint's shape, and no longer leaks `userId`
-- Dashboard's "Recent Activity" and recent-resources sort now key off `lastViewed` instead of `updatedAt`, so editing a resource's notes no longer bumps it to the top
+- Pomodoro node-target sessions: `LearningPathMembershipPort` now verifies
+  real path/node ownership before trusting a caller-supplied target
+  (previously an IDOR)
+- `resource-type` and `topic` controllers now require authentication
+- `DELETE /auth/sessions/:id` validates the session id as a UUID, returning
+  400 instead of an unhandled 500
+- `GET /learning-resources` list response matches the detail endpoint's
+  shape and no longer leaks `userId`
+- `pomodoro_sessions`/`pomodoro_breaks` timestamp columns migrated to
+  `timestamptz`
+- `domain-error-mapper` no longer discards `error.name` from the response
+  body
+- `startBreak` rejects starting a break while a session is already active
+- Weekly summary: an abandoned break missing `endedAt` no longer inflates a
+  prior week's totals
+- Dashboard's recent activity keys off `lastViewed` instead of `updatedAt`,
+  so editing notes no longer bumps a resource to the top
+- Dashboard's in-progress resources load from the unified list endpoint
+- Text drawn in background colors on Edit Resource and accent buttons
+- Dialogs and toasts readable in both themes, one frame per dialog
+- Learning Path graph stub titles and edges readable on the canvas
+- Browse picker: All paths collapsed into an accordion, dialog width fixed
+- Mini-widget dynamic import memoized to stop a CI teardown race
 
 ### Changed
 
-- All workspace `vitest.config.ts` files converged onto a shared `baseNodeVitestConfig` factory
+- Every remaining screen (auth, capture, edit resource, Learning Path
+  detail/graph) migrated onto the shared theme tokens
+- Paper-theme `ink-dim`, `ink-faint`, and ochre tokens lifted to readable
+  contrast
+- Unused components, helpers, methods, and fields removed from the frontend
+- All workspace `vitest.config.ts` files converged onto a shared
+  `baseNodeVitestConfig` factory
+- Dependency bumps: `multer` 2.4.0, `undici` 7.30.0, `fast-uri` 3.1.8,
+  `dompurify` 3.4.16, `nodemailer` 10.0.9, `@angular/router` 21.2.24
 
 ### Architecture Decision Records
 
-- ADR-0026: `CurrentUser` as an Injected Dependency
-- ADR-0027: Recommendation Engine
+- ADR-0026 (`CurrentUser` as an Injected Dependency) — Accepted
+- ADR-0027 (Recommendation Engine) — Accepted 2026-09-28, revised
+  2026-10-06 (client-held dismissals; Pomodoro's suggestion ranks with the
+  shared calibration)
+- ADR-0022 (Pomodoro Focus Sessions) — revised 2026-10-06 (recommendation
+  entry point into Start)
 
-### Planned
+### Known Limitations (intentional)
 
-- WebSocket gateway for cross-device session sync — Post-MVP
+- "Not today" dismissals have no memory across days: dismissing the same
+  candidate daily returns it each morning at the same score. What repeated
+  dismissal should mean is left to a later design.
+- The Recommendation Engine does not read Pomodoro session history; only
+  Pomodoro's own suggestion uses it (continue-last-session and momentum).
+  Whether history should push toward momentum or rotation is left to a
+  later design.
+- Full auto-cycling between sessions is Post-MVP (ADR-0024), not part of
+  this release — this corrects 0.9.5's note deferring it to v0.10.0.
+- Cross-device session sync (WebSocket gateway) remains Post-MVP.
 
 ---
 
