@@ -60,7 +60,7 @@ export class LearningResourceHttpRepository extends LearningResourceRepository {
     }
 
     const response = await firstValueFrom(
-      this.http.get<LearningResourceListDto>(`${this.baseUrl}/filter`, { params }),
+      this.http.get<LearningResourceListDto>(this.baseUrl, { params }),
     );
     return response.resources.map((dto) => this.toDomain(dto));
   }
