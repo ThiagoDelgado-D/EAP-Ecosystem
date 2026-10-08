@@ -20,7 +20,10 @@ import {
   type SmtpConfig,
 } from "infrastructure-lib";
 import nodemailer from "nodemailer";
-import { EAP_EMAIL_DECLARATIONS } from "../email-templates.js";
+import {
+  EAP_EMAIL_DECLARATIONS,
+  EAP_EMAIL_GLOBALS,
+} from "../email-templates.js";
 import { EnvironmentService } from "../config/environment.service.js";
 
 @Module({
@@ -112,7 +115,12 @@ import { EnvironmentService } from "../config/environment.service.js";
           );
         }
 
-        return new EmailServiceImpl(templateDir, EAP_EMAIL_DECLARATIONS, smtp);
+        return new EmailServiceImpl(
+          templateDir,
+          EAP_EMAIL_DECLARATIONS,
+          smtp,
+          EAP_EMAIL_GLOBALS,
+        );
       },
       inject: [EnvironmentService],
     },
