@@ -42,6 +42,7 @@ import {
 } from "@learning-resource/application";
 import { BaseError, type CryptoService, type CurrentUser, type UUID } from "domain-lib";
 import { toHttpException } from "../errors/domain-error-mapper.js";
+import { parseSort, toArray } from "./list-resources-query.js";
 import { isUUID } from "class-validator";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { CurrentUser as CurrentUserDecorator } from "../auth/current-user.decorator.js";
@@ -92,6 +93,8 @@ export class LearningResourceController {
     @Query("status") status?: string,
     @Query("mentalState") mentalState?: string,
     @Query("resourceTypeId") resourceTypeId?: string,
+    @Query("topicIds") topicIds?: string | string[],
+    @Query("sort") sort?: string,
   ) {
     const filters: ResourceFilters = {};
     if (q) filters.q = q;
@@ -100,18 +103,23 @@ export class LearningResourceController {
     if (status) filters.status = status;
     if (mentalState) filters.mentalState = mentalState;
     if (resourceTypeId && isUUID(resourceTypeId)) filters.resourceTypeId = resourceTypeId as UUID;
+    if (topicIds) filters.topicIds = toArray(topicIds) as UUID[];
 
     const parsedPage = parseInt(page ?? "", 10);
     const parsedPageSize = parseInt(pageSize ?? "", 10);
 
-    return getResourcesByFilter(
+    const result = await getResourcesByFilter(
       { learningResourceRepository: this.learningResourceRepository, currentUser },
       {
         filters,
+        sort: parseSort(sort),
         page: Number.isNaN(parsedPage) ? 1 : parsedPage,
         pageSize: Number.isNaN(parsedPageSize) ? 20 : parsedPageSize,
       },
     );
+
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
   }
 
   @Get("suggestions")
