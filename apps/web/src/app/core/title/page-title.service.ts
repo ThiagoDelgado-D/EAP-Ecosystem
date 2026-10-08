@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-export const APP_NAME = 'EAP';
+export const APP_NAME = 'Cauce';
 
 @Injectable({ providedIn: 'root' })
 export class PageTitleService {
