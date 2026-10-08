@@ -1,14 +1,61 @@
-import type {
-  ILearningResourceRepository,
-  LearningResource,
-  PaginatedResources,
-  ResourceFilters,
-  ResourcePagination,
+import {
+  DifficultyType,
+  EnergyLevelType,
+  ResourceSortField,
+  SortDirection,
+  type ILearningResourceRepository,
+  type LearningResource,
+  type PaginatedResources,
+  type ResourceFilters,
+  type ResourcePagination,
+  type ResourceSort,
 } from "@learning-resource/domain";
 import { In, type Repository } from "typeorm";
 import { LearningResourceEntity } from "../entities/learning-resource.entity.js";
 import type { TopicEntity } from "../entities/topic.entity.js";
 import type { UUID } from "domain-lib";
+
+const rankByDomainOrder = (column: string, orderedValues: readonly string[]) =>
+  `CASE ${column} ${orderedValues
+    .map((value, rank) => `WHEN '${value}' THEN ${rank}`)
+    .join(" ")} END`;
+
+const SORT_VALUE_ALIAS = "sort_value";
+
+interface SortStrategy {
+  orderBy: string;
+  computedExpression?: string;
+}
+
+const SORT_STRATEGIES: Record<ResourceSortField, SortStrategy> = {
+  [ResourceSortField.CREATED_AT]: { orderBy: "lr.createdAt" },
+  [ResourceSortField.TITLE]: {
+    orderBy: SORT_VALUE_ALIAS,
+    computedExpression: "LOWER(lr.title)",
+  },
+  [ResourceSortField.DIFFICULTY]: {
+    orderBy: SORT_VALUE_ALIAS,
+    computedExpression: rankByDomainOrder(
+      "lr.difficulty",
+      Object.values(DifficultyType),
+    ),
+  },
+  [ResourceSortField.ENERGY_LEVEL]: {
+    orderBy: SORT_VALUE_ALIAS,
+    computedExpression: rankByDomainOrder(
+      "lr.energyLevel",
+      Object.values(EnergyLevelType),
+    ),
+  },
+  [ResourceSortField.ESTIMATED_DURATION_MINUTES]: {
+    orderBy: "lr.estimatedDurationMinutes",
+  },
+};
+
+const ORDER_BY_DIRECTION: Record<SortDirection, "ASC" | "DESC"> = {
+  [SortDirection.ASC]: "ASC",
+  [SortDirection.DESC]: "DESC",
+};
 
 export class TypeOrmLearningResourceRepository implements ILearningResourceRepository {
   constructor(
@@ -87,6 +134,7 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
     userId: UUID,
     filters: ResourceFilters,
     pagination: ResourcePagination,
+    sort: ResourceSort,
   ): Promise<PaginatedResources> {
     const { page, pageSize } = pagination;
     const skip = (page - 1) * pageSize;
@@ -119,8 +167,17 @@ export class TypeOrmLearningResourceRepository implements ILearningResourceRepos
         .andWhere("filterTopic.id IN (:...topicIds)", { topicIds: filters.topicIds });
     }
 
+    const sortStrategy = SORT_STRATEGIES[sort.field];
+    if (sortStrategy.computedExpression) {
+      qb.addSelect(sortStrategy.computedExpression, SORT_VALUE_ALIAS);
+    }
+
     const [entities, total] = await qb
-      .orderBy("lr.createdAt", "DESC")
+      .orderBy(
+        sortStrategy.orderBy,
+        ORDER_BY_DIRECTION[sort.direction],
+        "NULLS LAST",
+      )
       .addOrderBy("lr.id", "ASC")
       .skip(skip)
       .take(pageSize)
