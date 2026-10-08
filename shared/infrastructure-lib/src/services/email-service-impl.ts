@@ -35,13 +35,14 @@ export class MissingTemplateError extends Error {
 }
 
 type CompiledEntry = {
-  subject: string;
+  subject: ReturnType<typeof handlebars.compile>;
   render: ReturnType<typeof handlebars.compile>;
 };
 
 export class EmailServiceImpl implements EmailService<string> {
   private readonly transporter: Transporter;
   private readonly compiled = new Map<string, CompiledEntry>();
+  private readonly templates = handlebars.create();
   private readonly defaultFrom: string;
 
   /**
@@ -54,12 +55,20 @@ export class EmailServiceImpl implements EmailService<string> {
    *                      at startup if any file is absent (fail-fast).
    * @param smtp          Resolved SMTP config. The factory in UserModule is
    *                      responsible for choosing between real SMTP and Ethereal.
+   * @param globals       Values every subject and template can read by name,
+   *                      such as the product name.
    */
   constructor(
     templateDir: string,
     declarations: Record<string, EmailTemplateDeclaration>,
     smtp: SmtpConfig,
+    globals: Record<string, string> = {},
   ) {
+    this.templates.registerHelper("year", () => new Date().getFullYear());
+    for (const [name, value] of Object.entries(globals)) {
+      this.templates.registerHelper(name, () => value);
+    }
+
     for (const [name, decl] of Object.entries(declarations)) {
       const filePath = path.join(templateDir, decl.fileName);
       if (!fs.existsSync(filePath)) {
@@ -67,12 +76,10 @@ export class EmailServiceImpl implements EmailService<string> {
       }
       const source = fs.readFileSync(filePath, "utf-8");
       this.compiled.set(name, {
-        subject: decl.subject,
-        render: handlebars.compile(source),
+        subject: this.templates.compile(decl.subject),
+        render: this.templates.compile(source),
       });
     }
-
-    handlebars.registerHelper("year", () => new Date().getFullYear());
 
     this.defaultFrom = smtp.from ?? `noreply@${smtp.host}`;
     this.transporter = nodemailer.createTransport({
@@ -113,7 +120,7 @@ export class EmailServiceImpl implements EmailService<string> {
     }
     await this.sendEmail({
       ...opts,
-      subject: entry.subject,
+      subject: entry.subject(opts.data),
       html: entry.render(opts.data),
     });
   }
