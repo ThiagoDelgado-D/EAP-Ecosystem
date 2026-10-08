@@ -15,6 +15,7 @@ describe("LearningResourceController (integration)", () => {
   let jwtService: MockedJwtService;
 
   let topicId: UUID;
+  let designTopicId: UUID;
   let resourceTypeId: UUID;
   let ownerId: UUID;
   let intruderId: UUID;
@@ -38,7 +39,10 @@ describe("LearningResourceController (integration)", () => {
     };
 
     const ctx = await createLearningResourceTestApp({
-      topics: [{ name: "Programming", color: "#FF5733" }],
+      topics: [
+        { name: "Programming", color: "#FF5733" },
+        { name: "Design", color: "#2C6A51" },
+      ],
       resourceTypes: [{ code: "video", displayName: "Video" }],
       metadataService,
     });
@@ -48,6 +52,7 @@ describe("LearningResourceController (integration)", () => {
     cryptoService = ctx.cryptoService;
     jwtService = ctx.jwtService;
     topicId = ctx.topics[0].id;
+    designTopicId = ctx.topics[1].id;
     resourceTypeId = ctx.resourceTypes[0].id;
 
     ownerId = await cryptoService.generateUUID();
@@ -422,6 +427,86 @@ describe("LearningResourceController (integration)", () => {
       expect(response.body.resources[0].title).toBe("React Hooks Deep Dive");
     });
 
+    describe("sort", () => {
+      const DIFFICULTY_ORDER = ["low", "medium", "high"];
+      const UNKNOWN_SORT_FIELD = "popularity";
+
+      const listSortedBy = (sort: string) =>
+        request(app.getHttpServer())
+          .get("/api/v1/learning-resources")
+          .set(authHeader())
+          .query({ sort });
+
+      test("Should sort by title ascending", async () => {
+        const response = await listSortedBy("title").expect(200);
+
+        const titles: string[] = response.body.resources.map((r: { title: string }) => r.title);
+        expect(titles).toEqual(
+          [...titles].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())),
+        );
+      });
+
+      test("Should sort descending when the field has a leading minus", async () => {
+        const response = await listSortedBy("-estimatedDurationMinutes").expect(200);
+
+        const durations: number[] = response.body.resources.map(
+          (r: { estimatedDurationMinutes: number }) => r.estimatedDurationMinutes,
+        );
+        expect(durations).toEqual([...durations].sort((a, b) => b - a));
+      });
+
+      test("Should sort difficulty from low to high", async () => {
+        const response = await listSortedBy("difficulty").expect(200);
+
+        const ranks: number[] = response.body.resources.map((r: { difficulty: string }) =>
+          DIFFICULTY_ORDER.indexOf(r.difficulty),
+        );
+        expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
+      });
+
+      test("Should return 400 for an unknown sort field", async () => {
+        await listSortedBy(UNKNOWN_SORT_FIELD).expect(400);
+        await listSortedBy(`-${UNKNOWN_SORT_FIELD}`).expect(400);
+      });
+    });
+
+    describe("topicIds", () => {
+      const DESIGN_RESOURCE_TITLE = "Refactoring UI";
+      const MALFORMED_TOPIC_ID = "not-a-uuid";
+      const PROGRAMMING_RESOURCE_COUNT = 5;
+
+      beforeEach(async () => {
+        await createResource({ title: DESIGN_RESOURCE_TITLE, topicIds: [designTopicId] });
+      });
+
+      test("Should keep only resources tagged with the given topic", async () => {
+        const response = await request(app.getHttpServer())
+          .get("/api/v1/learning-resources")
+          .set(authHeader())
+          .query({ topicIds: designTopicId })
+          .expect(200);
+
+        expect(response.body.total).toBe(1);
+        expect(response.body.resources[0].title).toBe(DESIGN_RESOURCE_TITLE);
+      });
+
+      test("Should match any of several repeated topic ids", async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/api/v1/learning-resources?topicIds=${topicId}&topicIds=${designTopicId}`)
+          .set(authHeader())
+          .expect(200);
+
+        expect(response.body.total).toBe(PROGRAMMING_RESOURCE_COUNT + 1);
+      });
+
+      test("Should return 400 for a topic id that is not a UUID", async () => {
+        await request(app.getHttpServer())
+          .get("/api/v1/learning-resources")
+          .set(authHeader())
+          .query({ topicIds: MALFORMED_TOPIC_ID })
+          .expect(400);
+      });
+    });
   });
   describe("GET /api/v1/learning-resources/:id", () => {
     let resourceId: UUID;
