@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PreferencesService } from '@features/settings/application/preferences.service';
+import { ThemeService } from '@core/theme/theme.service';
 import { LANGUAGE_CODE, START_OF_WEEK } from '@features/settings/domain/settings.model';
 import { TIMEZONES } from './timezones.data';
 import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchable-select.component';
@@ -35,6 +36,25 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
       <!-- Content -->
       } @else if (appearance()) {
         <div class="flex flex-col gap-4">
+
+          <div class="rounded-xl border border-line-soft bg-surface-raised">
+            <div class="flex items-center justify-between px-4 py-3">
+              <div class="flex-1 pr-8">
+                <p class="text-sm font-medium text-ink-strong">Theme</p>
+                <p class="text-xs text-ink-faint mt-0.5">Saved on this device. Match system follows your OS setting.</p>
+              </div>
+              <select
+                aria-label="Theme"
+                class="w-44 px-3 py-2 rounded-lg bg-surface-overlay border border-line-strong text-sm text-ink-strong focus:outline-none focus:border-accent"
+                [ngModel]="themeService.preference()"
+                (ngModelChange)="themeService.setPreference($event)"
+              >
+                <option value="system">Match system</option>
+                <option value="paper">Paper (light)</option>
+                <option value="ink">Ink (dark)</option>
+              </select>
+            </div>
+          </div>
 
           <!-- Language & Region -->
           <div class="rounded-xl border border-line-soft bg-surface-raised divide-y divide-line-soft">
@@ -151,6 +171,7 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
 })
 export class PreferencesComponent implements OnInit {
   private readonly preferencesService = inject(PreferencesService);
+  readonly themeService = inject(ThemeService);
 
   readonly LANGUAGE_CODE = LANGUAGE_CODE;
   readonly START_OF_WEEK = START_OF_WEEK;
