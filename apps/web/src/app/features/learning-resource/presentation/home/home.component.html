@@ -82,6 +82,16 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <select
+            class="input w-auto rounded-full py-2.5 pl-4 pr-9 text-[0.82rem]"
+            [(ngModel)]="sortValue"
+            aria-label="Sort resources"
+            (ngModelChange)="applyFilter()"
+          >
+            @for (option of sortOptions; track option.value) {
+              <option [ngValue]="option.value">{{ option.label }}</option>
+            }
+          </select>
           <div class="inline-flex items-center gap-1 rounded-full border border-line-soft bg-surface-overlay p-1">
             <button
               type="button"
@@ -192,6 +202,21 @@
             <option [ngValue]="null">All</option>
             @for (t of resourceTypes(); track t.id) {
               <option [ngValue]="t.id">{{ t.displayName }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Topic</span>
+          <select
+            class="input w-auto rounded-full py-1 pl-3 pr-7 text-[0.74rem]"
+            [(ngModel)]="topicFilterValue"
+            aria-label="Filter by topic"
+            (ngModelChange)="applyFilter()"
+          >
+            <option [ngValue]="null">All</option>
+            @for (topic of topics(); track topic.id) {
+              <option [ngValue]="topic.id">{{ topic.name }}</option>
             }
           </select>
         </div>

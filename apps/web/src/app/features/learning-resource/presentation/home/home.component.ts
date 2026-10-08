@@ -17,6 +17,7 @@ import type {
   MentalStateType,
   ResourceStatus,
   ResourceQueryParams,
+  ResourceSort,
 } from '../../domain/learning-resource.model';
 import type { ResourceType } from '../../domain/resource-type.model';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service.js';
@@ -40,6 +41,9 @@ import {
   RESOURCE_STATUS_LABELS,
   MENTAL_STATE_TYPES,
   MENTAL_STATE_LABELS,
+  RESOURCE_SORTS,
+  RESOURCE_SORT_LABELS,
+  DEFAULT_RESOURCE_SORT,
 } from '@features/learning-resource/domain/learning-resource.constants';
 
 export type TabMode = 'all' | 'saved' | 'recent';
@@ -150,10 +154,16 @@ export class HomeComponent implements OnInit {
   statusFilterValue = signal<ResourceStatus | null>(null);
   mentalStateFilterValue = signal<MentalStateType | null>(null);
   typeFilterValue = signal<string | null>(null);
+  topicFilterValue = signal<string | null>(null);
+  sortValue = signal<ResourceSort>(DEFAULT_RESOURCE_SORT);
 
   readonly difficulties: readonly DifficultyLevel[] = DIFFICULTY_LEVELS;
   readonly energyLevels: readonly EnergyLevel[] = ENERGY_LEVELS;
   readonly statuses: readonly ResourceStatus[] = RESOURCE_STATUSES;
+  readonly sortOptions: { value: ResourceSort; label: string }[] = RESOURCE_SORTS.map((value) => ({
+    value,
+    label: RESOURCE_SORT_LABELS[value],
+  }));
   readonly mentalStates: { value: MentalStateType; label: string }[] = MENTAL_STATE_TYPES.map(
     (value) => ({ value, label: MENTAL_STATE_LABELS[value] }),
   );
@@ -208,6 +218,8 @@ export class HomeComponent implements OnInit {
         this.statusFilterValue() ||
         this.mentalStateFilterValue() ||
         this.typeFilterValue() ||
+        this.topicFilterValue() ||
+        this.sortValue() !== DEFAULT_RESOURCE_SORT ||
         this.searchQuery().trim()
       ),
   );
@@ -227,6 +239,8 @@ export class HomeComponent implements OnInit {
         if (state.status) this.statusFilterValue.set(state.status);
         if (state.mentalState) this.mentalStateFilterValue.set(state.mentalState);
         if (state.resourceTypeId) this.typeFilterValue.set(state.resourceTypeId);
+        if (state.topicId) this.topicFilterValue.set(state.topicId);
+        if (RESOURCE_SORTS.includes(state.sort)) this.sortValue.set(state.sort);
         if (state.q) this.searchQuery.set(state.q);
       }
     } catch {
@@ -234,7 +248,7 @@ export class HomeComponent implements OnInit {
     }
     if (pageSize !== DEFAULT_PAGE_SIZE) this.pageSize.set(pageSize);
     await Promise.all([
-      this.service.load({ page, pageSize }),
+      this.service.load(this.buildParams(page)),
       this.typeService.loadAll(),
       this.topicService.loadAll(),
     ]);
@@ -251,6 +265,8 @@ export class HomeComponent implements OnInit {
     if (this.statusFilterValue()) params.status = this.statusFilterValue()!;
     if (this.mentalStateFilterValue()) params.mentalState = this.mentalStateFilterValue()!;
     if (this.typeFilterValue()) params.resourceTypeId = this.typeFilterValue()!;
+    if (this.topicFilterValue()) params.topicIds = [this.topicFilterValue()!];
+    if (this.sortValue() !== DEFAULT_RESOURCE_SORT) params.sort = this.sortValue();
     if (this.searchQuery().trim()) params.q = this.searchQuery().trim();
     return params;
   }
@@ -303,6 +319,8 @@ export class HomeComponent implements OnInit {
     this.statusFilterValue.set(null);
     this.mentalStateFilterValue.set(null);
     this.typeFilterValue.set(null);
+    this.topicFilterValue.set(null);
+    this.sortValue.set(DEFAULT_RESOURCE_SORT);
     this.searchQuery.set('');
     this.suggestions.set([]);
     await this.service.load({ page: 1, pageSize: this.pageSize() });
@@ -330,6 +348,8 @@ export class HomeComponent implements OnInit {
         status: this.statusFilterValue(),
         mentalState: this.mentalStateFilterValue(),
         resourceTypeId: this.typeFilterValue(),
+        topicId: this.topicFilterValue(),
+        sort: this.sortValue(),
         q: this.searchQuery(),
       }),
     );
