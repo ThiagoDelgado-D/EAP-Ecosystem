@@ -10,11 +10,12 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { BrandMarkComponent } from '@shared/components/brand-mark/brand-mark.component';
 
 @Component({
   selector: 'app-code-step',
   standalone: true,
-  imports: [],
+  imports: [BrandMarkComponent],
   templateUrl: './code-step.component.html',
 })
 export class CodeStepComponent implements OnInit, OnDestroy {

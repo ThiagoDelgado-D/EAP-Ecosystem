@@ -1,11 +1,12 @@
 import { Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { API_CONFIG } from '@core/config/api.config.js';
+import { BrandMarkComponent } from '@shared/components/brand-mark/brand-mark.component';
 
 @Component({
   selector: 'app-email-step',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, BrandMarkComponent],
   templateUrl: './email-step.component.html',
 })
 export class EmailStepComponent {

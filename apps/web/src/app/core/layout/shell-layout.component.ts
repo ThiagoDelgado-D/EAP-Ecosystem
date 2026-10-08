@@ -14,6 +14,7 @@ import {
   MENTAL_STATE_LABELS,
   MENTAL_STATE_TYPES,
 } from '@features/learning-resource/domain/learning-resource.constants';
+import { BrandMarkComponent } from '@shared/components/brand-mark/brand-mark.component';
 
 const MENTAL_STATE_TONES: Record<MentalStateType, string> = {
   deep_focus: 'deep-focus',
@@ -26,7 +27,13 @@ const MENTAL_STATE_TONES: Record<MentalStateType, string> = {
 @Component({
   selector: 'app-shell-layout',
   standalone: true,
-  imports: [RouterModule, RouterLinkActive, CaptureSheetComponent, CommandPaletteComponent],
+  imports: [
+    RouterModule,
+    RouterLinkActive,
+    CaptureSheetComponent,
+    CommandPaletteComponent,
+    BrandMarkComponent,
+  ],
   templateUrl: './shell-layout.component.html',
 })
 export class ShellLayoutComponent implements OnInit {
