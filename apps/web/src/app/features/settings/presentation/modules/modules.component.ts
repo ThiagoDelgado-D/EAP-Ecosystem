@@ -2,6 +2,8 @@ import { Component, inject, OnInit, computed } from '@angular/core';
 import { PreferencesService } from '@features/settings/application/preferences.service';
 import { FEATURE_KEY, type FeatureKey } from '@features/auth/domain/auth.model';
 import { MODULE_CATALOG, type ModuleDefinition } from './feature-module-catalog';
+import { MODULE_TONE } from './module-tone';
+import { toneVar } from '@shared/utils/tone';
 
 @Component({
   selector: 'app-modules',
@@ -12,6 +14,8 @@ export class ModulesComponent implements OnInit {
   private readonly preferencesService = inject(PreferencesService);
 
   readonly catalog = MODULE_CATALOG;
+  readonly MODULE_TONE = MODULE_TONE;
+  readonly toneVar = toneVar;
   readonly loading = this.preferencesService.loading;
   readonly error = this.preferencesService.error;
 

@@ -41,18 +41,18 @@
         <div
           class="flex flex-col rounded-xl border p-4 transition-all bg-surface-raised border-line-soft"
           [class.opacity-50]="module.badge === 'planned'"
+          [style.--tone]="toneVar(MODULE_TONE[module.key])"
         >
           <div class="flex items-start justify-between mb-3">
             <div
-              class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-              [style.background]="module.accentColor + '1a'"
+              class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-(--tone)/10 text-(--tone)"
             >
               <svg
                 width="18"
                 height="18"
                 viewBox="0 0 24 24"
                 fill="none"
-                [attr.stroke]="module.accentColor"
+                stroke="currentColor"
                 stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -97,7 +97,7 @@
             <span
               class="text-xs"
               [class.text-ink-faint]="!module.alwaysOn && !isOn(module.key)"
-              [style.color]="(module.alwaysOn || isOn(module.key)) ? module.accentColor : null"
+              [style.color]="(module.alwaysOn || isOn(module.key)) ? 'var(--tone)' : null"
             >
               {{ statusLabel(module) }}
             </span>
@@ -109,7 +109,7 @@
                 (click)="toggle(module)"
                 class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-raised disabled:cursor-not-allowed"
                 [class.bg-surface-overlay]="!module.alwaysOn && !isOn(module.key)"
-                [style.background-color]="(module.alwaysOn || isOn(module.key)) ? module.accentColor : null"
+                [style.background-color]="(module.alwaysOn || isOn(module.key)) ? 'var(--tone)' : null"
                 [attr.aria-checked]="module.alwaysOn || isOn(module.key)"
                 [attr.aria-label]="module.alwaysOn ? ('Status: ' + module.label + ' (always on)') : ('Toggle ' + module.label)"
                 role="switch"
