@@ -1,5 +1,7 @@
 import { Component, input, output, signal } from '@angular/core';
 import { FEATURE_KEY, FeatureKey } from '@features/auth/domain/auth.model';
+import { MODULE_TONE } from '@features/settings/presentation/modules/module-tone';
+import { toneVar } from '@shared/utils/tone';
 
 interface ModuleCard {
   key: FeatureKey | 'resource-library';
@@ -43,6 +45,21 @@ const MODULES: ModuleCard[] = [
   },
 ];
 
+const CARD_CLASSES: Record<'on' | 'off', Record<'card' | 'icon' | 'label' | 'track', string>> = {
+  on: {
+    card: 'bg-(--tone)/8 border-(--tone)/35',
+    icon: 'border-(--tone)/35 text-(--tone)',
+    label: 'text-ink-strong',
+    track: 'bg-(--tone)',
+  },
+  off: {
+    card: 'bg-surface-inset border-line-soft',
+    icon: 'border-line-soft text-ink-faint',
+    label: 'text-ink-body',
+    track: 'bg-line-strong',
+  },
+};
+
 @Component({
   selector: 'app-modules-step',
   standalone: true,
@@ -56,12 +73,19 @@ export class ModulesStepComponent {
   readonly back = output<void>();
 
   readonly modules = MODULES;
+  readonly MODULE_TONE = MODULE_TONE;
+  readonly toneVar = toneVar;
   readonly selected = signal<Set<string>>(
     new Set([FEATURE_KEY.LEARNING_PATHS, FEATURE_KEY.KNOWLEDGE_GRAPH]),
   );
 
   isOn(key: string): boolean {
     return key === 'resource-library' || this.selected().has(key);
+  }
+
+  classesFor(key: string) {
+    if (this.isOn(key)) return CARD_CLASSES.on;
+    return CARD_CLASSES.off;
   }
 
   toggle(module: ModuleCard): void {

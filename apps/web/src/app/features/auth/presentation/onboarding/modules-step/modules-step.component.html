@@ -17,18 +17,13 @@
           [disabled]="module.locked"
           [attr.aria-pressed]="isOn(module.key)"
           [attr.aria-label]="module.label + (module.locked ? ' (always on)' : '')"
+          [style.--tone]="toneVar(MODULE_TONE[module.key])"
           class="w-full flex items-center gap-3 px-3 py-3 rounded-xl border text-left transition-[background-color,border-color] duration-150"
-          [class.bg-accent-wash]="isOn(module.key)"
-          [class.border-accent-line]="isOn(module.key)"
-          [class.bg-surface-inset]="!isOn(module.key)"
-          [class.border-line-soft]="!isOn(module.key)"
+          [class]="classesFor(module.key).card"
         >
           <div
             class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border bg-surface-raised transition-[border-color,color] duration-150"
-            [class.border-accent-line]="isOn(module.key)"
-            [class.text-accent-ink]="isOn(module.key)"
-            [class.border-line-soft]="!isOn(module.key)"
-            [class.text-ink-faint]="!isOn(module.key)"
+            [class]="classesFor(module.key).icon"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path [attr.d]="module.icon" />
@@ -37,15 +32,12 @@
 
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <span
-                class="text-xs font-bold"
-                [class.text-ink-strong]="isOn(module.key)"
-                [class.text-ink-body]="!isOn(module.key)"
-                >{{ module.label }}</span
-              >
+              <span class="text-xs font-bold" [class]="classesFor(module.key).label">{{
+                module.label
+              }}</span>
               @if (module.locked) {
                 <span
-                  class="text-xs font-semibold px-1.5 py-0.5 rounded-full border border-accent-line bg-accent-wash text-accent-ink"
+                  class="text-xs font-semibold px-1.5 py-0.5 rounded-full border border-(--tone)/35 bg-(--tone)/10 text-(--tone)"
                   >Always on</span
                 >
               }
@@ -55,8 +47,7 @@
 
           <div
             class="w-9 h-5 rounded-full relative shrink-0 transition-colors duration-200"
-            [class.bg-accent]="isOn(module.key)"
-            [class.bg-line-strong]="!isOn(module.key)"
+            [class]="classesFor(module.key).track"
             [class.opacity-50]="module.locked"
           >
             <div
