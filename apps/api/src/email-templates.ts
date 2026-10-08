@@ -12,14 +12,20 @@ import type { EmailTemplateDeclaration } from "infrastructure-lib";
  *   2. Create the corresponding .hbs file in apps/api/src/emails/.
  *   3. That's it — the service picks it up on next start.
  */
+export const EAP_EMAIL_GLOBALS = {
+  productName: "Cauce",
+  productWordmark: "cauce.study",
+  productDescriptor: "personal learning ecosystem",
+};
+
 export const EAP_EMAIL_DECLARATIONS: Record<string, EmailTemplateDeclaration> =
   {
     MAGIC_LINK_CODE: {
       fileName: "magic-link-code.hbs",
-      subject: "Your EAP sign-in code",
+      subject: "Your {{productName}} sign-in code",
     },
     WELCOME: {
       fileName: "welcome.hbs",
-      subject: "Welcome to EAP",
+      subject: "Welcome to {{productName}}",
     },
   };
