@@ -16,6 +16,8 @@
 
 ## Overview
 
+The product ships as **Cauce**; EAP is the technical name used for the repository, workspace packages, database and code identifiers, and throughout this document (see ADR-0028).
+
 EAP-Ecosystem implements a **multi-layered architecture** combining Clean Architecture, Hexagonal Architecture (Ports & Adapters), and Module-Based Architecture principles. The system is designed to be:
 
 - **Testable**: Every layer can be tested independently
