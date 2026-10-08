@@ -3,12 +3,14 @@ import {
   ENERGY_LEVELS,
   RESOURCE_STATUSES,
   MENTAL_STATE_TYPES,
+  RESOURCE_SORTS,
 } from './learning-resource.constants.js';
 
 export type DifficultyLevel = (typeof DIFFICULTY_LEVELS)[number];
 export type EnergyLevel = (typeof ENERGY_LEVELS)[number];
 export type ResourceStatus = (typeof RESOURCE_STATUSES)[number];
 export type MentalStateType = (typeof MENTAL_STATE_TYPES)[number];
+export type ResourceSort = (typeof RESOURCE_SORTS)[number];
 
 export interface LearningResource {
   id: string;
@@ -82,4 +84,6 @@ export interface ResourceQueryParams {
   status?: ResourceStatus;
   mentalState?: MentalStateType;
   resourceTypeId?: string;
+  topicIds?: string[];
+  sort?: ResourceSort;
 }

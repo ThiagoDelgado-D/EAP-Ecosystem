@@ -8,6 +8,23 @@ export const MENTAL_STATE_TYPES = [
   'quick_op',
   'review',
 ] as const;
+export const RESOURCE_SORTS = [
+  '-createdAt',
+  'title',
+  'difficulty',
+  'energyLevel',
+  'estimatedDurationMinutes',
+] as const;
+
+export const DEFAULT_RESOURCE_SORT: (typeof RESOURCE_SORTS)[number] = '-createdAt';
+
+export const RESOURCE_SORT_LABELS: Record<(typeof RESOURCE_SORTS)[number], string> = {
+  '-createdAt': 'Most recent',
+  title: 'Title A–Z',
+  difficulty: 'Difficulty',
+  energyLevel: 'Energy',
+  estimatedDurationMinutes: 'Duration',
+};
 
 export const RESOURCE_STATUS_LABELS: Record<(typeof RESOURCE_STATUSES)[number], string> = {
   Pending: 'Pending',
