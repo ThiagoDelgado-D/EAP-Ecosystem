@@ -82,6 +82,17 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <label for="library-sort" class="sr-only">Sort by</label>
+          <select
+            id="library-sort"
+            class="input w-auto rounded-full py-2.5 pl-4 pr-9 text-[0.82rem]"
+            [(ngModel)]="sortValue"
+            (ngModelChange)="applyFilter()"
+          >
+            @for (option of sortOptions; track option.value) {
+              <option [ngValue]="option.value">{{ option.label }}</option>
+            }
+          </select>
           <div class="inline-flex items-center gap-1 rounded-full border border-line-soft bg-surface-overlay p-1">
             <button
               type="button"
@@ -182,11 +193,11 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <span class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Type</span>
+          <label for="library-type-filter" class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Type</label>
           <select
+            id="library-type-filter"
             class="input w-auto rounded-full py-1 pl-3 pr-7 text-[0.74rem]"
             [(ngModel)]="typeFilterValue"
-            aria-label="Filter by type"
             (ngModelChange)="applyFilter()"
           >
             <option [ngValue]="null">All</option>
@@ -197,11 +208,26 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <span class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Mind</span>
+          <label for="library-topic-filter" class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Topic</label>
           <select
+            id="library-topic-filter"
+            class="input w-auto rounded-full py-1 pl-3 pr-7 text-[0.74rem]"
+            [(ngModel)]="topicFilterValue"
+            (ngModelChange)="applyFilter()"
+          >
+            <option [ngValue]="null">All</option>
+            @for (topic of topics(); track topic.id) {
+              <option [ngValue]="topic.id">{{ topic.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label for="library-mind-filter" class="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-ink-faint">Mind</label>
+          <select
+            id="library-mind-filter"
             class="input w-auto rounded-full py-1 pl-3 pr-7 text-[0.74rem]"
             [(ngModel)]="mentalStateFilterValue"
-            aria-label="Filter by mental state"
             (ngModelChange)="applyFilter()"
           >
             <option [ngValue]="null">All</option>

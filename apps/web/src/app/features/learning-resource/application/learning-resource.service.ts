@@ -237,8 +237,8 @@ export class LearningResourceService {
     };
   }
 
-  private toHttpParams(params: ResourceQueryParams): Record<string, string> {
-    const result: Record<string, string> = {};
+  private toHttpParams(params: ResourceQueryParams): Record<string, string | string[]> {
+    const result: Record<string, string | string[]> = {};
     if (params.page !== undefined) result['page'] = String(params.page);
     if (params.pageSize !== undefined) result['pageSize'] = String(params.pageSize);
     if (params.q?.trim()) result['q'] = params.q.trim();
@@ -247,6 +247,8 @@ export class LearningResourceService {
     if (params.status) result['status'] = this.toApiStatus(params.status);
     if (params.mentalState) result['mentalState'] = params.mentalState;
     if (params.resourceTypeId) result['resourceTypeId'] = params.resourceTypeId;
+    if (params.topicIds?.length) result['topicIds'] = params.topicIds;
+    if (params.sort) result['sort'] = params.sort;
     return result;
   }
 
