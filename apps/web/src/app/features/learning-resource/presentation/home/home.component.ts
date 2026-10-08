@@ -48,6 +48,21 @@ import {
 
 export type TabMode = 'all' | 'saved' | 'recent';
 
+const LIST_PARAMS_STORAGE_KEY = 'eap:resource-list-params';
+
+interface SavedLibraryState {
+  page?: number;
+  pageSize?: number;
+  difficulty?: DifficultyLevel | null;
+  energyLevel?: EnergyLevel | null;
+  status?: ResourceStatus | null;
+  mentalState?: MentalStateType | null;
+  resourceTypeId?: string | null;
+  topicId?: string | null;
+  sort?: ResourceSort;
+  q?: string;
+}
+
 const DEFAULT_PAGE_SIZE = 5;
 
 const TYPE_META: Record<string, { label: string; icon: string; color: string }> = {
@@ -225,33 +240,37 @@ export class HomeComponent implements OnInit {
   );
 
   async ngOnInit(): Promise<void> {
-    const saved = sessionStorage.getItem('eap:resource-list-params');
-    sessionStorage.removeItem('eap:resource-list-params');
-    let page = 1;
-    let pageSize = DEFAULT_PAGE_SIZE;
-    try {
-      if (saved) {
-        const state = JSON.parse(saved);
-        page = state.page ?? 1;
-        pageSize = state.pageSize ?? DEFAULT_PAGE_SIZE;
-        if (state.difficulty) this.difficultyFilterValue.set(state.difficulty);
-        if (state.energyLevel) this.energyFilterValue.set(state.energyLevel);
-        if (state.status) this.statusFilterValue.set(state.status);
-        if (state.mentalState) this.mentalStateFilterValue.set(state.mentalState);
-        if (state.resourceTypeId) this.typeFilterValue.set(state.resourceTypeId);
-        if (state.topicId) this.topicFilterValue.set(state.topicId);
-        if (RESOURCE_SORTS.includes(state.sort)) this.sortValue.set(state.sort);
-        if (state.q) this.searchQuery.set(state.q);
-      }
-    } catch {
-      // malformed entry — fall back to defaults
-    }
-    if (pageSize !== DEFAULT_PAGE_SIZE) this.pageSize.set(pageSize);
+    const page = this.restoreSavedPage();
     await Promise.all([
       this.service.load(this.buildParams(page)),
       this.typeService.loadAll(),
       this.topicService.loadAll(),
     ]);
+  }
+
+  private restoreSavedPage(): number {
+    const saved = sessionStorage.getItem(LIST_PARAMS_STORAGE_KEY);
+    sessionStorage.removeItem(LIST_PARAMS_STORAGE_KEY);
+    if (!saved) return 1;
+    try {
+      const state: SavedLibraryState = JSON.parse(saved);
+      this.applySavedFilters(state);
+      return state.page ?? 1;
+    } catch {
+      return 1;
+    }
+  }
+
+  private applySavedFilters(state: SavedLibraryState): void {
+    if (state.pageSize) this.pageSize.set(state.pageSize);
+    if (state.difficulty) this.difficultyFilterValue.set(state.difficulty);
+    if (state.energyLevel) this.energyFilterValue.set(state.energyLevel);
+    if (state.status) this.statusFilterValue.set(state.status);
+    if (state.mentalState) this.mentalStateFilterValue.set(state.mentalState);
+    if (state.resourceTypeId) this.typeFilterValue.set(state.resourceTypeId);
+    if (state.topicId) this.topicFilterValue.set(state.topicId);
+    if (state.sort && RESOURCE_SORTS.includes(state.sort)) this.sortValue.set(state.sort);
+    if (state.q) this.searchQuery.set(state.q);
   }
 
   setTab(tab: TabMode): void {
@@ -339,7 +358,7 @@ export class HomeComponent implements OnInit {
   trackCardView(resource: LearningResource): void {
     this.libraryService.trackRecent(resource.id);
     sessionStorage.setItem(
-      'eap:resource-list-params',
+      LIST_PARAMS_STORAGE_KEY,
       JSON.stringify({
         page: this.service.currentPage(),
         pageSize: this.pageSize(),
