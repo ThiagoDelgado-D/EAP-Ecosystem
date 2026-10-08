@@ -9820,15 +9820,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"piscina@npm:^5.2.0":
-  version: 5.3.1
-  resolution: "piscina@npm:5.3.1"
+"piscina@npm:^5.3.2":
+  version: 5.3.2
+  resolution: "piscina@npm:5.3.2"
   dependencies:
     "@napi-rs/nice": "npm:^1.0.4"
   dependenciesMeta:
     "@napi-rs/nice":
       optional: true
-  checksum: 10c0/2bef8133ba2a39860b6ac2acb606b79d965dbcf6ff09078d6ffcffb3e2d149ccbed377978ac3207d656c407fecc0ead634f8142787490727ae6c4e31e4c08a94
+  checksum: 10c0/b739158a6b1a6a7a5f30bceb1aa3782cbc85b7195511fd7a808cf18e8a7c162caae82f5045ccdcbb3fd4c60e1f58b72dbb21946aa97f62ae3166bb012cae08f4
   languageName: node
   linkType: hard
 
