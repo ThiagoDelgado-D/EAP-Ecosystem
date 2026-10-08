@@ -2,6 +2,8 @@
 
 > **E**cosistema de **A**prendizaje **P**ersonal  
 > A comprehensive personal learning ecosystem built with modern architectural principles to optimize your learning journey based on energy levels, focus, and content management.
+>
+> The product ships as **Cauce**. EAP stays the technical name used across the repository, packages and code — see [ADR-0028](docs/adr/0028-product-name-and-technical-name.md).
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E=18-43853D.svg)](https://nodejs.org/)
