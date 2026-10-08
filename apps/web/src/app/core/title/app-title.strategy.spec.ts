@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 import { TitleStrategy, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { AppTitleStrategy } from './app-title.strategy';
-import { PageTitleService } from './page-title.service';
+import { APP_NAME, PageTitleService } from './page-title.service';
 
 @Component({ template: '' })
 class BlankPageComponent {}
@@ -36,7 +36,7 @@ describe('AppTitleStrategy', () => {
 
     await harness.navigateByUrl('/pomodoro/summary');
 
-    expect(title.getTitle()).toBe('Weekly Summary · EAP');
+    expect(title.getTitle()).toBe(`Weekly Summary · ${APP_NAME}`);
   });
 
   test('should fall back to the parent route title when the child has none', async () => {
@@ -45,7 +45,7 @@ describe('AppTitleStrategy', () => {
 
     await harness.navigateByUrl('/pomodoro');
 
-    expect(title.getTitle()).toBe('Pomodoro · EAP');
+    expect(title.getTitle()).toBe(`Pomodoro · ${APP_NAME}`);
   });
 
   test('should show only the app name when no route in the tree has a title', async () => {
@@ -54,7 +54,7 @@ describe('AppTitleStrategy', () => {
 
     await harness.navigateByUrl('/untitled');
 
-    expect(title.getTitle()).toBe('EAP');
+    expect(title.getTitle()).toBe(APP_NAME);
   });
 });
 
@@ -64,6 +64,6 @@ describe('PageTitleService', () => {
 
     TestBed.inject(PageTitleService).set('Clean Architecture');
 
-    expect(title.getTitle()).toBe('Clean Architecture · EAP');
+    expect(title.getTitle()).toBe(`Clean Architecture · ${APP_NAME}`);
   });
 });

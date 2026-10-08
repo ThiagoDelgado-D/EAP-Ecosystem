@@ -1,10 +1,11 @@
 import { Component, output, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { BrandMarkComponent } from '@shared/components/brand-mark/brand-mark.component';
 
 @Component({
   selector: 'app-name-step',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, BrandMarkComponent],
   templateUrl: './name-step.component.html',
 })
 export class NameStepComponent {
