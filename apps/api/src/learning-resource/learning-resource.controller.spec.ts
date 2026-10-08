@@ -8,6 +8,8 @@ import { type MockedJwtService, type UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { createLearningResourceTestApp } from "./learning-resource-module.fixture.js";
 
+const INVALID_DATA_ERROR = "INVALID_DATA_ERROR";
+
 describe("LearningResourceController (integration)", () => {
   let app: INestApplication;
   let resourceRepo: ReturnType<typeof mockLearningResourceRepository>;
@@ -464,9 +466,13 @@ describe("LearningResourceController (integration)", () => {
         expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
       });
 
-      test("Should return 400 for an unknown sort field", async () => {
-        await listSortedBy(UNKNOWN_SORT_FIELD).expect(400);
-        await listSortedBy(`-${UNKNOWN_SORT_FIELD}`).expect(400);
+      test("Should return 400 naming the sort field when it is unknown", async () => {
+        const ascendingResponse = await listSortedBy(UNKNOWN_SORT_FIELD).expect(400);
+        const descendingResponse = await listSortedBy(`-${UNKNOWN_SORT_FIELD}`).expect(400);
+
+        expect(ascendingResponse.body.error).toBe(INVALID_DATA_ERROR);
+        expect(ascendingResponse.body).toHaveProperty("sortField");
+        expect(descendingResponse.body).toHaveProperty("sortField");
       });
     });
 
@@ -499,12 +505,15 @@ describe("LearningResourceController (integration)", () => {
         expect(response.body.total).toBe(PROGRAMMING_RESOURCE_COUNT + 1);
       });
 
-      test("Should return 400 for a topic id that is not a UUID", async () => {
-        await request(app.getHttpServer())
+      test("Should return 400 naming topicIds when one is not a UUID", async () => {
+        const response = await request(app.getHttpServer())
           .get("/api/v1/learning-resources")
           .set(authHeader())
           .query({ topicIds: MALFORMED_TOPIC_ID })
           .expect(400);
+
+        expect(response.body.error).toBe(INVALID_DATA_ERROR);
+        expect(response.body).toHaveProperty("topicIds");
       });
     });
   });
