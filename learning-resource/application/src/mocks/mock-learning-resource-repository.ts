@@ -1,11 +1,52 @@
 import type { UUID } from "domain-lib";
-import type {
-  ILearningResourceRepository,
-  LearningResource,
-  PaginatedResources,
-  ResourceFilters,
-  ResourcePagination,
+import {
+  DifficultyType,
+  EnergyLevelType,
+  ResourceSortField,
+  SortDirection,
+  type ILearningResourceRepository,
+  type LearningResource,
+  type PaginatedResources,
+  type ResourceFilters,
+  type ResourcePagination,
+  type ResourceSort,
 } from "@learning-resource/domain";
+
+const DIFFICULTY_ORDER: string[] = Object.values(DifficultyType);
+const ENERGY_LEVEL_ORDER: string[] = Object.values(EnergyLevelType);
+
+const DIRECTION_SIGN: Record<SortDirection, number> = {
+  [SortDirection.ASC]: 1,
+  [SortDirection.DESC]: -1,
+};
+
+const sortValue = (
+  resource: LearningResource,
+  field: ResourceSort["field"],
+): number | string => {
+  switch (field) {
+    case ResourceSortField.TITLE:
+      return resource.title.toLowerCase();
+    case ResourceSortField.DIFFICULTY:
+      return DIFFICULTY_ORDER.indexOf(resource.difficulty);
+    case ResourceSortField.ENERGY_LEVEL:
+      return ENERGY_LEVEL_ORDER.indexOf(resource.energyLevel);
+    case ResourceSortField.ESTIMATED_DURATION_MINUTES:
+      return resource.estimatedDuration.value;
+    case ResourceSortField.CREATED_AT:
+      return resource.createdAt.getTime();
+  }
+};
+
+const compareBy =
+  (sort: ResourceSort) =>
+  (left: LearningResource, right: LearningResource): number => {
+    const leftValue = sortValue(left, sort.field);
+    const rightValue = sortValue(right, sort.field);
+    if (leftValue === rightValue) return left.id.localeCompare(right.id);
+    if (leftValue < rightValue) return -DIRECTION_SIGN[sort.direction];
+    return DIRECTION_SIGN[sort.direction];
+  };
 
 export interface MockedLearningResourceRepository extends ILearningResourceRepository {
   learningResources: LearningResource[];
@@ -64,6 +105,7 @@ export function mockLearningResourceRepository(
       userId: UUID,
       filters: ResourceFilters,
       pagination: ResourcePagination,
+      sort: ResourceSort,
     ): Promise<PaginatedResources> {
       const { page, pageSize } = pagination;
       let results = this.learningResources.filter((r) => r.userId === userId);
@@ -92,6 +134,8 @@ export function mockLearningResourceRepository(
           r.topicIds.some((id) => filters.topicIds!.includes(id as UUID)),
         );
       }
+
+      results = [...results].sort(compareBy(sort));
 
       const total = results.length;
       const skip = (page - 1) * pageSize;

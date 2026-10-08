@@ -1,9 +1,22 @@
-import type {
-  ILearningResourceRepository,
-  LearningResource,
-  ResourceFilters,
+import {
+  DEFAULT_RESOURCE_SORT,
+  ResourceSortField,
+  SortDirection,
+  type ILearningResourceRepository,
+  type LearningResource,
+  type ResourceFilters,
+  type ResourceSort,
 } from "@learning-resource/domain";
-import type { CurrentUser, UUID } from "domain-lib";
+import {
+  createValidationSchema,
+  InvalidDataError,
+  optionalArray,
+  optionalEnum,
+  uuidField,
+  ValidationError,
+  type CurrentUser,
+  type UUID,
+} from "domain-lib";
 
 export interface GetResourcesWithPaginationDeps {
   learningResourceRepository: ILearningResourceRepository;
@@ -12,6 +25,7 @@ export interface GetResourcesWithPaginationDeps {
 
 export interface GetResourcesWithPaginationRequestModel {
   filters?: ResourceFilters;
+  sort?: ResourceSort;
   page?: number;
   pageSize?: number;
 }
@@ -32,6 +46,28 @@ export interface PaginatedResourcesResponseModel {
 
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
+export const MAX_TOPIC_IDS = 100;
+
+interface ListQueryRules {
+  topicIds?: UUID[];
+  sortField?: ResourceSortField;
+  sortDirection?: SortDirection;
+}
+
+const listQueryRulesSchema = createValidationSchema<ListQueryRules>({
+  topicIds: optionalArray<UUID>("Topic ids", {
+    maxLength: MAX_TOPIC_IDS,
+    itemValidator: uuidField("Topic id", { required: true }),
+  }),
+  sortField: optionalEnum(
+    Object.values(ResourceSortField) as ResourceSortField[],
+    "Sort field",
+  ),
+  sortDirection: optionalEnum(
+    Object.values(SortDirection) as SortDirection[],
+    "Sort direction",
+  ),
+});
 
 const toListItem = (resource: LearningResource): ResourceListItemResponseModel => ({
   resourceId: resource.id,
@@ -54,7 +90,16 @@ const toListItem = (resource: LearningResource): ResourceListItemResponseModel =
 export const getResourcesByFilter = async (
   { learningResourceRepository, currentUser }: GetResourcesWithPaginationDeps,
   request: GetResourcesWithPaginationRequestModel = {},
-): Promise<PaginatedResourcesResponseModel> => {
+): Promise<PaginatedResourcesResponseModel | InvalidDataError> => {
+  const validationResult = listQueryRulesSchema({
+    topicIds: request.filters?.topicIds,
+    sortField: request.sort?.field,
+    sortDirection: request.sort?.direction,
+  });
+  if (validationResult instanceof ValidationError) {
+    return new InvalidDataError(validationResult.errors);
+  }
+
   const page = Math.max(1, request.page ?? 1);
   const pageSize = Math.min(
     MAX_PAGE_SIZE,
@@ -66,6 +111,7 @@ export const getResourcesByFilter = async (
     currentUser.id,
     filters,
     { page, pageSize },
+    request.sort ?? DEFAULT_RESOURCE_SORT,
   );
 
   return {
