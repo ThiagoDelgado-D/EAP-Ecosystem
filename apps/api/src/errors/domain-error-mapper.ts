@@ -4,6 +4,7 @@ import type {
   LearningPathDomainError,
   LearningPathNodeDomainError,
   LearningPathEdgeDomainError,
+  TopicDomainError,
 } from "@learning-resource/application";
 import type { UserDomainError } from "@user/application";
 import type { PomodoroDomainError } from "@pomodoro/application";
@@ -15,6 +16,7 @@ type AppDomainError =
   | LearningPathDomainError
   | LearningPathNodeDomainError
   | LearningPathEdgeDomainError
+  | TopicDomainError
   | PomodoroDomainError
   | RecommendationDomainError;
 type ErrorName = AppDomainError["name"];
@@ -34,6 +36,8 @@ const httpStatusMap: Record<ErrorName, number> = {
   LEARNING_PATH_NODE_NOT_FOUND_ERROR: 404,
   LEARNING_PATH_EDGE_NOT_FOUND_ERROR: 404,
   DUPLICATE_LEARNING_PATH_EDGE_ERROR: 409,
+  TOPIC_NOT_FOUND_ERROR: 404,
+  DUPLICATE_TOPIC_NAME_ERROR: 409,
   SESSION_ALREADY_ACTIVE_ERROR: 409,
   SESSION_STILL_ACTIVE_ERROR: 409,
   AMBIGUOUS_PATH_TARGET_ERROR: 409,
