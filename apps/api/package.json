@@ -28,6 +28,7 @@
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.1.18",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/throttler": "^6.7.1",
     "@nestjs/typeorm": "^11.0.0",
     "@pomodoro/application": "workspace:^",
     "@pomodoro/domain": "workspace:^",

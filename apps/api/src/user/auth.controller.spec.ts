@@ -1,99 +1,20 @@
-import { ValidationPipe, type INestApplication } from "@nestjs/common";
-import { Test } from "@nestjs/testing";
+import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
-import {
-  MockedEmailService,
-  mockAccountStatsPort,
-  mockIdentityRepository,
-  mockSessionRepository,
-  mockSignInChallengeRepository,
-  mockUserRepository,
-} from "@user/application";
-import { mockJwtService, type TemplateSendEmailOptions } from "domain-lib";
-import { CryptoServiceImpl } from "infrastructure-lib";
-import { UserModule } from "./user.module.js";
-import { getRepositoryToken } from "@nestjs/typeorm";
-import {
-  IdentityEntity,
-  SessionEntity,
-  SignInChallengeEntity,
-  UserEntity,
-} from "@user/infrastructure";
-import {
-  LearningPathEntity,
-  LearningResourceEntity,
-} from "@learning-resource/infrastructure";
-import { PomodoroSessionEntity } from "@pomodoro/infrastructure";
-import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
-import { EnvironmentService } from "../config/environment.service.js";
-
-const mockEnv = {
-  isProduction: false,
-  isDevelopment: true,
-  webHost: "http://localhost:4200",
-  googleClientId: "test-client-id",
-  googleClientSecret: "test-client-secret",
-  googleRedirectUri: "http://localhost:3000/api/v1/auth/google/callback",
-} as unknown as EnvironmentService;
+import type { TemplateSendEmailOptions } from "domain-lib";
+import { createUserTestApp, type UserTestApp } from "./user-module.fixture.js";
 
 describe("AuthController (integration)", () => {
   let app: INestApplication;
-  const cryptoService = new CryptoServiceImpl();
-  const challengeRepo = mockSignInChallengeRepository();
-  const userRepo = mockUserRepository();
-  const identityRepo = mockIdentityRepository();
-  const sessionRepo = mockSessionRepository();
-  const emailService = new MockedEmailService();
-  const jwtService = mockJwtService();
+  let challengeRepo: UserTestApp["challengeRepo"];
+  let userRepo: UserTestApp["userRepo"];
+  let identityRepo: UserTestApp["identityRepo"];
+  let sessionRepo: UserTestApp["sessionRepo"];
+  let emailService: UserTestApp["emailService"];
+  let jwtService: UserTestApp["jwtService"];
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
-      imports: [UserModule],
-    })
-      .overrideProvider(getRepositoryToken(UserEntity))
-      .useValue({})
-      .overrideProvider(getRepositoryToken(IdentityEntity))
-      .useValue({})
-      .overrideProvider(getRepositoryToken(SignInChallengeEntity))
-      .useValue({})
-      .overrideProvider(getRepositoryToken(SessionEntity))
-      .useValue({})
-      .overrideProvider(getRepositoryToken(LearningResourceEntity))
-      .useValue({})
-      .overrideProvider(getRepositoryToken(LearningPathEntity))
-      .useValue({})
-      .overrideProvider(getRepositoryToken(PomodoroSessionEntity))
-      .useValue({})
-      .overrideProvider("IUserRepository")
-      .useValue(userRepo)
-      .overrideProvider("IIdentityRepository")
-      .useValue(identityRepo)
-      .overrideProvider("ISignInChallengeRepository")
-      .useValue(challengeRepo)
-      .overrideProvider("ISessionRepository")
-      .useValue(sessionRepo)
-      .overrideProvider("IAccountStatsPort")
-      .useValue(mockAccountStatsPort())
-      .overrideProvider("ICryptoService")
-      .useValue(cryptoService)
-      .overrideProvider("IJwtService")
-      .useValue(jwtService)
-      .overrideProvider("IEmailService")
-      .useValue(emailService)
-      .overrideProvider(EnvironmentService)
-      .useValue(mockEnv)
-      .compile();
-
-    app = module.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
-    app.useGlobalFilters(new GlobalExceptionFilter());
-    await app.init();
+    ({ app, challengeRepo, userRepo, identityRepo, sessionRepo, emailService, jwtService } =
+      await createUserTestApp());
   });
 
   afterAll(async () => await app.close());
