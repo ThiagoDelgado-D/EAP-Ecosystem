@@ -10,6 +10,7 @@ import { LoggingInterceptor } from "./interceptors/logging.interceptor.js";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { UserModule } from "./user/user.module.js";
 import { AppConfigModule } from "./config/app-config.module.js";
+import { RateLimitModule } from "./rate-limit/rate-limit.module.js";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AppConfigModule } from "./config/app-config.module.js";
       envFilePath: ".env",
     }),
     AppConfigModule,
+    RateLimitModule,
     DatabaseModule,
     HealthModule,
     LearningResourceModule,
