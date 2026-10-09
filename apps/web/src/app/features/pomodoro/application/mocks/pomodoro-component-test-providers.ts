@@ -11,6 +11,9 @@ import { mockLearningResourceRepository } from '@features/learning-resource/appl
 import { CalibrationService } from '@features/recommendation/application/calibration.service';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
 import { mockRecommendationRepository } from '@features/recommendation/application/mocks/mock-recommendation.repository';
+import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
+import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
+import { mockPreferencesRepository } from '@features/settings/application/mocks/mock-preferences.repository';
 
 export function createPomodoroComponentTestProviders(
   navigateByUrl: (url: string) => unknown,
@@ -20,6 +23,7 @@ export function createPomodoroComponentTestProviders(
   const learningPathRepository = mockLearningPathRepository();
   const learningResourceRepository = mockLearningResourceRepository();
   const recommendationRepository = mockRecommendationRepository();
+  const preferencesRepository = mockPreferencesRepository();
 
   const providers: Provider[] = [
     PomodoroSessionStore,
@@ -29,6 +33,8 @@ export function createPomodoroComponentTestProviders(
     { provide: LearningResourceRepository, useValue: learningResourceRepository },
     CalibrationService,
     { provide: RecommendationRepository, useValue: recommendationRepository },
+    WeeklyGoalService,
+    { provide: PreferencesRepository, useValue: preferencesRepository },
     { provide: Router, useValue: { navigateByUrl } },
     {
       provide: ActivatedRoute,
@@ -42,5 +48,6 @@ export function createPomodoroComponentTestProviders(
     learningPathRepository,
     learningResourceRepository,
     recommendationRepository,
+    preferencesRepository,
   };
 }

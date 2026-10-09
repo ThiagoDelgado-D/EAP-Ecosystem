@@ -14,6 +14,7 @@ import { CounterComponent } from '@shared/components/counter/counter.component';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
+import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
 import { CalibrationService } from '@features/recommendation/application/calibration.service';
 import {
   POMODORO_VIEW_MODE,
@@ -52,6 +53,7 @@ export class StartComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly calibration = inject(CalibrationService);
+  private readonly weeklyGoal = inject(WeeklyGoalService);
   private readonly dialog = inject(MatDialog);
   private readonly overlayHost = inject(PomodoroOverlayHostService);
   readonly store = inject(PomodoroSessionStore);
@@ -90,7 +92,7 @@ export class StartComponent implements OnInit {
     toSuggestionCalibration(this.calibration.energy(), this.calibration.mentalState()),
   );
 
-  readonly goalMinutes = 600;
+  readonly goalMinutes = this.weeklyGoal.goalMinutes;
   readonly weekDays = signal<
     { key: string; label: string; focusMinutes: number; sessions: number; isToday: boolean }[]
   >([]);
@@ -102,7 +104,7 @@ export class StartComponent implements OnInit {
   readonly todayMinutes = signal(0);
 
   readonly maxWeekDay = computed(() =>
-    Math.max(this.goalMinutes / 5, ...this.weekDays().map((d) => d.focusMinutes), 30),
+    Math.max(this.goalMinutes() / 5, ...this.weekDays().map((d) => d.focusMinutes), 30),
   );
   readonly primaryStartLabel = computed(() =>
     this.hasAttachedMaterial() ? this.selectedTargetLabel()?.title ?? 'Start' : 'Start free focus',
@@ -120,6 +122,7 @@ export class StartComponent implements OnInit {
     void this.loadMaterial();
     void this.calibration.load().then(() => this.calibrationLoaded.set(true));
     void this.loadContext();
+    void this.weeklyGoal.load();
   }
 
   private async loadMaterial(): Promise<void> {
@@ -190,7 +193,7 @@ export class StartComponent implements OnInit {
 
   dayBarColor(minutes: number): string {
     if (minutes === 0) return 'var(--color-line-strong)';
-    return minutes >= this.goalMinutes / 5
+    return minutes >= this.goalMinutes() / 5
       ? 'var(--color-accent)'
       : 'var(--tone-ochre, var(--color-accent))';
   }
