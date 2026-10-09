@@ -16,14 +16,14 @@ import type {
 } from '@features/learning-resource/domain/learning-resource.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
-import { TopicChipListComponent } from '@shared/components/topic-chip-list/topic-chip-list.component';
+import { TopicPickerComponent } from '../../topic-picker/topic-picker.component';
 
 type ViewState = 'idle' | 'loading' | 'error' | 'success';
 
 @Component({
   selector: 'app-url-import',
   standalone: true,
-  imports: [FormsModule, TopicChipListComponent],
+  imports: [FormsModule, TopicPickerComponent],
   providers: [
     ResourceTypeService,
     UrlPreviewService,
@@ -103,15 +103,6 @@ export class UrlImportComponent implements OnInit, OnDestroy {
       this.viewState.set('success');
     } else {
       this.viewState.set('error');
-    }
-  }
-
-  toggleTopic(topicId: string): void {
-    const current = this.selectedTopicIds();
-    if (current.includes(topicId)) {
-      this.selectedTopicIds.set(current.filter((id) => id !== topicId));
-    } else {
-      this.selectedTopicIds.set([...current, topicId]);
     }
   }
 
