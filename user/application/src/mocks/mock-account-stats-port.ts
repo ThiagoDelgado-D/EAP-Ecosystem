@@ -13,8 +13,8 @@ export function mockAccountStatsPort(): MockedAccountStatsPort {
   return {
     statsByUser,
 
-    async countFor(userId: UUID): Promise<AccountStats> {
-      return statsByUser.get(userId) ?? EMPTY_ACCOUNT_STATS;
+    countFor(userId: UUID): Promise<AccountStats> {
+      return Promise.resolve(statsByUser.get(userId) ?? EMPTY_ACCOUNT_STATS);
     },
   };
 }
