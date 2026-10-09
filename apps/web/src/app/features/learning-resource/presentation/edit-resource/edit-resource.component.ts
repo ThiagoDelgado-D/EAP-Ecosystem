@@ -22,6 +22,7 @@ import { TopicHttpRepository } from '@features/learning-resource/infrastructure/
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { ToastService } from '@core/toast/toast.service';
+import { TopicPickerComponent } from '../topic-picker/topic-picker.component';
 
 type Level = 'Low' | 'Medium' | 'High';
 
@@ -46,7 +47,7 @@ const LEVEL_SELECTED_BTN_CLASS: Record<Level, string> = {
 @Component({
   selector: 'app-edit-resource',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TopicPickerComponent],
   providers: [
     LearningResourceService,
     TopicService,
@@ -67,6 +68,7 @@ export class EditResourceComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   readonly resource = signal<LearningResource | null>(null);
+  private loadedResource: LearningResource | null = null;
   readonly loading = this.resourceService.loading;
   readonly error = this.resourceService.error;
   readonly topics = this.topicService.topics;
@@ -153,6 +155,7 @@ export class EditResourceComponent implements OnInit {
       const data = await this.resourceService.getById(id);
 
       this.resource.set(data);
+      this.loadedResource = data;
       this.form.patchValue({
         title: data.title,
         typeId: data.typeId,
@@ -166,19 +169,15 @@ export class EditResourceComponent implements OnInit {
     }
   }
 
-  isTopicSelected(topicId: string): boolean {
-    return (this.form.get('topicIds')?.value ?? []).includes(topicId);
+  selectedTopicIds(): string[] {
+    return this.form.get('topicIds')?.value ?? [];
   }
 
-  toggleTopic(topicId: string): void {
-    const current: string[] = this.form.get('topicIds')?.value ?? [];
-    const updated = current.includes(topicId)
-      ? current.filter((id) => id !== topicId)
-      : [...current, topicId];
-    this.form.patchValue({ topicIds: updated });
+  onTopicsChange(topicIds: string[]): void {
+    this.form.patchValue({ topicIds });
 
     const r = this.resource();
-    if (r) this.resource.set({ ...r, topicIds: updated });
+    if (r) this.resource.set({ ...r, topicIds });
   }
 
   selectDifficulty(level: DifficultyLevel): void {
@@ -240,7 +239,7 @@ export class EditResourceComponent implements OnInit {
   async onSubmit(): Promise<void> {
     if (!this.form.valid || !this.resourceId) return;
 
-    const original = this.resource();
+    const original = this.loadedResource;
     if (!original) return;
 
     this.isSubmitting = true;
