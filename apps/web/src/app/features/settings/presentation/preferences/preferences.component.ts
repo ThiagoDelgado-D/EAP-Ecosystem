@@ -1,8 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PreferencesService } from '@features/settings/application/preferences.service';
 import { ThemeService } from '@core/theme/theme.service';
-import { LANGUAGE_CODE, START_OF_WEEK } from '@features/settings/domain/settings.model';
+import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
+import { LANGUAGE_CODE, START_OF_WEEK, WEEKLY_GOAL_MINUTES } from '@features/settings/domain/settings.model';
 import { TIMEZONES } from './timezones.data';
 import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchable-select.component';
 
@@ -105,6 +106,35 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
 
           </div>
 
+          <div class="rounded-xl border border-line-soft bg-surface-raised px-4 py-3">
+            <div class="flex items-center justify-between">
+              <div class="flex-1 pr-8">
+                <p class="text-sm font-medium text-ink-strong">Weekly focus goal</p>
+                <p class="text-xs text-ink-faint mt-0.5">Focus time you aim for each week. Home, Start and the weekly summary measure against it.</p>
+              </div>
+              <span class="tnum text-sm font-semibold text-ink-strong">{{ goalLabel(goalDraft()) }}</span>
+            </div>
+            <input
+              type="range"
+              aria-label="Weekly focus goal in minutes"
+              class="mt-3 w-full cursor-pointer accent-accent"
+              [min]="WEEKLY_GOAL_MINUTES.MIN"
+              [max]="WEEKLY_GOAL_MINUTES.MAX"
+              [step]="WEEKLY_GOAL_MINUTES.STEP"
+              [value]="goalDraft()"
+              (input)="goalDraft.set(+$any($event.target).value)"
+              (change)="saveGoal(+$any($event.target).value)"
+            />
+            <div class="mt-1 flex justify-between text-[0.66rem] text-ink-faint">
+              <span>{{ goalLabel(WEEKLY_GOAL_MINUTES.MIN) }}</span>
+              <span class="tnum">{{ goalPct() }}% of the maximum</span>
+              <span>{{ goalLabel(WEEKLY_GOAL_MINUTES.MAX) }}</span>
+            </div>
+            @if (goalError()) {
+              <p class="mt-2 text-xs text-energy-high">{{ goalError() }}</p>
+            }
+          </div>
+
           <!-- Accessibility -->
           <div class="rounded-xl border border-line-soft bg-surface-raised divide-y divide-line-soft">
 
@@ -171,18 +201,39 @@ import { SearchableSelectComponent } from '@shared/ui/searchable-select/searchab
 })
 export class PreferencesComponent implements OnInit {
   private readonly preferencesService = inject(PreferencesService);
+  private readonly weeklyGoal = inject(WeeklyGoalService);
   readonly themeService = inject(ThemeService);
 
   readonly LANGUAGE_CODE = LANGUAGE_CODE;
   readonly START_OF_WEEK = START_OF_WEEK;
   readonly TIMEZONES = TIMEZONES;
+  readonly WEEKLY_GOAL_MINUTES = WEEKLY_GOAL_MINUTES;
 
   readonly appearance = this.preferencesService.appearance;
   readonly loading = this.preferencesService.loading;
   readonly error = this.preferencesService.error;
 
+  readonly goalDraft = signal<number>(this.weeklyGoal.goalMinutes());
+  readonly goalError = signal<string | null>(null);
+  readonly goalPct = computed(() => Math.round((this.goalDraft() / WEEKLY_GOAL_MINUTES.MAX) * 100));
+
   async ngOnInit(): Promise<void> {
-    await this.preferencesService.loadAppearance();
+    await Promise.all([this.preferencesService.loadAppearance(), this.loadGoal()]);
+  }
+
+  goalLabel(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    if (hours === 0) return `${rest} m`;
+    if (rest === 0) return `${hours} h`;
+    return `${hours} h ${rest} m`;
+  }
+
+  async saveGoal(minutes: number): Promise<void> {
+    this.goalError.set(null);
+    const saved = await this.weeklyGoal.setGoalMinutes(minutes);
+    this.goalDraft.set(this.weeklyGoal.goalMinutes());
+    if (!saved) this.goalError.set('Failed to save the weekly goal');
   }
 
   async save(patch: Parameters<PreferencesService['updateAppearance']>[0]): Promise<void> {
@@ -190,6 +241,11 @@ export class PreferencesComponent implements OnInit {
   }
 
   async reload(): Promise<void> {
-    await this.preferencesService.loadAppearance();
+    await Promise.all([this.preferencesService.loadAppearance(), this.loadGoal()]);
+  }
+
+  private async loadGoal(): Promise<void> {
+    await this.weeklyGoal.load();
+    this.goalDraft.set(this.weeklyGoal.goalMinutes());
   }
 }

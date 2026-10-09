@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
+import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
 import { buildWeekDayLog, computeWeeklySummary, startOfWeek, summaryWindowSince } from '@features/pomodoro/application/weekly-summary.calculator';
 import type { DayLog, DaySession, MetricDelta, WeeklySummary } from '@features/pomodoro/application/weekly-summary.model';
 import { formatMinutes, segmentTotals, type SegmentTotal } from '@features/pomodoro/presentation/active/segment-display';
@@ -29,6 +30,7 @@ export class WeeklySummaryComponent {
   private readonly repository = inject(PomodoroRepository);
   private readonly dialog = inject(MatDialog);
   readonly picker = inject(PomodoroPickerService);
+  private readonly weeklyGoal = inject(WeeklyGoalService);
 
   readonly WEEK_LOG_SCOPE = WEEK_LOG_SCOPE;
 
@@ -42,23 +44,24 @@ export class WeeklySummaryComponent {
   readonly attributing = signal<string | null>(null);
 
   readonly formatMinutes = formatMinutes;
-  readonly goalMinutes = 600;
+  readonly goalMinutes = this.weeklyGoal.goalMinutes;
 
   weekBarHeightPct(day: DayLog): number {
-    const maxMin = Math.max(this.goalMinutes / 5, ...this.dayLog().map((d) => d.focusSec / 60), 30);
+    const maxMin = Math.max(this.goalMinutes() / 5, ...this.dayLog().map((d) => d.focusSec / 60), 30);
     return Math.max(4, (day.focusSec / 60 / maxMin) * 100);
   }
 
   weekBarColor(day: DayLog): string {
     const minutes = day.focusSec / 60;
     if (minutes === 0) return 'var(--color-line-strong)';
-    return minutes >= this.goalMinutes / 5
+    return minutes >= this.goalMinutes() / 5
       ? 'var(--color-accent)'
       : 'var(--tone-ochre, var(--color-accent))';
   }
 
   constructor() {
     void this.picker.load();
+    void this.weeklyGoal.load();
     void this.load();
   }
 

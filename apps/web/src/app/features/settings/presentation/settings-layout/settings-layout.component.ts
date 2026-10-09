@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ElementRef, OnDestroy, inject, signal } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AccountComponent } from '@features/settings/presentation/account/account.component';
 import { PreferencesComponent } from '@features/settings/presentation/preferences/preferences.component';
 import { ModulesComponent } from '@features/settings/presentation/modules/modules.component';
@@ -64,11 +64,13 @@ const SETTINGS_SECTIONS_DATA: SettingsSectionTuple[] = [
   ],
   templateUrl: './settings-layout.component.html',
 })
-export class SettingsLayoutComponent implements AfterViewInit, OnDestroy {
+export class SettingsLayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly authStore = inject(AuthStore);
+  private readonly preferencesService = inject(PreferencesService);
 
   readonly displayName = this.authStore.displayName;
   readonly accountEmail = () => this.authStore.currentUser()?.email ?? null;
+  readonly accountStats = this.preferencesService.accountStats;
   readonly sections: SettingsSection[] = SETTINGS_SECTIONS_DATA.map(([id, label, title, detail]) => ({
     id,
     label,
@@ -81,6 +83,10 @@ export class SettingsLayoutComponent implements AfterViewInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
   private scroller: HTMLElement | null = null;
   private onScroll = (): void => this.updateActiveFromScroll();
+
+  ngOnInit(): void {
+    void this.preferencesService.loadAccountStats();
+  }
 
   ngAfterViewInit(): void {
     this.scroller = this.host.nativeElement.closest('main');

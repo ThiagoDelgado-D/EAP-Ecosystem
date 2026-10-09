@@ -4,8 +4,8 @@ import { firstValueFrom } from 'rxjs';
 import { API_CONFIG } from '@core/config/api.config';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import type { FeatureKey } from '@features/auth/domain/auth.model';
-import type { UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
-import type { AppearanceDto, FeatureConfigDto, WidgetConfigDto } from './settings.dto';
+import type { AccountStats, UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
+import type { AccountStatsDto, AppearanceDto, FeatureConfigDto, WidgetConfigDto } from './settings.dto';
 
 @Injectable()
 export class PreferencesHttpRepository extends PreferencesRepository {
@@ -50,5 +50,10 @@ export class PreferencesHttpRepository extends PreferencesRepository {
 
   async resetPreferences(): Promise<void> {
     await firstValueFrom(this.http.post(`${this.base}/reset`, {}));
+  }
+
+  async getAccountStats(): Promise<AccountStats> {
+    const dto = await firstValueFrom(this.http.get<AccountStatsDto>(`${this.base}/stats`));
+    return { resources: dto.resources, paths: dto.paths, sessions: dto.sessions };
   }
 }

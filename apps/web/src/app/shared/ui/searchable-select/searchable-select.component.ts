@@ -24,20 +24,20 @@ export interface SelectOption {
   template: `
     <button
       type="button"
-      class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-slate-800 border text-sm text-left transition-colors focus:outline-none"
-      [class.border-violet-600]="open()"
-      [class.border-slate-700]="!open()"
+      class="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-surface-overlay border text-sm text-left transition-colors focus:outline-none focus-visible:border-accent"
+      [class.border-accent]="open()"
+      [class.border-line-strong]="!open()"
       (click)="toggle()"
     >
       <span
         class="truncate"
-        [class.text-slate-200]="!!selectedLabel"
-        [class.text-slate-500]="!selectedLabel"
+        [class.text-ink-strong]="!!selectedLabel"
+        [class.text-ink-faint]="!selectedLabel"
       >
         {{ selectedLabel || placeholder }}
       </span>
       <svg
-        class="w-4 h-4 text-slate-500 flex-shrink-0 ml-2 transition-transform duration-150"
+        class="w-4 h-4 text-ink-faint flex-shrink-0 ml-2 transition-transform duration-150"
         [class.rotate-180]="open()"
         viewBox="0 0 24 24"
         fill="none"
@@ -53,14 +53,14 @@ export interface SelectOption {
     <!-- Dropdown -->
     @if (open()) {
       <div
-        class="absolute z-50 w-full mt-1 rounded-lg border border-slate-700 bg-slate-900 shadow-xl overflow-hidden"
+        class="absolute z-50 w-full mt-1 rounded-lg border border-line-soft bg-surface-raised shadow-[var(--shadow-lift)] overflow-hidden"
       >
         <!-- Search input -->
-        <div class="p-2 border-b border-slate-800">
+        <div class="p-2 border-b border-line-soft">
           <input
             #searchInput
             type="text"
-            class="w-full bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-600"
+            class="input py-1.5 text-sm"
             placeholder="Search…"
             [ngModel]="query()"
             (ngModelChange)="query.set($event)"
@@ -73,17 +73,17 @@ export interface SelectOption {
             <li>
               <button
                 type="button"
-                class="w-full text-left px-3 py-2 text-sm transition-colors hover:bg-slate-800/70"
-                [class.text-violet-400]="opt.value === value"
-                [class.bg-violet-950/30]="opt.value === value"
-                [class.text-slate-300]="opt.value !== value"
+                class="w-full text-left px-3 py-2 text-sm transition-colors hover:bg-surface-overlay"
+                [class.text-accent-ink]="opt.value === value"
+                [class.bg-accent-wash]="opt.value === value"
+                [class.text-ink-body]="opt.value !== value"
                 (click)="select(opt.value)"
               >
                 {{ opt.label }}
               </button>
             </li>
           } @empty {
-            <li class="px-3 py-2 text-sm text-slate-500">No results</li>
+            <li class="px-3 py-2 text-sm text-ink-faint">No results</li>
           }
         </ul>
       </div>

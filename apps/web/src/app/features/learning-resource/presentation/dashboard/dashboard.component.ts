@@ -14,6 +14,7 @@ import { PomodoroHttpRepository } from '@features/pomodoro/infrastructure/pomodo
 import { computeWeeklySummary, buildWeekDayLog, summaryWindowSince } from '@features/pomodoro/application/weekly-summary.calculator';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { CalibrationService } from '@features/recommendation/application/calibration.service';
+import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
 import { TopicService } from '@features/learning-resource/application/topic.service';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
@@ -75,6 +76,7 @@ export class DashboardComponent implements OnInit {
   private readonly authStore = inject(AuthStore);
   private readonly calibration = inject(CalibrationService);
   private readonly topicService = inject(TopicService);
+  private readonly weeklyGoal = inject(WeeklyGoalService);
 
   readonly AVAILABLE_MINUTES_OPTIONS = AVAILABLE_MINUTES_OPTIONS;
   readonly displayName = this.authStore.displayName;
@@ -113,7 +115,7 @@ export class DashboardComponent implements OnInit {
   readonly weekDeltaPct = signal<number | null>(null);
   readonly weekDays = signal<{ key: string; label: string; focusMinutes: number; isToday: boolean }[]>([]);
   readonly streakDays = signal(0);
-  readonly goalMinutes = 600;
+  readonly goalMinutes = this.weeklyGoal.goalMinutes;
   readonly inProgressCount = signal(0);
   readonly catalogMinutes = signal(0);
   readonly todayMinutes = signal(0);
@@ -144,6 +146,7 @@ export class DashboardComponent implements OnInit {
       this.topicService.loadAll(),
       this.loadContinueResources(),
       this.loadWeeklyFocus(),
+      this.weeklyGoal.load(),
     ]);
     this.deriveCatalogTotals();
   }

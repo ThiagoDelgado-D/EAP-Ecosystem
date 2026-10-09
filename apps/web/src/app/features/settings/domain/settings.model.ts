@@ -10,6 +10,20 @@ export interface UserAppearance {
   startOfWeek: StartOfWeek;
   reduceMotion: boolean;
   compactMode: boolean;
+  weeklyGoalMinutes: number;
+}
+
+export const WEEKLY_GOAL_MINUTES = {
+  MIN: 120,
+  MAX: 2000,
+  STEP: 30,
+  DEFAULT: 600,
+} as const;
+
+export interface AccountStats {
+  resources: number;
+  paths: number;
+  sessions: number;
 }
 
 export const WIDGET_KEY = {
