@@ -3,6 +3,7 @@ import { Test } from "@nestjs/testing";
 import request from "supertest";
 import {
   MockedEmailService,
+  mockAccountStatsPort,
   mockIdentityRepository,
   mockSessionRepository,
   mockSignInChallengeRepository,
@@ -21,6 +22,11 @@ import {
   SignInChallengeEntity,
   UserEntity,
 } from "@user/infrastructure";
+import {
+  LearningPathEntity,
+  LearningResourceEntity,
+} from "@learning-resource/infrastructure";
+import { SessionEntity as PomodoroSessionEntity } from "@pomodoro/infrastructure";
 import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
 import { EnvironmentService } from "../config/environment.service.js";
 
@@ -55,6 +61,12 @@ describe("AuthController (integration)", () => {
       .useValue({})
       .overrideProvider(getRepositoryToken(SessionEntity))
       .useValue({})
+      .overrideProvider(getRepositoryToken(LearningResourceEntity))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(LearningPathEntity))
+      .useValue({})
+      .overrideProvider(getRepositoryToken(PomodoroSessionEntity))
+      .useValue({})
       .overrideProvider("IUserRepository")
       .useValue(userRepo)
       .overrideProvider("IIdentityRepository")
@@ -63,6 +75,8 @@ describe("AuthController (integration)", () => {
       .useValue(challengeRepo)
       .overrideProvider("ISessionRepository")
       .useValue(sessionRepo)
+      .overrideProvider("IAccountStatsPort")
+      .useValue(mockAccountStatsPort())
       .overrideProvider("ICryptoService")
       .useValue(cryptoService)
       .overrideProvider("IJwtService")

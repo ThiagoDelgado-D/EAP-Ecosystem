@@ -1,5 +1,15 @@
-import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator";
-import { LanguageCode, StartOfWeek } from "@user/domain";
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from "class-validator";
+import { LanguageCode, StartOfWeek, WEEKLY_GOAL_MINUTES_RANGE } from "@user/domain";
 
 export class UpdateUserAppearanceDto {
   @IsOptional()
@@ -27,4 +37,10 @@ export class UpdateUserAppearanceDto {
   @IsNotEmpty()
   @IsBoolean()
   compactMode?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(WEEKLY_GOAL_MINUTES_RANGE.MIN)
+  @Max(WEEKLY_GOAL_MINUTES_RANGE.MAX)
+  weeklyGoalMinutes?: number;
 }

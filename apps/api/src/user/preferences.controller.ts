@@ -8,8 +8,13 @@ import {
   Post,
   UseGuards,
 } from "@nestjs/common";
-import type { IUserRepository, UserAppearancePreferences } from "@user/domain";
+import type {
+  AccountStatsPort,
+  IUserRepository,
+  UserAppearancePreferences,
+} from "@user/domain";
 import {
+  getAccountStats,
   getFeatureConfig,
   getWidgetConfig,
   getUserAppearance,
@@ -31,7 +36,13 @@ import { CurrentUserId } from "../auth/current-user-id.decorator.js";
 export class PreferencesController {
   constructor(
     @Inject("IUserRepository") private readonly userRepository: IUserRepository,
+    @Inject("IAccountStatsPort") private readonly accountStatsPort: AccountStatsPort,
   ) {}
+
+  @Get("stats")
+  async getStats(@CurrentUserId() userId: UUID) {
+    return getAccountStats({ accountStatsPort: this.accountStatsPort }, { userId });
+  }
 
   @Get("features")
   async getFeatures(@CurrentUserId() userId: UUID) {
