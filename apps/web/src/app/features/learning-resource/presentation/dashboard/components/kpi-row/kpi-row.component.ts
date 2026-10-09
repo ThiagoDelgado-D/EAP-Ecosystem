@@ -1,4 +1,5 @@
 import { Component, input, computed } from '@angular/core';
+import { WEEKLY_GOAL_MINUTES } from '@features/settings/domain/settings.model';
 import { CounterComponent } from '@shared/components/counter/counter.component';
 
 export interface WeekDay {
@@ -30,7 +31,7 @@ export class KpiRowComponent {
   readonly weekDeltaPct = input<number | null>(null);
   readonly weekDays = input<WeekDay[]>([]);
   readonly streakDays = input<number>(0);
-  readonly goalMinutes = input<number>(600);
+  readonly goalMinutes = input<number>(WEEKLY_GOAL_MINUTES.DEFAULT);
 
   readonly weeklyFocusHours = computed(() => {
     const minutes = this.weeklyFocusMinutes();
