@@ -10,6 +10,11 @@ import { LearningPathRepository } from '@features/learning-path/domain/learning-
 import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
+import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
+import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
+import { mockPreferencesRepository } from '@features/settings/application/mocks/mock-preferences.repository';
+import { WEEKLY_GOAL_MINUTES } from '@features/settings/domain/settings.model';
+import type { DayLog } from '@features/pomodoro/application/weekly-summary.model';
 import { WeeklySummaryComponent, WEEK_LOG_SCOPE } from './weekly-summary.component';
 
 function buildSession(startedAt: Date): Session {
@@ -20,8 +25,17 @@ function buildFreeSegment(sessionId: string, endSec = 1500): Segment {
   return { id: crypto.randomUUID(), sessionId, startSec: 0, endSec, targetKind: 'free' };
 }
 
+const TWENTY_FIVE_MINUTE_FOCUS_SEC = 1500;
+const ON_PACE_BAR_COLOR = 'var(--color-accent)';
+const BELOW_PACE_BAR_COLOR = 'var(--tone-ochre, var(--color-accent))';
+
+function focusDay(focusSec: number): DayLog {
+  return { date: new Date(), focusSec, breakSec: 0, sessionCount: 1, sessions: [] };
+}
+
 function setup(sessions: Session[] = [], segments: Segment[] = []) {
   const repository = mockPomodoroRepository({ sessions, segments });
+  const preferencesRepository = mockPreferencesRepository();
   const dialogOpen = vi.fn();
   TestBed.configureTestingModule({
     providers: [
@@ -31,13 +45,30 @@ function setup(sessions: Session[] = [], segments: Segment[] = []) {
       { provide: LearningPathRepository, useValue: mockLearningPathRepository() },
       { provide: LearningResourceRepository, useValue: mockLearningResourceRepository() },
       { provide: MatDialog, useValue: { open: dialogOpen } },
+      WeeklyGoalService,
+      { provide: PreferencesRepository, useValue: preferencesRepository },
     ],
   });
   const component = TestBed.createComponent(WeeklySummaryComponent).componentInstance;
-  return { component, repository, dialogOpen };
+  return { component, repository, dialogOpen, preferencesRepository };
 }
 
 describe('WeeklySummaryComponent', () => {
+  test('should measure a day against the default goal until a saved one loads', () => {
+    const { component } = setup();
+
+    expect(component.weekBarColor(focusDay(TWENTY_FIVE_MINUTE_FOCUS_SEC))).toBe(BELOW_PACE_BAR_COLOR);
+  });
+
+  test("should measure a day against the learner's saved weekly goal", async () => {
+    const { component, preferencesRepository } = setup();
+    preferencesRepository.appearance.weeklyGoalMinutes = WEEKLY_GOAL_MINUTES.MIN;
+
+    await TestBed.inject(WeeklyGoalService).load();
+
+    expect(component.weekBarColor(focusDay(TWENTY_FIVE_MINUTE_FOCUS_SEC))).toBe(ON_PACE_BAR_COLOR);
+  });
+
   test('should surface a failed state when the history request rejects', async () => {
     const { component, repository } = setup();
     repository.getHistory = () => Promise.reject(new Error('network down'));
