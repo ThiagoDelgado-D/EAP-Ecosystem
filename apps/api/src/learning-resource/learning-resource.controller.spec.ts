@@ -4,11 +4,15 @@ import {
 } from "@learning-resource/application";
 import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
-import { type MockedJwtService, type UUID } from "domain-lib";
+import {
+  InvalidDataError,
+  NotFoundError,
+  type MockedJwtService,
+  type UUID,
+} from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
+import { TopicTone } from "@learning-resource/domain";
 import { createLearningResourceTestApp } from "./learning-resource-module.fixture.js";
-
-const INVALID_DATA_ERROR = "INVALID_DATA_ERROR";
 
 describe("LearningResourceController (integration)", () => {
   let app: INestApplication;
@@ -18,6 +22,7 @@ describe("LearningResourceController (integration)", () => {
 
   let topicId: UUID;
   let designTopicId: UUID;
+  let intruderTopicId: UUID;
   let resourceTypeId: UUID;
   let ownerId: UUID;
   let intruderId: UUID;
@@ -40,10 +45,14 @@ describe("LearningResourceController (integration)", () => {
       },
     };
 
+    ownerId = crypto.randomUUID() as UUID;
+    intruderId = crypto.randomUUID() as UUID;
+
     const ctx = await createLearningResourceTestApp({
       topics: [
-        { name: "Programming", color: "#FF5733" },
-        { name: "Design", color: "#2C6A51" },
+        { userId: ownerId, name: "Programming", color: TopicTone.EMBER },
+        { userId: ownerId, name: "Design", color: TopicTone.PINE },
+        { userId: intruderId, name: "Programming", color: TopicTone.INFO },
       ],
       resourceTypes: [{ code: "video", displayName: "Video" }],
       metadataService,
@@ -55,10 +64,9 @@ describe("LearningResourceController (integration)", () => {
     jwtService = ctx.jwtService;
     topicId = ctx.topics[0].id;
     designTopicId = ctx.topics[1].id;
+    intruderTopicId = ctx.topics[2].id;
     resourceTypeId = ctx.resourceTypes[0].id;
 
-    ownerId = await cryptoService.generateUUID();
-    intruderId = await cryptoService.generateUUID();
     ownerToken = await jwtService.sign({ sub: ownerId });
     intruderToken = await jwtService.sign({ sub: intruderId });
   });
@@ -129,9 +137,18 @@ describe("LearningResourceController (integration)", () => {
       expect(response.status).toBe(403);
     });
 
+    test("Should return 404 when tagging a resource with another user's topic", async () => {
+      const response = await createResource({ topicIds: [intruderTopicId] }).expect(404);
+
+      expect(response.body.error).toBe(new NotFoundError().name);
+    });
+
     test("Should not return another user's resources in the list", async () => {
       await createResource({ title: "Owned Resource" }).expect(201);
-      await createResource({ title: "Intruder Resource" }, intruderToken).expect(201);
+      await createResource(
+        { title: "Intruder Resource", topicIds: [intruderTopicId] },
+        intruderToken,
+      ).expect(201);
 
       const response = await request(app.getHttpServer())
         .get("/api/v1/learning-resources")
@@ -470,7 +487,7 @@ describe("LearningResourceController (integration)", () => {
         const ascendingResponse = await listSortedBy(UNKNOWN_SORT_FIELD).expect(400);
         const descendingResponse = await listSortedBy(`-${UNKNOWN_SORT_FIELD}`).expect(400);
 
-        expect(ascendingResponse.body.error).toBe(INVALID_DATA_ERROR);
+        expect(ascendingResponse.body.error).toBe(new InvalidDataError().name);
         expect(ascendingResponse.body).toHaveProperty("sortField");
         expect(descendingResponse.body).toHaveProperty("sortField");
       });
@@ -512,7 +529,7 @@ describe("LearningResourceController (integration)", () => {
           .query({ topicIds: MALFORMED_TOPIC_ID })
           .expect(400);
 
-        expect(response.body.error).toBe(INVALID_DATA_ERROR);
+        expect(response.body.error).toBe(new InvalidDataError().name);
         expect(response.body).toHaveProperty("topicIds");
       });
     });

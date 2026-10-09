@@ -2,6 +2,7 @@ import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import type { UUID } from "domain-lib";
 import { TopicTone } from "@learning-resource/domain";
+import { DuplicateTopicNameError, TopicNotFoundError } from "@learning-resource/application";
 import { createLearningResourceTestApp } from "./learning-resource-module.fixture.js";
 
 const TOPICS_URL = "/api/v1/topics";
@@ -11,8 +12,6 @@ const RUST_LANG_TOPIC_NAME = "Rust lang";
 const INTRUDER_TOPIC_NAME = "Gardening";
 const NEW_TOPIC_NAME = "Distributed Systems";
 const UNKNOWN_TONE = "neon";
-const DUPLICATE_TOPIC_NAME_ERROR = "DUPLICATE_TOPIC_NAME_ERROR";
-const TOPIC_NOT_FOUND_ERROR = "TOPIC_NOT_FOUND_ERROR";
 
 describe("TopicController (integration)", () => {
   let app: INestApplication;
@@ -113,7 +112,7 @@ describe("TopicController (integration)", () => {
         .send({ name: RUST_TOPIC_NAME.toLowerCase() })
         .expect(409);
 
-      expect(response.body.error).toBe(DUPLICATE_TOPIC_NAME_ERROR);
+      expect(response.body.error).toBe(new DuplicateTopicNameError().name);
     });
 
     test("Should return 400 for an unknown tone", async () => {
@@ -147,7 +146,7 @@ describe("TopicController (integration)", () => {
         .send({ name: SYSTEMS_DESIGN_TOPIC_NAME })
         .expect(409);
 
-      expect(response.body.error).toBe(DUPLICATE_TOPIC_NAME_ERROR);
+      expect(response.body.error).toBe(new DuplicateTopicNameError().name);
     });
 
     test("Should return 404 for another learner's topic", async () => {
@@ -157,7 +156,7 @@ describe("TopicController (integration)", () => {
         .send({ name: RUST_LANG_TOPIC_NAME })
         .expect(404);
 
-      expect(response.body.error).toBe(TOPIC_NOT_FOUND_ERROR);
+      expect(response.body.error).toBe(new TopicNotFoundError().name);
     });
   });
 
@@ -177,7 +176,7 @@ describe("TopicController (integration)", () => {
         .set(authHeader(ownerToken))
         .expect(404);
 
-      expect(response.body.error).toBe(TOPIC_NOT_FOUND_ERROR);
+      expect(response.body.error).toBe(new TopicNotFoundError().name);
       const intruderTopics = await http().get(TOPICS_URL).set(authHeader(intruderToken)).expect(200);
       expect(intruderTopics.body.total).toBe(1);
     });
