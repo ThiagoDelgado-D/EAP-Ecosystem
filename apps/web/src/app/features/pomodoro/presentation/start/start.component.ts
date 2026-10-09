@@ -221,11 +221,13 @@ export class StartComponent implements OnInit {
 
   toggleMoreMenu(event: MouseEvent): void {
     event.stopPropagation();
+    this.startMenuOpen.set(false);
     this.moreMenuOpen.update((v) => !v);
   }
 
   toggleStartMenu(event: MouseEvent): void {
     event.stopPropagation();
+    this.moreMenuOpen.set(false);
     this.startMenuOpen.update((v) => !v);
   }
 
