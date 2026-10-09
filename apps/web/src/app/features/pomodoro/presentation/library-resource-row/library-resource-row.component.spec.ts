@@ -23,7 +23,7 @@ const articleType: ResourceType = {
 };
 
 const typeScriptTopicId = crypto.randomUUID();
-const typeScriptTopic: Topic = { id: typeScriptTopicId, name: 'TypeScript', color: 'info', createdAt: now, updatedAt: now };
+const typeScriptTopic: Topic = { id: typeScriptTopicId, name: 'TypeScript', color: 'info', resourceCount: 1, createdAt: now, updatedAt: now };
 
 const typeScriptGenericsResource: LearningResource = {
   id: crypto.randomUUID(),
