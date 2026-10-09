@@ -2,12 +2,12 @@ import type { UUID } from "domain-lib";
 import type { ISessionRepository, Segment, Session } from "@pomodoro/domain";
 import { SegmentTargetKind } from "@pomodoro/domain";
 import { IsNull, Not, type Repository } from "typeorm";
-import { SessionEntity } from "../entities/session.entity.js";
+import { PomodoroSessionEntity } from "../entities/session.entity.js";
 import { SegmentEntity } from "../entities/segment.entity.js";
 
 export class TypeOrmSessionRepository implements ISessionRepository {
   constructor(
-    private readonly sessionRepository: Repository<SessionEntity>,
+    private readonly sessionRepository: Repository<PomodoroSessionEntity>,
     private readonly segmentRepository: Repository<SegmentEntity>,
   ) {}
 
@@ -80,7 +80,7 @@ export class TypeOrmSessionRepository implements ISessionRepository {
   ): Promise<Segment[]> {
     const query = this.segmentRepository
       .createQueryBuilder("segment")
-      .innerJoin(SessionEntity, "session", "session.id = segment.sessionId")
+      .innerJoin(PomodoroSessionEntity, "session", "session.id = segment.sessionId")
       .where("session.userId = :userId", { userId })
       .andWhere("session.startedAt >= :since", { since });
     if (until) query.andWhere("session.startedAt < :until", { until });
@@ -98,8 +98,8 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     return entities.map((entity) => this.toSessionDomain(entity));
   }
 
-  private toSessionEntity(session: Session): SessionEntity {
-    const entity = new SessionEntity();
+  private toSessionEntity(session: Session): PomodoroSessionEntity {
+    const entity = new PomodoroSessionEntity();
     entity.id = session.id;
     entity.userId = session.userId;
     entity.startedAt = session.startedAt;
@@ -110,7 +110,7 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     return entity;
   }
 
-  private toSessionDomain(entity: SessionEntity): Session {
+  private toSessionDomain(entity: PomodoroSessionEntity): Session {
     return {
       id: entity.id as UUID,
       userId: entity.userId as UUID,

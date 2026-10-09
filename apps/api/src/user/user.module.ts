@@ -15,7 +15,7 @@ import {
   LearningPathEntity,
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
-import { SessionEntity as PomodoroSessionEntity } from "@pomodoro/infrastructure";
+import { PomodoroSessionEntity } from "@pomodoro/infrastructure";
 import { AuthController } from "./auth.controller.js";
 import { PreferencesController } from "./preferences.controller.js";
 import { TypeOrmAccountStatsAdapter } from "./typeorm-account-stats-adapter.js";
