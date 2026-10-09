@@ -1,90 +1,54 @@
 import { beforeEach, describe, expect, test } from "vitest";
+import { mockCryptoService, mockCurrentUser, type CurrentUser, type UUID } from "domain-lib";
 import { mockTopicRepository } from "../../mocks/mock-topic-repository.js";
-import { mockCryptoService } from "domain-lib";
-import type { Topic } from "@learning-resource/domain";
+import { generateTopic } from "../../mocks/factories.js";
 import { getTopics } from "./get-topics.js";
 
-describe("getTopics", () => {
-  let cryptoService: ReturnType<typeof mockCryptoService>;
-  let topicRepository: ReturnType<typeof mockTopicRepository>;
+const RUST_RESOURCE_COUNT = 3;
 
-  beforeEach(() => {
-    cryptoService = mockCryptoService();
-    topicRepository = mockTopicRepository([]);
+describe("getTopics", () => {
+  let currentUser: CurrentUser;
+  let anotherLearner: CurrentUser;
+
+  beforeEach(async () => {
+    const cryptoService = mockCryptoService();
+    currentUser = await mockCurrentUser(cryptoService);
+    anotherLearner = await mockCurrentUser(cryptoService);
   });
 
-  test("Should return empty array when no topics exist", async () => {
-    const result = await getTopics({ topicRepository });
+  test("Should return an empty list for a learner without topics", async () => {
+    const result = await getTopics({ topicRepository: mockTopicRepository([]), currentUser });
 
     expect(result.topics).toEqual([]);
     expect(result.total).toBe(0);
   });
 
-  test("Should return all topics with correct total", async () => {
-    const topic1Id = await cryptoService.generateUUID();
-    const topic2Id = await cryptoService.generateUUID();
+  test("Should return only the current learner's topics", async () => {
+    const ownTopic = generateTopic({ userId: currentUser.id });
+    const someoneElsesTopic = generateTopic({ userId: anotherLearner.id });
 
-    const topic1: Topic = {
-      id: topic1Id,
-      name: "Programming",
-      color: "#FF5733",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const topic2: Topic = {
-      id: topic2Id,
-      name: "Design",
-      color: "#1E90FF",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    topicRepository = mockTopicRepository([topic1, topic2]);
-
-    const result = await getTopics({ topicRepository });
-
-    expect(result.total).toBe(2);
-    expect(result.topics).toHaveLength(2);
-    expect(result.topics[0].name).toBe("Programming");
-    expect(result.topics[1].name).toBe("Design");
-  });
-
-  test("Should return topics with all their fields", async () => {
-    const topicId = await cryptoService.generateUUID();
-
-    const topic: Topic = {
-      id: topicId,
-      name: "Programming",
-      color: "#FF5733",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    topicRepository = mockTopicRepository([topic]);
-
-    const result = await getTopics({ topicRepository });
-
-    expect(result.topics[0]).toMatchObject({
-      name: "Programming",
-      color: "#FF5733",
+    const result = await getTopics({
+      topicRepository: mockTopicRepository([ownTopic, someoneElsesTopic]),
+      currentUser,
     });
+
+    expect(result.total).toBe(1);
+    expect(result.topics.map((topic) => topic.id)).toEqual([ownTopic.id]);
   });
 
-  test("Should return topic with undefined color", async () => {
-    const topicId = await cryptoService.generateUUID();
+  test("Should include how many resources use each topic, without the owner id", async () => {
+    const rustTopic = generateTopic({ userId: currentUser.id });
+    const resourceCounts = new Map<UUID, number>([[rustTopic.id, RUST_RESOURCE_COUNT]]);
 
-    const topic: Topic = {
-      id: topicId,
-      name: "Science",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const result = await getTopics({
+      topicRepository: mockTopicRepository([rustTopic], (topicId) => resourceCounts.get(topicId) ?? 0),
+      currentUser,
+    });
 
-    topicRepository = mockTopicRepository([topic]);
-
-    const result = await getTopics({ topicRepository });
-
-    expect(result.topics[0].color).toBeUndefined();
+    const [listedTopic] = result.topics;
+    expect(listedTopic.resourceCount).toBe(RUST_RESOURCE_COUNT);
+    expect(listedTopic.name).toBe(rustTopic.name);
+    expect(listedTopic.color).toBe(rustTopic.color);
+    expect(listedTopic).not.toHaveProperty("userId");
   });
 });

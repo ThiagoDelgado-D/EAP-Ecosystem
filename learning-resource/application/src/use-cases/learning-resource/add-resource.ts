@@ -26,6 +26,7 @@ import {
   ResourceStatusType,
 } from "@learning-resource/domain";
 import { calculateEnergyLevel } from "../../utils/calculate-energy-level.js";
+import { findUnavailableTopic } from "../topics/find-unavailable-topic.js";
 
 export interface AddResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;
@@ -114,12 +115,12 @@ export const addResource = async (
     });
   }
 
-  for (const topicId of validatedData.topicIds) {
-    const topic = await topicRepository.findById(topicId);
-    if (!topic) {
-      return new NotFoundError({ resource: "Topic", id: topicId });
-    }
-  }
+  const unavailableTopic = await findUnavailableTopic(
+    topicRepository,
+    validatedData.topicIds,
+    currentUser,
+  );
+  if (unavailableTopic) return unavailableTopic;
 
   const energyLevel =
     validatedData.energyLevel ||

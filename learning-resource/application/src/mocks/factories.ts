@@ -7,10 +7,12 @@ import {
   PathSource,
   ResourceStatusType,
   StubScope,
+  TopicTone,
   type LearningPath,
   type LearningPathEdge,
   type LearningPathNode,
   type LearningResource,
+  type Topic,
 } from "@learning-resource/domain";
 import {
   mockCurrentUser,
@@ -20,6 +22,19 @@ import {
 } from "domain-lib";
 import type { MockedLearningPathRepository } from "./mock-learning-path-repository.js";
 import { mockLearningResourceRepository } from "./mock-learning-resource-repository.js";
+
+export const generateTopic = (opts?: Partial<Topic>): Topic => {
+  const createdAt = faker.date.past({ years: 1 });
+  return {
+    id: faker.string.uuid() as UUID,
+    userId: faker.string.uuid() as UUID,
+    name: faker.hacker.noun(),
+    color: faker.helpers.arrayElement(Object.values(TopicTone)),
+    createdAt,
+    updatedAt: faker.date.between({ from: createdAt, to: new Date() }),
+    ...opts,
+  };
+};
 
 export const generateLearningPath = (opts?: Partial<LearningPath>): LearningPath => {
   const createdAt = faker.date.past({ years: 1 });

@@ -1,12 +1,15 @@
 import type { UUID } from "domain-lib";
-import type { ITopicRepository, Topic } from "@learning-resource/domain";
+import type { ITopicRepository, Topic, TopicWithUsage } from "@learning-resource/domain";
 
 export interface MockedTopicRepository extends ITopicRepository {
   topics: Topic[];
 }
 
+export type CountResourcesUsingTopic = (topicId: UUID) => number;
+
 export function mockTopicRepository(
-  topics: Topic[] = []
+  topics: Topic[] = [],
+  countResourcesUsing: CountResourcesUsingTopic = () => 0,
 ): MockedTopicRepository {
   return {
     topics: [...topics],
@@ -24,8 +27,27 @@ export function mockTopicRepository(
       return this.topics.find((t) => t.id === id) || null;
     },
 
-    async findAll(): Promise<Topic[]> {
-      return [...this.topics];
+    findAllByUserId(userId: UUID): Promise<TopicWithUsage[]> {
+      const ownTopics = this.topics
+        .filter((t) => t.userId === userId)
+        .map((t) => ({
+          id: t.id,
+          userId: t.userId,
+          name: t.name,
+          color: t.color,
+          resourceCount: countResourcesUsing(t.id),
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt,
+        }));
+      return Promise.resolve(ownTopics);
+    },
+
+    findByName(userId: UUID, name: string): Promise<Topic | null> {
+      const lowerName = name.toLowerCase();
+      const sameName = this.topics.find(
+        (t) => t.userId === userId && t.name.toLowerCase() === lowerName,
+      );
+      return Promise.resolve(sameName ?? null);
     },
 
     async update(id: UUID, data: Partial<Topic>): Promise<void> {

@@ -25,6 +25,7 @@ import {
   LearningResourceNotFoundError,
 } from "../../errors/index.js";
 import { verifyLearningResourceOwnership } from "./verify-learning-resource-ownership.js";
+import { findUnavailableTopic } from "../topics/find-unavailable-topic.js";
 
 export interface UpdateResourceDependencies {
   learningResourceRepository: ILearningResourceRepository;
@@ -124,19 +125,13 @@ export const updateResource = async (
     }
   }
 
-  if (
-    validatedData.topicIds !== undefined &&
-    validatedData.topicIds.length > 0
-  ) {
-    for (const topicId of validatedData.topicIds) {
-      const topic = await topicRepository.findById(topicId);
-      if (!topic) {
-        return new NotFoundError({
-          resource: "Topic",
-          id: topicId,
-        });
-      }
-    }
+  if (validatedData.topicIds !== undefined) {
+    const unavailableTopic = await findUnavailableTopic(
+      topicRepository,
+      validatedData.topicIds,
+      currentUser,
+    );
+    if (unavailableTopic) return unavailableTopic;
   }
 
   const updates: Partial<LearningResource> = { updatedAt: new Date() };

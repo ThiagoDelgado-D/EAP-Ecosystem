@@ -3,6 +3,7 @@ import {
   mockTopicRepository,
   mockResourceTypeRepository,
   mockLearningResourceRepository,
+  generateTopic,
 } from "../../mocks/index.js";
 import {
   type CurrentUser,
@@ -20,6 +21,7 @@ import {
   ResourceStatusType,
   type ResourceType,
   type Topic,
+  TopicTone,
 } from "@learning-resource/domain";
 import { updateResource } from "./edit-resource.js";
 import {
@@ -89,7 +91,8 @@ describe("updateResource", () => {
     const topic: Topic = {
       id: topicId,
       name: "Programming",
-      color: "#FF5733",
+      userId: currentUser.id,
+      color: TopicTone.PINE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -97,7 +100,8 @@ describe("updateResource", () => {
     const newTopic: Topic = {
       id: newTopicId,
       name: "Design",
-      color: "#3357FF",
+      userId: currentUser.id,
+      color: TopicTone.INFO,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -344,6 +348,28 @@ describe("updateResource", () => {
     );
 
     expect(result).toBeInstanceOf(LearningResourceNotFoundError);
+  });
+
+  test("Should reject another learner's topic and keep the resource's topics", async () => {
+    const someoneElsesTopic = generateTopic({ userId: await cryptoService.generateUUID() });
+    await topicRepository.save(someoneElsesTopic);
+
+    const result = await updateResource(
+      {
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+        currentUser,
+      },
+      {
+        id: resourceId,
+        topicIds: [someoneElsesTopic.id],
+      },
+    );
+
+    expect(result).toBeInstanceOf(NotFoundError);
+    const unchanged = await learningResourceRepository.findById(resourceId);
+    expect(unchanged?.topicIds).toEqual([topicId]);
   });
 
   test("Should return NotFoundError when new typeId does not exist", async () => {
