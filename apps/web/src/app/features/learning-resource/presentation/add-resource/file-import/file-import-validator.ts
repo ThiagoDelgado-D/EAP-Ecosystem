@@ -31,7 +31,6 @@ export interface ValidatedRow {
   resolvedStatus: ResourceStatus;
   resolvedDurationMinutes: number;
   resolvedTypeId: string;
-  availableTopics: { id: string; name: string }[];
   selectedTopicIds: string[];
   errors: RowError[];
   status: RowValidationStatus;
@@ -53,8 +52,6 @@ export function validateRows(
   resourceTypes: ResourceType[],
   topics: Topic[],
 ): ValidatedRow[] {
-  const availableTopics = topics.map((t) => ({ id: t.id, name: t.name }));
-
   return rows.map((row, index) => {
     const errors: RowError[] = [];
 
@@ -204,7 +201,6 @@ export function validateRows(
       resolvedStatus,
       resolvedDurationMinutes,
       resolvedTypeId,
-      availableTopics,
       selectedTopicIds,
       errors,
       status,
