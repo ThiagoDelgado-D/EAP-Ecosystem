@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ANIMATION_MODULE_TYPE, ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, TitleStrategy } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
@@ -19,8 +19,6 @@ import { CalibrationService } from '@features/recommendation/application/calibra
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import { PreferencesHttpRepository } from '@features/settings/infrastructure/preferences-http.repository';
 import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
-
-import { ANIMATION_MODULE_TYPE } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
   providers: [
