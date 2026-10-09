@@ -262,6 +262,26 @@ describe('StartComponent', () => {
     expect(component.startMenuOpen()).toBe(false);
   });
 
+  test('toggleStartMenu should close the more-actions menu so the two never overlap', () => {
+    const { component } = setup();
+    component.moreMenuOpen.set(true);
+
+    component.toggleStartMenu(new MouseEvent('click'));
+
+    expect(component.startMenuOpen()).toBe(true);
+    expect(component.moreMenuOpen()).toBe(false);
+  });
+
+  test('toggleMoreMenu should close the start menu so the two never overlap', () => {
+    const { component } = setup();
+    component.startMenuOpen.set(true);
+
+    component.toggleMoreMenu(new MouseEvent('click'));
+
+    expect(component.moreMenuOpen()).toBe(true);
+    expect(component.startMenuOpen()).toBe(false);
+  });
+
   test('closeMoreMenu should also close the start menu on any outside click', () => {
     const { component } = setup();
     component.startMenuOpen.set(true);
