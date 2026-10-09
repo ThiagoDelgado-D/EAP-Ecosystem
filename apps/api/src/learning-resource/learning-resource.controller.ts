@@ -17,6 +17,8 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { RATE_LIMITS } from "../rate-limit/rate-limits.js";
 import {
   AddResourceDto,
   PreviewUrlDto,
@@ -223,6 +225,7 @@ export class LearningResourceController {
   }
 
   @Post("preview")
+  @Throttle({ default: RATE_LIMITS.URL_PREVIEW })
   @HttpCode(200)
   async preview(@Body() dto: PreviewUrlDto) {
     const result = await previewUrl(
