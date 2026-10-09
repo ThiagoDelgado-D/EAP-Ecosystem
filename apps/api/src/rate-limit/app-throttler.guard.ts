@@ -4,10 +4,12 @@ import { TOO_MANY_REQUESTS_ERROR } from "./rate-limits.js";
 
 @Injectable()
 export class AppThrottlerGuard extends ThrottlerGuard {
-  protected override async throwThrottlingException(): Promise<void> {
-    throw new HttpException(
-      { error: TOO_MANY_REQUESTS_ERROR },
-      HttpStatus.TOO_MANY_REQUESTS,
+  protected override throwThrottlingException(): Promise<void> {
+    return Promise.reject(
+      new HttpException(
+        { error: TOO_MANY_REQUESTS_ERROR },
+        HttpStatus.TOO_MANY_REQUESTS,
+      ),
     );
   }
 }
