@@ -27,8 +27,8 @@ export function mockTopicRepository(
       return this.topics.find((t) => t.id === id) || null;
     },
 
-    async findAllByUserId(userId: UUID): Promise<TopicWithUsage[]> {
-      return this.topics
+    findAllByUserId(userId: UUID): Promise<TopicWithUsage[]> {
+      const ownTopics = this.topics
         .filter((t) => t.userId === userId)
         .map((t) => ({
           id: t.id,
@@ -39,13 +39,15 @@ export function mockTopicRepository(
           createdAt: t.createdAt,
           updatedAt: t.updatedAt,
         }));
+      return Promise.resolve(ownTopics);
     },
 
-    async findByName(userId: UUID, name: string): Promise<Topic | null> {
+    findByName(userId: UUID, name: string): Promise<Topic | null> {
       const lowerName = name.toLowerCase();
-      return (
-        this.topics.find((t) => t.userId === userId && t.name.toLowerCase() === lowerName) ?? null
+      const sameName = this.topics.find(
+        (t) => t.userId === userId && t.name.toLowerCase() === lowerName,
       );
+      return Promise.resolve(sameName ?? null);
     },
 
     async update(id: UUID, data: Partial<Topic>): Promise<void> {
