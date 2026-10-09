@@ -168,9 +168,8 @@
                   @for (t of topics(); track t.id) {
                     <button
                       type="button"
-                      class="chip"
-                      [style.--tone]="t.color ?? 'var(--color-accent)'"
-                      [class.tone-chip]="!!t.color"
+                      class="chip tone-chip"
+                      [style.--tone]="toneVar(t.color)"
                       [attr.data-on]="topicIds().includes(t.id) || undefined"
                       (click)="toggleTopic(t.id)"
                     >

@@ -26,6 +26,7 @@ import { KpiRowComponent } from './components/kpi-row/kpi-row.component.js';
 import { RecentActivityComponent } from './components/recent-activity/recent-activity.component.js';
 import { TopicAttentionComponent } from './components/topic-attention/topic-attention.component.js';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
+import { toneVar } from '@shared/utils/tone';
 
 const AVAILABLE_MINUTES_OPTIONS = [15, 25, 45, 60, 90] as const;
 
@@ -261,13 +262,13 @@ export class DashboardComponent implements OnInit {
     this.recentResources.set(recent);
     const topics = this.topicService.topics();
     const colorById: Record<string, string> = {};
-    for (const t of topics) if (t.color) colorById[t.id] = t.color;
+    for (const t of topics) colorById[t.id] = toneVar(t.color);
     this.topicColorById.set(colorById);
     const load = topics
       .map((t) => ({
         id: t.id,
         name: t.name,
-        color: t.color,
+        color: toneVar(t.color),
         pendingMinutes: Math.round(
           [...pending, ...inProgress]
             .filter((r) => r.topicIds.includes(t.id))

@@ -38,6 +38,7 @@ import {
   MENTAL_STATE_LABELS,
   RESOURCE_STATUS_LABELS,
 } from '@features/learning-resource/domain/learning-resource.constants.js';
+import { toneVar } from '@shared/utils/tone';
 
 const TYPE_TONE: Record<string, string> = {
   video: 'info',
@@ -204,7 +205,7 @@ export class ResourceDetailComponent implements OnInit {
     return resource.topicIds
       .map((id) => byId.get(id))
       .filter((t): t is NonNullable<typeof t> => !!t)
-      .map((t) => ({ name: t.name, color: t.color ?? undefined }));
+      .map((t) => ({ name: t.name, color: toneVar(t.color) }));
   }
 
   sourceHost(resource: LearningResource): string | null {

@@ -416,7 +416,9 @@ export class HomeComponent implements OnInit {
   }
 
   topicColor(topicId: string): string | undefined {
-    return this.topics().find((t) => t.id === topicId)?.color ?? undefined;
+    const topic = this.topics().find((t) => t.id === topicId);
+    if (!topic) return undefined;
+    return this.toneVar(topic.color);
   }
 
   coverStyle(resource: LearningResource): string {
@@ -433,7 +435,7 @@ export class HomeComponent implements OnInit {
       .map((id) => byId.get(id))
       .filter((t): t is NonNullable<typeof t> => !!t)
       .slice(0, 2)
-      .map((t) => ({ name: t.name, color: t.color ?? undefined }));
+      .map((t) => ({ name: t.name, color: this.toneVar(t.color) }));
   }
 
   readonly pageMinutes = computed(() =>
