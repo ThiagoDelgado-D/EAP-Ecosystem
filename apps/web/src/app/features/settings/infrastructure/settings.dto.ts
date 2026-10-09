@@ -16,7 +16,14 @@ export interface AppearanceDto {
     startOfWeek: string;
     reduceMotion: boolean;
     compactMode: boolean;
+    weeklyGoalMinutes: number;
   };
+}
+
+export interface AccountStatsDto {
+  resources: number;
+  paths: number;
+  sessions: number;
 }
 
 export interface SessionDto {
