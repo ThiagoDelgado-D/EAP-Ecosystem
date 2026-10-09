@@ -23,7 +23,7 @@ import { getRepositoryToken } from "@nestjs/typeorm";
 import {
   BreakEntity,
   SegmentEntity,
-  SessionEntity,
+  PomodoroSessionEntity,
 } from "@pomodoro/infrastructure";
 import {
   LearningPathEdgeEntity,
@@ -64,7 +64,7 @@ describe("PomodoroController (integration)", () => {
     const module = await Test.createTestingModule({
       imports: [PomodoroModule],
     })
-      .overrideProvider(getRepositoryToken(SessionEntity))
+      .overrideProvider(getRepositoryToken(PomodoroSessionEntity))
       .useValue({})
       .overrideProvider(getRepositoryToken(SegmentEntity))
       .useValue({})

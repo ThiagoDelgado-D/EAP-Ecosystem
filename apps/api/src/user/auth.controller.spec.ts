@@ -26,7 +26,7 @@ import {
   LearningPathEntity,
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
-import { SessionEntity as PomodoroSessionEntity } from "@pomodoro/infrastructure";
+import { PomodoroSessionEntity } from "@pomodoro/infrastructure";
 import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
 import { EnvironmentService } from "../config/environment.service.js";
 
