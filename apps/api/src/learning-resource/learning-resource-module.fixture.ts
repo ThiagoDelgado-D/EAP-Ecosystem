@@ -4,11 +4,11 @@ import {
   mockTopicRepository,
   type IUrlMetadataService,
 } from "@learning-resource/application";
-import type { ResourceType, Topic } from "@learning-resource/domain";
+import type { ResourceType, Topic, TopicTone } from "@learning-resource/domain";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { mockJwtService, type MockedJwtService } from "domain-lib";
+import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import {
   LearningResourceEntity,
@@ -19,8 +19,9 @@ import { LearningResourceModule } from "./learning-resource.module.js";
 import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
 
 export interface TopicSeed {
+  userId: UUID;
   name: string;
-  color: string;
+  color: TopicTone;
 }
 
 export interface ResourceTypeSeed {
@@ -73,7 +74,12 @@ export async function createLearningResourceTestApp(
   );
 
   const resourceRepo = mockLearningResourceRepository([]);
-  const topicRepo = mockTopicRepository(topics);
+  const topicRepo = mockTopicRepository(
+    topics,
+    (topicId) =>
+      resourceRepo.learningResources.filter((resource) => resource.topicIds.includes(topicId))
+        .length,
+  );
   const resourceTypeRepo = mockResourceTypeRepository(resourceTypes);
   const jwtService = mockJwtService();
 
