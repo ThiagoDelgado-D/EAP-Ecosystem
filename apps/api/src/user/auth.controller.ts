@@ -15,6 +15,8 @@ import {
   UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
+import { RATE_LIMITS } from "../rate-limit/rate-limits.js";
 import { randomBytes } from "node:crypto";
 import type {
   EmailService,
@@ -65,6 +67,7 @@ export class AuthController {
   ) {}
 
   @Post("request-sign-in")
+  @Throttle({ default: RATE_LIMITS.REQUEST_SIGN_IN })
   @HttpCode(204)
   async requestSignIn(@Body() dto: RequestSignInDto): Promise<void> {
     await requestSignIn(
@@ -79,6 +82,7 @@ export class AuthController {
   }
 
   @Post("verify-sign-in")
+  @Throttle({ default: RATE_LIMITS.VERIFY_SIGN_IN })
   @HttpCode(200)
   async verifySignIn(
     @Body() dto: VerifySignInDto,
@@ -136,6 +140,7 @@ export class AuthController {
   }
 
   @Get("google")
+  @Throttle({ default: RATE_LIMITS.AUTH_SESSION })
   @Redirect()
   initiateGoogleOAuth(@Res({ passthrough: true }) res: Response) {
     const state = randomBytes(32).toString("hex");
@@ -162,6 +167,7 @@ export class AuthController {
   }
 
   @Get("google/callback")
+  @Throttle({ default: RATE_LIMITS.AUTH_SESSION })
   async googleCallback(
     @Req() req: Request,
     @Query("code") code: string,
@@ -235,6 +241,7 @@ export class AuthController {
   }
 
   @Post("refresh")
+  @Throttle({ default: RATE_LIMITS.AUTH_SESSION })
   @HttpCode(200)
   async refresh(
     @Req() req: Request,
