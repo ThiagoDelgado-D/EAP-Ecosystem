@@ -38,6 +38,22 @@
         @if (accountEmail()) {
           <p class="truncate text-[0.72rem] text-ink-dim">{{ accountEmail() }}</p>
         }
+        @if (accountStats(); as stats) {
+          <dl class="mt-3 flex flex-col gap-1 border-t border-line-soft pt-2 text-[0.74rem]">
+            <div class="flex items-center justify-between">
+              <dt class="text-ink-dim">Resources</dt>
+              <dd class="tnum font-semibold text-ink-strong">{{ stats.resources }}</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-ink-dim">Paths</dt>
+              <dd class="tnum font-semibold text-ink-strong">{{ stats.paths }}</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-ink-dim">Sessions</dt>
+              <dd class="tnum font-semibold text-ink-strong">{{ stats.sessions }}</dd>
+            </div>
+          </dl>
+        }
       </div>
     </nav>
 
