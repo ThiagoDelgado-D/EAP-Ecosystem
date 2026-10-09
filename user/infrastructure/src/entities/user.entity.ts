@@ -50,6 +50,9 @@ export class UserEntity {
   @Column({ default: false })
   compactMode!: boolean;
 
+  @Column({ type: "integer", default: 600 })
+  weeklyGoalMinutes!: number;
+
   @Column({ type: "text", nullable: true })
   bio!: string | null;
 
