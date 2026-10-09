@@ -10,6 +10,7 @@ import { describe, test, expect, beforeEach } from "vitest";
 import { mockLearningResourceRepository } from "../../mocks/mock-learning-resource-repository.js";
 import { mockResourceTypeRepository } from "../../mocks/mock-resource-type-repository.js";
 import { mockTopicRepository } from "../../mocks/mock-topic-repository.js";
+import { generateTopic } from "../../mocks/factories.js";
 import { addResource, type AddResourceRequestModel } from "./add-resource.js";
 import {
   DifficultyType,
@@ -18,6 +19,7 @@ import {
   ResourceStatusType,
   type ResourceType,
   type Topic,
+  TopicTone,
 } from "@learning-resource/domain";
 
 describe("addResource", () => {
@@ -42,7 +44,8 @@ describe("addResource", () => {
     const topic: Topic = {
       id: topicId,
       name: "Programming",
-      color: "Red",
+      userId: currentUser.id,
+      color: TopicTone.EMBER,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -305,6 +308,34 @@ describe("addResource", () => {
     expect((result as NotFoundError).context).toEqual({
       resource: "Topic",
       id: invalidTopicId,
+    });
+    expect(learningResourceRepository.learningResources).toHaveLength(0);
+  });
+  test("Should reject another learner's topic exactly like an unknown one", async () => {
+    const someoneElsesTopic = generateTopic({ userId: await cryptoService.generateUUID() });
+    await topicRepository.save(someoneElsesTopic);
+
+    const result = await addResource(
+      {
+        cryptoService,
+        learningResourceRepository,
+        resourceTypeRepository,
+        topicRepository,
+        currentUser,
+      },
+      {
+        title: "Learning TypeScript",
+        resourceTypeId,
+        topicIds: [someoneElsesTopic.id],
+        difficulty: DifficultyType.MEDIUM,
+        estimatedDurationMinutes: 60,
+      },
+    );
+
+    expect(result).toBeInstanceOf(NotFoundError);
+    expect((result as NotFoundError).context).toEqual({
+      resource: "Topic",
+      id: someoneElsesTopic.id,
     });
     expect(learningResourceRepository.learningResources).toHaveLength(0);
   });
