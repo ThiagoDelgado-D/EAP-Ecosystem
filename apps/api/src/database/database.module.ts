@@ -17,7 +17,7 @@ import {
   UserEntity,
 } from "@user/infrastructure";
 import {
-  SessionEntity as PomodoroSessionEntity,
+  PomodoroSessionEntity,
   SegmentEntity as PomodoroSegmentEntity,
   BreakEntity as PomodoroBreakEntity,
 } from "@pomodoro/infrastructure";

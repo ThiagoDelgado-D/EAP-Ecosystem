@@ -4,7 +4,7 @@ import {
   LearningPathEntity,
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
-import { SessionEntity as PomodoroSessionEntity } from "@pomodoro/infrastructure";
+import { PomodoroSessionEntity } from "@pomodoro/infrastructure";
 import { Not, IsNull, type Repository } from "typeorm";
 
 export class TypeOrmAccountStatsAdapter implements AccountStatsPort {

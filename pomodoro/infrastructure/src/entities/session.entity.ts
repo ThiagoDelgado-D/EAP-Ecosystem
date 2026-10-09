@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity("pomodoro_sessions")
-export class SessionEntity {
+export class PomodoroSessionEntity {
   @PrimaryColumn("uuid")
   id!: string;
 

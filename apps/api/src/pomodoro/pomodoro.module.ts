@@ -4,7 +4,7 @@ import { PomodoroController } from "./pomodoro.controller.js";
 import {
   BreakEntity,
   SegmentEntity,
-  SessionEntity,
+  PomodoroSessionEntity,
   TypeOrmBreakRepository,
   TypeOrmSessionRepository,
 } from "@pomodoro/infrastructure";
@@ -23,7 +23,7 @@ import { EnvironmentService } from "../config/environment.service.js";
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      SessionEntity,
+      PomodoroSessionEntity,
       SegmentEntity,
       BreakEntity,
       LearningPathNodeEntity,
@@ -39,7 +39,7 @@ import { EnvironmentService } from "../config/environment.service.js";
       useFactory: (sessionRepo, segmentRepo) =>
         new TypeOrmSessionRepository(sessionRepo, segmentRepo),
       inject: [
-        getRepositoryToken(SessionEntity),
+        getRepositoryToken(PomodoroSessionEntity),
         getRepositoryToken(SegmentEntity),
       ],
     },
