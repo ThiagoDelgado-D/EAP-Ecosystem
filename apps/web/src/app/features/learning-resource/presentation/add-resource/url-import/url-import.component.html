@@ -234,11 +234,7 @@
 
           <div class="mb-6">
             <label class="block text-xs text-ink-faint mb-2">Topics (select at least one)</label>
-            <app-topic-chip-list
-              [topics]="topics()"
-              [selectedIds]="selectedTopicIds()"
-              (toggled)="toggleTopic($event)"
-            />
+            <app-topic-picker [(selectedIds)]="selectedTopicIds" />
             @if (selectedTopicIds().length === 0) {
               <p class="text-xs text-[var(--tone-ochre)] mt-2">
                 ⚠️ You must select at least one topic to save.

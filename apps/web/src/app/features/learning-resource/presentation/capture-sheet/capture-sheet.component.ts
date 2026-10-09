@@ -27,7 +27,7 @@ import {
   RESOURCE_STATUS_LABELS,
   RESOURCE_STATUSES,
 } from '@features/learning-resource/domain/learning-resource.constants';
-import { toneVar } from '@shared/utils/tone';
+import { TopicPickerComponent } from '../topic-picker/topic-picker.component';
 
 const DURATION_STEP = 5;
 const MIN_DURATION = 5;
@@ -35,7 +35,7 @@ const MIN_DURATION = 5;
 @Component({
   selector: 'app-capture-sheet',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, TopicPickerComponent],
   templateUrl: './capture-sheet.component.html',
   providers: [
     LearningResourceService,
@@ -48,7 +48,6 @@ const MIN_DURATION = 5;
   ],
 })
 export class CaptureSheetComponent {
-  protected readonly toneVar = toneVar;
   private readonly sheet = inject(CaptureSheetService);
   private readonly resources = inject(LearningResourceService);
   private readonly types = inject(ResourceTypeService);
@@ -137,9 +136,6 @@ export class CaptureSheetComponent {
     if (first && !this.typeId()) this.typeId.set(first.id);
   }
 
-  toggleTopic(id: string): void {
-    this.topicIds.update((ids) => (ids.includes(id) ? ids.filter((t) => t !== id) : [...ids, id]));
-  }
 
   adjustDuration(delta: number): void {
     this.duration.update((v) => Math.max(MIN_DURATION, v + delta));

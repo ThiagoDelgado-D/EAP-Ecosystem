@@ -18,7 +18,7 @@ import { ResourceTypeRepository } from '@features/learning-resource/domain/resou
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
-import { TopicChipListComponent } from '@shared/components/topic-chip-list/topic-chip-list.component';
+import { TopicPickerComponent } from '../../topic-picker/topic-picker.component';
 
 type RecordingState =
   | 'idle'
@@ -33,7 +33,7 @@ type ViewState = 'recording' | 'confirmation';
 @Component({
   selector: 'app-voice-capture',
   standalone: true,
-  imports: [FormsModule, TopicChipListComponent],
+  imports: [FormsModule, TopicPickerComponent],
   templateUrl: './voice-capture.component.html',
   providers: [
     LearningResourceService,
@@ -178,15 +178,6 @@ export class VoiceCaptureComponent implements OnInit, OnDestroy {
     }
 
     this.viewState.set('confirmation');
-  }
-
-  toggleTopic(topicId: string): void {
-    const current = this.selectedTopicIds();
-    if (current.includes(topicId)) {
-      this.selectedTopicIds.set(current.filter((id) => id !== topicId));
-    } else {
-      this.selectedTopicIds.set([...current, topicId]);
-    }
   }
 
   async saveResource(): Promise<void> {

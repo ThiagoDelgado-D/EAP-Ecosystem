@@ -32,6 +32,7 @@ import { TopicHttpRepository } from '@features/learning-resource/infrastructure/
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
+import { TopicPickerComponent } from '../../topic-picker/topic-picker.component';
 
 const LEVEL_SELECTED_CARD_CLASS: Record<string, string> = {
   Low: 'flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-energy-low/60 bg-energy-low/10 text-energy-low transition-all',
@@ -43,7 +44,7 @@ const LEVEL_SELECTED_CARD_CLASS: Record<string, string> = {
 @Component({
   selector: 'app-guided-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, TopicPickerComponent],
   templateUrl: './guided-form.component.html',
   providers: [
     TopicService,
@@ -104,16 +105,12 @@ export class GuidedFormComponent implements OnInit {
     await Promise.all([this.topicService.loadAll(), this.resourceTypeService.loadAll()]);
   }
 
-  isTopicSelected(topicId: string): boolean {
-    return (this.step1Form.get('topicIds')?.value || []).includes(topicId);
+  selectedTopicIds(): string[] {
+    return this.step1Form.get('topicIds')?.value || [];
   }
 
-  onTopicToggle(topicId: string): void {
-    const current: string[] = this.step1Form.get('topicIds')?.value || [];
-    const updated = current.includes(topicId)
-      ? current.filter((id) => id !== topicId)
-      : [...current, topicId];
-    this.step1Form.patchValue({ topicIds: updated });
+  onTopicsChange(topicIds: string[]): void {
+    this.step1Form.patchValue({ topicIds });
     this.step1Form.get('topicIds')?.markAsTouched();
   }
 

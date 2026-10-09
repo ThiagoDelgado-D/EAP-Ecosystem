@@ -133,6 +133,11 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  option {
+    background-color: var(--color-surface-raised);
+    color: var(--color-ink-strong);
+  }
+
   .ambient {
     position: fixed;
     inset: 0;

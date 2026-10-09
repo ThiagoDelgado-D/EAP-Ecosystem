@@ -354,10 +354,9 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
                 </div>
 
                 <div class="mt-2 mb-2">
-                  <app-topic-chip-list
-                    [topics]="row.availableTopics"
+                  <app-topic-picker
                     [selectedIds]="row.selectedTopicIds"
-                    (toggled)="toggleTopicForRow(row.index, $event)"
+                    (selectedIdsChange)="setTopicsForRow(row.index, $event)"
                   />
                   @if (row.selectedTopicIds.length === 0) {
                     <p class="text-xs text-[var(--tone-ochre)] mt-1">

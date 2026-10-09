@@ -125,21 +125,10 @@
             <label class="block text-sm font-medium text-ink-strong mb-1.5">
               Topics <span class="text-energy-high">*</span>
             </label>
-            <div class="flex flex-wrap gap-2">
-              @for (topic of topics(); track topic.id) {
-                <button
-                  type="button"
-                  (click)="onTopicToggle(topic.id)"
-                  [class]="
-                    isTopicSelected(topic.id)
-                      ? 'px-3 py-1.5 rounded-full text-xs font-medium bg-accent text-surface-base transition-all'
-                      : 'px-3 py-1.5 rounded-full text-xs font-medium bg-surface-overlay text-ink-dim border border-line-strong hover:border-line-strong hover:text-ink-strong transition-all'
-                  "
-                >
-                  {{ topic.name }}
-                </button>
-              }
-            </div>
+            <app-topic-picker
+              [selectedIds]="selectedTopicIds()"
+              (selectedIdsChange)="onTopicsChange($event)"
+            />
             @if (step1Form.get('topicIds')?.invalid && step1Form.get('topicIds')?.touched) {
               <p class="text-xs text-energy-high mt-1.5">Select at least one topic</p>
             }
