@@ -16,6 +16,9 @@ import { LearningResourceHttpRepository } from '@features/learning-resource/infr
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
 import { RecommendationHttpRepository } from '@features/recommendation/infrastructure/recommendation-http.repository';
 import { CalibrationService } from '@features/recommendation/application/calibration.service';
+import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
+import { PreferencesHttpRepository } from '@features/settings/infrastructure/preferences-http.repository';
+import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
 
 import { ANIMATION_MODULE_TYPE } from '@angular/platform-browser/animations';
 
@@ -30,8 +33,10 @@ export const appConfig: ApplicationConfig = {
     { provide: LearningPathRepository, useClass: LearningPathHttpRepository },
     { provide: LearningResourceRepository, useClass: LearningResourceHttpRepository },
     { provide: RecommendationRepository, useClass: RecommendationHttpRepository },
+    { provide: PreferencesRepository, useClass: PreferencesHttpRepository },
     PomodoroSessionStore,
     PomodoroPickerService,
     CalibrationService,
+    WeeklyGoalService,
   ],
 };
