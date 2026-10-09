@@ -4,6 +4,7 @@ export * from "./errors/index.js";
 
 // ============= USE CASES =============
 
+export * from "./use-cases/account/index.js";
 export * from "./use-cases/auth/index.js";
 export * from "./use-cases/preferences/index.js";
 export * from "./use-cases/sessions/index.js";
