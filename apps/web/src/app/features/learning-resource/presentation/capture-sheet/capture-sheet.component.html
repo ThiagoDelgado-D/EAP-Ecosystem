@@ -163,23 +163,7 @@
 
             <div>
               <p class="label mb-1.5">Topics</p>
-              @if (topics().length) {
-                <div class="flex flex-wrap gap-1.5">
-                  @for (t of topics(); track t.id) {
-                    <button
-                      type="button"
-                      class="chip tone-chip"
-                      [style.--tone]="toneVar(t.color)"
-                      [attr.data-on]="topicIds().includes(t.id) || undefined"
-                      (click)="toggleTopic(t.id)"
-                    >
-                      {{ t.name }}
-                    </button>
-                  }
-                </div>
-              } @else {
-                <p class="text-xs text-ink-faint">No topics yet — create them in Resources.</p>
-              }
+              <app-topic-picker [(selectedIds)]="topicIds" />
             </div>
 
             @if (error()) {
