@@ -3,6 +3,7 @@ import {
   DifficultyType,
   EnergyLevelType,
   ResourceStatusType,
+  TopicTone,
 } from "@learning-resource/domain";
 import type {
   LearningResource,
@@ -30,7 +31,9 @@ export const generateTopic = (opts?: Partial<Topic>): Topic => {
   const createdAt = faker.date.past({ years: 1 });
   return {
     id: faker.string.uuid() as UUID,
+    userId: faker.string.uuid() as UUID,
     name: faker.hacker.noun(),
+    color: faker.helpers.arrayElement(Object.values(TopicTone)),
     createdAt,
     updatedAt: faker.date.between({ from: createdAt, to: new Date() }),
     ...opts,
