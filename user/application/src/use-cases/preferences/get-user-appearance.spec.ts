@@ -5,6 +5,8 @@ import { getUserAppearance } from "./get-user-appearance.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
 import { DEFAULT_APPEARANCE, LanguageCode, StartOfWeek, type User } from "@user/domain";
 
+const TWELVE_HOUR_WEEKLY_GOAL = 720;
+
 describe("getUserAppearance", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
@@ -56,6 +58,7 @@ describe("getUserAppearance", () => {
       startOfWeek: StartOfWeek.SUNDAY,
       reduceMotion: true,
       compactMode: true,
+      weeklyGoalMinutes: TWELVE_HOUR_WEEKLY_GOAL,
     };
     await userRepository.save({ ...existingUser, appearance: customAppearance });
 

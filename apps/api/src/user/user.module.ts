@@ -11,8 +11,14 @@ import {
   TypeOrmUserRepository,
   UserEntity,
 } from "@user/infrastructure";
+import {
+  LearningPathEntity,
+  LearningResourceEntity,
+} from "@learning-resource/infrastructure";
+import { SessionEntity as PomodoroSessionEntity } from "@pomodoro/infrastructure";
 import { AuthController } from "./auth.controller.js";
 import { PreferencesController } from "./preferences.controller.js";
+import { TypeOrmAccountStatsAdapter } from "./typeorm-account-stats-adapter.js";
 import {
   CryptoServiceImpl,
   EmailServiceImpl,
@@ -33,6 +39,9 @@ import { EnvironmentService } from "../config/environment.service.js";
       IdentityEntity,
       SignInChallengeEntity,
       SessionEntity,
+      LearningResourceEntity,
+      LearningPathEntity,
+      PomodoroSessionEntity,
     ]),
   ],
   controllers: [AuthController, PreferencesController],
@@ -57,6 +66,16 @@ import { EnvironmentService } from "../config/environment.service.js";
       provide: "ISessionRepository",
       useFactory: (r) => new TypeOrmSessionRepository(r),
       inject: [getRepositoryToken(SessionEntity)],
+    },
+    {
+      provide: "IAccountStatsPort",
+      useFactory: (resourceRepo, pathRepo, pomodoroSessionRepo) =>
+        new TypeOrmAccountStatsAdapter(resourceRepo, pathRepo, pomodoroSessionRepo),
+      inject: [
+        getRepositoryToken(LearningResourceEntity),
+        getRepositoryToken(LearningPathEntity),
+        getRepositoryToken(PomodoroSessionEntity),
+      ],
     },
     { provide: "ICryptoService", useClass: CryptoServiceImpl },
     {

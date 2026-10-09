@@ -50,6 +50,7 @@ export class TypeOrmUserRepository implements IUserRepository {
           : DEFAULT_APPEARANCE.startOfWeek,
         reduceMotion: entity.reduceMotion ?? DEFAULT_APPEARANCE.reduceMotion,
         compactMode: entity.compactMode ?? DEFAULT_APPEARANCE.compactMode,
+        weeklyGoalMinutes: entity.weeklyGoalMinutes ?? DEFAULT_APPEARANCE.weeklyGoalMinutes,
       },
       bio: entity.bio ?? undefined,
       avatar: (entity.avatar as UUID) ?? undefined,
@@ -74,6 +75,7 @@ export class TypeOrmUserRepository implements IUserRepository {
     entity.startOfWeek = user.appearance.startOfWeek;
     entity.reduceMotion = user.appearance.reduceMotion;
     entity.compactMode = user.appearance.compactMode;
+    entity.weeklyGoalMinutes = user.appearance.weeklyGoalMinutes;
     entity.bio = user.bio ?? null;
     entity.avatar = user.avatar ?? null;
     return entity;
