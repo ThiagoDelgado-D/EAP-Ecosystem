@@ -27,6 +27,7 @@ import {
   RESOURCE_STATUS_LABELS,
   RESOURCE_STATUSES,
 } from '@features/learning-resource/domain/learning-resource.constants';
+import { toneVar } from '@shared/utils/tone';
 
 const DURATION_STEP = 5;
 const MIN_DURATION = 5;
@@ -47,6 +48,7 @@ const MIN_DURATION = 5;
   ],
 })
 export class CaptureSheetComponent {
+  protected readonly toneVar = toneVar;
   private readonly sheet = inject(CaptureSheetService);
   private readonly resources = inject(LearningResourceService);
   private readonly types = inject(ResourceTypeService);

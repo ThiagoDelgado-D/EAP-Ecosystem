@@ -190,7 +190,7 @@ describe('EndComponent', () => {
     const topicId = crypto.randomUUID();
     const ctx = setup({
       resourceTypes: [{ id: typeId, code: 'article', displayName: 'Article', createdAt: now, updatedAt: now }],
-      topics: [{ id: topicId, name: 'System Design', createdAt: now, updatedAt: now }],
+      topics: [{ id: topicId, name: 'System Design', color: 'info', createdAt: now, updatedAt: now }],
     });
     const { component, learningPathRepository, learningResourceRepository } = ctx;
     const { nodeId } = await startPathNodeSession(ctx, { pathTitle: 'System Design Prep', pathMode: 'graph', nodeTitle: 'CAP Theorem' });
