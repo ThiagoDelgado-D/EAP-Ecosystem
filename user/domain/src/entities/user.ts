@@ -34,12 +34,18 @@ export const StartOfWeek = {
 
 export type StartOfWeek = (typeof StartOfWeek)[keyof typeof StartOfWeek];
 
+export const WEEKLY_GOAL_MINUTES_RANGE = {
+  MIN: 120,
+  MAX: 2000,
+} as const;
+
 export interface UserAppearancePreferences {
   language: LanguageCode;
   timezone: string;
   startOfWeek: StartOfWeek;
   reduceMotion: boolean;
   compactMode: boolean;
+  weeklyGoalMinutes: number;
 }
 
 export const DEFAULT_APPEARANCE: UserAppearancePreferences = {
@@ -48,6 +54,7 @@ export const DEFAULT_APPEARANCE: UserAppearancePreferences = {
   startOfWeek: StartOfWeek.MONDAY,
   reduceMotion: false,
   compactMode: false,
+  weeklyGoalMinutes: 600,
 };
 
 export interface User extends Entity, Person, TimestampedEntity {
