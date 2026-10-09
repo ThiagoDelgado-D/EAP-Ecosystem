@@ -21,6 +21,9 @@ import { updateLearningPathNode } from "./use-cases/learning-path/update-learnin
 import { updateLearningPathNodeProgress } from "./use-cases/learning-path/update-learning-path-node-progress.js";
 import { addLearningPathEdge } from "./use-cases/learning-path/add-learning-path-edge.js";
 import { deleteLearningPathEdge } from "./use-cases/learning-path/delete-learning-path-edge.js";
+import { createTopic } from "./use-cases/topics/create-topic.js";
+import { updateTopic } from "./use-cases/topics/update-topic.js";
+import { deleteTopic } from "./use-cases/topics/delete-topic.js";
 
 export const learningResourceUseCaseMap = {
   addResource,
@@ -74,3 +77,13 @@ export type LearningPathEdgeUseCaseMap = typeof learningPathEdgeUseCaseMap;
 
 export type LearningPathEdgeDomainError =
   UseCaseErrors<LearningPathEdgeUseCaseMap>;
+
+export const topicUseCaseMap = {
+  createTopic,
+  updateTopic,
+  deleteTopic,
+} as const;
+
+export type TopicUseCaseMap = typeof topicUseCaseMap;
+
+export type TopicDomainError = UseCaseErrors<TopicUseCaseMap>;
