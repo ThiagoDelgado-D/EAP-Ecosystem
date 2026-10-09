@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { InvalidDataError, mockCryptoService } from "domain-lib";
+import { BaseError, InvalidDataError, mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
 import { updateUserAppearance } from "./update-user-appearance.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
@@ -59,7 +59,8 @@ describe("updateUserAppearance", () => {
     });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.appearance.language).toBe(LanguageCode.ES);
+    if (!updated) throw new UserNotFoundError();
+    expect(updated.appearance.language).toBe(LanguageCode.ES);
   });
 
   test("Should return the updated appearance in the response", async () => {
@@ -70,8 +71,7 @@ describe("updateUserAppearance", () => {
       appearance: { timezone: "America/Argentina/Buenos_Aires" },
     });
 
-    expect(result).not.toBeInstanceOf(UserNotFoundError);
-    if (result instanceof UserNotFoundError) return;
+    if (result instanceof BaseError) throw result;
 
     expect(result.appearance.timezone).toBe("America/Argentina/Buenos_Aires");
   });
@@ -85,12 +85,13 @@ describe("updateUserAppearance", () => {
     });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.appearance.language).toBe(LanguageCode.ES);
-    expect(updated!.appearance.timezone).toBe(DEFAULT_APPEARANCE.timezone);
-    expect(updated!.appearance.startOfWeek).toBe(DEFAULT_APPEARANCE.startOfWeek);
-    expect(updated!.appearance.reduceMotion).toBe(DEFAULT_APPEARANCE.reduceMotion);
-    expect(updated!.appearance.compactMode).toBe(DEFAULT_APPEARANCE.compactMode);
-    expect(updated!.appearance.weeklyGoalMinutes).toBe(DEFAULT_APPEARANCE.weeklyGoalMinutes);
+    if (!updated) throw new UserNotFoundError();
+    expect(updated.appearance.language).toBe(LanguageCode.ES);
+    expect(updated.appearance.timezone).toBe(DEFAULT_APPEARANCE.timezone);
+    expect(updated.appearance.startOfWeek).toBe(DEFAULT_APPEARANCE.startOfWeek);
+    expect(updated.appearance.reduceMotion).toBe(DEFAULT_APPEARANCE.reduceMotion);
+    expect(updated.appearance.compactMode).toBe(DEFAULT_APPEARANCE.compactMode);
+    expect(updated.appearance.weeklyGoalMinutes).toBe(DEFAULT_APPEARANCE.weeklyGoalMinutes);
   });
 
   test("Should update all appearance fields at once", async () => {
@@ -110,8 +111,7 @@ describe("updateUserAppearance", () => {
       appearance: fullUpdate,
     });
 
-    expect(result).not.toBeInstanceOf(UserNotFoundError);
-    if (result instanceof UserNotFoundError) return;
+    if (result instanceof BaseError) throw result;
 
     expect(result.appearance).toEqual(fullUpdate);
   });
@@ -125,11 +125,12 @@ describe("updateUserAppearance", () => {
     });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.email).toBe(existingUser.email);
-    expect(updated!.firstName).toBe(existingUser.firstName);
-    expect(updated!.featureConfig).toEqual(existingUser.featureConfig);
-    expect(updated!.widgetConfig).toEqual(existingUser.widgetConfig);
-    expect(updated!.onboardingCompleted).toBe(existingUser.onboardingCompleted);
+    if (!updated) throw new UserNotFoundError();
+    expect(updated.email).toBe(existingUser.email);
+    expect(updated.firstName).toBe(existingUser.firstName);
+    expect(updated.featureConfig).toEqual(existingUser.featureConfig);
+    expect(updated.widgetConfig).toEqual(existingUser.widgetConfig);
+    expect(updated.onboardingCompleted).toBe(existingUser.onboardingCompleted);
   });
 
   test("Should update updatedAt when appearance is changed", async () => {
@@ -142,7 +143,8 @@ describe("updateUserAppearance", () => {
     });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    if (!updated) throw new UserNotFoundError();
+    expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
   });
 
   test("Should keep stored fields when the request carries them as undefined", async () => {
@@ -153,7 +155,7 @@ describe("updateUserAppearance", () => {
       appearance: { language: undefined, weeklyGoalMinutes: TWELVE_HOUR_WEEKLY_GOAL },
     });
 
-    if (result instanceof Error) throw result;
+    if (result instanceof BaseError) throw result;
     expect(result.appearance).toEqual({
       ...DEFAULT_APPEARANCE,
       weeklyGoalMinutes: TWELVE_HOUR_WEEKLY_GOAL,
@@ -169,7 +171,8 @@ describe("updateUserAppearance", () => {
     });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.appearance.weeklyGoalMinutes).toBe(TWELVE_HOUR_WEEKLY_GOAL);
+    if (!updated) throw new UserNotFoundError();
+    expect(updated.appearance.weeklyGoalMinutes).toBe(TWELVE_HOUR_WEEKLY_GOAL);
   });
 
   test.each([
@@ -188,7 +191,8 @@ describe("updateUserAppearance", () => {
 
       expect(result).toBeInstanceOf(InvalidDataError);
       const stored = await userRepository.findById(existingUser.id);
-      expect(stored!.appearance.weeklyGoalMinutes).toBe(DEFAULT_APPEARANCE.weeklyGoalMinutes);
+      if (!stored) throw new UserNotFoundError();
+      expect(stored.appearance.weeklyGoalMinutes).toBe(DEFAULT_APPEARANCE.weeklyGoalMinutes);
     },
   );
 });
