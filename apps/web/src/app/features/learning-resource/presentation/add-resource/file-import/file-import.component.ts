@@ -12,7 +12,7 @@ import { TopicRepository } from '@features/learning-resource/domain/topic.reposi
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
-import { TopicChipListComponent } from '@shared/components/topic-chip-list/topic-chip-list.component';
+import { TopicPickerComponent } from '../../topic-picker/topic-picker.component';
 
 export interface ParsedResourceRow {
   title: string;
@@ -39,7 +39,7 @@ type ViewState = 'idle' | 'parsing' | 'error' | 'preview' | 'importing' | 'summa
 @Component({
   selector: 'app-file-import',
   standalone: true,
-  imports: [FormsModule, TopicChipListComponent],
+  imports: [FormsModule, TopicPickerComponent],
   templateUrl: './file-import.component.html',
   providers: [
     ResourceTypeService,
@@ -102,13 +102,9 @@ export class FileImportComponent implements OnInit, OnDestroy {
       this.validatedRows.set(this.validatedRows().map((r) => ({ ...r, selected: false })));
     }
   }
-  toggleTopicForRow(rowIndex: number, topicId: string): void {
+  setTopicsForRow(rowIndex: number, updated: string[]): void {
     const rows = this.validatedRows();
     const row = rows[rowIndex];
-    const current = row.selectedTopicIds;
-    const updated = current.includes(topicId)
-      ? current.filter((id) => id !== topicId)
-      : [...current, topicId];
     const newRow = { ...row, selectedTopicIds: updated };
     const hasBlocking = newRow.errors.some((e) => e.blocking);
     const hasTopics = updated.length > 0;
