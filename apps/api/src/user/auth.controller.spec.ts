@@ -8,9 +8,6 @@ import {
   mockSessionRepository,
   mockSignInChallengeRepository,
   mockUserRepository,
-  type MockedIdentityRepository,
-  type MockedSessionRepository,
-  type MockedSignInChallengeRepository,
 } from "@user/application";
 import { mockJwtService, type TemplateSendEmailOptions } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
