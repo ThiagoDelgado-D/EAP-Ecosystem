@@ -14,7 +14,11 @@ const FALLBACK_TONE = "slate";
 const toRgb = (hex: string): [number, number, number] | null => {
   const match = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex.trim());
   if (!match) return null;
-  return [parseInt(match[1], 16), parseInt(match[2], 16), parseInt(match[3], 16)];
+  return [
+    Number.parseInt(match[1], 16),
+    Number.parseInt(match[2], 16),
+    Number.parseInt(match[3], 16),
+  ];
 };
 
 const closestTone = (hex: string): string => {
@@ -96,11 +100,13 @@ export class TopicsOwnedByEachLearner1779900000000 implements MigrationInterface
     const colors: { id: string; color: string }[] = await queryRunner.query(
       `SELECT id, color FROM topics`,
     );
-    for (const { id, color } of colors) {
-      await queryRunner.query(`UPDATE topics SET color = $1 WHERE id = $2`, [
-        closestTone(color),
-        id,
-      ]);
+    if (colors.length > 0) {
+      await queryRunner.query(
+        `UPDATE topics SET color = tones.tone
+         FROM UNNEST($1::uuid[], $2::varchar[]) AS tones(id, tone)
+         WHERE topics.id = tones.id`,
+        [colors.map((row) => row.id), colors.map((row) => closestTone(row.color))],
+      );
     }
 
     await queryRunner.query(`
