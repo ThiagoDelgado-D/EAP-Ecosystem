@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import type { FeatureKey } from '@features/auth/domain/auth.model';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
-import type { UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
+import type { AccountStats, UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
 
 @Injectable()
 export class PreferencesService {
@@ -12,6 +12,7 @@ export class PreferencesService {
   readonly featureConfig = signal<FeatureKey[]>([]);
   readonly widgetConfig = signal<WidgetKey[]>([]);
   readonly appearance = signal<UserAppearance | null>(null);
+  readonly accountStats = signal<AccountStats | null>(null);
   private readonly _loadingFeature = signal(false);
   private readonly _loadingWidget = signal(false);
   private readonly _loadingAppearance = signal(false);
@@ -96,6 +97,14 @@ export class PreferencesService {
     } catch {
       this.appearance.set(prev);
       this.error.set('Failed to save appearance preferences');
+    }
+  }
+
+  async loadAccountStats(): Promise<void> {
+    try {
+      this.accountStats.set(await this.repository.getAccountStats());
+    } catch {
+      this.accountStats.set(null);
     }
   }
 
