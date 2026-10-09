@@ -5,6 +5,7 @@ import { TopicRepository } from '../domain/topic.repository';
 import type { Topic } from '../domain/topic.model';
 import type { TopicDto, TopicListDto } from './topic.dto';
 import { API_CONFIG } from '@core/config/api.config';
+import { toTone } from '@shared/utils/tone';
 
 @Injectable()
 export class TopicHttpRepository extends TopicRepository {
@@ -20,7 +21,7 @@ export class TopicHttpRepository extends TopicRepository {
     return {
       id: dto.id,
       name: dto.name,
-      color: dto.color ?? undefined,
+      color: toTone(dto.color),
       createdAt: new Date(dto.createdAt),
       updatedAt: new Date(dto.updatedAt),
     };

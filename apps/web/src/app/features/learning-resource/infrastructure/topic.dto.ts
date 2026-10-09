@@ -1,7 +1,7 @@
 export interface TopicDto {
   id: string;
   name: string;
-  color: string | null;
+  color: string;
   createdAt: string;
   updatedAt: string;
 }
