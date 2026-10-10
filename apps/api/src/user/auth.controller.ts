@@ -38,7 +38,13 @@ import {
   refreshSession,
   signOut,
 } from "@user/application";
-import { BaseError, type CryptoService, type JwtService, type UUID } from "domain-lib";
+import {
+  BaseError,
+  TooManyRequestsError,
+  type CryptoService,
+  type JwtService,
+  type UUID,
+} from "domain-lib";
 import { RequestSignInDto } from "./dto/request/request-sign-in.dto.js";
 import { VerifySignInDto } from "./dto/request/verify-sign-in.dto.js";
 import { CompleteOnboardingDto } from "./dto/request/complete-onboarding.dto.js";
@@ -69,8 +75,11 @@ export class AuthController {
   @Post("request-sign-in")
   @Throttle({ default: RATE_LIMITS.REQUEST_SIGN_IN })
   @HttpCode(204)
-  async requestSignIn(@Body() dto: RequestSignInDto): Promise<void> {
-    await requestSignIn(
+  async requestSignIn(
+    @Body() dto: RequestSignInDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    const result = await requestSignIn(
       {
         userRepository: this.userRepository,
         signInChallengeRepository: this.signInChallengeRepository,
@@ -79,6 +88,10 @@ export class AuthController {
       },
       { email: dto.email },
     );
+    if (!(result instanceof TooManyRequestsError)) return;
+
+    res.setHeader("Retry-After", String(result.retryAfterSeconds));
+    toHttpException(result);
   }
 
   @Post("verify-sign-in")
