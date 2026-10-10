@@ -1,9 +1,20 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService } from "domain-lib";
+import { mockCryptoService, TooManyRequestsError } from "domain-lib";
+import { SIGN_IN_REQUEST_BACKOFF } from "@user/domain";
 import { mockSignInChallengeRepository } from "../../mocks/mock-sign-in-challenge-repository.js";
 import { MockedEmailService } from "../../mocks/mock-email-service.js";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import {
+  generateDistinctEmails,
+  generateMalformedEmail,
+  generateSignInChallenge,
+} from "../../mocks/factories.js";
 import { requestSignIn } from "./request-sign-in.js";
+
+const [EMAIL, OTHER_EMAIL] = generateDistinctEmails(2);
+const MALFORMED_EMAIL = generateMalformedEmail();
+const JUST_PAST_FIRST_BACKOFF_MS = SIGN_IN_REQUEST_BACKOFF.BASE_DELAY_MS + 1;
+const JUST_PAST_WINDOW_MS = SIGN_IN_REQUEST_BACKOFF.WINDOW_MS + 1;
 
 describe("requestSignIn", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -27,27 +38,35 @@ describe("requestSignIn", () => {
     emailService,
   });
 
+  const seedPendingChallengeCreatedAgo = (ageMs: number) =>
+    signInChallengeRepository.save(
+      generateSignInChallenge({
+        email: EMAIL,
+        createdAt: new Date(Date.now() - ageMs),
+      }),
+    );
+
   test("Should create a challenge for a valid email", async () => {
-    await requestSignIn(deps(), { email: "thiago@example.com" });
+    await requestSignIn(deps(), { email: EMAIL });
 
     expect(signInChallengeRepository.count()).toBe(1);
     expect(signInChallengeRepository.challenges[0].email).toBe(
-      "thiago@example.com",
+      EMAIL,
     );
   });
 
   test("Should send a MAGIC_LINK_CODE email to the provided address", async () => {
-    await requestSignIn(deps(), { email: "thiago@example.com" });
+    await requestSignIn(deps(), { email: EMAIL });
 
     expect(emailService.hasTemplateEmail("MAGIC_LINK_CODE")).toBe(true);
 
     const sent = emailService.getLastEmail();
     expect(sent).toBeDefined();
-    expect("to" in sent! && sent.to).toContain("thiago@example.com");
+    expect("to" in sent! && sent.to).toContain(EMAIL);
   });
 
   test("Should store the code as a hash, not as plain text", async () => {
-    await requestSignIn(deps(), { email: "thiago@example.com" });
+    await requestSignIn(deps(), { email: EMAIL });
 
     const challenge = signInChallengeRepository.challenges[0];
     const sentEmail = emailService.getLastEmail();
@@ -59,7 +78,7 @@ describe("requestSignIn", () => {
   });
 
   test("Should create a challenge with 0 attempts and not consumed", async () => {
-    await requestSignIn(deps(), { email: "thiago@example.com" });
+    await requestSignIn(deps(), { email: EMAIL });
 
     const challenge = signInChallengeRepository.challenges[0];
     expect(challenge.attempts).toBe(0);
@@ -69,7 +88,7 @@ describe("requestSignIn", () => {
   test("Should create a challenge that expires in roughly 10 minutes", async () => {
     const before = new Date();
 
-    await requestSignIn(deps(), { email: "thiago@example.com" });
+    await requestSignIn(deps(), { email: EMAIL });
 
     const after = new Date();
     const challenge = signInChallengeRepository.challenges[0];
@@ -84,11 +103,11 @@ describe("requestSignIn", () => {
   });
 
   test("Should invalidate a previous pending challenge before issuing a new one", async () => {
-    await requestSignIn(deps(), { email: "thiago@example.com" });
-    await requestSignIn(deps(), { email: "thiago@example.com" });
+    await seedPendingChallengeCreatedAgo(JUST_PAST_FIRST_BACKOFF_MS);
+    await requestSignIn(deps(), { email: EMAIL });
 
     const active =
-      await signInChallengeRepository.findActiveByEmail("thiago@example.com");
+      await signInChallengeRepository.findActiveByEmail(EMAIL);
     const total = signInChallengeRepository.count();
 
     expect(total).toBe(2);
@@ -98,22 +117,22 @@ describe("requestSignIn", () => {
   });
 
   test("Should create independent challenges for different emails", async () => {
-    await requestSignIn(deps(), { email: "thiago@example.com" });
-    await requestSignIn(deps(), { email: "other@example.com" });
+    await requestSignIn(deps(), { email: EMAIL });
+    await requestSignIn(deps(), { email: OTHER_EMAIL });
 
     expect(signInChallengeRepository.count()).toBe(2);
 
     const first =
-      await signInChallengeRepository.findActiveByEmail("thiago@example.com");
+      await signInChallengeRepository.findActiveByEmail(EMAIL);
     const second =
-      await signInChallengeRepository.findActiveByEmail("other@example.com");
+      await signInChallengeRepository.findActiveByEmail(OTHER_EMAIL);
 
     expect(first).not.toBeNull();
     expect(second).not.toBeNull();
   });
 
   test("Should return void for an invalid email without creating a challenge or sending an email", async () => {
-    const result = await requestSignIn(deps(), { email: "not-an-email" });
+    const result = await requestSignIn(deps(), { email: MALFORMED_EMAIL });
 
     expect(result).toBeUndefined();
     expect(signInChallengeRepository.count()).toBe(0);
@@ -126,5 +145,50 @@ describe("requestSignIn", () => {
     expect(result).toBeUndefined();
     expect(signInChallengeRepository.count()).toBe(0);
     expect(emailService.sentEmails).toHaveLength(0);
+  });
+
+  test("Should reject a second request for the same email inside the first backoff window", async () => {
+    await requestSignIn(deps(), { email: EMAIL });
+
+    const result = await requestSignIn(deps(), { email: EMAIL });
+
+    expect(result).toBeInstanceOf(TooManyRequestsError);
+    expect(signInChallengeRepository.count()).toBe(1);
+    expect(emailService.sentEmails).toHaveLength(1);
+  });
+
+  test("Should allow a second request once the first backoff window has passed", async () => {
+    await seedPendingChallengeCreatedAgo(JUST_PAST_FIRST_BACKOFF_MS);
+
+    const result = await requestSignIn(deps(), { email: EMAIL });
+
+    expect(result).toBeUndefined();
+    expect(emailService.hasTemplateEmail("MAGIC_LINK_CODE")).toBe(true);
+  });
+
+  test("Should double the wait after each request in the window", async () => {
+    await seedPendingChallengeCreatedAgo(SIGN_IN_REQUEST_BACKOFF.WINDOW_MS / 2);
+    await seedPendingChallengeCreatedAgo(JUST_PAST_FIRST_BACKOFF_MS);
+
+    const result = await requestSignIn(deps(), { email: EMAIL });
+
+    expect(result).toBeInstanceOf(TooManyRequestsError);
+  });
+
+  test("Should forget requests older than the backoff window", async () => {
+    await seedPendingChallengeCreatedAgo(JUST_PAST_WINDOW_MS);
+    await seedPendingChallengeCreatedAgo(JUST_PAST_FIRST_BACKOFF_MS);
+
+    const result = await requestSignIn(deps(), { email: EMAIL });
+
+    expect(result).toBeUndefined();
+  });
+
+  test("Should not throttle one email because of requests for another", async () => {
+    await requestSignIn(deps(), { email: EMAIL });
+
+    const result = await requestSignIn(deps(), { email: OTHER_EMAIL });
+
+    expect(result).toBeUndefined();
   });
 });

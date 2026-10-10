@@ -6,4 +6,5 @@ export interface ISignInChallengeRepository {
   consume(id: string): Promise<void>;
   invalidateAllByEmail(email: string): Promise<void>;
   incrementAttempts(id: string): Promise<void>;
+  findCreatedSinceByEmail(email: string, since: Date): Promise<SignInChallenge[]>;
 }

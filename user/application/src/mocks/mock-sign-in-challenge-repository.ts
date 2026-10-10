@@ -57,6 +57,15 @@ export function mockSignInChallengeRepository(
       }
     },
 
+    async findCreatedSinceByEmail(
+      email: string,
+      since: Date,
+    ): Promise<SignInChallenge[]> {
+      return this.challenges
+        .filter((c) => c.email === email && c.createdAt >= since)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    },
+
     reset(): void {
       this.challenges = [];
     },

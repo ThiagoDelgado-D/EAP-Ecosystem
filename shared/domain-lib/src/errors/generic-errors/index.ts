@@ -3,3 +3,4 @@ export * from "./not-found-error.js";
 export * from "./unexpected-error.js";
 export * from "./unauthorized-error.js";
 export * from "./forbidden-error.js";
+export * from "./too-many-requests-error.js";
