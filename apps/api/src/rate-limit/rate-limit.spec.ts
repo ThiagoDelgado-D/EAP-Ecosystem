@@ -1,12 +1,14 @@
 import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
+import { generateDistinctEmails, generateSignInCode } from "@user/application";
 import { createUserTestApp } from "../user/user-module.fixture.js";
 import { RateLimitModule } from "./rate-limit.module.js";
 import { RATE_LIMITS, TOO_MANY_REQUESTS_ERROR } from "./rate-limits.js";
 
-const SIGN_IN_EMAIL = "ada@example.com";
-const rotatingSignInEmail = (attempt: number) => `ada+${attempt}@example.com`;
-const WRONG_SIGN_IN_CODE = "000000";
+const [SIGN_IN_EMAIL, ...ROTATING_SIGN_IN_EMAILS] = generateDistinctEmails(
+  RATE_LIMITS.REQUEST_SIGN_IN.limit + 2,
+);
+const WRONG_SIGN_IN_CODE = generateSignInCode();
 const TOO_MANY_REQUESTS_STATUS = 429;
 
 describe("Rate limiting (integration)", () => {
@@ -30,11 +32,11 @@ describe("Rate limiting (integration)", () => {
 
   test("Should let sign-in codes through up to the per-IP limit, then answer 429 with Retry-After", async () => {
     for (let attempt = 0; attempt < RATE_LIMITS.REQUEST_SIGN_IN.limit; attempt++) {
-      await requestSignIn(rotatingSignInEmail(attempt)).expect(204);
+      await requestSignIn(ROTATING_SIGN_IN_EMAILS[attempt]).expect(204);
     }
 
     const blocked = await requestSignIn(
-      rotatingSignInEmail(RATE_LIMITS.REQUEST_SIGN_IN.limit),
+      ROTATING_SIGN_IN_EMAILS[RATE_LIMITS.REQUEST_SIGN_IN.limit],
     ).expect(TOO_MANY_REQUESTS_STATUS);
 
     expect(blocked.body).toEqual({ error: TOO_MANY_REQUESTS_ERROR });
