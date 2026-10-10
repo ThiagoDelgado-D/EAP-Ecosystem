@@ -1,6 +1,6 @@
 import type { ISignInChallengeRepository, SignInChallenge } from "@user/domain";
 import type { UUID } from "domain-lib";
-import { MoreThan, type Repository } from "typeorm";
+import { MoreThan, MoreThanOrEqual, type Repository } from "typeorm";
 import { SignInChallengeEntity } from "../entities/sign-in-challenge.entity.js";
 
 export class TypeOrmSignInChallengeRepository implements ISignInChallengeRepository {
@@ -35,6 +35,17 @@ export class TypeOrmSignInChallengeRepository implements ISignInChallengeReposit
 
   async incrementAttempts(id: string): Promise<void> {
     await this.repository.increment({ id }, "attempts", 1);
+  }
+
+  async findCreatedSinceByEmail(
+    email: string,
+    since: Date,
+  ): Promise<SignInChallenge[]> {
+    const entities = await this.repository.find({
+      where: { email, createdAt: MoreThanOrEqual(since) },
+      order: { createdAt: "DESC" },
+    });
+    return entities.map((entity) => this.toDomain(entity));
   }
 
   private toDomain(entity: SignInChallengeEntity): SignInChallenge {
