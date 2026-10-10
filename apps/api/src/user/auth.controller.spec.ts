@@ -1,6 +1,7 @@
 import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
-import type { TemplateSendEmailOptions } from "domain-lib";
+import { TooManyRequestsError, type TemplateSendEmailOptions } from "domain-lib";
+import { SIGN_IN_REQUEST_BACKOFF } from "@user/domain";
 import { createUserTestApp, type UserTestApp } from "./user-module.fixture.js";
 
 describe("AuthController (integration)", () => {
@@ -46,6 +47,9 @@ describe("AuthController (integration)", () => {
         .post("/api/v1/auth/request-sign-in")
         .send({ email: "test@example.com" })
         .expect(204);
+      challengeRepo.challenges[0].createdAt = new Date(
+        Date.now() - SIGN_IN_REQUEST_BACKOFF.BASE_DELAY_MS - 1,
+      );
 
       await request(app.getHttpServer())
         .post("/api/v1/auth/request-sign-in")
@@ -54,6 +58,26 @@ describe("AuthController (integration)", () => {
 
       expect(challengeRepo.challenges.filter((c) => !c.consumed)).toHaveLength(
         1,
+      );
+    });
+
+    test("Should return 429 with Retry-After when the same email asks again too soon", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/auth/request-sign-in")
+        .send({ email: "test@example.com" })
+        .expect(204);
+
+      const blocked = await request(app.getHttpServer())
+        .post("/api/v1/auth/request-sign-in")
+        .send({ email: "test@example.com" })
+        .expect(429);
+
+      const retryAfterSeconds = Number(blocked.headers["retry-after"]);
+      expect(blocked.body.error).toBe(new TooManyRequestsError().name);
+      expect(blocked.body.retryAfterSeconds).toBe(retryAfterSeconds);
+      expect(retryAfterSeconds).toBeGreaterThan(0);
+      expect(retryAfterSeconds).toBeLessThanOrEqual(
+        SIGN_IN_REQUEST_BACKOFF.BASE_DELAY_MS / 1000,
       );
     });
 
