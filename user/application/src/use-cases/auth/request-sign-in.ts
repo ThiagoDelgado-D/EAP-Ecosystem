@@ -3,8 +3,9 @@ import type {
   IUserRepository,
   SignInChallenge,
 } from "@user/domain";
-import type { CryptoService, EmailService } from "domain-lib";
-import { createValidationSchema, emailField } from "domain-lib";
+import { SIGN_IN_REQUEST_BACKOFF } from "@user/domain";
+import type { CryptoService, EmailService, TooManyRequestsError } from "domain-lib";
+import { assertRateLimit, createValidationSchema, emailField } from "domain-lib";
 
 export interface RequestSignInDependencies {
   signInChallengeRepository: ISignInChallengeRepository;
@@ -30,11 +31,26 @@ export const requestSignIn = async (
     emailService,
   }: RequestSignInDependencies,
   request: RequestSignInRequestModel,
-): Promise<RequestSignInResponseModel> => {
+): Promise<RequestSignInResponseModel | TooManyRequestsError> => {
   const validation = await requestSignInSchema(request);
   if (validation instanceof Error) return;
 
   const { email } = validation;
+
+  const recentChallenges = await signInChallengeRepository.findCreatedSinceByEmail(
+    email,
+    new Date(Date.now() - SIGN_IN_REQUEST_BACKOFF.WINDOW_MS),
+  );
+  const latestChallenge = recentChallenges[0];
+  if (latestChallenge) {
+    const rateLimitError = assertRateLimit({
+      attempts: recentChallenges.length,
+      lastAttemptAt: latestChallenge.createdAt,
+      baseDelayMs: SIGN_IN_REQUEST_BACKOFF.BASE_DELAY_MS,
+      maxDelayMs: SIGN_IN_REQUEST_BACKOFF.MAX_DELAY_MS,
+    });
+    if (rateLimitError) return rateLimitError;
+  }
 
   const code = await cryptoService.generateNumericCode(6);
   const codeHash = await cryptoService.hashPassword(code);

@@ -1,9 +1,16 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService } from "domain-lib";
+import { mockCryptoService, TooManyRequestsError } from "domain-lib";
+import { SIGN_IN_REQUEST_BACKOFF } from "@user/domain";
 import { mockSignInChallengeRepository } from "../../mocks/mock-sign-in-challenge-repository.js";
 import { MockedEmailService } from "../../mocks/mock-email-service.js";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
 import { requestSignIn } from "./request-sign-in.js";
+
+const EMAIL = "thiago@example.com";
+const OTHER_EMAIL = "other@example.com";
+const JUST_PAST_FIRST_BACKOFF_MS = SIGN_IN_REQUEST_BACKOFF.BASE_DELAY_MS + 1;
+const JUST_PAST_WINDOW_MS = SIGN_IN_REQUEST_BACKOFF.WINDOW_MS + 1;
+const CHALLENGE_TTL_MS = 10 * 60 * 1000;
 
 describe("requestSignIn", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -26,6 +33,19 @@ describe("requestSignIn", () => {
     userRepository,
     emailService,
   });
+
+  const seedPendingChallengeCreatedAgo = async (ageMs: number) => {
+    const createdAt = new Date(Date.now() - ageMs);
+    await signInChallengeRepository.save({
+      id: await cryptoService.generateUUID(),
+      email: EMAIL,
+      codeHash: await cryptoService.hashPassword(await cryptoService.generateNumericCode(6)),
+      expiresAt: new Date(createdAt.getTime() + CHALLENGE_TTL_MS),
+      attempts: 0,
+      consumed: false,
+      createdAt,
+    });
+  };
 
   test("Should create a challenge for a valid email", async () => {
     await requestSignIn(deps(), { email: "thiago@example.com" });
@@ -84,8 +104,8 @@ describe("requestSignIn", () => {
   });
 
   test("Should invalidate a previous pending challenge before issuing a new one", async () => {
-    await requestSignIn(deps(), { email: "thiago@example.com" });
-    await requestSignIn(deps(), { email: "thiago@example.com" });
+    await seedPendingChallengeCreatedAgo(JUST_PAST_FIRST_BACKOFF_MS);
+    await requestSignIn(deps(), { email: EMAIL });
 
     const active =
       await signInChallengeRepository.findActiveByEmail("thiago@example.com");
@@ -126,5 +146,50 @@ describe("requestSignIn", () => {
     expect(result).toBeUndefined();
     expect(signInChallengeRepository.count()).toBe(0);
     expect(emailService.sentEmails).toHaveLength(0);
+  });
+
+  test("Should reject a second request for the same email inside the first backoff window", async () => {
+    await requestSignIn(deps(), { email: EMAIL });
+
+    const result = await requestSignIn(deps(), { email: EMAIL });
+
+    expect(result).toBeInstanceOf(TooManyRequestsError);
+    expect(signInChallengeRepository.count()).toBe(1);
+    expect(emailService.sentEmails).toHaveLength(1);
+  });
+
+  test("Should allow a second request once the first backoff window has passed", async () => {
+    await seedPendingChallengeCreatedAgo(JUST_PAST_FIRST_BACKOFF_MS);
+
+    const result = await requestSignIn(deps(), { email: EMAIL });
+
+    expect(result).toBeUndefined();
+    expect(emailService.hasTemplateEmail("MAGIC_LINK_CODE")).toBe(true);
+  });
+
+  test("Should double the wait after each request in the window", async () => {
+    await seedPendingChallengeCreatedAgo(SIGN_IN_REQUEST_BACKOFF.WINDOW_MS / 2);
+    await seedPendingChallengeCreatedAgo(JUST_PAST_FIRST_BACKOFF_MS);
+
+    const result = await requestSignIn(deps(), { email: EMAIL });
+
+    expect(result).toBeInstanceOf(TooManyRequestsError);
+  });
+
+  test("Should forget requests older than the backoff window", async () => {
+    await seedPendingChallengeCreatedAgo(JUST_PAST_WINDOW_MS);
+    await seedPendingChallengeCreatedAgo(JUST_PAST_FIRST_BACKOFF_MS);
+
+    const result = await requestSignIn(deps(), { email: EMAIL });
+
+    expect(result).toBeUndefined();
+  });
+
+  test("Should not throttle one email because of requests for another", async () => {
+    await requestSignIn(deps(), { email: EMAIL });
+
+    const result = await requestSignIn(deps(), { email: OTHER_EMAIL });
+
+    expect(result).toBeUndefined();
   });
 });
