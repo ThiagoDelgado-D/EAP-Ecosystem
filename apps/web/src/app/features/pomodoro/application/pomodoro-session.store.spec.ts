@@ -301,6 +301,19 @@ describe('PomodoroSessionStore', () => {
       TestBed.tick();
       expect(store.plannedTimeReached()).toBe(true);
     });
+
+    test('should not carry the boundary prompt into the next session after ending at planned time', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      vi.advanceTimersByTime(25 * 60 * 1000);
+      TestBed.tick();
+      expect(store.plannedTimeReached()).toBe(true);
+
+      await store.end();
+      await store.start({ plannedMin: 50, target: { kind: 'free' } });
+      TestBed.tick();
+
+      expect(store.plannedTimeReached()).toBe(false);
+    });
   });
 
   describe('auto-close safety net', () => {

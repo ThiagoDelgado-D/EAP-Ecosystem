@@ -279,6 +279,7 @@ export class PomodoroSessionStore {
     this.error.set(null);
     try {
       const session = await this.repository.startSession(payload);
+      this.clearPlannedTimePrompt();
       this.activeSession.set(session);
       this.segments.set([syntheticInitialSegment(session.id, payload.target)]);
       this.phase.set('focus');
@@ -319,10 +320,16 @@ export class PomodoroSessionStore {
     if (!session) return undefined;
     const result = await this.repository.endSession(session.id);
     this.stopTicking();
+    this.clearPlannedTimePrompt();
     this.activeSession.set(null);
     this.segments.set([]);
     this.phase.set('focus');
     this.activeBreak.set(null);
     return result;
+  }
+
+  private clearPlannedTimePrompt(): void {
+    this.plannedTimeReached.set(false);
+    this.plannedTimeReachedHandledForSessionId = null;
   }
 }
