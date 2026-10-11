@@ -5,10 +5,16 @@ import {
   mockRecommendationContextRepository,
 } from "@recommendation/application";
 import { EnergyLevel, MentalState } from "@recommendation/domain";
-import { ValidationPipe, type INestApplication } from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
-import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
+import {
+  mockJwtService,
+  UnauthorizedError,
+  ValidationError,
+  type MockedJwtService,
+  type UUID,
+} from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { RecommendationContextEntity } from "@recommendation/infrastructure";
@@ -19,7 +25,7 @@ import {
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
 import { RecommendationModule } from "./recommendation.module.js";
-import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
+import { configureRequestHandling } from "../app-setup.js";
 
 describe("RecommendationController (integration)", () => {
   let app: INestApplication;
@@ -71,14 +77,7 @@ describe("RecommendationController (integration)", () => {
       .compile();
 
     app = module.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
-    app.useGlobalFilters(new GlobalExceptionFilter());
+    configureRequestHandling(app);
     await app.init();
 
     ownerToken = await jwtService.sign({ sub: ownerId });
@@ -102,7 +101,7 @@ describe("RecommendationController (integration)", () => {
         .get("/api/v1/recommendations")
         .expect(401);
 
-      expect(response.body.message).toBe("Unauthorized");
+      expect(response.body).toEqual({ error: new UnauthorizedError().name });
     });
   });
 
@@ -203,7 +202,8 @@ describe("RecommendationController (integration)", () => {
           .set(authHeader())
           .expect(400);
 
-        expect(response.body.message).toBeDefined();
+        expect(response.body.error).toBe(new ValidationError({}).name);
+        expect(response.body.fields).toHaveProperty("exclude");
       });
     });
   });
@@ -264,7 +264,8 @@ describe("RecommendationController (integration)", () => {
         .send({ energyLevel: "extreme" })
         .expect(400);
 
-      expect(response.body.message).toBeDefined();
+      expect(response.body.error).toBe(new ValidationError({}).name);
+      expect(response.body.fields).toHaveProperty("energyLevel");
     });
   });
 });

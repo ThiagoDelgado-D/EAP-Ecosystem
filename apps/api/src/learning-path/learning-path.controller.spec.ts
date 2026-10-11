@@ -1,8 +1,8 @@
 import { mockLearningPathRepository } from "@learning-resource/application";
-import { ValidationPipe, type INestApplication } from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
-import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
+import { mockJwtService, ValidationError, type MockedJwtService, type UUID } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import {
@@ -11,7 +11,7 @@ import {
   LearningPathNodeEntity,
 } from "@learning-resource/infrastructure";
 import { LearningPathModule } from "./learning-path.module.js";
-import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
+import { configureRequestHandling } from "../app-setup.js";
 
 describe("LearningPathController (integration)", () => {
   let app: INestApplication;
@@ -50,10 +50,7 @@ describe("LearningPathController (integration)", () => {
       .compile();
 
     app = module.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
-    );
-    app.useGlobalFilters(new GlobalExceptionFilter());
+    configureRequestHandling(app);
     await app.init();
 
     ownerToken = await jwtService.sign({ sub: ownerId });
@@ -262,9 +259,8 @@ describe("LearningPathController (integration)", () => {
         .send({ title: "Missing the required mode field" })
         .expect(400);
 
-      expect(response.body.message).toEqual(
-        expect.arrayContaining([expect.stringContaining("mode")]),
-      );
+      expect(response.body.error).toBe(new ValidationError({}).name);
+      expect(response.body.fields).toHaveProperty("mode");
     });
 
     test("Should return 404 when getting a path that does not exist", async () => {

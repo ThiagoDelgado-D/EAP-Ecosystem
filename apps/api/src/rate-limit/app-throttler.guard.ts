@@ -1,13 +1,17 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { ThrottlerGuard } from "@nestjs/throttler";
-import { TOO_MANY_REQUESTS_ERROR } from "./rate-limits.js";
+import { HttpStatus, Injectable, type ExecutionContext } from "@nestjs/common";
+import { ThrottlerGuard, type ThrottlerLimitDetail } from "@nestjs/throttler";
+import { TooManyRequestsError } from "domain-lib";
+import { ApiErrorException } from "../errors/api-error-exception.js";
 
 @Injectable()
 export class AppThrottlerGuard extends ThrottlerGuard {
-  protected override throwThrottlingException(): Promise<void> {
+  protected override throwThrottlingException(
+    _context: ExecutionContext,
+    { timeToBlockExpire }: ThrottlerLimitDetail,
+  ): Promise<void> {
     return Promise.reject(
-      new HttpException(
-        { error: TOO_MANY_REQUESTS_ERROR },
+      new ApiErrorException(
+        new TooManyRequestsError(timeToBlockExpire),
         HttpStatus.TOO_MANY_REQUESTS,
       ),
     );

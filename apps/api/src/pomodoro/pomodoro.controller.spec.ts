@@ -15,10 +15,16 @@ import {
   SegmentTargetKind,
   DomainNotificationType,
 } from "@pomodoro/domain";
-import { ValidationPipe, type INestApplication } from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import request from "supertest";
-import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
+import {
+  mockJwtService,
+  UnauthorizedError,
+  ValidationError,
+  type MockedJwtService,
+  type UUID,
+} from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import {
@@ -33,7 +39,7 @@ import {
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
 import { PomodoroModule } from "./pomodoro.module.js";
-import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
+import { configureRequestHandling } from "../app-setup.js";
 
 describe("PomodoroController (integration)", () => {
   let app: INestApplication;
@@ -96,14 +102,7 @@ describe("PomodoroController (integration)", () => {
       .compile();
 
     app = module.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        forbidNonWhitelisted: true,
-      }),
-    );
-    app.useGlobalFilters(new GlobalExceptionFilter());
+    configureRequestHandling(app);
     await app.init();
 
     ownerToken = await jwtService.sign({ sub: ownerId });
@@ -136,7 +135,7 @@ describe("PomodoroController (integration)", () => {
         .send({ plannedMin: 25, target: { kind: "free" } })
         .expect(401);
 
-      expect(unauthenticatedResponse.body.message).toBe("Unauthorized");
+      expect(unauthenticatedResponse.body).toEqual({ error: new UnauthorizedError().name });
     });
   });
 
@@ -899,9 +898,8 @@ describe("PomodoroController (integration)", () => {
         .send({ target: { kind: "free" } })
         .expect(400);
 
-      expect(missingPlannedMinResponse.body.message).toEqual(
-        expect.arrayContaining([expect.stringContaining("plannedMin")]),
-      );
+      expect(missingPlannedMinResponse.body.error).toBe(new ValidationError({}).name);
+      expect(missingPlannedMinResponse.body.fields).toHaveProperty("plannedMin");
     });
 
     test("Should return 409 when starting a session while one is already active", async () => {
