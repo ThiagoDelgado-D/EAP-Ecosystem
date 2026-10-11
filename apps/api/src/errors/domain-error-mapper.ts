@@ -1,4 +1,5 @@
 import { HttpException } from "@nestjs/common";
+import { toErrorBody } from "domain-lib";
 import type {
   LearningResourceDomainError,
   LearningPathDomainError,
@@ -57,8 +58,5 @@ const httpStatusMap: Record<ErrorName, number> = {
 };
 
 export function toHttpException(error: AppDomainError): never {
-  throw new HttpException(
-    { error: error.name, ...(error.context ?? {}) },
-    httpStatusMap[error.name],
-  );
+  throw new HttpException(toErrorBody(error), httpStatusMap[error.name]);
 }

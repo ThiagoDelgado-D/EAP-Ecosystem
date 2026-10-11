@@ -7,6 +7,7 @@ import {
   type INestApplication,
 } from "@nestjs/common";
 import request from "supertest";
+import { UnexpectedError } from "domain-lib";
 import { GlobalExceptionFilter } from "./http-exception-filter.js";
 
 @Controller("test")
@@ -44,10 +45,10 @@ describe("GlobalExceptionFilter", () => {
       .expect({ code: "TEST_ERROR" });
   });
 
-  it("should return 500 for unknown errors", () => {
+  it("should return 500 with UNEXPECTED_ERROR for unknown errors", () => {
     return request(app.getHttpServer())
       .get("/test/unknown-error")
       .expect(500)
-      .expect({ message: "Internal server error" });
+      .expect({ error: new UnexpectedError().name });
   });
 });

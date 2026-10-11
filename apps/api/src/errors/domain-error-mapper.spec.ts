@@ -12,13 +12,13 @@ describe("toHttpException", () => {
     );
   });
   test("maps ValidationError to 400", () => {
-    const error = new ValidationError({ field: "invalid" }, null);
+    const error = new ValidationError({ field: "invalid" });
     expect(() => toHttpException(error)).toThrow(
       expect.objectContaining({ status: 400 }),
     );
   });
   test("maps NotFoundError to 404", () => {
-    const error = new NotFoundError({ resource: "Topic", id: "123" });
+    const error = new NotFoundError("Topic", "123");
     expect(() => toHttpException(error)).toThrow(
       expect.objectContaining({ status: 404 }),
     );
@@ -32,11 +32,11 @@ describe("toHttpException", () => {
   });
 
   test("passes error context alongside the error name in the response body", () => {
-    const context = { field: "required" };
-    const error = new InvalidDataError(context);
+    const fields = { field: "required" };
+    const error = new InvalidDataError(fields);
     expect(() => toHttpException(error)).toThrow(
       expect.objectContaining({
-        response: { error: "INVALID_DATA_ERROR", field: "required" },
+        response: { error: error.name, fields },
       }),
     );
   });
@@ -45,7 +45,7 @@ describe("toHttpException", () => {
     const error = new LearningResourceNotFoundError();
     expect(() => toHttpException(error)).toThrow(
       expect.objectContaining({
-        response: { error: "LEARNING_RESOURCE_NOT_FOUND_ERROR" },
+        response: { error: error.name },
       }),
     );
   });

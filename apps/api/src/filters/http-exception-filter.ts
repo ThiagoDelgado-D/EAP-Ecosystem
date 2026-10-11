@@ -5,7 +5,7 @@ import {
   HttpException,
 } from "@nestjs/common";
 import type { Response } from "express";
-import { UnexpectedError } from "domain-lib";
+import { toErrorBody, UnexpectedError } from "domain-lib";
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -18,7 +18,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       return;
     }
     console.error("Unexpected error:", exception);
-    const error = new UnexpectedError({ message: "Internal server error" });
-    response.status(500).json(error.context);
+    response.status(500).json(toErrorBody(new UnexpectedError()));
   }
 }
