@@ -27,7 +27,7 @@ export const revokeSession = async (
 ): Promise<void | InvalidDataError | SessionNotFoundError | ForbiddenError> => {
   const validationResult = revokeSessionSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const session = await sessionRepository.findById(validationResult.sessionId);
