@@ -140,7 +140,7 @@ describe("LearningResourceController (integration)", () => {
     test("Should return 404 when tagging a resource with another user's topic", async () => {
       const response = await createResource({ topicIds: [intruderTopicId] }).expect(404);
 
-      expect(response.body.error).toBe(new NotFoundError().name);
+      expect(response.body.error).toBe(new NotFoundError("Topic", intruderTopicId).name);
     });
 
     test("Should not return another user's resources in the list", async () => {
@@ -487,9 +487,9 @@ describe("LearningResourceController (integration)", () => {
         const ascendingResponse = await listSortedBy(UNKNOWN_SORT_FIELD).expect(400);
         const descendingResponse = await listSortedBy(`-${UNKNOWN_SORT_FIELD}`).expect(400);
 
-        expect(ascendingResponse.body.error).toBe(new InvalidDataError().name);
-        expect(ascendingResponse.body).toHaveProperty("sortField");
-        expect(descendingResponse.body).toHaveProperty("sortField");
+        expect(ascendingResponse.body.error).toBe(new InvalidDataError({}).name);
+        expect(ascendingResponse.body.fields).toHaveProperty("sortField");
+        expect(descendingResponse.body.fields).toHaveProperty("sortField");
       });
     });
 
@@ -529,8 +529,8 @@ describe("LearningResourceController (integration)", () => {
           .query({ topicIds: MALFORMED_TOPIC_ID })
           .expect(400);
 
-        expect(response.body.error).toBe(new InvalidDataError().name);
-        expect(response.body).toHaveProperty("topicIds");
+        expect(response.body.error).toBe(new InvalidDataError({}).name);
+        expect(response.body.fields).toHaveProperty("topicIds");
       });
     });
   });

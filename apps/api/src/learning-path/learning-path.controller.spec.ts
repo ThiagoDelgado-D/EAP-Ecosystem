@@ -355,7 +355,7 @@ describe("LearningPathController (integration)", () => {
         })
         .expect(400);
 
-      expect(response.body.sourceNodeId).toBe(
+      expect(response.body.fields.sourceNodeId).toBe(
         "Source and target node must be different",
       );
     });
