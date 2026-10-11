@@ -70,7 +70,7 @@ export function createValidationSchema<T>(
     }
 
     if (Object.keys(errors).length > 0) {
-      return new ValidationError(errors, result);
+      return new ValidationError(errors);
     }
 
     return result;
