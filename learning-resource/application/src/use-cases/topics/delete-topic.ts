@@ -30,7 +30,7 @@ export const deleteTopic = async (
 ): Promise<void | InvalidDataError | TopicNotFoundError> => {
   const validationResult = deleteTopicSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const topic = await verifyTopicOwnership(topicRepository, validationResult.topicId, currentUser);

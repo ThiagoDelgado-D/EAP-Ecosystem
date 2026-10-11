@@ -24,9 +24,12 @@ export class LearningPathEdgeNotFoundError extends BaseError<"LEARNING_PATH_EDGE
   }
 }
 
-export class LearningPathCreationError extends BaseError<"LEARNING_PATH_CREATION_ERROR"> {
-  constructor(errors: Record<string, string>) {
-    super("LEARNING_PATH_CREATION_ERROR", 422, errors);
+export class LearningPathCreationError extends BaseError<
+  "LEARNING_PATH_CREATION_ERROR",
+  { fields: Record<string, string> }
+> {
+  constructor(fields: Record<string, string>) {
+    super("LEARNING_PATH_CREATION_ERROR", 422, { fields });
   }
 }
 

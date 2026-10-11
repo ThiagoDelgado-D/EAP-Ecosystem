@@ -43,7 +43,7 @@ export const createLearningPath = async (
 ): Promise<LearningPath | InvalidDataError> => {
   const validationResult = await createLearningPathSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const validated = validationResult;

@@ -115,7 +115,7 @@ describe("toggleStatus", () => {
 
     expect(result).toBeInstanceOf(InvalidDataError);
     const statusValues = Object.values(ResourceStatusType);
-    expect((result as InvalidDataError).context).toEqual({
+    expect((result as InvalidDataError).context.fields).toEqual({
       status: `Status must be one of: ${statusValues.join(", ")}`,
     });
   });

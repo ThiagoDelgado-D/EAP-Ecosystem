@@ -48,7 +48,7 @@ export const updateLearningPathNodePosition = async (
 > => {
   const validationResult = updateLearningPathNodePositionSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { pathId, nodeId, x, y } = validationResult;

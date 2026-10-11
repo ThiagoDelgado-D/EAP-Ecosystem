@@ -100,7 +100,7 @@ export const updateResource = async (
 
   const validationResult = updateResourceSchema(request);
   if (validationResult instanceof ValidationError) {
-    const validationErrors = validationResult.errors;
+    const validationErrors = validationResult.context.fields;
     return new InvalidDataError(validationErrors);
   }
 

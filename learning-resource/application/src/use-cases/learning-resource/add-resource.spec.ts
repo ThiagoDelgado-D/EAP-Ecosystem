@@ -505,7 +505,7 @@ describe("addResource", () => {
       request,
     );
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toHaveProperty("title");
+    expect((result as InvalidDataError).context.fields).toHaveProperty("title");
   });
 
   test("Should fail with invalid difficulty value", async () => {
@@ -573,6 +573,6 @@ describe("addResource", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toHaveProperty("topicIds");
+    expect((result as InvalidDataError).context.fields).toHaveProperty("topicIds");
   });
 });

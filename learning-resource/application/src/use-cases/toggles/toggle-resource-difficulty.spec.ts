@@ -155,7 +155,7 @@ describe("toggleDifficulty", () => {
     );
 
     expect(result).toBeInstanceOf(ValidationError);
-    expect((result as ValidationError).errors).toEqual({
+    expect((result as ValidationError).context.fields).toEqual({
       difficulty: expect.any(String),
     });
   });

@@ -39,7 +39,7 @@ export const deleteResource = async (
   const validationResult = deleteResourceSchema({ id });
 
   if (validationResult instanceof ValidationError) {
-    const validationErrors = validationResult.errors;
+    const validationErrors = validationResult.context.fields;
     return new InvalidDataError(validationErrors);
   }
 

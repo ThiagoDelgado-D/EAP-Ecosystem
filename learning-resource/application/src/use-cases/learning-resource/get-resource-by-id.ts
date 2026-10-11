@@ -63,7 +63,7 @@ export const GetResourceById = async (
   const validationResult = getResourceByIdSchema({ resourceId });
 
   if (validationResult instanceof ValidationError) {
-    const validationErrors = validationResult.errors;
+    const validationErrors = validationResult.context.fields;
     return new InvalidDataError(validationErrors);
   }
 

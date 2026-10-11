@@ -52,7 +52,7 @@ export const updateLearningPathNodeProgress = async (
 > => {
   const validationResult = await updateLearningPathNodeProgressSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { pathId, nodeId, progress } = validationResult;

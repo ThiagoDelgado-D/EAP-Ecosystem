@@ -118,7 +118,7 @@ describe("toggleMentalState", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toEqual({
+    expect((result as InvalidDataError).context.fields).toEqual({
       mentalState:
         "MentalState must be one of: deep_focus, light_read, creative, quick_op, review",
     });
@@ -131,7 +131,7 @@ describe("toggleMentalState", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toEqual({
+    expect((result as InvalidDataError).context.fields).toEqual({
       id: "ResourceId must be a valid UUID",
     });
   });

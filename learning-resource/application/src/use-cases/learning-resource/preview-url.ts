@@ -40,7 +40,7 @@ export const previewUrl = async (
 ): Promise<PreviewUrlResponseModel | InvalidDataError> => {
   const validationResult = previewUrlSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   let metadata: UrlMetadata;

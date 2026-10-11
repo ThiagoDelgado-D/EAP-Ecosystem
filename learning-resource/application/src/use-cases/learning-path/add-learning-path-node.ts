@@ -61,7 +61,7 @@ export const addLearningPathNode = async (
 > => {
   const validationResult = await addLearningPathNodeSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { pathId, title, description, externalUrl, learningResourceId, stubScope, order, progress } = validationResult;

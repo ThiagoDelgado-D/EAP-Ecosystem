@@ -130,6 +130,6 @@ describe("GetResourceById", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toHaveProperty("resourceId");
+    expect((result as InvalidDataError).context.fields).toHaveProperty("resourceId");
   });
 });

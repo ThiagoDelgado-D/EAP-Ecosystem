@@ -48,7 +48,7 @@ export const toggleResourceEnergy = async (
   const validationResult = await toggleResourceEnergySchema(request);
 
   if (validationResult instanceof ValidationError) {
-    const validationErrors = validationResult.errors;
+    const validationErrors = validationResult.context.fields;
     return new InvalidDataError(validationErrors);
   }
 

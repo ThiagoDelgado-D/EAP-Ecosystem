@@ -42,7 +42,7 @@ export const createTopic = async (
 ): Promise<TopicResponseModel | InvalidDataError | DuplicateTopicNameError> => {
   const validationResult = createTopicSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { name, color } = validationResult;

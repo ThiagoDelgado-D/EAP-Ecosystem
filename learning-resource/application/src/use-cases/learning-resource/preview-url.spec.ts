@@ -245,7 +245,7 @@ describe("previewUrl", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toHaveProperty("url");
+    expect((result as InvalidDataError).context.fields).toHaveProperty("url");
   });
 
   test("Should return InvalidDataError for empty URL", async () => {
@@ -255,7 +255,7 @@ describe("previewUrl", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toHaveProperty("url");
+    expect((result as InvalidDataError).context.fields).toHaveProperty("url");
   });
 
   test("Should trim whitespace from URL before validation", async () => {

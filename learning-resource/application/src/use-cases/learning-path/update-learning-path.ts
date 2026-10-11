@@ -43,7 +43,7 @@ export const updateLearningPath = async (
 > => {
   const validationResult = await updateLearningPathSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { pathId, title, description } = validationResult;
