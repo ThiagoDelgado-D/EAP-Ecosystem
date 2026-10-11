@@ -49,7 +49,7 @@ export const suggestSessionTarget = async (
 ): Promise<SuggestedCandidateResponseModel[] | InvalidDataError> => {
   const validationResult = suggestSessionTargetSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
   const { energy, mentalState } = validationResult;
 

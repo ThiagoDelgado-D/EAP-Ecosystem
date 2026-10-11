@@ -40,7 +40,7 @@ export const extendBreak = async (
 > => {
   const validationResult = extendBreakSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
   const validatedData = validationResult;
 

@@ -38,7 +38,7 @@ export const validateAndVerifySessionOwnership = async (
 > => {
   const validationResult = sessionIdentitySchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
   return verifySessionOwnership(
     sessionRepository,
@@ -98,7 +98,7 @@ export const validateAndRequireActiveSessionWithOpenSegment = async (
 > => {
   const validationResult = sessionIdentitySchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
   return requireActiveSessionWithOpenSegment(
     sessionRepository,

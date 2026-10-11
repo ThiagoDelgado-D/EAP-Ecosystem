@@ -35,7 +35,7 @@ export const getSessionHistory = async (
 ): Promise<SessionHistoryResponseModel | InvalidDataError> => {
   const validationResult = getSessionHistorySchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
   const { since, until } = validationResult;
 
