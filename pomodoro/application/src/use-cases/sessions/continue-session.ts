@@ -13,6 +13,7 @@ import type { SessionNotFoundError } from "../../errors/session-not-found.js";
 import type { SessionForbiddenError } from "../../errors/session-forbidden.js";
 import type { SessionNotActiveError } from "../../errors/session-not-active.js";
 import type { NoOpenSegmentError } from "../../errors/no-open-segment.js";
+import { PlannedTimeNotReachedError } from "../../errors/planned-time-not-reached.js";
 import { requireActiveSessionWithOpenSegment } from "./verify-session-ownership.js";
 import { segmentToResolvedTarget } from "./resolve-segment-target.js";
 
@@ -46,6 +47,7 @@ export const continueSession = async (
   | SessionForbiddenError
   | SessionNotActiveError
   | NoOpenSegmentError
+  | PlannedTimeNotReachedError
 > => {
   const validationResult = continueSessionSchema(request);
   if (validationResult instanceof ValidationError) {
@@ -64,6 +66,9 @@ export const continueSession = async (
   const boundaryAt = new Date(
     session.startedAt.getTime() + boundarySec * 1000,
   );
+  if (boundaryAt.getTime() > Date.now()) {
+    return new PlannedTimeNotReachedError(session.id);
+  }
 
   await sessionRepository.updateSegment({
     ...openSegment,

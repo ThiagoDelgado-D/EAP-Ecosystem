@@ -10,6 +10,7 @@ import { SessionNotFoundError } from "../../errors/session-not-found.js";
 import { SessionForbiddenError } from "../../errors/session-forbidden.js";
 import { SessionNotActiveError } from "../../errors/session-not-active.js";
 import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
+import { PlannedTimeNotReachedError } from "../../errors/planned-time-not-reached.js";
 
 describe("continueSession", () => {
   let fixture: SessionLifecycleFixture;
@@ -112,5 +113,20 @@ describe("continueSession", () => {
     });
 
     expect(result).toBeInstanceOf(NoOpenSegmentError);
+  });
+
+  test("returns PlannedTimeNotReachedError and leaves the session running when its planned time hasn't passed", async () => {
+    const session = await fixture.startFreeSession();
+
+    const result = await continueSession(deps(), {
+      sessionId: session.id,
+    });
+
+    expect(result).toBeInstanceOf(PlannedTimeNotReachedError);
+    const storedSession = fixture.sessionRepository.sessions.find(
+      (s) => s.id === session.id,
+    );
+    expect(storedSession?.completedAt).toBeUndefined();
+    expect(fixture.sessionRepository.sessions).toHaveLength(1);
   });
 });
