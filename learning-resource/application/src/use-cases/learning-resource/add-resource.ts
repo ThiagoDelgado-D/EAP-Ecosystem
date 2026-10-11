@@ -109,10 +109,7 @@ export const addResource = async (
     validatedData.resourceTypeId,
   );
   if (!existingResourceType) {
-    return new NotFoundError({
-      resource: "ResourceType",
-      id: validatedData.resourceTypeId,
-    });
+    return new NotFoundError("ResourceType", validatedData.resourceTypeId);
   }
 
   const unavailableTopic = await findUnavailableTopic(

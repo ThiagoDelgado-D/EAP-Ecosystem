@@ -118,10 +118,7 @@ export const updateResource = async (
       validatedData.typeId,
     );
     if (!resourceType) {
-      return new NotFoundError({
-        resource: "ResourceType",
-        id: validatedData.typeId,
-      });
+      return new NotFoundError("ResourceType", validatedData.typeId);
     }
   }
 
