@@ -3,7 +3,8 @@ import request from "supertest";
 import { generateDistinctEmails, generateSignInCode } from "@user/application";
 import { createUserTestApp } from "../user/user-module.fixture.js";
 import { RateLimitModule } from "./rate-limit.module.js";
-import { RATE_LIMITS, TOO_MANY_REQUESTS_ERROR } from "./rate-limits.js";
+import { TooManyRequestsError } from "domain-lib";
+import { RATE_LIMITS } from "./rate-limits.js";
 
 const [SIGN_IN_EMAIL, ...ROTATING_SIGN_IN_EMAILS] = generateDistinctEmails(
   RATE_LIMITS.REQUEST_SIGN_IN.limit + 2,
@@ -30,7 +31,7 @@ describe("Rate limiting (integration)", () => {
       .post("/api/v1/auth/verify-sign-in")
       .send({ email: SIGN_IN_EMAIL, code: WRONG_SIGN_IN_CODE });
 
-  test("Should let sign-in codes through up to the per-IP limit, then answer 429 with Retry-After", async () => {
+  test("Should let sign-in codes through up to the per-IP limit, then answer 429 with the wait in both the header and the body", async () => {
     for (let attempt = 0; attempt < RATE_LIMITS.REQUEST_SIGN_IN.limit; attempt++) {
       await requestSignIn(ROTATING_SIGN_IN_EMAILS[attempt]).expect(204);
     }
@@ -39,8 +40,9 @@ describe("Rate limiting (integration)", () => {
       ROTATING_SIGN_IN_EMAILS[RATE_LIMITS.REQUEST_SIGN_IN.limit],
     ).expect(TOO_MANY_REQUESTS_STATUS);
 
-    expect(blocked.body).toEqual({ error: TOO_MANY_REQUESTS_ERROR });
-    expect(Number(blocked.headers["retry-after"])).toBeGreaterThan(0);
+    const retryAfterSeconds = Number(blocked.headers["retry-after"]);
+    expect(retryAfterSeconds).toBeGreaterThan(0);
+    expect(blocked.body).toEqual({ error: new TooManyRequestsError().name, retryAfterSeconds });
   });
 
   test("Should stop verifying codes once the attempts limit is reached", async () => {
@@ -52,6 +54,6 @@ describe("Rate limiting (integration)", () => {
 
     const blocked = await verifySignIn().expect(TOO_MANY_REQUESTS_STATUS);
 
-    expect(blocked.body).toEqual({ error: TOO_MANY_REQUESTS_ERROR });
+    expect(blocked.body.error).toBe(new TooManyRequestsError().name);
   });
 });

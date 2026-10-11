@@ -7,5 +7,3 @@ export const RATE_LIMITS = {
   AUTH_SESSION: { limit: 20, ttl: minutes(1) },
   URL_PREVIEW: { limit: 20, ttl: minutes(1) },
 } as const;
-
-export const TOO_MANY_REQUESTS_ERROR = "TOO_MANY_REQUESTS_ERROR";
