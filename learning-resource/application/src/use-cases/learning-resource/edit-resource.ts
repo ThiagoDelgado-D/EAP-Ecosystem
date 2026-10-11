@@ -100,7 +100,7 @@ export const updateResource = async (
 
   const validationResult = updateResourceSchema(request);
   if (validationResult instanceof ValidationError) {
-    const validationErrors = validationResult.errors;
+    const validationErrors = validationResult.context.fields;
     return new InvalidDataError(validationErrors);
   }
 
@@ -118,10 +118,7 @@ export const updateResource = async (
       validatedData.typeId,
     );
     if (!resourceType) {
-      return new NotFoundError({
-        resource: "ResourceType",
-        id: validatedData.typeId,
-      });
+      return new NotFoundError("ResourceType", validatedData.typeId);
     }
   }
 

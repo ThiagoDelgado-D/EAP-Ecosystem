@@ -65,7 +65,7 @@ export const updateLearningPathNode = async (
 > => {
   const validationResult = await updateLearningPathNodeSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   let learningResourceIdPatch: Pick<LearningPathNodePatch, "learningResourceId" | "stubScope"> | undefined;

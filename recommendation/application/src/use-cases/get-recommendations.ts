@@ -65,7 +65,7 @@ export const getRecommendations = async (
 > => {
   const validationResult = getRecommendationsSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
   const excludedIds = new Set(validationResult.excludedCandidateIds ?? []);
 

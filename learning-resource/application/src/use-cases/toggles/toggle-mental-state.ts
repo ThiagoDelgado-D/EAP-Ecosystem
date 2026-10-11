@@ -48,7 +48,7 @@ export const toggleMentalState = async (
   const validationResult = await toggleMentalStateSchema(request);
 
   if (validationResult instanceof ValidationError) {
-    const validationErrors = validationResult.errors;
+    const validationErrors = validationResult.context.fields;
     return new InvalidDataError(validationErrors);
   }
 

@@ -45,7 +45,7 @@ export const setRecommendationContext = async (
 ): Promise<SetRecommendationContextResponseModel | InvalidDataError> => {
   const validationResult = setRecommendationContextSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
   const { energyLevel, availableMinutes, mentalState } = validationResult;
 

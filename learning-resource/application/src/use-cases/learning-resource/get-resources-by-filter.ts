@@ -97,7 +97,7 @@ export const getResourcesByFilter = async (
     sortDirection: request.sort?.direction,
   });
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const page = Math.max(1, request.page ?? 1);

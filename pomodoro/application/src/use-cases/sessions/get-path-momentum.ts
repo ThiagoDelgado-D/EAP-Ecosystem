@@ -36,7 +36,7 @@ export const getPathMomentum = async (
 ): Promise<PathMomentumResponseModel[] | InvalidDataError> => {
   const validationResult = getPathMomentumSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { days } = validationResult;

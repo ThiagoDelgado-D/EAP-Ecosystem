@@ -53,7 +53,7 @@ export const updateTopic = async (
 > => {
   const validationResult = updateTopicSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { topicId, name, color } = validationResult;

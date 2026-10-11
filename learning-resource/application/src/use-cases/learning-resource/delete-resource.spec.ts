@@ -69,7 +69,7 @@ describe("deleteResource", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toHaveProperty("id");
+    expect((result as InvalidDataError).context.fields).toHaveProperty("id");
   });
   test("Should return LearningResourceForbiddenError when resource belongs to another user", async () => {
     const resourceId = await cryptoService.generateUUID();

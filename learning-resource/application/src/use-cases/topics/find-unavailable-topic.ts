@@ -9,7 +9,7 @@ export const findUnavailableTopic = async (
   for (const topicId of topicIds) {
     const topic = await topicRepository.findById(topicId);
     if (topic?.userId !== currentUser.id) {
-      return new NotFoundError({ resource: "Topic", id: topicId });
+      return new NotFoundError("Topic", topicId);
     }
   }
   return undefined;

@@ -111,7 +111,7 @@ describe("toggleResourceEnergy", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toEqual({
+    expect((result as InvalidDataError).context.fields).toEqual({
       energyLevel: "EnergyLevel must be one of: low, medium, high",
     });
   });

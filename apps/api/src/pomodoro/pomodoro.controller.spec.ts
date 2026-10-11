@@ -877,7 +877,7 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader())
         .expect(400);
 
-      expect(invalidMentalStateResponse.body.mentalState).toContain("Mental state");
+      expect(invalidMentalStateResponse.body.fields.mentalState).toContain("Mental state");
     });
 
     test("Should return 400 when energy is not a known level", async () => {
@@ -887,7 +887,7 @@ describe("PomodoroController (integration)", () => {
         .set(authHeader())
         .expect(400);
 
-      expect(invalidEnergyResponse.body.energy).toContain("Energy");
+      expect(invalidEnergyResponse.body.fields.energy).toContain("Energy");
     });
   });
 

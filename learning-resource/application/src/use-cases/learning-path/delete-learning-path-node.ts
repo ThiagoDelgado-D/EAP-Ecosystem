@@ -42,7 +42,7 @@ export const deleteLearningPathNode = async (
 > => {
   const validationResult = await deleteLearningPathNodeSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { pathId, nodeId } = validationResult;

@@ -306,7 +306,7 @@ describe("updateResource", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toEqual({
+    expect((result as InvalidDataError).context.fields).toEqual({
       general: "At least one field must be provided for update",
     });
   });
@@ -326,7 +326,7 @@ describe("updateResource", () => {
     );
 
     expect(result).toBeInstanceOf(InvalidDataError);
-    expect((result as InvalidDataError).context).toEqual({
+    expect((result as InvalidDataError).context.fields).toEqual({
       title: "Title must be at most 250 characters",
     });
   });

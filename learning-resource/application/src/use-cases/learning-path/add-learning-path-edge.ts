@@ -51,7 +51,7 @@ export const addLearningPathEdge = async (
 > => {
   const validationResult = addLearningPathEdgeSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { pathId, sourceNodeId, targetNodeId } = validationResult;

@@ -42,7 +42,7 @@ export const deleteLearningPathEdge = async (
 > => {
   const validationResult = deleteLearningPathEdgeSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const { pathId, edgeId } = validationResult;

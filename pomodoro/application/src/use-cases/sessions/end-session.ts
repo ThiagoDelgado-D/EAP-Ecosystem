@@ -53,7 +53,7 @@ export const endSession = async (
 > => {
   const validationResult = endSessionSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const guard = await requireActiveSessionWithOpenSegment(

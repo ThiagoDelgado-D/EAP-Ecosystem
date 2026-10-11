@@ -57,7 +57,7 @@ export const startSession = async (
 > => {
   const validationResult = await startSessionSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
   const validatedData = validationResult;
 

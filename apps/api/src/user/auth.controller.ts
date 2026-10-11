@@ -90,7 +90,7 @@ export class AuthController {
     );
     if (!(result instanceof TooManyRequestsError)) return;
 
-    res.setHeader("Retry-After", String(result.retryAfterSeconds));
+    res.setHeader("Retry-After", String(result.context.retryAfterSeconds));
     toHttpException(result);
   }
 

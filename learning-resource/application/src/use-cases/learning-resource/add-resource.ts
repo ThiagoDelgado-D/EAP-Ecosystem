@@ -100,7 +100,7 @@ export const addResource = async (
 ): Promise<LearningResource | InvalidDataError | NotFoundError> => {
   const validationResult = await addResourceSchema(request);
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const validatedData = validationResult;
@@ -109,10 +109,7 @@ export const addResource = async (
     validatedData.resourceTypeId,
   );
   if (!existingResourceType) {
-    return new NotFoundError({
-      resource: "ResourceType",
-      id: validatedData.resourceTypeId,
-    });
+    return new NotFoundError("ResourceType", validatedData.resourceTypeId);
   }
 
   const unavailableTopic = await findUnavailableTopic(

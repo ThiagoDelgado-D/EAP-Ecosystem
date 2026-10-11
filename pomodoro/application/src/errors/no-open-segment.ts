@@ -1,6 +1,6 @@
 import { BaseError, type UUID } from "domain-lib";
 
-export class NoOpenSegmentError extends BaseError<"NO_OPEN_SEGMENT_ERROR"> {
+export class NoOpenSegmentError extends BaseError<"NO_OPEN_SEGMENT_ERROR", { sessionId: UUID }> {
   constructor(sessionId: UUID) {
     super("NO_OPEN_SEGMENT_ERROR", 409, { sessionId });
   }

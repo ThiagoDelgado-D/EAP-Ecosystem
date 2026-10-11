@@ -40,7 +40,7 @@ export const updateUserAppearance = async (
     weeklyGoalMinutes: request.appearance.weeklyGoalMinutes,
   });
   if (validationResult instanceof ValidationError) {
-    return new InvalidDataError(validationResult.errors);
+    return new InvalidDataError(validationResult.context.fields);
   }
 
   const user = await userRepository.findById(request.userId);
