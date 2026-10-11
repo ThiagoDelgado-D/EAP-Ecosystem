@@ -6,6 +6,7 @@ import {
   mockSessionRepository,
   MIN_SESSION_DURATION_SEC,
   DEFAULT_BREAK_DURATION_SEC,
+  PlannedTimeNotReachedError,
 } from "@pomodoro/application";
 import {
   CandidateNodeEnergyLevel,
@@ -538,6 +539,25 @@ describe("PomodoroController (integration)", () => {
       expect(continueResponse.body.segments[0]).toMatchObject({
         targetKind: "free",
         startSec: 0,
+      });
+    });
+
+    test("Should return 409 when the session hasn't reached its planned time yet", async () => {
+      const startResponse = await request(app.getHttpServer())
+        .post("/api/v1/pomodoro/sessions")
+        .set(authHeader())
+        .send({ plannedMin: 25, target: { kind: "free" } })
+        .expect(201);
+      const sessionId = startResponse.body.id;
+
+      const earlyContinueResponse = await request(app.getHttpServer())
+        .post(`/api/v1/pomodoro/sessions/${sessionId}/continue`)
+        .set(authHeader())
+        .expect(409);
+
+      expect(earlyContinueResponse.body).toEqual({
+        error: new PlannedTimeNotReachedError(sessionId).name,
+        sessionId,
       });
     });
 
