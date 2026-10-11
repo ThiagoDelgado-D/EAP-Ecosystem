@@ -72,6 +72,6 @@ describe("assertRateLimit", () => {
     if (!(result instanceof TooManyRequestsError)) throw new Error("Expected a rate limit error");
 
     const expectedSeconds = (THIRD_ATTEMPT_DELAY_MS - ONE_MINUTE_MS) / 1000;
-    expect(result.retryAfterSeconds).toBe(expectedSeconds);
+    expect(result.context.retryAfterSeconds).toBe(expectedSeconds);
   });
 });
