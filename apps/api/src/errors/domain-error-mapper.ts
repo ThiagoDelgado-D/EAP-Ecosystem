@@ -1,5 +1,4 @@
-import { HttpException } from "@nestjs/common";
-import { toErrorBody } from "domain-lib";
+import { ApiErrorException } from "./api-error-exception.js";
 import type {
   LearningResourceDomainError,
   LearningPathDomainError,
@@ -58,5 +57,5 @@ const httpStatusMap: Record<ErrorName, number> = {
 };
 
 export function toHttpException(error: AppDomainError): never {
-  throw new HttpException(toErrorBody(error), httpStatusMap[error.name]);
+  throw new ApiErrorException(error, httpStatusMap[error.name]);
 }
