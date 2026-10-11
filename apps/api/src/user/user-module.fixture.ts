@@ -1,4 +1,4 @@
-import { ValidationPipe, type INestApplication, type ModuleMetadata } from "@nestjs/common";
+import type { INestApplication, ModuleMetadata } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import {
@@ -23,7 +23,7 @@ import { PomodoroSessionEntity } from "@pomodoro/infrastructure";
 import { mockJwtService, type MockedJwtService } from "domain-lib";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { UserModule } from "./user.module.js";
-import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
+import { configureRequestHandling } from "../app-setup.js";
 import { EnvironmentService } from "../config/environment.service.js";
 
 const testEnvironment = {
@@ -95,14 +95,7 @@ export async function createUserTestApp(
     .compile();
 
   const app = module.createNestApplication();
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
-  app.useGlobalFilters(new GlobalExceptionFilter());
+  configureRequestHandling(app);
   await app.init();
 
   return {

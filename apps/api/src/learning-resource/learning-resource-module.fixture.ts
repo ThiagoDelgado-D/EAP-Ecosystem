@@ -5,7 +5,7 @@ import {
   type IUrlMetadataService,
 } from "@learning-resource/application";
 import type { ResourceType, Topic, TopicTone } from "@learning-resource/domain";
-import { ValidationPipe, type INestApplication } from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { mockJwtService, type MockedJwtService, type UUID } from "domain-lib";
@@ -16,7 +16,7 @@ import {
   TopicEntity,
 } from "@learning-resource/infrastructure";
 import { LearningResourceModule } from "./learning-resource.module.js";
-import { GlobalExceptionFilter } from "../filters/http-exception-filter.js";
+import { configureRequestHandling } from "../app-setup.js";
 
 export interface TopicSeed {
   userId: UUID;
@@ -107,14 +107,7 @@ export async function createLearningResourceTestApp(
     .compile();
 
   const app = module.createNestApplication();
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      transform: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
-  app.useGlobalFilters(new GlobalExceptionFilter());
+  configureRequestHandling(app);
   await app.init();
 
   return {

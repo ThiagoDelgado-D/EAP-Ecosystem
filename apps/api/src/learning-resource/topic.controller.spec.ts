@@ -1,6 +1,6 @@
 import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
-import type { UUID } from "domain-lib";
+import { ValidationError, type UUID } from "domain-lib";
 import { TopicTone } from "@learning-resource/domain";
 import { DuplicateTopicNameError, TopicNotFoundError } from "@learning-resource/application";
 import { createLearningResourceTestApp } from "./learning-resource-module.fixture.js";
@@ -122,7 +122,8 @@ describe("TopicController (integration)", () => {
         .send({ name: NEW_TOPIC_NAME, color: UNKNOWN_TONE })
         .expect(400);
 
-      expect(response.body.message).toBeDefined();
+      expect(response.body.error).toBe(new ValidationError({}).name);
+      expect(response.body.fields).toHaveProperty("color");
     });
   });
 
