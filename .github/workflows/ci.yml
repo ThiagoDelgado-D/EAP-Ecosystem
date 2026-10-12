@@ -36,6 +36,9 @@ jobs:
       - name: Run TypeScript compiler
         run: yarn type-check
 
+      - name: Lint web
+        run: yarn workspace web lint
+
   test:
     name: Test
     runs-on: ubuntu-latest
