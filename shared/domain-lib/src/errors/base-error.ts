@@ -6,7 +6,7 @@ export abstract class BaseError<
   TName extends string = string,
   TContext extends ErrorContext | undefined = undefined,
 > extends Error {
-  public name: TName;
+  public override name: TName;
   public statusCode: number;
   public context: TContext;
 
