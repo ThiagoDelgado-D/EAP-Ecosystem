@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
+import { isApiError } from '@core/errors/api-error';
 import { TopicRepository } from '../domain/topic.repository';
 import type { CreateTopicPayload, Topic, UpdateTopicPayload } from '../domain/topic.model';
 
@@ -8,8 +8,6 @@ export class DuplicateTopicNameError extends Error {
     super(`A topic named "${topicName}" already exists`);
   }
 }
-
-const CONFLICT_STATUS = 409;
 
 @Injectable()
 export class TopicService {
@@ -65,7 +63,7 @@ export class TopicService {
     try {
       return await request();
     } catch (error) {
-      if (error instanceof HttpErrorResponse && error.status === CONFLICT_STATUS) {
+      if (isApiError(error) && error.name === 'DUPLICATE_TOPIC_NAME_ERROR') {
         throw new DuplicateTopicNameError(name);
       }
       throw error;

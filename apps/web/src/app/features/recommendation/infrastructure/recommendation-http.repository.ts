@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { RecommendationRepository } from '../domain/recommendation.repository';
 import type {
@@ -13,6 +13,11 @@ import type {
   SetRecommendationContextRequestDto,
 } from './recommendation.dto';
 import { API_CONFIG } from '@core/config/api.config';
+import { isApiError } from '@core/errors/api-error';
+
+function isContextMissing(error: unknown): boolean {
+  return isApiError(error) && error.name === 'RECOMMENDATION_CONTEXT_NOT_FOUND_ERROR';
+}
 
 @Injectable()
 export class RecommendationHttpRepository extends RecommendationRepository {
@@ -27,7 +32,7 @@ export class RecommendationHttpRepository extends RecommendationRepository {
       );
       return dtos.map((dto) => this.toDomain(dto));
     } catch (err) {
-      if (err instanceof HttpErrorResponse && err.status === 404) return [];
+      if (isContextMissing(err)) return [];
       throw err;
     }
   }
@@ -43,7 +48,7 @@ export class RecommendationHttpRepository extends RecommendationRepository {
         mentalState: dto.mentalState,
       };
     } catch (err) {
-      if (err instanceof HttpErrorResponse && err.status === 404) return null;
+      if (isContextMissing(err)) return null;
       throw err;
     }
   }
