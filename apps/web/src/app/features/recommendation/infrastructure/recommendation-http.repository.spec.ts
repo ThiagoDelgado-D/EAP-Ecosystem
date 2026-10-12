@@ -1,9 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { RecommendationHttpRepository } from './recommendation-http.repository';
 import type { RecommendationContextResponseDto, ScoredRecommendationDto } from './recommendation.dto';
 import { API_CONFIG } from '@core/config/api.config';
+import { apiErrorInterceptor } from '@core/errors/api-error.interceptor';
+import type { ApiErrorName } from '@core/errors/api-error';
+
+const CONTEXT_NOT_FOUND_ERROR = 'RECOMMENDATION_CONTEXT_NOT_FOUND_ERROR' satisfies ApiErrorName;
+const CONTEXT_NOT_FOUND_BODY = { error: CONTEXT_NOT_FOUND_ERROR };
+const NOT_FOUND_RESPONSE = { status: 404, statusText: 'Not Found' };
 
 describe('RecommendationHttpRepository', () => {
   let repository: RecommendationHttpRepository;
@@ -11,7 +17,11 @@ describe('RecommendationHttpRepository', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [RecommendationHttpRepository, provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        RecommendationHttpRepository,
+        provideHttpClient(withInterceptors([apiErrorInterceptor])),
+        provideHttpClientTesting(),
+      ],
     });
     repository = TestBed.inject(RecommendationHttpRepository);
     httpController = TestBed.inject(HttpTestingController);
@@ -71,7 +81,7 @@ describe('RecommendationHttpRepository', () => {
 
     httpController
       .expectOne(`${API_CONFIG.baseUrl}/recommendations`)
-      .flush({ message: 'Recommendation context not found' }, { status: 404, statusText: 'Not Found' });
+      .flush(CONTEXT_NOT_FOUND_BODY, NOT_FOUND_RESPONSE);
 
     expect(await resultPromise).toEqual([]);
   });
@@ -103,7 +113,7 @@ describe('RecommendationHttpRepository', () => {
 
     httpController
       .expectOne(`${API_CONFIG.baseUrl}/recommendations/context`)
-      .flush({ message: 'Recommendation context not found' }, { status: 404, statusText: 'Not Found' });
+      .flush(CONTEXT_NOT_FOUND_BODY, NOT_FOUND_RESPONSE);
 
     expect(await firstVisitContextPromise).toBeNull();
   });

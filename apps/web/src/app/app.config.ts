@@ -4,6 +4,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { authInterceptor } from '@core/interceptors/auth.interceptor';
 import { tokenRefreshInterceptor } from '@core/interceptors/token-refresh.interceptor';
+import { apiErrorInterceptor } from '@core/errors/api-error.interceptor';
 import { AppTitleStrategy } from '@core/title/app-title.strategy';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { PomodoroHttpRepository } from '@features/pomodoro/infrastructure/pomodoro-http.repository';
@@ -25,7 +26,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     { provide: TitleStrategy, useClass: AppTitleStrategy },
-    provideHttpClient(withInterceptors([authInterceptor, tokenRefreshInterceptor])),
+    provideHttpClient(withInterceptors([apiErrorInterceptor, authInterceptor, tokenRefreshInterceptor])),
     { provide: ANIMATION_MODULE_TYPE, useValue: 'NoopAnimations' },
     { provide: PomodoroRepository, useClass: PomodoroHttpRepository },
     { provide: LearningPathRepository, useClass: LearningPathHttpRepository },

@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { ApiError } from '@core/errors/api-error';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 import type {
   CreateTopicPayload,
@@ -28,7 +28,9 @@ export function mockTopicRepository(initial: { topics?: Topic[] } = {}): MockedT
 
     create(payload: CreateTopicPayload): Promise<Topic> {
       if (isNameTaken(this.topics, payload.name)) {
-        return Promise.reject(new HttpErrorResponse({ status: CONFLICT_STATUS }));
+        return Promise.reject(
+          new ApiError('DUPLICATE_TOPIC_NAME_ERROR', CONFLICT_STATUS, undefined),
+        );
       }
       const now = new Date();
       const created: Topic = {
@@ -46,10 +48,12 @@ export function mockTopicRepository(initial: { topics?: Topic[] } = {}): MockedT
     update(id: string, payload: UpdateTopicPayload): Promise<Topic> {
       const existing = this.topics.find((t) => t.id === id);
       if (!existing) {
-        return Promise.reject(new HttpErrorResponse({ status: NOT_FOUND_STATUS }));
+        return Promise.reject(new ApiError('TOPIC_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined));
       }
       if (payload.name !== undefined && isNameTaken(this.topics, payload.name, id)) {
-        return Promise.reject(new HttpErrorResponse({ status: CONFLICT_STATUS }));
+        return Promise.reject(
+          new ApiError('DUPLICATE_TOPIC_NAME_ERROR', CONFLICT_STATUS, undefined),
+        );
       }
       const updated: Topic = {
         id: existing.id,
