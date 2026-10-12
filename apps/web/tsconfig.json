@@ -24,6 +24,33 @@
       ],
       "@features/*": [
         "src/app/features/*"
+      ],
+      "domain-lib": [
+        "../../shared/domain-lib/src/index.ts"
+      ],
+      "@learning-resource/domain": [
+        "../../learning-resource/domain/src/index.ts"
+      ],
+      "@learning-resource/application": [
+        "../../learning-resource/application/src/index.ts"
+      ],
+      "@pomodoro/domain": [
+        "../../pomodoro/domain/src/index.ts"
+      ],
+      "@pomodoro/application": [
+        "../../pomodoro/application/src/index.ts"
+      ],
+      "@user/domain": [
+        "../../user/domain/src/index.ts"
+      ],
+      "@user/application": [
+        "../../user/application/src/index.ts"
+      ],
+      "@recommendation/domain": [
+        "../../recommendation/domain/src/index.ts"
+      ],
+      "@recommendation/application": [
+        "../../recommendation/application/src/index.ts"
       ]
     }
   },
