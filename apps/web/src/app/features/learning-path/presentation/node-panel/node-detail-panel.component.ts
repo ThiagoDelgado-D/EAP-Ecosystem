@@ -34,6 +34,7 @@ import { TopicRepository } from '@features/learning-resource/domain/topic.reposi
 import { LearningResourceHttpRepository } from '@features/learning-resource/infrastructure/learning-resource-http.repository';
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository';
+import { TopicPickerComponent } from '@features/learning-resource/presentation/topic-picker/topic-picker.component';
 
 interface CreateForm {
   title: string;
@@ -55,7 +56,7 @@ const STATUS_OPTIONS: Array<{ value: NodeProgress; label: string }> = [
 @Component({
   selector: 'app-node-detail-panel',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, TopicPickerComponent],
   providers: [
     LearningResourceService,
     { provide: LearningResourceRepository, useClass: LearningResourceHttpRepository },
@@ -156,15 +157,6 @@ export class NodeDetailPanelComponent {
 
   patchForm(patch: Partial<CreateForm>): void {
     this.form.update((f) => ({ ...f, ...patch }));
-  }
-
-  toggleTopic(id: string): void {
-    this.form.update((f) => ({
-      ...f,
-      topicIds: f.topicIds.includes(id)
-        ? f.topicIds.filter((t) => t !== id)
-        : [...f.topicIds, id],
-    }));
   }
 
   async confirmLink(): Promise<void> {
