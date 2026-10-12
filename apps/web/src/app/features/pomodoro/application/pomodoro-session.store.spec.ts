@@ -164,6 +164,23 @@ describe('PomodoroSessionStore', () => {
     expect(store.activeSession()).toBeNull();
   });
 
+  test('should share one request when rehydrate is called again while the first is in flight', async () => {
+    const getActiveSession = vi.spyOn(repository, 'getActiveSession');
+
+    await Promise.all([store.rehydrate(), store.rehydrate()]);
+
+    expect(getActiveSession).toHaveBeenCalledTimes(1);
+  });
+
+  test('should ask the API again once a previous rehydrate has settled', async () => {
+    const getActiveSession = vi.spyOn(repository, 'getActiveSession');
+
+    await store.rehydrate();
+    await store.rehydrate();
+
+    expect(getActiveSession).toHaveBeenCalledTimes(2);
+  });
+
   test('should populate the active break on rehydrate when there is no active session', async () => {
     repository.breaks.push({
       id: crypto.randomUUID(),

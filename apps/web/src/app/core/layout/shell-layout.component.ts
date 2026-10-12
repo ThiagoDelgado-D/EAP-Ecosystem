@@ -8,6 +8,7 @@ import { AuthStore } from '@features/auth/application/auth.store';
 import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
 import { ThemeService } from '@core/theme/theme.service';
 import { CalibrationService } from '@features/recommendation/application/calibration.service';
+import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { ToastService } from '@core/toast/toast.service';
 import type { MentalStateType } from '@features/learning-resource/domain/learning-resource.model';
 import {
@@ -52,6 +53,7 @@ export class ShellLayoutComponent implements OnInit {
 
   private readonly calibration = inject(CalibrationService);
   private readonly commandPalette = inject(CommandPaletteService);
+  private readonly pomodoroSession = inject(PomodoroSessionStore);
 
   readonly commandPaletteShortcut = this.commandPalette.shortcutLabel;
   private readonly toast = inject(ToastService);
@@ -104,7 +106,13 @@ export class ShellLayoutComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       this.sidebarOpen.set(window.innerWidth >= 1024);
       void this.calibration.load();
+      this.restorePomodoroSession();
     }
+  }
+
+  private restorePomodoroSession(): void {
+    if (this.pomodoroSession.activeSession() || this.pomodoroSession.phase() === 'break') return;
+    void this.pomodoroSession.rehydrate();
   }
 
   @HostListener('window:resize')
