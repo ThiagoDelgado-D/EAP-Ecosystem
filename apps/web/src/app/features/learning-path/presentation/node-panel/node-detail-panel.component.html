@@ -169,22 +169,10 @@
           </div>
           <fieldset class="border-0 p-0 m-0">
             <legend class="text-[10.5px] font-bold text-ink-dim mb-1.5">Topics</legend>
-            <div class="flex flex-wrap gap-1.5">
-              @for (topic of topicService.topics(); track topic.id) {
-                <button
-                  type="button"
-                  (click)="toggleTopic(topic.id)"
-                  class="text-[11px] px-2 py-1 rounded-full cursor-pointer border"
-                  [class]="
-                    form().topicIds.includes(topic.id)
-                      ? 'bg-accent/15 text-accent-ink border-accent-line/40'
-                      : 'bg-surface-inset text-ink-faint border-line-strong'
-                  "
-                >
-                  {{ topic.name }}
-                </button>
-              }
-            </div>
+            <app-topic-picker
+              [selectedIds]="form().topicIds"
+              (selectedIdsChange)="patchForm({ topicIds: $event })"
+            />
           </fieldset>
           <div class="flex gap-2.5">
             <div class="flex-1">
