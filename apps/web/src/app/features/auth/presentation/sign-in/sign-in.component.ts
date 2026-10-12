@@ -2,6 +2,7 @@ import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
+import { messageOf } from '@core/errors/error-messages';
 import { EmailStepComponent } from './email-step/email-step.component';
 import { CodeStepComponent } from './code-step/code-step.component';
 import { SuccessStepComponent } from './success-step/success-step.component';
@@ -33,8 +34,8 @@ export class SignInComponent implements OnDestroy {
       await this.authService.requestSignIn(email);
       this.email.set(email);
       this.step.set('code');
-    } catch {
-      this.error.set('Failed to send sign-in code. Please try again.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
@@ -52,8 +53,8 @@ export class SignInComponent implements OnDestroy {
         this.step.set('success');
         this.redirectTimer = setTimeout(() => this.router.navigate(['/dashboard']), 1500);
       }
-    } catch {
-      this.error.set('Invalid or expired code. Please try again.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
