@@ -65,3 +65,55 @@ export function writeDefaultDurationMin(minutes: number): void {
     /* per-viewer convenience only */
   }
 }
+
+export interface MiniWidgetOffset {
+  x: number;
+  y: number;
+}
+
+const MINI_WIDGET_OFFSET_STORAGE_KEY = 'pomodoro_mini_widget_offset';
+export const ANCHORED_MINI_WIDGET_OFFSET: MiniWidgetOffset = { x: 0, y: 0 };
+
+function isMiniWidgetOffset(value: unknown): value is MiniWidgetOffset {
+  if (typeof value !== 'object' || value === null) return false;
+  if (!('x' in value) || !('y' in value)) return false;
+  return Number.isFinite(value.x) && Number.isFinite(value.y);
+}
+
+export function readMiniWidgetOffset(): MiniWidgetOffset {
+  try {
+    const raw = localStorage.getItem(MINI_WIDGET_OFFSET_STORAGE_KEY);
+    if (raw === null) return ANCHORED_MINI_WIDGET_OFFSET;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isMiniWidgetOffset(parsed)) return ANCHORED_MINI_WIDGET_OFFSET;
+    return { x: parsed.x, y: parsed.y };
+  } catch {
+    return ANCHORED_MINI_WIDGET_OFFSET;
+  }
+}
+
+export function writeMiniWidgetOffset(offset: MiniWidgetOffset): void {
+  try {
+    localStorage.setItem(MINI_WIDGET_OFFSET_STORAGE_KEY, JSON.stringify({ x: offset.x, y: offset.y }));
+  } catch {
+    /* per-viewer convenience only */
+  }
+}
+
+const MINI_WIDGET_COLLAPSED_STORAGE_KEY = 'pomodoro_mini_widget_collapsed';
+
+export function readMiniWidgetCollapsed(): boolean {
+  try {
+    return localStorage.getItem(MINI_WIDGET_COLLAPSED_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function writeMiniWidgetCollapsed(collapsed: boolean): void {
+  try {
+    localStorage.setItem(MINI_WIDGET_COLLAPSED_STORAGE_KEY, String(collapsed));
+  } catch {
+    /* per-viewer convenience only */
+  }
+}

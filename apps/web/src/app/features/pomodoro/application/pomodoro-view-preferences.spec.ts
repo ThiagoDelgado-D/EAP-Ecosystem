@@ -1,13 +1,18 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { mockLocalStorage, mockThrowingLocalStorage } from './mocks/mock-local-storage';
+import { inMemoryLocalStorage, mockLocalStorage, mockThrowingLocalStorage } from './mocks/mock-local-storage';
 import {
+  ANCHORED_MINI_WIDGET_OFFSET,
   POMODORO_VIEW_MODE,
   readDefaultDurationMin,
   readDefaultViewMode,
   readHideShortcutHints,
+  readMiniWidgetCollapsed,
+  readMiniWidgetOffset,
   writeDefaultDurationMin,
   writeDefaultViewMode,
   writeHideShortcutHints,
+  writeMiniWidgetCollapsed,
+  writeMiniWidgetOffset,
 } from './pomodoro-view-preferences';
 
 describe('readDefaultViewMode', () => {
@@ -165,5 +170,70 @@ describe('writeDefaultDurationMin', () => {
     vi.stubGlobal('localStorage', mockThrowingLocalStorage());
 
     expect(() => writeDefaultDurationMin(50)).not.toThrow();
+  });
+});
+
+describe('mini widget offset', () => {
+  const draggedTopLeftOffset = { x: -1200, y: -640 };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('should stay anchored when nothing is stored', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage(null));
+
+    expect(readMiniWidgetOffset()).toEqual(ANCHORED_MINI_WIDGET_OFFSET);
+  });
+
+  test('should restore the offset the widget was last dragged to', () => {
+    vi.stubGlobal('localStorage', inMemoryLocalStorage());
+
+    writeMiniWidgetOffset(draggedTopLeftOffset);
+
+    expect(readMiniWidgetOffset()).toEqual(draggedTopLeftOffset);
+  });
+
+  test('should stay anchored when the stored value is not a valid offset', () => {
+    const corruptedOffsets = ['not json', JSON.stringify({ x: draggedTopLeftOffset.x }), JSON.stringify(null)];
+
+    for (const corruptedOffset of corruptedOffsets) {
+      vi.stubGlobal('localStorage', mockLocalStorage(corruptedOffset));
+      expect(readMiniWidgetOffset()).toEqual(ANCHORED_MINI_WIDGET_OFFSET);
+    }
+  });
+
+  test('should not throw when localStorage is unavailable', () => {
+    vi.stubGlobal('localStorage', mockThrowingLocalStorage());
+
+    expect(readMiniWidgetOffset()).toEqual(ANCHORED_MINI_WIDGET_OFFSET);
+    expect(() => writeMiniWidgetOffset(draggedTopLeftOffset)).not.toThrow();
+  });
+});
+
+describe('mini widget collapsed state', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('should start expanded when nothing is stored', () => {
+    vi.stubGlobal('localStorage', mockLocalStorage(null));
+
+    expect(readMiniWidgetCollapsed()).toBe(false);
+  });
+
+  test('should remember that the widget was collapsed', () => {
+    vi.stubGlobal('localStorage', inMemoryLocalStorage());
+
+    writeMiniWidgetCollapsed(true);
+
+    expect(readMiniWidgetCollapsed()).toBe(true);
+  });
+
+  test('should start expanded and not throw when localStorage is unavailable', () => {
+    vi.stubGlobal('localStorage', mockThrowingLocalStorage());
+
+    expect(readMiniWidgetCollapsed()).toBe(false);
+    expect(() => writeMiniWidgetCollapsed(true)).not.toThrow();
   });
 });

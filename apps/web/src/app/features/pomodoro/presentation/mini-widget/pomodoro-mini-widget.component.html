@@ -21,181 +21,191 @@
   </button>
 </ng-template>
 
-@if (store.phase() === 'break') {
-  @if (collapsed()) {
-    <button
-      type="button"
-      (click)="toggleCollapsed()"
-      title="Expand timer"
-      class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-surface-raised border border-line-soft shadow-xl hover:border-line-strong transition-colors"
-    >
-      <span class="w-1.5 h-1.5 rounded-full bg-status-done"></span>
-      <span class="t-mono font-mono text-[13px] font-medium text-ink-strong">{{ store.breakRemainingLabel() }}</span>
-    </button>
-  } @else {
-    <div class="w-[280px] rounded-2xl bg-surface-raised border border-line-soft shadow-xl overflow-hidden">
-      <div class="flex items-center gap-2 px-3 py-2.5 border-b border-line-hairline">
-        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-status-done"></span>
-        <span class="flex-1 text-[10px] font-bold tracking-wider uppercase text-status-done">Break</span>
-        <ng-container [ngTemplateOutlet]="headerButtons"></ng-container>
-      </div>
-
-      <div class="flex flex-col items-center gap-3 px-4 py-4">
-        <div class="relative" style="width: 132px; height: 132px">
-          <svg width="132" height="132" style="transform: rotate(-90deg)">
-            <circle cx="66" cy="66" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="5" fill="none" />
-            <circle
-              cx="66"
-              cy="66"
-              [attr.r]="RING_RADIUS"
-              stroke="var(--color-status-done)"
-              stroke-width="5"
-              fill="none"
-              stroke-linecap="round"
-              [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
-              [attr.stroke-dashoffset]="breakRingDashOffset()"
-            />
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="t-num font-mono text-[22px] font-semibold text-ink-strong">{{ store.breakRemainingLabel() }}</span>
-          </div>
-          @if (justExtended()) {
-            <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
-            <div class="absolute -top-1 left-1/2 pomodoro-extend-pop text-status-done font-mono font-bold text-[10px] pointer-events-none">
-              +5:00
-            </div>
-          }
-        </div>
-      </div>
-
-      <div class="flex gap-1.5 px-3 pb-3">
-        <button
-          type="button"
-          (click)="togglePause()"
-          class="flex-1 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
-        >
-          {{ store.paused() ? 'Resume' : 'Pause' }}
-        </button>
-        <button
-          type="button"
-          (click)="extendBreak()"
-          class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
-        >
-          +5
-        </button>
-        <button
-          type="button"
-          (click)="finishBreak()"
-          class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
-        >
-          Start next
-        </button>
-      </div>
-    </div>
-  }
-} @else if (store.activeSession(); as session) {
-  @if (collapsed()) {
-    <button
-      type="button"
-      (click)="toggleCollapsed()"
-      title="Expand timer"
-      class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-surface-raised border border-line-soft shadow-xl hover:border-line-strong transition-colors"
-    >
-      <span
-        class="w-1.5 h-1.5 rounded-full"
-        [class]="store.paused() ? 'bg-energy-medium' : 'bg-status-in-progress animate-pulse'"
-      ></span>
-      <span class="t-mono font-mono text-[13px] font-medium text-ink-strong">{{ store.remainingLabel() }}</span>
-    </button>
-  } @else {
-    <div class="w-[280px] rounded-2xl bg-surface-raised border border-line-soft shadow-xl overflow-hidden">
-      <div class="flex items-center gap-2 px-3 py-2.5 border-b border-line-hairline">
-        <span
-          class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-          [class]="store.paused() ? 'bg-energy-medium' : 'bg-status-in-progress animate-pulse'"
-        ></span>
-        <span
-          class="flex-1 text-[10px] font-bold tracking-wider uppercase"
-          [class]="store.paused() ? 'text-energy-medium' : 'text-ink-faint'"
-        >
-          {{ store.paused() ? 'Paused' : 'Recording' }}
-        </span>
-        <ng-container [ngTemplateOutlet]="headerButtons"></ng-container>
-      </div>
-
-      <div class="flex flex-col items-center gap-3 px-4 py-4">
-        <div class="relative" style="width: 132px; height: 132px">
-          <svg width="132" height="132" style="transform: rotate(-90deg)">
-            <circle cx="66" cy="66" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="5" fill="none" />
-            <circle
-              cx="66"
-              cy="66"
-              [attr.r]="RING_RADIUS"
-              [attr.stroke]="store.paused() ? 'var(--color-energy-medium)' : 'var(--color-accent-hover)'"
-              stroke-width="5"
-              fill="none"
-              stroke-linecap="round"
-              [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
-              [attr.stroke-dashoffset]="ringDashOffset()"
-            />
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="t-num font-mono text-[22px] font-semibold text-ink-strong">{{ store.remainingLabel() }}</span>
-          </div>
-          @if (plannedTimeReached()) {
-            <div class="absolute inset-0 rounded-full bg-surface-raised/95 flex flex-col items-center justify-center gap-1.5 px-3">
-              <span class="text-[9px] font-bold uppercase tracking-wider text-energy-medium">Time's up</span>
-              <button
-                type="button"
-                (click)="keepGoing()"
-                class="w-full px-2 py-1 rounded-md text-[10px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
-              >
-                Keep going
-              </button>
-              <button
-                type="button"
-                (click)="endSession()"
-                class="w-full px-2 py-1 rounded-md text-[10px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
-              >
-                End
-              </button>
-            </div>
-          }
+<div
+  #dragRoot
+  cdkDrag
+  cdkDragRootElement=".cdk-overlay-pane"
+  cdkDragBoundary=".cdk-global-overlay-wrapper"
+  [cdkDragFreeDragPosition]="offset()"
+  (cdkDragEnded)="onDragEnded($event)"
+  class="cursor-grab active:cursor-grabbing"
+>
+  @if (store.phase() === 'break') {
+    @if (collapsed()) {
+      <button
+        type="button"
+        (click)="toggleCollapsed()"
+        title="Expand timer"
+        class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-surface-raised border border-line-soft shadow-xl hover:border-line-strong transition-colors"
+      >
+        <span class="w-1.5 h-1.5 rounded-full bg-status-done"></span>
+        <span class="t-mono font-mono text-[13px] font-medium text-ink-strong">{{ store.breakRemainingLabel() }}</span>
+      </button>
+    } @else {
+      <div class="w-[280px] rounded-2xl bg-surface-raised border border-line-soft shadow-xl overflow-hidden">
+        <div class="flex items-center gap-2 px-3 py-2.5 border-b border-line-hairline">
+          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-status-done"></span>
+          <span class="flex-1 text-[10px] font-bold tracking-wider uppercase text-status-done">Break</span>
+          <ng-container [ngTemplateOutlet]="headerButtons"></ng-container>
         </div>
 
-        @if (contextDisplay(); as ctx) {
-          <div class="text-center min-w-0 w-full">
-            <p class="text-[13px] font-bold text-ink-strong truncate">{{ ctx.title }}</p>
-            @if (ctx.subtitle) {
-              <p class="text-[10.5px] text-ink-faint mt-0.5 truncate">{{ ctx.subtitle }}</p>
+        <div class="flex flex-col items-center gap-3 px-4 py-4">
+          <div class="relative" style="width: 132px; height: 132px">
+            <svg width="132" height="132" style="transform: rotate(-90deg)">
+              <circle cx="66" cy="66" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="5" fill="none" />
+              <circle
+                cx="66"
+                cy="66"
+                [attr.r]="RING_RADIUS"
+                stroke="var(--color-status-done)"
+                stroke-width="5"
+                fill="none"
+                stroke-linecap="round"
+                [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
+                [attr.stroke-dashoffset]="breakRingDashOffset()"
+              />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="t-num font-mono text-[22px] font-semibold text-ink-strong">{{ store.breakRemainingLabel() }}</span>
+            </div>
+            @if (justExtended()) {
+              <div class="absolute inset-0 rounded-full pointer-events-none pomodoro-ring-glow"></div>
+              <div class="absolute -top-1 left-1/2 pomodoro-extend-pop text-status-done font-mono font-bold text-[10px] pointer-events-none">
+                +5:00
+              </div>
             }
           </div>
-        }
-      </div>
+        </div>
 
-      <div class="flex gap-1.5 px-3 pb-3">
-        <button
-          type="button"
-          (click)="togglePause()"
-          class="flex-1 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
-        >
-          {{ store.paused() ? 'Resume' : 'Pause' }}
-        </button>
-        <button
-          type="button"
-          (click)="openSwitchDialog()"
-          class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
-        >
-          Switch
-        </button>
-        <button
-          type="button"
-          (click)="endSession()"
-          class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-energy-high/10 border border-energy-high/30 text-energy-high hover:opacity-80 transition-colors"
-        >
-          End
-        </button>
+        <div class="flex gap-1.5 px-3 pb-3">
+          <button
+            type="button"
+            (click)="togglePause()"
+            class="flex-1 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
+          >
+            {{ store.paused() ? 'Resume' : 'Pause' }}
+          </button>
+          <button
+            type="button"
+            (click)="extendBreak()"
+            class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
+          >
+            +5
+          </button>
+          <button
+            type="button"
+            (click)="finishBreak()"
+            class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
+          >
+            Start next
+          </button>
+        </div>
       </div>
-    </div>
+    }
+  } @else if (store.activeSession(); as session) {
+    @if (collapsed()) {
+      <button
+        type="button"
+        (click)="toggleCollapsed()"
+        title="Expand timer"
+        class="flex items-center gap-2.5 px-3.5 py-2.5 rounded-full bg-surface-raised border border-line-soft shadow-xl hover:border-line-strong transition-colors"
+      >
+        <span
+          class="w-1.5 h-1.5 rounded-full"
+          [class]="store.paused() ? 'bg-energy-medium' : 'bg-status-in-progress animate-pulse'"
+        ></span>
+        <span class="t-mono font-mono text-[13px] font-medium text-ink-strong">{{ store.remainingLabel() }}</span>
+      </button>
+    } @else {
+      <div class="w-[280px] rounded-2xl bg-surface-raised border border-line-soft shadow-xl overflow-hidden">
+        <div class="flex items-center gap-2 px-3 py-2.5 border-b border-line-hairline">
+          <span
+            class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+            [class]="store.paused() ? 'bg-energy-medium' : 'bg-status-in-progress animate-pulse'"
+          ></span>
+          <span
+            class="flex-1 text-[10px] font-bold tracking-wider uppercase"
+            [class]="store.paused() ? 'text-energy-medium' : 'text-ink-faint'"
+          >
+            {{ store.paused() ? 'Paused' : 'Recording' }}
+          </span>
+          <ng-container [ngTemplateOutlet]="headerButtons"></ng-container>
+        </div>
+
+        <div class="flex flex-col items-center gap-3 px-4 py-4">
+          <div class="relative" style="width: 132px; height: 132px">
+            <svg width="132" height="132" style="transform: rotate(-90deg)">
+              <circle cx="66" cy="66" [attr.r]="RING_RADIUS" stroke="var(--color-line-hairline)" stroke-width="5" fill="none" />
+              <circle
+                cx="66"
+                cy="66"
+                [attr.r]="RING_RADIUS"
+                [attr.stroke]="store.paused() ? 'var(--color-energy-medium)' : 'var(--color-accent-hover)'"
+                stroke-width="5"
+                fill="none"
+                stroke-linecap="round"
+                [attr.stroke-dasharray]="RING_CIRCUMFERENCE"
+                [attr.stroke-dashoffset]="ringDashOffset()"
+              />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="t-num font-mono text-[22px] font-semibold text-ink-strong">{{ store.remainingLabel() }}</span>
+            </div>
+            @if (plannedTimeReached()) {
+              <div class="absolute inset-0 rounded-full bg-surface-raised/95 flex flex-col items-center justify-center gap-1.5 px-3">
+                <span class="text-[9px] font-bold uppercase tracking-wider text-energy-medium">Time's up</span>
+                <button
+                  type="button"
+                  (click)="keepGoing()"
+                  class="w-full px-2 py-1 rounded-md text-[10px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
+                >
+                  Keep going
+                </button>
+                <button
+                  type="button"
+                  (click)="endSession()"
+                  class="w-full px-2 py-1 rounded-md text-[10px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
+                >
+                  End
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (contextDisplay(); as ctx) {
+            <div class="text-center min-w-0 w-full">
+              <p class="text-[13px] font-bold text-ink-strong truncate">{{ ctx.title }}</p>
+              @if (ctx.subtitle) {
+                <p class="text-[10.5px] text-ink-faint mt-0.5 truncate">{{ ctx.subtitle }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="flex gap-1.5 px-3 pb-3">
+          <button
+            type="button"
+            (click)="togglePause()"
+            class="flex-1 py-1.5 rounded-lg text-[11.5px] font-semibold border border-line-soft text-ink-body hover:border-line-strong transition-colors"
+          >
+            {{ store.paused() ? 'Resume' : 'Pause' }}
+          </button>
+          <button
+            type="button"
+            (click)="openSwitchDialog()"
+            class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-accent-wash border border-accent-line text-accent-ink hover:opacity-80 transition-colors"
+          >
+            Switch
+          </button>
+          <button
+            type="button"
+            (click)="endSession()"
+            class="px-3 py-1.5 rounded-lg text-[11.5px] font-semibold bg-energy-high/10 border border-energy-high/30 text-energy-high hover:opacity-80 transition-colors"
+          >
+            End
+          </button>
+        </div>
+      </div>
+    }
   }
-}
+</div>
