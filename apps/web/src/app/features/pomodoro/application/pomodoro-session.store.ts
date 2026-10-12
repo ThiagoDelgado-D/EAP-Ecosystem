@@ -230,7 +230,17 @@ export class PomodoroSessionStore {
       .catch(() => {});
   }
 
-  async rehydrate(): Promise<Session | null> {
+  private pendingRehydrate: Promise<Session | null> | null = null;
+
+  rehydrate(): Promise<Session | null> {
+    if (this.pendingRehydrate) return this.pendingRehydrate;
+    this.pendingRehydrate = this.restoreActiveState().finally(() => {
+      this.pendingRehydrate = null;
+    });
+    return this.pendingRehydrate;
+  }
+
+  private async restoreActiveState(): Promise<Session | null> {
     this.rehydrating.set(true);
     try {
       const snapshot = await this.repository.getActiveSession();
