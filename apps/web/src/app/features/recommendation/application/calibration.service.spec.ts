@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { AuthStore } from '@features/auth/application/auth.store';
+import type {
+  EnergyLevel,
+  MentalStateType,
+} from '@features/learning-resource/domain/learning-resource.model';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
 import {
   mockRecommendationRepository,
@@ -9,6 +13,11 @@ import {
 import { CalibrationService } from './calibration.service';
 import { learner } from './mocks/learner.fixture';
 import { offlineError } from './mocks/offline-error.fixture';
+
+const SAVED_MENTAL_STATE: MentalStateType = 'deep_focus';
+const UNSAVED_MENTAL_STATE: MentalStateType = 'creative';
+const UNSAVED_ENERGY: EnergyLevel = 'Low';
+const NEWER_ENERGY: EnergyLevel = 'High';
 
 describe('CalibrationService', () => {
   let recommendationRepository: MockedRecommendationRepository;
@@ -133,5 +142,24 @@ describe('CalibrationService', () => {
     await service.setAvailableMinutes(service.availableMinutes());
 
     expect(notifySpy).toHaveBeenCalledWith(offline);
+  });
+
+  test('should put the previous value back when a change could not be saved', async () => {
+    recommendationRepository.context = { energyLevel: 'high', availableMinutes: 25, mentalState: SAVED_MENTAL_STATE };
+    await service.load();
+    vi.spyOn(recommendationRepository, 'setContext').mockRejectedValueOnce(offlineError());
+
+    await service.setMentalState(UNSAVED_MENTAL_STATE);
+
+    expect(service.mentalState()).toBe(SAVED_MENTAL_STATE);
+  });
+
+  test('should keep a newer change when an earlier one fails to save', async () => {
+    await service.load();
+    vi.spyOn(recommendationRepository, 'setContext').mockRejectedValueOnce(offlineError());
+
+    await Promise.all([service.setEnergy(UNSAVED_ENERGY), service.setEnergy(NEWER_ENERGY)]);
+
+    expect(service.energy()).toBe(NEWER_ENERGY);
   });
 });

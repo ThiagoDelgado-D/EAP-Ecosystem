@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal, type WritableSignal } from '@angular/core';
 import type {
   EnergyLevel,
   MentalStateType,
@@ -55,18 +55,28 @@ export class CalibrationService {
   }
 
   setEnergy(energy: EnergyLevel): Promise<boolean> {
-    this.energy.set(energy);
-    return this.save();
+    return this.change(this.energy, energy);
   }
 
   setMentalState(state: MentalStateType | null): Promise<boolean> {
-    this.mentalState.set(state);
-    return this.save();
+    return this.change(this.mentalState, state);
   }
 
   setAvailableMinutes(minutes: number): Promise<boolean> {
-    this.availableMinutes.set(minutes);
-    return this.save();
+    return this.change(this.availableMinutes, minutes);
+  }
+
+  private async change<T>(property: WritableSignal<T>, value: T): Promise<boolean> {
+    const previous = property();
+    property.set(value);
+    const saved = await this.save();
+    if (saved) {
+      return true;
+    }
+    if (property() === value) {
+      property.set(previous);
+    }
+    return false;
   }
 
   private async hydrate(): Promise<void> {
