@@ -1,3 +1,4 @@
+import { durationInWords } from '@shared/utils/duration-in-words';
 import { ApiError, isApiError, type ApiErrorContext, type ApiErrorName } from './api-error';
 
 const UNKNOWN_STATUS = 0;
@@ -47,7 +48,7 @@ function retryLaterMessage(context: ApiErrorContext<'TOO_MANY_REQUESTS_ERROR'>):
   if (!context.retryAfterSeconds) {
     return 'Too many attempts. Wait a moment and try again.';
   }
-  return `Too many attempts. Try again in ${context.retryAfterSeconds} seconds.`;
+  return `Too many attempts. Try again in ${durationInWords(context.retryAfterSeconds)}.`;
 }
 
 export function isKnownErrorName(name: string): name is ApiErrorName {
