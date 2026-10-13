@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted
+Accepted. Revised 2026-10-13: Layer 1 is replaced, see the revision at
+the end of this document.
 
 ## Context
 
@@ -38,6 +39,8 @@ JSON columns: `featureConfig` and `widgetConfig`.
 ---
 
 ### Layer 1 — Feature Configuration (`featureConfig`)
+
+> Replaced by the 2026-10-13 revision below.
 
 Controls which application modules are active. An inactive feature is not just
 hidden — its routes are not registered in the Angular router, and its
@@ -232,6 +235,228 @@ schema migration later.
   add security surface and distribution complexity; built-in toggleable
   modules achieve the same user experience without the overhead
 
+## Revision 2026-10-13 — Real modules, one capability check, composed workflow
+
+**Status of this revision:** Accepted
+
+### What the original decision assumed
+
+Layer 1 listed nine features up front, most of them planned rather than
+built, and made each one opt-in from a settings list. A disabled feature
+was meant to leave its routes unregistered at startup. The principle behind
+it, that the learner chooses which blocks to assemble and the resource
+library is the only always-on core, still holds. What changed is how that
+principle is applied, because neither layer ever took effect and the
+product now has needs the original decision did not anticipate.
+
+### Why it changed
+
+A learner can turn modules on and off twice: once in the last onboarding
+step, and again in Settings › Modules. Both save the choice as the user's
+`featureConfig`, and the API persists it. Nothing reads it. Navigation,
+routes, the dashboard, the command palette and the recommendation engine
+behave the same whatever the learner chose, so turning a module off has no
+visible effect.
+
+The list behind those toggles doesn't match the product either. The domain
+knows four keys: `learning-paths`, `knowledge-graph`, `pomodoro` and
+`spaced-repetition`. Two of them name features that don't exist. The
+resource library and the recommendation engine, which do exist, can't be
+toggled, and the web client's catalog adds entries of its own
+(`resource-library`, `session-tracking`) that the domain doesn't know.
+`widgetConfig` has the same problem: it is saved from Settings and read
+nowhere.
+
+There is also no moment where the learner says what they want from the
+product. Onboarding asks for a name and a list of modules, which assumes
+the learner already knows how each module would help them. A learner
+preparing for an exam, one organizing a backlog of saved links and one
+studying out of curiosity get the same setup, and the product never learns
+the difference.
+
+Finally, the product is meant to become a subscription. Plans will grant
+access to more complete or more advanced capabilities. A module a learner
+switched off and a capability their plan doesn't include are different
+things: the first is a preference, the second is a permission. If both are
+modeled as the same on/off list now, they have to be pulled apart when
+plans arrive.
+
+### New decision
+
+This revision replaces Layer 1, its `FeatureId` list, the
+`/preferences/features` contract and the conditional route registration.
+Layer 2 (`widgetConfig`) is left as written but unread, see the deferred
+item below.
+
+#### The module catalog lists only what exists
+
+The domain owns one catalog of modules:
+
+| Module | Can be turned off |
+|---|---|
+| `resource-library` | No, it is the core every other module builds on |
+| `learning-paths` | Yes |
+| `pomodoro` | Yes |
+| `recommendation` | Yes |
+
+`knowledge-graph` and `spaced-repetition` are removed from the catalog,
+and the web client's catalog becomes a presentation of the domain's list
+(labels, icons, tones) with no keys of its own. A module joins the catalog
+in the same change that ships it.
+
+`featureConfig` is replaced by `enabledModules`. A migration gives every
+existing learner every module, since no choice made so far ever took
+effect, and drops the keys that no longer exist.
+
+#### Turning a module off hides it, everywhere, without deleting anything
+
+A module that is off disappears from the places a learner meets it:
+navigation, its routes (which redirect to the dashboard), the dashboard
+widgets that belong to it, its command palette entries, and the actions
+other screens offer into it. The recommendation engine stops proposing
+candidates from it: with Learning Paths off, path steps are not
+recommended. Turning a module off never deletes its data, and turning it
+back on brings everything back as it was.
+
+The API does not reject requests to a module that is off. Turning a module
+off is a preference about what to see, not a permission, and enforcing it
+on the server would only add a failure mode with nothing to protect.
+
+#### One capability check decides what a learner can use
+
+What a learner can use is resolved in one place, a domain function:
+
+```
+capabilities = catalog ∩ entitlements ∩ preferences
+```
+
+- **Catalog**: what the product has.
+- **Entitlements**: what the learner's plan grants.
+- **Preferences**: what the learner chose to use (`enabledModules`).
+
+Each capability resolves to one of three states, and the web client shows
+them differently:
+
+| State | Meaning | Presentation |
+|---|---|---|
+| `enabled` | Granted and chosen | Shown |
+| `disabled` | Granted, switched off by the learner | Hidden |
+| `locked` | Not granted by the plan | Shown with a lock and where to get it |
+
+The API returns the resolved capabilities with the learner's session and
+from the preferences endpoint. The web client drives navigation, guards,
+widgets, the command palette and module-dependent actions from them, and no
+component reads the raw preferences to decide what to show.
+
+Until plans exist, there is one implicit plan that grants every capability,
+so no capability is ever `locked` and preferences alone decide. A later
+decision on plans and subscriptions only changes where entitlements come
+from. Two rules for that decision are fixed here:
+
+- **Entitlements are capabilities and limits, not modules.** A module can
+  hold capabilities from different plans, and a plan can grant a capability
+  up to a limit (for example a number of learning paths). Capability keys
+  may therefore be finer than module keys.
+- **Entitlements are enforced by the API.** Unlike preferences, a
+  capability the plan doesn't grant is rejected on the server, and losing
+  it keeps the learner's data readable rather than deleting it.
+
+#### Onboarding composes the learner's workflow from what they want
+
+The modules step of onboarding is replaced by a short intake:
+
+1. **What are you here for?** One or more of: pass an exam, prepare for an
+   interview, master a topic, organize what I already have, build a study
+   habit, explore without pressure.
+2. **How do you like to study?** One of: adapt day by day, short blocks,
+   long sessions, a structured schedule.
+
+From the answers, a pure domain function composes a setup: which modules
+are enabled and the weekly focus goal. It only sets things that exist and
+that the learner can change afterwards. Each choice comes with the reason
+behind it ("Learning Paths on: mastering a topic goes better with a route
+to follow"), and the learner sees the proposed setup, can adjust it, and
+confirms it. Skipping the intake keeps every module on and the default
+goal.
+
+The answers are stored with the learner, next to the setup they produced:
+
+- The composition runs on the server, so there is one source of truth and
+  the rules are tested like any other domain logic.
+- Keeping the answers lets the setup be composed again when the rules
+  change, and lets later features use them (for example, the
+  recommendation engine favoring material for an upcoming exam).
+
+#### The workflow has one home after onboarding
+
+After onboarding, the learner's workflow lives in a single Settings page:
+the module toggles and the option to take the intake again, side by side.
+There is no separate workflow screen in the navigation, and no second,
+thinner copy of the same choices elsewhere. Taking the intake again shows
+its result as a change to the current setup and applies only once
+confirmed.
+
+Any later way of changing the setup, such as installing a study method,
+writes to the same `enabledModules` and goes through the same capability
+check. It never keeps a parallel list of what is on.
+
+### Consequences of the revision
+
+#### Positive
+
+- Every module toggle has a visible effect, and the catalog stops
+  advertising modules that don't exist.
+- New learners start from a setup that matches what they came for, with
+  the reasons in front of them, instead of a list of modules to judge
+  blind.
+- The web client asks one question, "what can this learner use?", in one
+  place, so adding a module or a plan doesn't mean finding every screen
+  that checks.
+- Plans can be added later by filling in entitlements, without reworking
+  how modules are hidden or how screens decide what to show.
+
+#### Negative
+
+- Every module-dependent surface has to be wired to the capability check,
+  across navigation, guards, the dashboard, the command palette and the
+  recommendation engine's candidate selection.
+- `featureConfig` becomes `enabledModules`, which needs a migration and
+  changes the user payload the web client reads.
+- The composition rules are product decisions encoded in the domain. They
+  will need revisiting as modules are added, and every change to them
+  needs its tests updated.
+- Until plans exist, the `locked` state and the entitlement half of the
+  check are present but never exercised in production.
+
+### Alternatives rejected in this revision
+
+- **Keeping planned modules in the catalog as "coming soon" toggles** —
+  rejected. A toggle that does nothing is what made the current setting
+  meaningless.
+- **Composing the setup in the web client** — rejected. It would put
+  product rules in the client, out of reach of the API and of the
+  recommendation engine, and store only their result.
+- **Storing only the composed setup, not the answers** — rejected. The
+  setup couldn't be recomposed when the rules change, and the learner's
+  stated goal would be lost to every later feature.
+- **Treating disabled modules as permissions the API enforces** —
+  rejected. Hiding something a learner chose not to use protects nothing,
+  and server-side rejections would turn a preference into errors.
+- **Modeling plans as sets of modules** — rejected. Plans are expected to
+  differ by depth within a module and by limits, which a module list can't
+  express.
+- **A separate workflow screen alongside Settings** — rejected. Showing
+  the same choices in two places, one richer than the other, made it
+  unclear which one is the real setting.
+- **Including study methods in this decision** — deferred to their own
+  decision. Methods depend on questions this one doesn't need to answer,
+  such as whether study material gets dates, and this decision only fixes
+  that they change the setup through the same capability check.
+- **Including dashboard widgets and interface density in this decision** —
+  deferred. `widgetConfig` is equally unread and its keys predate the
+  current dashboard, so it belongs with a redesign of the dashboard's
+  widgets. The intake can grow a question for it then.
+
 ## References
 
 - ADR-0014: Real-time Communication Strategy
@@ -239,3 +464,11 @@ schema migration later.
 - ADR-0017: Mobile Client Strategy
 - ADR-0018: Desktop Client Strategy
 - Roadmap: v0.8.x — Authentication and Platform Core
+
+Revision 2026-10-13 — the modules in the new catalog and the one removed:
+
+- ADR-0016: Knowledge Graph — removed from the catalog
+- ADR-0021: Learning Paths — `learning-paths` module
+- ADR-0022: Pomodoro Focus Sessions — `pomodoro` module
+- ADR-0027: Recommendation Engine — `recommendation` module; stops proposing
+  candidates from modules that are off
