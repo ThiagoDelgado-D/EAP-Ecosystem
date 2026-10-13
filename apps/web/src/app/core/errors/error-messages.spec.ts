@@ -1,5 +1,5 @@
 import { ApiError, type ApiErrorName } from './api-error';
-import { ERROR_MESSAGES, isKnownErrorName, messageFor } from './error-messages';
+import { ERROR_MESSAGES, isKnownErrorName, messageFor, messageOf } from './error-messages';
 
 const RATE_LIMITED_STATUS = 429;
 const CONFLICT_STATUS = 409;
@@ -31,5 +31,9 @@ describe('error messages', () => {
   test('recognizes only the names it has a message for', () => {
     expect(isKnownErrorName(DUPLICATE_TOPIC_ERROR)).toBe(true);
     expect(isKnownErrorName(ERROR_FROM_A_NEWER_API)).toBe(false);
+  });
+
+  test('falls back to the unexpected-error message for anything that is not an API error', () => {
+    expect(messageOf(new TypeError())).toBe(ERROR_MESSAGES.UNEXPECTED_ERROR);
   });
 });

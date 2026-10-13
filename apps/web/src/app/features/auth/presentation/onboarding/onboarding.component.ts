@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { OnboardingHttpService } from '@features/auth/infrastructure/onboarding-http.service';
 import { FeatureKey } from '@features/auth/domain/auth.model';
+import { messageOf } from '@core/errors/error-messages';
 import { NameStepComponent } from './name-step/name-step.component';
 import { ModulesStepComponent } from './modules-step/modules-step.component';
 
@@ -36,8 +37,8 @@ export class OnboardingComponent {
       const user = await this.onboardingService.completeOnboarding(this.firstName(), featureConfig);
       this.authStore.setSession(user, this.authStore.accessToken()!);
       await this.router.navigate(['/dashboard']);
-    } catch {
-      this.error.set('Something went wrong. Please try again.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }

@@ -1,10 +1,12 @@
-import type { ApiError, ApiErrorContext, ApiErrorName } from './api-error';
+import { ApiError, isApiError, type ApiErrorContext, type ApiErrorName } from './api-error';
+
+const UNKNOWN_STATUS = 0;
 
 type ErrorMessage<N extends ApiErrorName> = string | ((context: ApiErrorContext<N>) => string);
 
 export const ERROR_MESSAGES: { [N in ApiErrorName]: ErrorMessage<N> } = {
-  INVALID_DATA_ERROR: 'Some of the information is invalid. Check the highlighted fields.',
-  VALIDATION_ERROR: 'Some of the information is invalid. Check the highlighted fields.',
+  INVALID_DATA_ERROR: 'Some of the information is invalid. Check it and try again.',
+  VALIDATION_ERROR: 'Some of the information is invalid. Check it and try again.',
   NOT_FOUND_ERROR: 'We couldn’t find what you were looking for.',
   FORBIDDEN_ERROR: 'You don’t have access to this.',
   UNAUTHORIZED_ERROR: 'Your session has expired. Sign in again.',
@@ -58,4 +60,11 @@ export function messageFor<N extends ApiErrorName>(error: ApiError<N>): string {
     return message;
   }
   return message(error.context);
+}
+
+export function messageOf(error: unknown): string {
+  if (!isApiError(error)) {
+    return messageFor(new ApiError('UNEXPECTED_ERROR', UNKNOWN_STATUS, undefined));
+  }
+  return messageFor(error);
 }
