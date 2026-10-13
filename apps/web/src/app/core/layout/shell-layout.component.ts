@@ -91,7 +91,6 @@ export class ShellLayoutComponent implements OnInit {
     this.stateMenuOpen.set(false);
     const saved = await this.calibration.setMentalState(state);
     if (!saved) {
-      this.toast.show('Could not save your mental state', 'error');
       return;
     }
     this.toast.show(state ? `Mental state: ${MENTAL_STATE_LABELS[state]}` : 'Mental state cleared', 'info');

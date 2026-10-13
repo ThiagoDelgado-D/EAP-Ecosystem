@@ -3,6 +3,7 @@ import type {
   EnergyLevel,
   MentalStateType,
 } from '@features/learning-resource/domain/learning-resource.model';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
 import type {
@@ -30,6 +31,7 @@ const DEFAULT_AVAILABLE_MINUTES = 45;
 export class CalibrationService {
   private readonly repository = inject(RecommendationRepository);
   private readonly authStore = inject(AuthStore);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private loading: Promise<void> | null = null;
   private loadedForUserId: string | null = null;
   private saveQueue: Promise<unknown> = Promise.resolve();
@@ -98,7 +100,8 @@ export class CalibrationService {
         });
         this.savedRevision.update((revision) => revision + 1);
         return true;
-      } catch {
+      } catch (error) {
+        this.errorNotifier.notify(error);
         return false;
       }
     });
