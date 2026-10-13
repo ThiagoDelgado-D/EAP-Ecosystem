@@ -4,6 +4,8 @@ import { ERROR_MESSAGES, isKnownErrorName, messageFor, messageOf } from './error
 const RATE_LIMITED_STATUS = 429;
 const CONFLICT_STATUS = 409;
 const RETRY_AFTER_SECONDS = 42;
+const SIGN_IN_COOLDOWN_SECONDS = 600;
+const SIGN_IN_COOLDOWN_MINUTES = 10;
 const DUPLICATE_TOPIC_ERROR = 'DUPLICATE_TOPIC_NAME_ERROR' satisfies ApiErrorName;
 const ERROR_FROM_A_NEWER_API = 'ERROR_ADDED_AFTER_THIS_TAB_LOADED';
 
@@ -20,6 +22,14 @@ describe('error messages', () => {
     });
 
     expect(messageFor(rateLimited)).toContain(`${RETRY_AFTER_SECONDS} seconds`);
+  });
+
+  test('rounds a wait of a minute or more up to whole minutes', () => {
+    const rateLimited = new ApiError('TOO_MANY_REQUESTS_ERROR', RATE_LIMITED_STATUS, {
+      retryAfterSeconds: SIGN_IN_COOLDOWN_SECONDS,
+    });
+
+    expect(messageFor(rateLimited)).toContain(`${SIGN_IN_COOLDOWN_MINUTES} minutes`);
   });
 
   test('still explains a rate limit when the API sent no wait time', () => {
