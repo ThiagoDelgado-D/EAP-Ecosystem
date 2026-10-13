@@ -1,12 +1,11 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { toApiError } from '@core/errors/api-error.interceptor';
 import { ERROR_MESSAGES } from '@core/errors/error-messages';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
 import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
 import { inMemoryLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { learner } from './mocks/learner.fixture';
+import { offlineError } from './mocks/offline-error.fixture';
 import { mockRecommendationRepository } from './mocks/mock-recommendation.repository';
 import { RecommendationDismissalsService } from './recommendation-dismissals.service';
 import { RecommendationService } from './recommendation.service';
@@ -75,7 +74,7 @@ describe('RecommendationService', () => {
   test('should explain why the recommendations could not load', async () => {
     const { service, recommendationRepository } = setup();
     vi.spyOn(recommendationRepository, 'getRecommendations').mockRejectedValueOnce(
-      toApiError(new HttpErrorResponse({ error: new ProgressEvent('error') })),
+      offlineError(),
     );
 
     await service.refresh();

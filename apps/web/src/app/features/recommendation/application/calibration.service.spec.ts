@@ -1,6 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { toApiError } from '@core/errors/api-error.interceptor';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
@@ -10,6 +8,7 @@ import {
 } from './mocks/mock-recommendation.repository';
 import { CalibrationService } from './calibration.service';
 import { learner } from './mocks/learner.fixture';
+import { offlineError } from './mocks/offline-error.fixture';
 
 describe('CalibrationService', () => {
   let recommendationRepository: MockedRecommendationRepository;
@@ -127,7 +126,7 @@ describe('CalibrationService', () => {
 
   test('should tell the learner why a calibration change was not saved', async () => {
     await service.load();
-    const offline = toApiError(new HttpErrorResponse({ error: new ProgressEvent('error') }));
+    const offline = offlineError();
     vi.spyOn(recommendationRepository, 'setContext').mockRejectedValueOnce(offline);
     const notifySpy = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
 
