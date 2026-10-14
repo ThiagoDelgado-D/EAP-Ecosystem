@@ -6,7 +6,7 @@ import {
   InvalidDataError,
   ValidationError,
 } from "domain-lib";
-import { SessionNotFoundError } from "../../errors/session-not-found.js";
+import { AuthSessionNotFoundError } from "../../errors/auth-session-not-found.js";
 
 export interface RevokeSessionDependencies {
   sessionRepository: ISessionRepository;
@@ -24,7 +24,7 @@ const revokeSessionSchema = createValidationSchema<Pick<RevokeSessionRequest, "s
 export const revokeSession = async (
   { sessionRepository }: RevokeSessionDependencies,
   request: RevokeSessionRequest,
-): Promise<void | InvalidDataError | SessionNotFoundError | ForbiddenError> => {
+): Promise<void | InvalidDataError | AuthSessionNotFoundError | ForbiddenError> => {
   const validationResult = revokeSessionSchema(request);
   if (validationResult instanceof ValidationError) {
     return new InvalidDataError(validationResult.context.fields);
@@ -32,7 +32,7 @@ export const revokeSession = async (
 
   const session = await sessionRepository.findById(validationResult.sessionId);
 
-  if (!session) return new SessionNotFoundError();
+  if (!session) return new AuthSessionNotFoundError();
   if (session.userId !== request.userId) return new ForbiddenError();
 
   await sessionRepository.revoke(validationResult.sessionId);

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from "vitest";
 import { ForbiddenError, InvalidDataError, mockCryptoService } from "domain-lib";
 import type { Session } from "@user/domain";
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
-import { SessionNotFoundError } from "../../errors/session-not-found.js";
+import { AuthSessionNotFoundError } from "../../errors/auth-session-not-found.js";
 import { revokeSession } from "./revoke-session.js";
 
 describe("revokeSession", () => {
@@ -47,7 +47,7 @@ describe("revokeSession", () => {
     expect(result).toBeInstanceOf(InvalidDataError);
   });
 
-  test("Should return SessionNotFoundError when the session does not exist", async () => {
+  test("Should return AuthSessionNotFoundError when the session does not exist", async () => {
     const nonExistentSessionId = await cryptoService.generateUUID();
 
     const result = await revokeSession(
@@ -55,7 +55,7 @@ describe("revokeSession", () => {
       { userId: ownerId, sessionId: nonExistentSessionId },
     );
 
-    expect(result).toBeInstanceOf(SessionNotFoundError);
+    expect(result).toBeInstanceOf(AuthSessionNotFoundError);
   });
 
   test("Should return ForbiddenError when the session belongs to another user", async () => {
