@@ -69,4 +69,18 @@ describe('LearningPathDetailService', () => {
     expect(nodeInState(connectingOverSsh.id)).toMatchObject({ x: connectingOverSsh.x, y: connectingOverSsh.y });
   });
 
+  test('should show the saved order again and pass the error on when reordering fails', async () => {
+    const offline = offlineError();
+    vi.spyOn(learningPathRepository, 'updateNode').mockRejectedValue(offline);
+
+    await expect(
+      service.reorderNodes(devOpsPath.id, [servingWithNginx, whatAVpsIs, connectingOverSsh]),
+    ).rejects.toBe(offline);
+
+    expect(service.data()?.nodes.map((node) => node.id)).toEqual([
+      whatAVpsIs.id,
+      connectingOverSsh.id,
+      servingWithNginx.id,
+    ]);
+  });
 });

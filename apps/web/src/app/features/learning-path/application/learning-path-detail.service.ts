@@ -92,12 +92,12 @@ export class LearningPathDetailService {
       await Promise.all(
         changed.map((node) => this.repository.updateNode(pathId, node.id, { order: node.order })),
       );
-    } catch {
+    } catch (error) {
       // Promise.all doesn't roll back requests that already succeeded, so
       // reverting to `previous` here could show an order that matches neither
       // the pre- nor post-drag state. Re-fetch from the server instead.
       await this.load(pathId);
-      throw new Error('No se pudo reordenar los nodos.');
+      throw error;
     }
   }
 
