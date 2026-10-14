@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import type { LearningPath, LearningPathWithNodes } from '@features/learning-path/domain/learning-path.model';
+import { messageOf } from '@core/errors/error-messages';
 
 @Injectable()
 export class LearningPathService {
@@ -17,8 +18,8 @@ export class LearningPathService {
     try {
       const paths = await this.repository.getAll();
       this.paths.set(paths);
-    } catch {
-      this.error.set('No pudimos cargar tus Learning Paths.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
@@ -31,8 +32,8 @@ export class LearningPathService {
       const entries = await this.repository.getAllWithNodes();
       this.pathsWithNodes.set(entries);
       this.paths.set(entries.map((entry) => entry.path));
-    } catch {
-      this.error.set('No pudimos cargar tus Learning Paths.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
