@@ -57,9 +57,9 @@ export class LearningPathDetailService {
     this.patchNodes((nodes) => nodes.map((n) => (n.id === nodeId ? { ...n, progress } : n)));
     try {
       await this.repository.updateNodeProgress(pathId, nodeId, progress);
-    } catch {
+    } catch (error) {
       this.patchNodes(() => previous);
-      throw new Error('No se pudo actualizar el progreso.');
+      throw error;
     }
   }
 

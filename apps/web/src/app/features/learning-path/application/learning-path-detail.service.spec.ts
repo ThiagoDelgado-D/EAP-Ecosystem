@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ERROR_MESSAGES } from '@core/errors/error-messages';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
+import { NODE_PROGRESS } from '@features/learning-path/domain/learning-path.model';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { nodeFixture, pathFixture } from './mocks/learning-path.fixture';
 import {
@@ -17,6 +18,8 @@ describe('LearningPathDetailService', () => {
 
   let learningPathRepository: MockedLearningPathRepository;
   let service: LearningPathDetailService;
+
+  const nodeInState = (nodeId: string) => service.data()?.nodes.find((node) => node.id === nodeId);
 
   beforeEach(async () => {
     learningPathRepository = mockLearningPathRepository({
@@ -41,6 +44,16 @@ describe('LearningPathDetailService', () => {
     expect(service.error()).toBe(ERROR_MESSAGES.NETWORK_ERROR);
   });
 
+  test('should put the progress back and pass the error on when saving it fails', async () => {
+    const offline = offlineError();
+    vi.spyOn(learningPathRepository, 'updateNodeProgress').mockRejectedValueOnce(offline);
+
+    await expect(
+      service.updateNodeProgress(devOpsPath.id, whatAVpsIs.id, NODE_PROGRESS.DONE),
+    ).rejects.toBe(offline);
+
+    expect(nodeInState(whatAVpsIs.id)?.progress).toBe(NODE_PROGRESS.PENDING);
+  });
 
 
 });
