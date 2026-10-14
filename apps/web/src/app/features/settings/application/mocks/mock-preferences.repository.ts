@@ -1,3 +1,4 @@
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import type { FeatureKey } from '@features/auth/domain/auth.model';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import {
@@ -60,7 +61,7 @@ export function mockPreferencesRepository(
       this.appearancePatches.push(patch);
       if (this.failNextUpdate) {
         this.failNextUpdate = false;
-        return Promise.reject(new Error('network down'));
+        return Promise.reject(offlineError());
       }
       this.appearance = {
         language: patch.language ?? this.appearance.language,

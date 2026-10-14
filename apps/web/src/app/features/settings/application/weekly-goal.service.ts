@@ -25,16 +25,15 @@ export class WeeklyGoalService {
     return this.loading;
   }
 
-  async setGoalMinutes(minutes: number): Promise<boolean> {
+  async setGoalMinutes(minutes: number): Promise<void> {
     const previous = this.goalMinutes();
     this.goalMinutes.set(minutes);
     try {
       const appearance = await this.repository.updateAppearance({ weeklyGoalMinutes: minutes });
       this.goalMinutes.set(appearance.weeklyGoalMinutes);
-      return true;
-    } catch {
+    } catch (error) {
       this.goalMinutes.set(previous);
-      return false;
+      throw error;
     }
   }
 

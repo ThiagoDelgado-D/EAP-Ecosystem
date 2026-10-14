@@ -12,7 +12,7 @@ import {
 } from './mocks/mock-recommendation.repository';
 import { CalibrationService } from './calibration.service';
 import { learner } from './mocks/learner.fixture';
-import { offlineError } from './mocks/offline-error.fixture';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 
 const SAVED_MENTAL_STATE: MentalStateType = 'deep_focus';
 const UNSAVED_MENTAL_STATE: MentalStateType = 'creative';

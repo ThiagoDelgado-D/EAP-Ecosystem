@@ -18,7 +18,7 @@
       </svg>
       Loading…
     </div>
-  } @else if (sessions().length === 0) {
+  } @else if (sessions().length === 0 && !error()) {
     <p class="text-sm text-ink-faint">No active sessions found.</p>
   } @else {
     <div class="flex flex-col gap-3">

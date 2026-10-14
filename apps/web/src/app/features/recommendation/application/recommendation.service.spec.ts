@@ -5,7 +5,7 @@ import { RecommendationRepository } from '@features/recommendation/domain/recomm
 import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
 import { inMemoryLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { learner } from './mocks/learner.fixture';
-import { offlineError } from './mocks/offline-error.fixture';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { mockRecommendationRepository } from './mocks/mock-recommendation.repository';
 import { RecommendationDismissalsService } from './recommendation-dismissals.service';
 import { RecommendationService } from './recommendation.service';

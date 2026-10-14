@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { SessionRepository } from '@features/settings/domain/session.repository';
 import type { Session } from '@features/settings/domain/settings.model';
+import { messageOf } from '@core/errors/error-messages';
 
 @Injectable()
 export class SessionService {
@@ -16,8 +17,8 @@ export class SessionService {
     try {
       const sessions = await this.repository.getSessions();
       this.sessions.set(sessions);
-    } catch {
-      this.error.set('Failed to load sessions');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
@@ -29,11 +30,11 @@ export class SessionService {
     this.sessions.update((list) => list.filter((s) => s.id !== sessionId));
     try {
       await this.repository.revokeSession(sessionId);
-    } catch {
+    } catch (error) {
       if (revoked) {
         this.sessions.update((list) => [revoked, ...list]);
       }
-      this.error.set('Failed to revoke session');
+      this.error.set(messageOf(error));
     }
   }
 
@@ -43,9 +44,9 @@ export class SessionService {
     this.sessions.update((list) => list.filter((s) => s.isCurrent));
     try {
       await this.repository.revokeAllOtherSessions();
-    } catch {
+    } catch (error) {
       this.sessions.update((list) => [...removed, ...list]);
-      this.error.set('Failed to revoke sessions');
+      this.error.set(messageOf(error));
     }
   }
 }

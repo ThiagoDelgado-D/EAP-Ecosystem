@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PreferencesService } from '@features/settings/application/preferences.service';
 import { ThemeService } from '@core/theme/theme.service';
+import { messageOf } from '@core/errors/error-messages';
 import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
 import { LANGUAGE_CODE, START_OF_WEEK, WEEKLY_GOAL_MINUTES } from '@features/settings/domain/settings.model';
 import { TIMEZONES } from './timezones.data';
@@ -231,9 +232,12 @@ export class PreferencesComponent implements OnInit {
 
   async saveGoal(minutes: number): Promise<void> {
     this.goalError.set(null);
-    const saved = await this.weeklyGoal.setGoalMinutes(minutes);
+    try {
+      await this.weeklyGoal.setGoalMinutes(minutes);
+    } catch (error) {
+      this.goalError.set(messageOf(error));
+    }
     this.goalDraft.set(this.weeklyGoal.goalMinutes());
-    if (!saved) this.goalError.set('Failed to save the weekly goal');
   }
 
   async save(patch: Parameters<PreferencesService['updateAppearance']>[0]): Promise<void> {
