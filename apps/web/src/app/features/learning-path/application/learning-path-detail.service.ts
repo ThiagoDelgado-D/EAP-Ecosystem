@@ -7,6 +7,7 @@ import type {
   LearningPathWithNodes,
   NodeProgress,
 } from '@features/learning-path/domain/learning-path.model';
+import { messageOf } from '@core/errors/error-messages';
 
 @Injectable()
 export class LearningPathDetailService {
@@ -22,8 +23,8 @@ export class LearningPathDetailService {
     try {
       const data = await this.repository.getById(pathId);
       this.data.set(data);
-    } catch {
-      this.error.set('No pudimos cargar este Learning Path.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
@@ -56,9 +57,9 @@ export class LearningPathDetailService {
     this.patchNodes((nodes) => nodes.map((n) => (n.id === nodeId ? { ...n, progress } : n)));
     try {
       await this.repository.updateNodeProgress(pathId, nodeId, progress);
-    } catch {
+    } catch (error) {
       this.patchNodes(() => previous);
-      throw new Error('No se pudo actualizar el progreso.');
+      throw error;
     }
   }
 
@@ -68,9 +69,9 @@ export class LearningPathDetailService {
     this.patchNodes((nodes) => nodes.map((n) => (n.id === nodeId ? { ...n, x, y } : n)));
     try {
       await this.repository.updateNodePosition(pathId, nodeId, x, y);
-    } catch {
+    } catch (error) {
       this.patchNodes(() => previous);
-      throw new Error('No se pudo guardar la posición del nodo.');
+      throw error;
     }
   }
 
@@ -91,12 +92,12 @@ export class LearningPathDetailService {
       await Promise.all(
         changed.map((node) => this.repository.updateNode(pathId, node.id, { order: node.order })),
       );
-    } catch {
+    } catch (error) {
       // Promise.all doesn't roll back requests that already succeeded, so
       // reverting to `previous` here could show an order that matches neither
       // the pre- nor post-drag state. Re-fetch from the server instead.
       await this.load(pathId);
-      throw new Error('No se pudo reordenar los nodos.');
+      throw error;
     }
   }
 

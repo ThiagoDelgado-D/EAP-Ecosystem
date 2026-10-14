@@ -9,6 +9,7 @@ import {
   type LearningPath,
   type PathMode,
 } from '@features/learning-path/domain/learning-path.model';
+import { messageOf } from '@core/errors/error-messages';
 
 interface WizardQuestion {
   question: string;
@@ -141,8 +142,8 @@ export class CreateLearningPathWizardComponent {
         source: PATH_SOURCE.MANUAL,
       });
       this.dialogRef.close(created);
-    } catch {
-      this.errorMessage.set('No se pudo crear el Learning Path. Probá de nuevo.');
+    } catch (error) {
+      this.errorMessage.set(messageOf(error));
     } finally {
       this.submitting.set(false);
     }

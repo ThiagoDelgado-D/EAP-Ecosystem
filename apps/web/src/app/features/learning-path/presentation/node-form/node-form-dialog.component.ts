@@ -5,6 +5,7 @@ import { LearningPathRepository } from '@features/learning-path/domain/learning-
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
 import type { LearningPathNode } from '@features/learning-path/domain/learning-path.model';
 import type { NodeFormDialogData } from './node-form-dialog.types';
+import { messageOf } from '@core/errors/error-messages';
 
 @Component({
   selector: 'app-node-form-dialog',
@@ -48,8 +49,8 @@ export class NodeFormDialogComponent {
             externalUrl: this.externalUrl().trim() || undefined,
           });
       this.dialogRef.close(node);
-    } catch {
-      this.errorMessage.set('No se pudo guardar el nodo. Revisá los datos y probá de nuevo.');
+    } catch (error) {
+      this.errorMessage.set(messageOf(error));
     } finally {
       this.submitting.set(false);
     }
