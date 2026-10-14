@@ -13,6 +13,7 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service';
 import { ToastService } from '@core/toast/toast.service';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { PageTitleService } from '@core/title/page-title.service';
 import { LearningPathDetailService } from '@features/learning-path/application/learning-path-detail.service';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
@@ -53,6 +54,7 @@ export class LearningPathDetailComponent {
   private readonly dialog = inject(MatDialog);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly toastService = inject(ToastService);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private readonly pageTitle = inject(PageTitleService);
   readonly detailService = inject(LearningPathDetailService);
 
@@ -207,8 +209,8 @@ export class LearningPathDetailComponent {
     try {
       await this.detailService.deleteNode(this.pathId(), node.id);
       this.toastService.show('Nodo eliminado', 'success');
-    } catch {
-      this.toastService.show('No se pudo eliminar el nodo', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     }
   }
 
@@ -216,8 +218,8 @@ export class LearningPathDetailComponent {
     if (node.progress === progress) return;
     try {
       await this.detailService.updateNodeProgress(this.pathId(), node.id, progress);
-    } catch {
-      this.toastService.show('No se pudo actualizar el progreso', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     }
   }
 
@@ -248,8 +250,8 @@ export class LearningPathDetailComponent {
     this.reordering.set(true);
     try {
       await this.detailService.reorderNodes(this.pathId(), reordered);
-    } catch {
-      this.toastService.show('No se pudo reordenar los nodos', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.reordering.set(false);
       this.liveOrderIds.set(null);
@@ -259,16 +261,16 @@ export class LearningPathDetailComponent {
   async onNodeMoved(event: { node: LearningPathNode; x: number; y: number }): Promise<void> {
     try {
       await this.detailService.updateNodePosition(this.pathId(), event.node.id, event.x, event.y);
-    } catch {
-      this.toastService.show('No se pudo guardar la posición del nodo', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     }
   }
 
   async onEdgeCreateRequested(event: { sourceNodeId: string; targetNodeId: string }): Promise<void> {
     try {
       await this.detailService.addEdge(this.pathId(), event.sourceNodeId, event.targetNodeId);
-    } catch {
-      this.toastService.show('No se pudo crear la conexión', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     }
   }
 
@@ -282,8 +284,8 @@ export class LearningPathDetailComponent {
 
     try {
       await this.detailService.deleteEdge(this.pathId(), edge.id);
-    } catch {
-      this.toastService.show('No se pudo eliminar la conexión', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     }
   }
 
@@ -302,8 +304,8 @@ export class LearningPathDetailComponent {
       await this.detailService.deletePath(this.pathId());
       this.toastService.show('Learning Path eliminado', 'success');
       this.router.navigate(['/paths']);
-    } catch {
-      this.toastService.show('No se pudo eliminar el Learning Path', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     }
   }
 }
