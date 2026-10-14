@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import type { FeatureKey } from '@features/auth/domain/auth.model';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { messageOf } from '@core/errors/error-messages';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import type { AccountStats, UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
 
@@ -28,8 +29,8 @@ export class PreferencesService {
     try {
       const config = await this.repository.getFeatureConfig();
       this.featureConfig.set(config);
-    } catch {
-      this.error.set('Failed to load feature configuration');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this._loadingFeature.set(false);
     }
@@ -42,10 +43,10 @@ export class PreferencesService {
     this.authStore.updateFeatureConfig(config);
     try {
       await this.repository.updateFeatureConfig(config);
-    } catch {
+    } catch (error) {
       this.featureConfig.set(prev);
       this.authStore.updateFeatureConfig(prev);
-      this.error.set('Failed to save feature configuration');
+      this.error.set(messageOf(error));
     }
   }
 
@@ -55,8 +56,8 @@ export class PreferencesService {
     try {
       const config = await this.repository.getWidgetConfig();
       this.widgetConfig.set(config);
-    } catch {
-      this.error.set('Failed to load widget configuration');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this._loadingWidget.set(false);
     }
@@ -68,9 +69,9 @@ export class PreferencesService {
     this.widgetConfig.set(config);
     try {
       await this.repository.updateWidgetConfig(config);
-    } catch {
+    } catch (error) {
       this.widgetConfig.set(prev);
-      this.error.set('Failed to save widget configuration');
+      this.error.set(messageOf(error));
     }
   }
 
@@ -80,8 +81,8 @@ export class PreferencesService {
     try {
       const appearance = await this.repository.getAppearance();
       this.appearance.set(appearance);
-    } catch {
-      this.error.set('Failed to load appearance preferences');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this._loadingAppearance.set(false);
     }
@@ -94,9 +95,9 @@ export class PreferencesService {
     this.appearance.set({ ...prev, ...patch });
     try {
       await this.repository.updateAppearance(patch);
-    } catch {
+    } catch (error) {
       this.appearance.set(prev);
-      this.error.set('Failed to save appearance preferences');
+      this.error.set(messageOf(error));
     }
   }
 
@@ -116,9 +117,9 @@ export class PreferencesService {
       this.featureConfig.set([]);
       this.widgetConfig.set([]);
       this.authStore.updateFeatureConfig([]);
-    } catch {
-      this.error.set('Failed to reset preferences');
-      throw new Error('Failed to reset preferences');
+    } catch (error) {
+      this.error.set(messageOf(error));
+      throw error;
     } finally {
       this.saving.set(false);
     }
