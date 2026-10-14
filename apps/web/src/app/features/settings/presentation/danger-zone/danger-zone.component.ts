@@ -6,6 +6,7 @@ import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service
 import { AuthStore } from '@features/auth/application/auth.store';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service';
 import { ToastService } from '@core/toast/toast.service';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 
 @Component({
   selector: 'app-danger-zone',
@@ -19,6 +20,7 @@ export class DangerZoneComponent {
   private readonly authStore = inject(AuthStore);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly toastService = inject(ToastService);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private readonly router = inject(Router);
 
   readonly saving = this.preferencesService.saving;
@@ -35,8 +37,8 @@ export class DangerZoneComponent {
     try {
       await this.preferencesService.resetPreferences();
       this.toastService.show('Preferences reset successfully', 'success');
-    } catch {
-      this.toastService.show('Failed to reset preferences', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     }
   }
 

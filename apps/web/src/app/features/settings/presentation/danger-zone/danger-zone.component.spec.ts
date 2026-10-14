@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service';
 import { ERROR_MESSAGES } from '@core/errors/error-messages';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { ToastService } from '@core/toast/toast.service';
 import { PreferencesService } from '@features/settings/application/preferences.service';
@@ -62,5 +63,16 @@ describe('DangerZoneComponent', () => {
     await component.revokeAllOtherSessions();
 
     expect(toast.show).toHaveBeenCalledWith(SIGNED_OUT_OTHERS_TOAST, SUCCESS_TOAST_TYPE);
+  });
+
+  test('should report the reason resetting the preferences failed', async () => {
+    const { component, preferencesRepository } = setup();
+    const offline = offlineError();
+    vi.spyOn(preferencesRepository, 'resetPreferences').mockRejectedValueOnce(offline);
+    const notifySpy = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+
+    await component.resetPreferences();
+
+    expect(notifySpy).toHaveBeenCalledWith(offline);
   });
 });
