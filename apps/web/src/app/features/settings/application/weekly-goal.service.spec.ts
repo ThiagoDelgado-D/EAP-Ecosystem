@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { NETWORK_ERROR } from '@core/errors/api-error';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { learner } from '@features/recommendation/application/mocks/learner.fixture';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
@@ -45,22 +46,21 @@ describe('WeeklyGoalService', () => {
   test('should save a new goal as an appearance patch', async () => {
     await service.load();
 
-    const saved = await service.setGoalMinutes(FIFTEEN_HOUR_WEEKLY_GOAL);
+    await service.setGoalMinutes(FIFTEEN_HOUR_WEEKLY_GOAL);
 
-    expect(saved).toBe(true);
     expect(service.goalMinutes()).toBe(FIFTEEN_HOUR_WEEKLY_GOAL);
     expect(preferencesRepository.appearancePatches).toEqual([
       { weeklyGoalMinutes: FIFTEEN_HOUR_WEEKLY_GOAL },
     ]);
   });
 
-  test('should roll back to the previous goal when saving fails', async () => {
+  test('should roll back to the previous goal and pass the error on when saving fails', async () => {
     await service.load();
     preferencesRepository.failNextUpdate = true;
 
-    const saved = await service.setGoalMinutes(FIFTEEN_HOUR_WEEKLY_GOAL);
-
-    expect(saved).toBe(false);
+    await expect(service.setGoalMinutes(FIFTEEN_HOUR_WEEKLY_GOAL)).rejects.toMatchObject({
+      name: NETWORK_ERROR,
+    });
     expect(service.goalMinutes()).toBe(WEEKLY_GOAL_MINUTES.DEFAULT);
   });
 
