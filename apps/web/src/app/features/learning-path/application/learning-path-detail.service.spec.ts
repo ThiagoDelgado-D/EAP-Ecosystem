@@ -10,6 +10,9 @@ import {
 } from './mocks/mock-learning-path.repository';
 import { LearningPathDetailService } from './learning-path-detail.service';
 
+const DROPPED_X = 320;
+const DROPPED_Y = 180;
+
 describe('LearningPathDetailService', () => {
   const devOpsPath = pathFixture('DevOps Fundamentals (Deploy VPS)');
   const whatAVpsIs = nodeFixture(devOpsPath.id, 'What a VPS is', 0);
@@ -55,5 +58,15 @@ describe('LearningPathDetailService', () => {
     expect(nodeInState(whatAVpsIs.id)?.progress).toBe(NODE_PROGRESS.PENDING);
   });
 
+  test('should put the node back and pass the error on when saving its position fails', async () => {
+    const offline = offlineError();
+    vi.spyOn(learningPathRepository, 'updateNodePosition').mockRejectedValueOnce(offline);
+
+    await expect(
+      service.updateNodePosition(devOpsPath.id, connectingOverSsh.id, DROPPED_X, DROPPED_Y),
+    ).rejects.toBe(offline);
+
+    expect(nodeInState(connectingOverSsh.id)).toMatchObject({ x: connectingOverSsh.x, y: connectingOverSsh.y });
+  });
 
 });

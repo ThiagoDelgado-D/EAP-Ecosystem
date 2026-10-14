@@ -69,9 +69,9 @@ export class LearningPathDetailService {
     this.patchNodes((nodes) => nodes.map((n) => (n.id === nodeId ? { ...n, x, y } : n)));
     try {
       await this.repository.updateNodePosition(pathId, nodeId, x, y);
-    } catch {
+    } catch (error) {
       this.patchNodes(() => previous);
-      throw new Error('No se pudo guardar la posición del nodo.');
+      throw error;
     }
   }
 
