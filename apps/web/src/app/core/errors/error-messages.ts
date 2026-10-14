@@ -26,6 +26,7 @@ export const ERROR_MESSAGES: { [N in ApiErrorName]: ErrorMessage<N> } = {
   TOPIC_NOT_FOUND_ERROR: 'This topic no longer exists.',
   DUPLICATE_TOPIC_NAME_ERROR: 'You already have a topic with that name.',
   SESSION_NOT_FOUND_ERROR: 'This focus session no longer exists.',
+  AUTH_SESSION_NOT_FOUND_ERROR: 'That session has already ended or was signed out.',
   SESSION_FORBIDDEN_ERROR: 'You don’t have access to this focus session.',
   SESSION_ALREADY_ACTIVE_ERROR: 'You already have a focus session running.',
   SESSION_STILL_ACTIVE_ERROR: 'Finish your current focus session first.',
