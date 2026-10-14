@@ -5,6 +5,7 @@ import { LearningPathRepository } from '@features/learning-path/domain/learning-
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
 import type { LearningPath } from '@features/learning-path/domain/learning-path.model';
 import type { EditLearningPathDialogData } from './edit-learning-path-dialog.types';
+import { messageOf } from '@core/errors/error-messages';
 
 @Component({
   selector: 'app-edit-learning-path-dialog',
@@ -38,8 +39,8 @@ export class EditLearningPathDialogComponent {
         description: this.description().trim() || undefined,
       });
       this.dialogRef.close(updated);
-    } catch {
-      this.errorMessage.set('No se pudo guardar. Probá de nuevo.');
+    } catch (error) {
+      this.errorMessage.set(messageOf(error));
     } finally {
       this.submitting.set(false);
     }
