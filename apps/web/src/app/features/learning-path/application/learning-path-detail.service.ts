@@ -7,6 +7,7 @@ import type {
   LearningPathWithNodes,
   NodeProgress,
 } from '@features/learning-path/domain/learning-path.model';
+import { messageOf } from '@core/errors/error-messages';
 
 @Injectable()
 export class LearningPathDetailService {
@@ -22,8 +23,8 @@ export class LearningPathDetailService {
     try {
       const data = await this.repository.getById(pathId);
       this.data.set(data);
-    } catch {
-      this.error.set('No pudimos cargar este Learning Path.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
