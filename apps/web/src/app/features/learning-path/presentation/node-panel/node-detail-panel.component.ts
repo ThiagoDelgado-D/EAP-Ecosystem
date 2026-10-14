@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '@core/toast/toast.service';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { LearningPathDetailService } from '@features/learning-path/application/learning-path-detail.service';
 import {
   NODE_PROGRESS,
@@ -79,6 +80,7 @@ export class NodeDetailPanelComponent {
 
   private readonly detailService = inject(LearningPathDetailService);
   private readonly toastService = inject(ToastService);
+  private readonly errorNotifier = inject(ErrorNotifier);
 
   readonly resourceService = inject(LearningResourceService);
   readonly resourceTypeService = inject(ResourceTypeService);
@@ -167,8 +169,8 @@ export class NodeDetailPanelComponent {
       await this.detailService.linkNode(this.pathId(), this.node().id, id);
       this.toastService.show('Recurso vinculado', 'success');
       this.closed.emit();
-    } catch {
-      this.toastService.show('No se pudo vincular el recurso', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.linking.set(false);
     }
@@ -191,8 +193,8 @@ export class NodeDetailPanelComponent {
       await this.detailService.linkNode(this.pathId(), this.node().id, created.id);
       this.toastService.show('Recurso creado y vinculado', 'success');
       this.closed.emit();
-    } catch {
-      this.toastService.show('No se pudo crear el recurso', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.creating.set(false);
     }
@@ -204,8 +206,8 @@ export class NodeDetailPanelComponent {
     try {
       await this.detailService.unlinkNode(this.pathId(), this.node().id);
       this.toastService.show('Recurso desvinculado', 'success');
-    } catch {
-      this.toastService.show('No se pudo desvincular el recurso', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.unlinking.set(false);
     }
@@ -215,6 +217,6 @@ export class NodeDetailPanelComponent {
     if (this.node().progress === progress) return;
     void this.detailService
       .updateNodeProgress(this.pathId(), this.node().id, progress)
-      .catch(() => this.toastService.show('No se pudo actualizar el progreso', 'error'));
+      .catch((error: unknown) => this.errorNotifier.notify(error));
   }
 }
