@@ -30,10 +30,6 @@
   <div>
     @if (loading() && !hasLoaded()) {
       <div class="card h-56 animate-pulse"></div>
-    } @else if (error() && !hasLoaded()) {
-      <div class="card border-energy-high/40 bg-energy-high/20 p-4 text-sm text-energy-high">
-        Failed to load recommendation. Check your API connection.
-      </div>
     } @else {
       <div
         appReveal
@@ -48,6 +44,7 @@
           [secondary]="secondaryRecommendations()"
           [catalogMinutes]="catalogMinutes()"
           [dismissedCount]="dismissedCount()"
+          [error]="recommendationError()"
           (dismissed)="onRecommendationDismissed($event)"
           (restored)="onDismissalsRestored()"
         />

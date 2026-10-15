@@ -87,7 +87,7 @@ export class DashboardComponent implements OnInit {
   readonly availableMinutes = this.calibration.availableMinutes;
 
   readonly loading = this.resourceService.loading;
-  readonly error = this.resourceService.error;
+  readonly recommendationError = this.recommendationService.error;
   readonly pendingResourceCount = this.resourceService.total;
   readonly hasLoaded = signal(false);
 

@@ -1,4 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
+import { messageOf } from '@core/errors/error-messages';
 import { ResourceTypeRepository } from '../domain/resource-type.repository';
 import type { ResourceType } from '../domain/resource-type.model';
 
@@ -16,8 +17,8 @@ export class ResourceTypeService {
     try {
       const result = await this.repository.getAll();
       this.resourceTypes.set(result);
-    } catch {
-      this.error.set('Failed to load resource types');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }

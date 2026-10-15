@@ -70,6 +70,10 @@
         {{ displayResource().desc }}
       </p>
     }
+  } @else if (error()) {
+    <div class="relative mt-6">
+      <p class="max-w-md text-[0.9rem] leading-relaxed text-energy-high" role="alert">{{ error() }}</p>
+    </div>
   } @else {
     <div class="relative mt-6">
       <p class="max-w-md text-[0.9rem] leading-relaxed text-ink-body">

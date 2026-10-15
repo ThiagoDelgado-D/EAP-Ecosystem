@@ -1,5 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { messageOf } from '@core/errors/error-messages';
 import { firstValueFrom } from 'rxjs';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import type {
@@ -81,8 +82,8 @@ export class LearningResourceService {
       this.total.set(result.total);
       this.totalPages.set(result.totalPages);
       this.currentPage.set(result.page);
-    } catch {
-      this.error.set('Failed to load resources');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
@@ -105,10 +106,9 @@ export class LearningResourceService {
     try {
       const result = await this.repository.getById(id);
       return result;
-    } catch (err) {
-      console.error('Error loading resource:', err);
-      this.error.set('Failed to load resource');
-      throw err;
+    } catch (error) {
+      this.error.set(messageOf(error));
+      throw error;
     } finally {
       this.loading.set(false);
     }
@@ -121,10 +121,9 @@ export class LearningResourceService {
       await this.repository.updateResource(id, payload);
       this.invalidateCache();
       await this.load({ page: 1, pageSize: 20 });
-    } catch (err) {
-      console.error('Error updating resource:', err);
-      this.error.set('Failed to update resource');
-      throw err;
+    } catch (error) {
+      this.error.set(messageOf(error));
+      throw error;
     } finally {
       this.loading.set(false);
     }
@@ -195,10 +194,9 @@ export class LearningResourceService {
       await this.repository.deleteResource(id);
       this.invalidateCache();
       await this.load({ page: 1, pageSize: 20 });
-    } catch (err) {
-      console.error('Error deleting resource:', err);
-      this.error.set('Failed to delete resource');
-      throw err;
+    } catch (error) {
+      this.error.set(messageOf(error));
+      throw error;
     } finally {
       this.loading.set(false);
     }
