@@ -22,6 +22,7 @@ import { TopicHttpRepository } from '@features/learning-resource/infrastructure/
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { ToastService } from '@core/toast/toast.service';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { messageOf } from '@core/errors/error-messages';
 import { TopicPickerComponent } from '../topic-picker/topic-picker.component';
 
@@ -67,6 +68,7 @@ export class EditResourceComponent implements OnInit {
   private readonly topicService = inject(TopicService);
   private readonly resourceTypeService = inject(ResourceTypeService);
   private readonly toastService = inject(ToastService);
+  private readonly errorNotifier = inject(ErrorNotifier);
 
   readonly resource = signal<LearningResource | null>(null);
   private loadedResource: LearningResource | null = null;
@@ -265,8 +267,8 @@ export class EditResourceComponent implements OnInit {
       }
       this.toastService.show('Resource updated successfully', 'success');
       this.router.navigate(['/resources', this.resourceId]);
-    } catch {
-      this.toastService.show('Failed to update resource. Please try again.', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.isSubmitting = false;
     }

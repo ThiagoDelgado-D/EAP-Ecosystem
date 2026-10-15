@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { messageOf } from '@core/errors/error-messages';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
 import { TopicService } from '@features/learning-resource/application/topic.service';
@@ -125,5 +126,17 @@ describe('EditResourceComponent', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  test('reports why saving failed and stays on the form', async () => {
+    const component = await createComponent();
+    const offline = offlineError();
+    resourceService.updateResource.mockRejectedValueOnce(offline);
+    const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
 
+    component.onTopicsChange([systemsTopic.id]);
+    await component.onSubmit();
+
+    expect(notify).toHaveBeenCalledWith(offline);
+    expect(navigate).not.toHaveBeenCalled();
+  });
 });
