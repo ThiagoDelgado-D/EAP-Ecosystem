@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
+import { messageOf } from '@core/errors/error-messages';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { mockPomodoroRepository } from '@features/pomodoro/application/mocks/mock-pomodoro.repository';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
@@ -69,13 +71,14 @@ describe('WeeklySummaryComponent', () => {
     expect(component.weekBarColor(focusDay(TWENTY_FIVE_MINUTE_FOCUS_SEC))).toBe(ON_PACE_BAR_COLOR);
   });
 
-  test('should surface a failed state when the history request rejects', async () => {
+  test('should store why the history request failed', async () => {
     const { component, repository } = setup();
-    repository.getHistory = () => Promise.reject(new Error('network down'));
+    const offline = offlineError();
+    vi.spyOn(repository, 'getHistory').mockRejectedValueOnce(offline);
 
     await component.load();
 
-    expect(component.failed()).toBe(true);
+    expect(component.error()).toBe(messageOf(offline));
     expect(component.loading()).toBe(false);
   });
 
@@ -83,7 +86,7 @@ describe('WeeklySummaryComponent', () => {
     const { component } = setup([buildSession(new Date())]);
     await component.load();
 
-    expect(component.failed()).toBe(false);
+    expect(component.error()).toBeNull();
     expect(component.summary()?.thisWeek.focus.sessionCount).toBe(1);
   });
 

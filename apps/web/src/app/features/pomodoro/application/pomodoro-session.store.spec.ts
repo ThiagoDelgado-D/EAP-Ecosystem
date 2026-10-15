@@ -1,4 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { messageOf } from '@core/errors/error-messages';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { mockPomodoroRepository } from './mocks/mock-pomodoro.repository';
 import { mockAudio } from './mocks/mock-audio-element';
@@ -64,29 +67,34 @@ describe('PomodoroSessionStore', () => {
     expect(store.starting()).toBe(false);
   });
 
-  test('should set an error and leave activeSession null when starting fails', async () => {
-    repository.startSession = async () => Promise.reject(new Error('network down'));
+  test('should store why starting failed and leave activeSession null', async () => {
+    const offline = offlineError();
+    vi.spyOn(repository, 'startSession').mockRejectedValueOnce(offline);
 
     const session = await store.start({ plannedMin: 25, target: { kind: 'free' } });
 
     expect(session).toBeUndefined();
     expect(store.activeSession()).toBeNull();
-    expect(store.error()).toBe('We could not start the session.');
+    expect(store.error()).toBe(messageOf(offline));
   });
 
   test('should clear the active session after ending it', async () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
 
-    const result = await store.end();
+    const ended = await store.end();
 
-    expect(result?.discarded).toBe(false);
+    expect(ended).toBe(true);
     expect(store.activeSession()).toBeNull();
+    expect(repository.sessions[0]?.completedAt).toBeDefined();
   });
 
   test('should do nothing when ending with no active session', async () => {
-    const result = await store.end();
+    const endSession = vi.spyOn(repository, 'endSession');
 
-    expect(result).toBeUndefined();
+    const ended = await store.end();
+
+    expect(ended).toBe(true);
+    expect(endSession).not.toHaveBeenCalled();
   });
 
   test('should seed a synthetic initial segment matching the starting target', async () => {
@@ -476,12 +484,16 @@ describe('PomodoroSessionStore', () => {
       expect(repository.sessions[0]?.completedAt).toBeDefined();
     });
 
-    test('should keep the session active if starting the break fails', async () => {
+    test('should report why starting the break failed and keep the session active', async () => {
       await store.start({ plannedMin: 25, target: { kind: 'free' } });
-      repository.startBreak = async () => Promise.reject(new Error('network down'));
+      const offline = offlineError();
+      vi.spyOn(repository, 'startBreak').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
 
-      await expect(store.startBreak()).rejects.toThrow('network down');
+      const started = await store.startBreak();
 
+      expect(started).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
       expect(store.activeSession()).not.toBeNull();
       expect(store.phase()).toBe('focus');
     });
@@ -516,6 +528,36 @@ describe('PomodoroSessionStore', () => {
       expect(store.breakRemainingLabel()).toBe('04:30');
     });
 
+    test('should report why extending the break failed and keep its duration', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      await store.startBreak();
+      const offline = offlineError();
+      vi.spyOn(repository, 'extendBreak').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+      const remainingBefore = store.breakRemainingLabel();
+
+      const extended = await store.extendBreak();
+
+      expect(extended).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.breakRemainingLabel()).toBe(remainingBefore);
+    });
+
+    test('should report why ending the break failed and stay in the break', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      await store.startBreak();
+      const offline = offlineError();
+      vi.spyOn(repository, 'endBreak').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+
+      const ended = await store.endBreak();
+
+      expect(ended).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.phase()).toBe('break');
+      expect(store.activeBreak()).not.toBeNull();
+    });
+
     test('should return to idle, with no session, once the break ends', async () => {
       await store.start({ plannedMin: 25, target: { kind: 'free' } });
       await store.startBreak();
@@ -528,6 +570,73 @@ describe('PomodoroSessionStore', () => {
       expect(store.activeSession()).toBeNull();
       expect(store.elapsedSec()).toBe(0);
       expect(store.breakRemainingSec()).toBe(0);
+    });
+  });
+
+  describe('when the API fails', () => {
+    const PLANNED_MIN = 25;
+    const EXTENSION_MIN = 10;
+    let offline: ReturnType<typeof offlineError>;
+    let notify: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(async () => {
+      offline = offlineError();
+      notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+      await store.start({ plannedMin: PLANNED_MIN, target: { kind: 'free' } });
+    });
+
+    test('should report why continuing at planned time failed and keep the session', async () => {
+      const session = store.activeSession();
+      vi.spyOn(repository, 'continueSession').mockRejectedValueOnce(offline);
+
+      const continued = await store.continueAtPlannedTime();
+
+      expect(continued).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.activeSession()).toEqual(session);
+    });
+
+    test('should report why extending the focus session failed and keep its planned time', async () => {
+      vi.spyOn(repository, 'extendSession').mockRejectedValueOnce(offline);
+
+      const extended = await store.extendFocusSession(EXTENSION_MIN);
+
+      expect(extended).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.activeSession()?.plannedMin).toBe(PLANNED_MIN);
+    });
+
+    test('should report why switching target failed and keep the current segment', async () => {
+      const segments = store.segments();
+      vi.spyOn(repository, 'switchTarget').mockRejectedValueOnce(offline);
+
+      const switched = await store.switchTarget({ kind: 'resource', resourceId: crypto.randomUUID() });
+
+      expect(switched).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.segments()).toEqual(segments);
+      expect(store.switchingTarget()).toBe(false);
+    });
+
+    test('should report why attaching the open segment failed and keep it as it was', async () => {
+      const segments = store.segments();
+      vi.spyOn(repository, 'attachOpenSegment').mockRejectedValueOnce(offline);
+
+      const attached = await store.attachOpenSegment({ kind: 'resource', resourceId: crypto.randomUUID() });
+
+      expect(attached).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.segments()).toEqual(segments);
+    });
+
+    test('should report why ending the session failed and keep it active', async () => {
+      vi.spyOn(repository, 'endSession').mockRejectedValueOnce(offline);
+
+      const ended = await store.end();
+
+      expect(ended).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.activeSession()).not.toBeNull();
     });
   });
 });

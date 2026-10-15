@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { messageOf } from '@core/errors/error-messages';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
@@ -189,12 +191,13 @@ describe('PomodoroPickerService', () => {
     expect(service.library()).toEqual(library);
   });
 
-  test('should set an error message when loading fails', async () => {
-    learningPathRepository.getAllWithNodes = async () => Promise.reject(new Error('network down'));
+  test('should store why loading the material failed', async () => {
+    const offline = offlineError();
+    vi.spyOn(learningPathRepository, 'getAllWithNodes').mockRejectedValueOnce(offline);
 
     await service.load();
 
-    expect(service.error()).toBe('We could not load the available material.');
+    expect(service.error()).toBe(messageOf(offline));
     expect(service.loading()).toBe(false);
   });
 });

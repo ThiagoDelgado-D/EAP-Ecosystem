@@ -4,6 +4,7 @@ import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-se
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { expectExtendBreakFlash } from '@features/pomodoro/application/mocks/expect-extend-break-flash';
+import { expectFailedFinishBreakToStay } from '@features/pomodoro/application/mocks/expect-failed-finish-break';
 import { PomodoroZenViewComponent, POMODORO_ZEN_KEY } from './pomodoro-zen-view.component';
 
 function setup() {
@@ -110,5 +111,13 @@ describe('PomodoroZenViewComponent', () => {
     expect(hide).toHaveBeenCalledWith(POMODORO_ZEN_KEY);
     expect(store.phase()).toBe('focus');
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
+
+  test('should keep the overlay open and report why when ending the break fails', async () => {
+    const { component, store, hide, navigateByUrl } = setup();
+
+    await expectFailedFinishBreakToStay(component, store, navigateByUrl);
+
+    expect(hide).not.toHaveBeenCalled();
   });
 });

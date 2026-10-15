@@ -1,14 +1,17 @@
 import { EnvironmentInjector, Injectable, computed, effect, inject, signal } from '@angular/core';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
+import { messageOf } from '@core/errors/error-messages';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
   Break,
-  EndSessionResult,
+  ContinueSessionResult,
   Segment,
   SegmentTarget,
   Session,
   StartSessionPayload,
   SuggestedCandidate,
   SuggestionCalibration,
+  SwitchTargetResult,
 } from '@features/pomodoro/domain/pomodoro.model';
 import {
   playBoundaryChime,
@@ -51,6 +54,7 @@ function syntheticInitialSegment(sessionId: string, target: SegmentTarget): Segm
 @Injectable()
 export class PomodoroSessionStore {
   private readonly repository = inject(PomodoroRepository);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private readonly injector = inject(EnvironmentInjector);
   private miniWidgetOrchestratorLoaded = false;
 
@@ -159,48 +163,82 @@ export class PomodoroSessionStore {
     this.justAutoClosed.set(null);
   }
 
-  async continueAtPlannedTime(): Promise<void> {
+  async continueAtPlannedTime(): Promise<boolean> {
     const session = this.activeSession();
-    if (!session) return;
-    const result = await this.repository.continueSession(session.id);
+    if (!session) return true;
+    let result: ContinueSessionResult;
+    try {
+      result = await this.repository.continueSession(session.id);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.activeSession.set(result.session);
     this.segments.set(result.segments);
     this.plannedTimeReached.set(false);
+    return true;
   }
 
-  async extendFocusSession(minutes = 5): Promise<void> {
+  async extendFocusSession(minutes = 5): Promise<boolean> {
     const session = this.activeSession();
-    if (!session) return;
-    const extended = await this.repository.extendSession(session.id, minutes);
+    if (!session) return true;
+    let extended: Session;
+    try {
+      extended = await this.repository.extendSession(session.id, minutes);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.activeSession.set(extended);
     this.plannedTimeReached.set(false);
     this.plannedTimeReachedHandledForSessionId = null;
+    return true;
   }
 
-  async startBreak(): Promise<void> {
-    const activeBreak = await this.repository.startBreak();
-    if (this.activeSession()) await this.end();
+  async startBreak(): Promise<boolean> {
+    let activeBreak: Break;
+    try {
+      activeBreak = await this.repository.startBreak();
+      if (this.activeSession()) await this.closeActiveSession();
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.activeBreak.set(activeBreak);
     this.breakNow.set(new Date());
     this.phase.set('break');
     this.startTicking();
+    return true;
   }
 
-  async extendBreak(seconds = 300): Promise<void> {
+  async extendBreak(seconds = 300): Promise<boolean> {
     const activeBreak = this.activeBreak();
-    if (!activeBreak) return;
-    const extended = await this.repository.extendBreak(activeBreak.id, seconds);
+    if (!activeBreak) return true;
+    let extended: Break;
+    try {
+      extended = await this.repository.extendBreak(activeBreak.id, seconds);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.activeBreak.set(extended);
+    return true;
   }
 
-  async endBreak(): Promise<void> {
+  async endBreak(): Promise<boolean> {
     const activeBreak = this.activeBreak();
-    if (!activeBreak) return;
-    await this.repository.endBreak(activeBreak.id);
+    if (!activeBreak) return true;
+    try {
+      await this.repository.endBreak(activeBreak.id);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.stopTicking();
     this.phase.set('focus');
     this.activeBreak.set(null);
     this.paused.set(false);
+    return true;
   }
 
   private startTicking(): void {
@@ -295,47 +333,66 @@ export class PomodoroSessionStore {
       this.phase.set('focus');
       this.startTicking();
       return session;
-    } catch {
-      this.error.set('We could not start the session.');
+    } catch (error) {
+      this.error.set(messageOf(error));
       return undefined;
     } finally {
       this.starting.set(false);
     }
   }
 
-  async switchTarget(target: SegmentTarget): Promise<void> {
+  async switchTarget(target: SegmentTarget): Promise<boolean> {
     const session = this.activeSession();
-    if (!session) return;
+    if (!session) return true;
     this.switchingTarget.set(true);
+    let switched: SwitchTargetResult;
     try {
-      const { closedSegment, openedSegment } = await this.repository.switchTarget(
-        session.id,
-        target,
-      );
-      this.segments.update((segs) => [...segs.slice(0, -1), closedSegment, openedSegment]);
+      switched = await this.repository.switchTarget(session.id, target);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
     } finally {
       this.switchingTarget.set(false);
     }
+    this.segments.update((segs) => [...segs.slice(0, -1), switched.closedSegment, switched.openedSegment]);
+    return true;
   }
 
-  async attachOpenSegment(target: SegmentTarget): Promise<void> {
+  async attachOpenSegment(target: SegmentTarget): Promise<boolean> {
+    const session = this.activeSession();
+    if (!session) return true;
+    let segment: Segment;
+    try {
+      segment = await this.repository.attachOpenSegment(session.id, target);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
+    this.segments.update((segs) => [...segs.slice(0, -1), segment]);
+    return true;
+  }
+
+  async end(): Promise<boolean> {
+    if (!this.activeSession()) return true;
+    try {
+      await this.closeActiveSession();
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
+    return true;
+  }
+
+  private async closeActiveSession(): Promise<void> {
     const session = this.activeSession();
     if (!session) return;
-    const segment = await this.repository.attachOpenSegment(session.id, target);
-    this.segments.update((segs) => [...segs.slice(0, -1), segment]);
-  }
-
-  async end(): Promise<EndSessionResult | undefined> {
-    const session = this.activeSession();
-    if (!session) return undefined;
-    const result = await this.repository.endSession(session.id);
+    await this.repository.endSession(session.id);
     this.stopTicking();
     this.clearPlannedTimePrompt();
     this.activeSession.set(null);
     this.segments.set([]);
     this.phase.set('focus');
     this.activeBreak.set(null);
-    return result;
   }
 
   private clearPlannedTimePrompt(): void {

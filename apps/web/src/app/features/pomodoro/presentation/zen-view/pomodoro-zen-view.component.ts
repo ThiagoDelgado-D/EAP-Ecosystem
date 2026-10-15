@@ -72,8 +72,9 @@ export class PomodoroZenViewComponent implements OnInit {
   }
 
   async finishBreak(): Promise<void> {
+    const ended = await this.store.endBreak();
+    if (!ended) return;
     this.overlayHost.hide(POMODORO_ZEN_KEY);
-    await this.store.endBreak();
     void this.router.navigateByUrl('/pomodoro');
   }
 }

@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { expectExtendBreakFlash } from '@features/pomodoro/application/mocks/expect-extend-break-flash';
+import { expectFailedFinishBreakToStay } from '@features/pomodoro/application/mocks/expect-failed-finish-break';
 import { expectPlannedTimeReachedFlow } from '@features/pomodoro/application/mocks/expect-planned-time-reached-flow';
 import { PomodoroMiniWidgetComponent } from './pomodoro-mini-widget.component';
 
@@ -113,6 +114,11 @@ describe('PomodoroMiniWidgetComponent', () => {
 
     expect(store.phase()).toBe('focus');
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
+
+  test('should stay in the break and report why when ending it fails', async () => {
+    const { component, store, navigateByUrl } = setup();
+    await expectFailedFinishBreakToStay(component, store, navigateByUrl);
   });
 
   describe('planned time reached', () => {
