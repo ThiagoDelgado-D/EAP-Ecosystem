@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
@@ -55,6 +56,7 @@ const RESOURCE_STATUS_OPTIONS: readonly ResourceStatus[] = ['Pending', 'InProgre
 export class EndComponent {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private readonly learningPathRepository = inject(LearningPathRepository);
   private readonly learningResourceRepository = inject(LearningResourceRepository);
   private readonly resourceTypeRepository = inject(ResourceTypeRepository);
@@ -324,17 +326,28 @@ export class EndComponent {
   private async withPendingUpdatesSaved(next: () => Promise<void>): Promise<void> {
     this.saving.set(true);
     try {
-      const nodeUpdates = Object.entries(this.pendingNodeProgress());
-      const resourceUpdates = Object.entries(this.pendingResourceStatus());
+      const saved = await this.savePendingUpdates();
+      if (!saved) return;
+      await next();
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  private async savePendingUpdates(): Promise<boolean> {
+    const nodeUpdates = Object.entries(this.pendingNodeProgress());
+    const resourceUpdates = Object.entries(this.pendingResourceStatus());
+    try {
       await Promise.all([
         ...nodeUpdates.map(([nodeId, { pathId, progress }]) =>
           this.learningPathRepository.updateNodeProgress(pathId, nodeId, progress),
         ),
         ...resourceUpdates.map(([resourceId, status]) => this.learningResourceRepository.toggleStatus(resourceId, status)),
       ]);
-      await next();
-    } finally {
-      this.saving.set(false);
+      return true;
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
     }
   }
 

@@ -134,6 +134,24 @@ describe('EndComponent', () => {
     const PATH_TITLE = 'Rust for Backend Engineers';
     const NODE_TITLE = 'Trait Objects';
 
+    test('should report why the progress was not saved and keep the session open', async () => {
+      const ctx = setup();
+      const { component, store, learningPathRepository, navigateByUrl } = ctx;
+      await startPathNodeSession(ctx, { pathTitle: PATH_TITLE, nodeTitle: NODE_TITLE });
+      const [touched] = component.touchedTargets();
+      component.setNodeProgress(touched, 'done');
+      const offline = offlineError();
+      vi.spyOn(learningPathRepository, 'updateNodeProgress').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+
+      await component.saveAndClose();
+
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.activeSession()).not.toBeNull();
+      expect(component.saving()).toBe(false);
+      expect(navigateByUrl).not.toHaveBeenCalled();
+    });
+
     test('should report why the session did not end and stay on the end screen', async () => {
       const ctx = setup();
       const { component, store, navigateByUrl } = ctx;
