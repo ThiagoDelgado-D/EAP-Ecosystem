@@ -178,13 +178,20 @@ export class PomodoroSessionStore {
     return true;
   }
 
-  async extendFocusSession(minutes = 5): Promise<void> {
+  async extendFocusSession(minutes = 5): Promise<boolean> {
     const session = this.activeSession();
-    if (!session) return;
-    const extended = await this.repository.extendSession(session.id, minutes);
+    if (!session) return true;
+    let extended: Session;
+    try {
+      extended = await this.repository.extendSession(session.id, minutes);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.activeSession.set(extended);
     this.plannedTimeReached.set(false);
     this.plannedTimeReachedHandledForSessionId = null;
+    return true;
   }
 
   async startBreak(): Promise<boolean> {

@@ -569,6 +569,7 @@ describe('PomodoroSessionStore', () => {
 
   describe('when the API fails', () => {
     const PLANNED_MIN = 25;
+    const EXTENSION_MIN = 10;
     let offline: ReturnType<typeof offlineError>;
     let notify: ReturnType<typeof vi.spyOn>;
 
@@ -587,6 +588,16 @@ describe('PomodoroSessionStore', () => {
       expect(continued).toBe(false);
       expect(notify).toHaveBeenCalledWith(offline);
       expect(store.activeSession()).toEqual(session);
+    });
+
+    test('should report why extending the focus session failed and keep its planned time', async () => {
+      vi.spyOn(repository, 'extendSession').mockRejectedValueOnce(offline);
+
+      const extended = await store.extendFocusSession(EXTENSION_MIN);
+
+      expect(extended).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.activeSession()?.plannedMin).toBe(PLANNED_MIN);
     });
 
   });
