@@ -1,0 +1,93 @@
+import { signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service';
+import { messageOf } from '@core/errors/error-messages';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
+import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
+import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service';
+import { TopicService } from '@features/learning-resource/application/topic.service';
+import { mockResourceTypeRepository } from '@features/learning-resource/application/mocks/mock-resource-type.repository';
+import { mockTopicRepository } from '@features/learning-resource/application/mocks/mock-topic.repository';
+import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
+import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
+import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
+import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
+import { ResourceDetailComponent } from './resource-detail.component';
+
+const RUST_BOOK_TITLE = 'The Rust Programming Language';
+const RUST_BOOK_MINUTES = 240;
+
+describe('ResourceDetailComponent', () => {
+  const now = new Date();
+  const rustBook: LearningResource = {
+    id: crypto.randomUUID(),
+    title: RUST_BOOK_TITLE,
+    difficulty: 'Medium',
+    energyLevel: 'Medium',
+    status: 'InProgress',
+    estimatedDuration: { value: RUST_BOOK_MINUTES, isEstimated: false },
+    topicIds: [],
+    typeId: crypto.randomUUID(),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const resourceService = {
+    loading: signal(false),
+    error: signal<string | null>(null),
+    getById: vi.fn(),
+    updateResource: vi.fn(),
+    deleteResource: vi.fn(),
+    toggleField: vi.fn(),
+  };
+
+  const renderComponent = () => {
+    TestBed.overrideComponent(ResourceDetailComponent, {
+      set: {
+        providers: [
+          TopicService,
+          ResourceTypeService,
+          { provide: LearningResourceService, useValue: resourceService },
+          { provide: TopicRepository, useValue: mockTopicRepository() },
+          { provide: ResourceTypeRepository, useValue: mockResourceTypeRepository() },
+        ],
+      },
+    });
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: '**', children: [] }]),
+        { provide: ConfirmDialogService, useValue: { confirm: vi.fn().mockResolvedValue(true) } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({ id: rustBook.id }) } },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(ResourceDetailComponent);
+    fixture.detectChanges();
+    return { fixture, component: fixture.componentInstance };
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubGlobal('localStorage', mockLocalStorage());
+    resourceService.getById.mockResolvedValue(rustBook);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('shows why the resource failed to load', async () => {
+    const offline = offlineError();
+    resourceService.getById.mockRejectedValueOnce(offline);
+
+    const { fixture, component } = renderComponent();
+
+    await vi.waitFor(() => expect(component.loadError()).toBe(messageOf(offline)));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain(messageOf(offline));
+  });
+
+});

@@ -20,6 +20,7 @@ import { ResourceTypeRepository } from '@features/learning-resource/domain/resou
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository.js';
 import { MarkdownPipe } from '@shared/pipes/markdown.pipe.js';
 import { ToastService } from '@core/toast/toast.service.js';
+import { messageOf } from '@core/errors/error-messages';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service.js';
 import { PageTitleService } from '@core/title/page-title.service';
 import { ResourceLibraryService } from '@features/learning-resource/application/resource-library.service.js';
@@ -105,7 +106,7 @@ export class ResourceDetailComponent implements OnInit {
 
   readonly resource = signal<LearningResource | null>(null);
   readonly loading = this.resourceService.loading;
-  readonly error = this.resourceService.error;
+  readonly loadError = signal<string | null>(null);
   readonly resourceTypes = this.resourceTypeService.resourceTypes.asReadonly();
   readonly topics = this.topicService.topics;
   readonly toggleLoadingField = signal<string | null>(null);
@@ -141,12 +142,15 @@ export class ResourceDetailComponent implements OnInit {
   }
 
   async loadResource(id: string): Promise<void> {
+    this.loadError.set(null);
     try {
       const data = await this.resourceService.getById(id);
       this.resource.set(data);
       this.notesDraft.set(data.notes ?? '');
       this.libraryService.trackRecent(id);
-    } catch {}
+    } catch (error) {
+      this.loadError.set(messageOf(error));
+    }
   }
 
   goBack(): void {

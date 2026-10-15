@@ -12,9 +12,9 @@
 
   @if (loading()) {
     <div class="card h-64 animate-pulse"></div>
-  } @else if (error()) {
+  } @else if (loadError()) {
     <div class="card border-energy-high/40 bg-energy-high/20 p-4 text-sm text-energy-high text-center">
-      Failed to load resource. Please try again.
+      {{ loadError() }}
     </div>
   } @else if (resource(); as r) {
     <div class="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
