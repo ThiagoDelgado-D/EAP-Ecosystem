@@ -1,8 +1,8 @@
 <div class="p-6 flex flex-col gap-4">
-  <h2 class="text-lg font-semibold text-ink-strong">Editar Learning Path</h2>
+  <h2 class="text-lg font-semibold text-ink-strong">Edit Learning Path</h2>
 
   <div>
-    <label for="edit-path-title" class="text-xs uppercase tracking-widest text-ink-faint font-medium">Título</label>
+    <label for="edit-path-title" class="text-xs uppercase tracking-widest text-ink-faint font-medium">Title</label>
     <input
       id="edit-path-title"
       type="text"
@@ -15,7 +15,7 @@
 
   <div>
     <label for="edit-path-description" class="text-xs uppercase tracking-widest text-ink-faint font-medium"
-      >Descripción (opcional)</label
+      >Description (optional)</label
     >
     <textarea
       id="edit-path-description"
@@ -37,7 +37,7 @@
       (click)="cancel()"
       class="px-4 py-2 text-sm font-medium text-ink-body hover:text-ink-strong transition-colors"
     >
-      Cancelar
+      Cancel
     </button>
     <button
       type="button"
@@ -45,7 +45,7 @@
       [disabled]="!title().trim() || submitting()"
       class="btn btn-primary btn-sm"
     >
-      {{ submitting() ? 'Guardando...' : 'Guardar' }}
+      {{ submitting() ? 'Saving…' : 'Save' }}
     </button>
   </div>
 </div>
