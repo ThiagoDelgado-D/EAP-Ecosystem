@@ -24,6 +24,7 @@ export class IdealMatchComponent {
   readonly secondary = input<ScoredRecommendation[]>([]);
   readonly catalogMinutes = input(0);
   readonly dismissedCount = input(0);
+  readonly error = input<string | null>(null);
 
   readonly dismissed = output<ScoredRecommendation>();
   readonly restored = output<void>();
