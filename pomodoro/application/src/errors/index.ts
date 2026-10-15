@@ -1,5 +1,4 @@
 export * from "./session-already-active.js";
-export * from "./session-still-active.js";
 export * from "./ambiguous-path-target.js";
 export * from "./segment-target-forbidden.js";
 export * from "./session-not-found.js";
