@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { messageOf } from '@core/errors/error-messages';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 import type { Topic } from '@features/learning-resource/domain/topic.model';
 import { mockTopicRepository, type MockedTopicRepository } from './mocks/mock-topic.repository';
@@ -71,5 +73,14 @@ describe('TopicService', () => {
     await service.remove(rustTopic);
 
     expect(service.topics().map((topic) => topic.id)).toEqual([systemsDesignTopic.id]);
+  });
+
+  test('loadAll stores why the topics failed to load', async () => {
+    const offline = offlineError();
+    vi.spyOn(repository, 'getAll').mockRejectedValueOnce(offline);
+
+    await service.loadAll();
+
+    expect(service.error()).toBe(messageOf(offline));
   });
 });

@@ -1,4 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
+import { messageOf } from '@core/errors/error-messages';
 import { isApiError } from '@core/errors/api-error';
 import { TopicRepository } from '../domain/topic.repository';
 import type { CreateTopicPayload, Topic, UpdateTopicPayload } from '../domain/topic.model';
@@ -23,8 +24,8 @@ export class TopicService {
     try {
       const result = await this.repository.getAll();
       this.topics.set(result);
-    } catch {
-      this.error.set('Failed to load topics');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
