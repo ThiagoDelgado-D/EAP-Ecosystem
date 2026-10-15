@@ -190,5 +190,19 @@ describe('CalibrationService', () => {
       ]);
     });
 
+    test('should tell the learner why and save nothing while it keeps failing', async () => {
+      const offline = offlineError();
+      vi.spyOn(recommendationRepository, 'getContext').mockRejectedValue(offline);
+      const notifySpy = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+      await service.load();
+      const energyBefore = service.energy();
+
+      const saved = await service.setEnergy(UNSAVED_ENERGY);
+
+      expect(saved).toBe(false);
+      expect(notifySpy).toHaveBeenCalledWith(offline);
+      expect(recommendationRepository.savedContexts).toEqual([]);
+      expect(service.energy()).toBe(energyBefore);
+    });
   });
 });
