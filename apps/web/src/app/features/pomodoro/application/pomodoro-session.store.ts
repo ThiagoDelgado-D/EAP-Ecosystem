@@ -1,5 +1,6 @@
 import { EnvironmentInjector, Injectable, computed, effect, inject, signal } from '@angular/core';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
+import { messageOf } from '@core/errors/error-messages';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
   Break,
@@ -332,8 +333,8 @@ export class PomodoroSessionStore {
       this.phase.set('focus');
       this.startTicking();
       return session;
-    } catch {
-      this.error.set('We could not start the session.');
+    } catch (error) {
+      this.error.set(messageOf(error));
       return undefined;
     } finally {
       this.starting.set(false);

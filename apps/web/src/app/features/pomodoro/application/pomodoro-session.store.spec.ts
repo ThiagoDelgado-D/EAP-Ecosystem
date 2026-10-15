@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { messageOf } from '@core/errors/error-messages';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
@@ -66,14 +67,15 @@ describe('PomodoroSessionStore', () => {
     expect(store.starting()).toBe(false);
   });
 
-  test('should set an error and leave activeSession null when starting fails', async () => {
-    repository.startSession = async () => Promise.reject(new Error('network down'));
+  test('should store why starting failed and leave activeSession null', async () => {
+    const offline = offlineError();
+    vi.spyOn(repository, 'startSession').mockRejectedValueOnce(offline);
 
     const session = await store.start({ plannedMin: 25, target: { kind: 'free' } });
 
     expect(session).toBeUndefined();
     expect(store.activeSession()).toBeNull();
-    expect(store.error()).toBe('We could not start the session.');
+    expect(store.error()).toBe(messageOf(offline));
   });
 
   test('should clear the active session after ending it', async () => {
