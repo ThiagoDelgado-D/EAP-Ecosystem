@@ -22,6 +22,7 @@ import { TopicHttpRepository } from '@features/learning-resource/infrastructure/
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository';
 import { ToastService } from '@core/toast/toast.service';
+import { messageOf } from '@core/errors/error-messages';
 import { TopicPickerComponent } from '../topic-picker/topic-picker.component';
 
 type Level = 'Low' | 'Medium' | 'High';
@@ -70,7 +71,7 @@ export class EditResourceComponent implements OnInit {
   readonly resource = signal<LearningResource | null>(null);
   private loadedResource: LearningResource | null = null;
   readonly loading = this.resourceService.loading;
-  readonly error = this.resourceService.error;
+  readonly loadError = signal<string | null>(null);
   readonly topics = this.topicService.topics;
   readonly resourceTypes = this.resourceTypeService.resourceTypes;
 
@@ -142,12 +143,9 @@ export class EditResourceComponent implements OnInit {
       energyLevel: ['Medium' as EnergyLevel, Validators.required],
     });
 
-    Promise.all([this.topicService.loadAll(), this.resourceTypeService.loadAll()])
-      .then(() => this.loadResource(this.resourceId!))
-      .catch(() => {
-        this.toastService.show('Failed to load form data. Please try again.', 'error');
-        this.router.navigate(['/resources']);
-      });
+    void Promise.all([this.topicService.loadAll(), this.resourceTypeService.loadAll()]).then(() =>
+      this.loadResource(this.resourceId!),
+    );
   }
 
   async loadResource(id: string): Promise<void> {
@@ -164,8 +162,8 @@ export class EditResourceComponent implements OnInit {
         difficulty: data.difficulty,
         energyLevel: data.energyLevel,
       });
-    } catch {
-      this.router.navigate(['/resources']);
+    } catch (error) {
+      this.loadError.set(messageOf(error));
     }
   }
 
