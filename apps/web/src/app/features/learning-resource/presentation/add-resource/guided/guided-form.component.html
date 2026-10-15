@@ -293,16 +293,16 @@
       } @else {
         <button
           (click)="onSubmit()"
-          [disabled]="isSubmitting"
+          [disabled]="isSubmitting()"
           class="btn btn-primary btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {{ isSubmitting ? 'Creating…' : 'Create Resource' }}
+          {{ isSubmitting() ? 'Creating…' : 'Create Resource' }}
         </button>
       }
     </div>
 
-    @if (submitError) {
-      <p class="mt-4 text-sm text-energy-high text-center">{{ submitError }}</p>
+    @if (submitError()) {
+      <p class="mt-4 text-sm text-energy-high text-center">{{ submitError() }}</p>
     }
   </div>
 </div>
