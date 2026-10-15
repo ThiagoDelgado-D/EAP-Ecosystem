@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { of } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
+import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { startPathNodeSession } from '@features/pomodoro/application/mocks/pomodoro-node-session';
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
@@ -125,6 +128,41 @@ describe('EndComponent', () => {
 
     expect(learningPathRepository.nodes.find((n) => n.id === nodeId)?.progress).toBe('pending');
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
+
+  describe('when saving fails', () => {
+    const PATH_TITLE = 'Rust for Backend Engineers';
+    const NODE_TITLE = 'Trait Objects';
+
+    test('should report why the session did not end and stay on the end screen', async () => {
+      const ctx = setup();
+      const { component, store, navigateByUrl } = ctx;
+      await startPathNodeSession(ctx, { pathTitle: PATH_TITLE, nodeTitle: NODE_TITLE });
+      const offline = offlineError();
+      vi.spyOn(TestBed.inject(PomodoroRepository), 'endSession').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+
+      await component.saveAndClose();
+
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.activeSession()).not.toBeNull();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+    });
+
+    test('should report why the break did not start and stay on the end screen', async () => {
+      const ctx = setup();
+      const { component, store, navigateByUrl } = ctx;
+      await startPathNodeSession(ctx, { pathTitle: PATH_TITLE, nodeTitle: NODE_TITLE });
+      const offline = offlineError();
+      vi.spyOn(TestBed.inject(PomodoroRepository), 'startBreak').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+
+      await component.saveAndBreak();
+
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.phase()).toBe('focus');
+      expect(navigateByUrl).not.toHaveBeenCalled();
+    });
   });
 
   test('should attach the open segment when the picker dialog closes with a target', async () => {

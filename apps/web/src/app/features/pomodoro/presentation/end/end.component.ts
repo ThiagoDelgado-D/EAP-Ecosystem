@@ -313,8 +313,10 @@ export class EndComponent {
 
   async saveAndBreak(): Promise<void> {
     await this.withPendingUpdatesSaved(async () => {
-      await this.closeSession();
-      await this.store.startBreak();
+      const closed = await this.closeSession();
+      if (!closed) return;
+      const breakStarted = await this.store.startBreak();
+      if (!breakStarted) return;
       void this.router.navigateByUrl('/pomodoro/active');
     });
   }
@@ -336,17 +338,18 @@ export class EndComponent {
     }
   }
 
-  private async closeSession(): Promise<void> {
-    if (this.store.activeSession()) {
-      this.endedAt.set(new Date());
-      await this.store.end();
-    } else {
+  private closeSession(): Promise<boolean> {
+    if (!this.store.activeSession()) {
       this.store.clearAutoClosed();
+      return Promise.resolve(true);
     }
+    this.endedAt.set(new Date());
+    return this.store.end();
   }
 
   private async finish(): Promise<void> {
-    await this.closeSession();
+    const closed = await this.closeSession();
+    if (!closed) return;
     void this.router.navigateByUrl('/pomodoro');
   }
 }

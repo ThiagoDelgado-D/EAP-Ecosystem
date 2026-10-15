@@ -79,16 +79,20 @@ describe('PomodoroSessionStore', () => {
   test('should clear the active session after ending it', async () => {
     await store.start({ plannedMin: 25, target: { kind: 'free' } });
 
-    const result = await store.end();
+    const ended = await store.end();
 
-    expect(result?.discarded).toBe(false);
+    expect(ended).toBe(true);
     expect(store.activeSession()).toBeNull();
+    expect(repository.sessions[0]?.completedAt).toBeDefined();
   });
 
   test('should do nothing when ending with no active session', async () => {
-    const result = await store.end();
+    const endSession = vi.spyOn(repository, 'endSession');
 
-    expect(result).toBeUndefined();
+    const ended = await store.end();
+
+    expect(ended).toBe(true);
+    expect(endSession).not.toHaveBeenCalled();
   });
 
   test('should seed a synthetic initial segment matching the starting target', async () => {
@@ -623,5 +627,14 @@ describe('PomodoroSessionStore', () => {
       expect(store.segments()).toEqual(segments);
     });
 
+    test('should report why ending the session failed and keep it active', async () => {
+      vi.spyOn(repository, 'endSession').mockRejectedValueOnce(offline);
+
+      const ended = await store.end();
+
+      expect(ended).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.activeSession()).not.toBeNull();
+    });
   });
 });

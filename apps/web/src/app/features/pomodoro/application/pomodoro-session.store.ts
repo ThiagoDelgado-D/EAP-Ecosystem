@@ -4,7 +4,6 @@ import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repositor
 import type {
   Break,
   ContinueSessionResult,
-  EndSessionResult,
   Segment,
   SegmentTarget,
   Session,
@@ -199,7 +198,7 @@ export class PomodoroSessionStore {
     let activeBreak: Break;
     try {
       activeBreak = await this.repository.startBreak();
-      if (this.activeSession()) await this.end();
+      if (this.activeSession()) await this.closeActiveSession();
     } catch (error) {
       this.errorNotifier.notify(error);
       return false;
@@ -372,17 +371,27 @@ export class PomodoroSessionStore {
     return true;
   }
 
-  async end(): Promise<EndSessionResult | undefined> {
+  async end(): Promise<boolean> {
+    if (!this.activeSession()) return true;
+    try {
+      await this.closeActiveSession();
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
+    return true;
+  }
+
+  private async closeActiveSession(): Promise<void> {
     const session = this.activeSession();
-    if (!session) return undefined;
-    const result = await this.repository.endSession(session.id);
+    if (!session) return;
+    await this.repository.endSession(session.id);
     this.stopTicking();
     this.clearPlannedTimePrompt();
     this.activeSession.set(null);
     this.segments.set([]);
     this.phase.set('focus');
     this.activeBreak.set(null);
-    return result;
   }
 
   private clearPlannedTimePrompt(): void {
