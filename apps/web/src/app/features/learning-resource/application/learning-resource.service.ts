@@ -106,10 +106,9 @@ export class LearningResourceService {
     try {
       const result = await this.repository.getById(id);
       return result;
-    } catch (err) {
-      console.error('Error loading resource:', err);
-      this.error.set('Failed to load resource');
-      throw err;
+    } catch (error) {
+      this.error.set(messageOf(error));
+      throw error;
     } finally {
       this.loading.set(false);
     }
@@ -122,10 +121,9 @@ export class LearningResourceService {
       await this.repository.updateResource(id, payload);
       this.invalidateCache();
       await this.load({ page: 1, pageSize: 20 });
-    } catch (err) {
-      console.error('Error updating resource:', err);
-      this.error.set('Failed to update resource');
-      throw err;
+    } catch (error) {
+      this.error.set(messageOf(error));
+      throw error;
     } finally {
       this.loading.set(false);
     }
@@ -196,10 +194,9 @@ export class LearningResourceService {
       await this.repository.deleteResource(id);
       this.invalidateCache();
       await this.load({ page: 1, pageSize: 20 });
-    } catch (err) {
-      console.error('Error deleting resource:', err);
-      this.error.set('Failed to delete resource');
-      throw err;
+    } catch (error) {
+      this.error.set(messageOf(error));
+      throw error;
     } finally {
       this.loading.set(false);
     }

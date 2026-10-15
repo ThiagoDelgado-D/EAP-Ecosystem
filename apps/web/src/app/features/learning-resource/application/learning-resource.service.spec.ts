@@ -87,4 +87,36 @@ describe('LearningResourceService', () => {
     expect(service.loading()).toBe(false);
   });
 
+  describe('when a single-resource request fails', () => {
+    const RESOURCE_ID = crypto.randomUUID();
+    let offline: ReturnType<typeof offlineError>;
+
+    beforeEach(() => {
+      offline = offlineError();
+    });
+
+    test('getById should store why and pass the original error on', async () => {
+      repository.getById = () => Promise.reject(offline);
+
+      await expect(service.getById(RESOURCE_ID)).rejects.toBe(offline);
+
+      expect(service.error()).toBe(messageOf(offline));
+    });
+
+    test('updateResource should store why and pass the original error on', async () => {
+      repository.updateResource = () => Promise.reject(offline);
+
+      await expect(service.updateResource(RESOURCE_ID, {})).rejects.toBe(offline);
+
+      expect(service.error()).toBe(messageOf(offline));
+    });
+
+    test('deleteResource should store why and pass the original error on', async () => {
+      repository.deleteResource = () => Promise.reject(offline);
+
+      await expect(service.deleteResource(RESOURCE_ID)).rejects.toBe(offline);
+
+      expect(service.error()).toBe(messageOf(offline));
+    });
+  });
 });
