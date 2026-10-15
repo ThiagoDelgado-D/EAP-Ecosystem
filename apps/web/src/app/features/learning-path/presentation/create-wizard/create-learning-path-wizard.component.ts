@@ -22,27 +22,27 @@ interface WizardQuestion {
 
 const WIZARD_QUESTIONS: WizardQuestion[] = [
   {
-    question: '¿Todos los temas deben estudiarse en un orden fijo?',
-    hint: 'Una secuencia estricta, o libertad para saltar entre temas.',
-    yesLabel: 'Sí — un orden fijo',
+    question: 'Must every topic be studied in a fixed order?',
+    hint: 'A strict sequence, or freedom to jump between topics.',
+    yesLabel: 'Yes — a fixed order',
     yesMode: PATH_MODE.SEQUENTIAL,
     noLabel: 'No — flexible',
     noMode: PATH_MODE.GRAPH,
   },
   {
-    question: '¿Hay temas opcionales o rutas alternativas hacia el mismo destino?',
-    hint: 'Ramas, desvíos "opcionales", más de un camino posible.',
-    yesLabel: 'Sí — hay ramas',
+    question: 'Are there optional topics or other routes to the same goal?',
+    hint: 'Branches, "optional" detours, more than one way through.',
+    yesLabel: 'Yes — it branches',
     yesMode: PATH_MODE.GRAPH,
-    noLabel: 'No — un solo camino',
+    noLabel: 'No — a single route',
     noMode: PATH_MODE.SEQUENTIAL,
   },
   {
-    question: '¿Es un mapa de referencia para explorar libremente, en vez de un recorrido paso a paso?',
-    hint: 'Un mapa de conocimiento con prerequisitos, vs. una lista ordenada.',
-    yesLabel: 'Sí — un mapa para explorar',
+    question: 'Is it a reference map to explore freely, rather than a step-by-step route?',
+    hint: 'A knowledge map with prerequisites, vs. an ordered list.',
+    yesLabel: 'Yes — a map to explore',
     yesMode: PATH_MODE.GRAPH,
-    noLabel: 'No — un recorrido a seguir',
+    noLabel: 'No — a route to follow',
     noMode: PATH_MODE.SEQUENTIAL,
   },
 ];
