@@ -210,7 +210,8 @@ export class ActiveComponent {
   }
 
   async finishBreak(): Promise<void> {
-    await this.store.endBreak();
+    const ended = await this.store.endBreak();
+    if (!ended) return;
     void this.router.navigateByUrl('/pomodoro');
   }
 

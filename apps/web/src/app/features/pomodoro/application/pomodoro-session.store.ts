@@ -209,14 +209,20 @@ export class PomodoroSessionStore {
     return true;
   }
 
-  async endBreak(): Promise<void> {
+  async endBreak(): Promise<boolean> {
     const activeBreak = this.activeBreak();
-    if (!activeBreak) return;
-    await this.repository.endBreak(activeBreak.id);
+    if (!activeBreak) return true;
+    try {
+      await this.repository.endBreak(activeBreak.id);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.stopTicking();
     this.phase.set('focus');
     this.activeBreak.set(null);
     this.paused.set(false);
+    return true;
   }
 
   private startTicking(): void {

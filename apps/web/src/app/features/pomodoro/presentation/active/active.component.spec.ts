@@ -4,6 +4,7 @@ import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomod
 import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import { expectPlannedTimeReachedFlow } from '@features/pomodoro/application/mocks/expect-planned-time-reached-flow';
+import { expectFailedFinishBreakToStay } from '@features/pomodoro/application/mocks/expect-failed-finish-break';
 import { ActiveComponent } from './active.component';
 
 function setup() {
@@ -300,5 +301,10 @@ describe('ActiveComponent', () => {
     expect(component.phase()).toBe('focus');
     expect(store.activeSession()).toBeNull();
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
+
+  test('should stay in the break and report why when ending it fails', async () => {
+    const { component, store, navigateByUrl } = setup();
+    await expectFailedFinishBreakToStay(component, store, navigateByUrl);
   });
 });

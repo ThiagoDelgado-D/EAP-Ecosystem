@@ -537,6 +537,21 @@ describe('PomodoroSessionStore', () => {
       expect(store.breakRemainingLabel()).toBe(remainingBefore);
     });
 
+    test('should report why ending the break failed and stay in the break', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      await store.startBreak();
+      const offline = offlineError();
+      vi.spyOn(repository, 'endBreak').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+
+      const ended = await store.endBreak();
+
+      expect(ended).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.phase()).toBe('break');
+      expect(store.activeBreak()).not.toBeNull();
+    });
+
     test('should return to idle, with no session, once the break ends', async () => {
       await store.start({ plannedMin: 25, target: { kind: 'free' } });
       await store.startBreak();
