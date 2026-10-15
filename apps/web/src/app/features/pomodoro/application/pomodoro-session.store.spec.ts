@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { mockPomodoroRepository } from './mocks/mock-pomodoro.repository';
 import { mockAudio } from './mocks/mock-audio-element';
@@ -476,12 +478,16 @@ describe('PomodoroSessionStore', () => {
       expect(repository.sessions[0]?.completedAt).toBeDefined();
     });
 
-    test('should keep the session active if starting the break fails', async () => {
+    test('should report why starting the break failed and keep the session active', async () => {
       await store.start({ plannedMin: 25, target: { kind: 'free' } });
-      repository.startBreak = async () => Promise.reject(new Error('network down'));
+      const offline = offlineError();
+      vi.spyOn(repository, 'startBreak').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
 
-      await expect(store.startBreak()).rejects.toThrow('network down');
+      const started = await store.startBreak();
 
+      expect(started).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
       expect(store.activeSession()).not.toBeNull();
       expect(store.phase()).toBe('focus');
     });

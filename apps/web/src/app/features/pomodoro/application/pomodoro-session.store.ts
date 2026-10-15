@@ -1,4 +1,5 @@
 import { EnvironmentInjector, Injectable, computed, effect, inject, signal } from '@angular/core';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
   Break,
@@ -51,6 +52,7 @@ function syntheticInitialSegment(sessionId: string, target: SegmentTarget): Segm
 @Injectable()
 export class PomodoroSessionStore {
   private readonly repository = inject(PomodoroRepository);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private readonly injector = inject(EnvironmentInjector);
   private miniWidgetOrchestratorLoaded = false;
 
@@ -177,13 +179,20 @@ export class PomodoroSessionStore {
     this.plannedTimeReachedHandledForSessionId = null;
   }
 
-  async startBreak(): Promise<void> {
-    const activeBreak = await this.repository.startBreak();
-    if (this.activeSession()) await this.end();
+  async startBreak(): Promise<boolean> {
+    let activeBreak: Break;
+    try {
+      activeBreak = await this.repository.startBreak();
+      if (this.activeSession()) await this.end();
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.activeBreak.set(activeBreak);
     this.breakNow.set(new Date());
     this.phase.set('break');
     this.startTicking();
+    return true;
   }
 
   async extendBreak(seconds = 300): Promise<void> {
