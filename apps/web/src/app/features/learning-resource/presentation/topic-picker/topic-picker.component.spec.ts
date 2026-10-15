@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { messageOf } from '@core/errors/error-messages';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository';
 import type { Topic } from '@features/learning-resource/domain/topic.model';
 import { TopicService } from '@features/learning-resource/application/topic.service';
@@ -154,5 +156,16 @@ describe('TopicPickerComponent', () => {
 
     expect(element().querySelector('[role="alert"]')?.textContent).toContain(SYSTEMS_DESIGN_TOPIC_NAME);
     expect(repository.topics.find((topic) => topic.id === rustTopic.id)?.name).toBe(RUST_TOPIC_NAME);
+  });
+
+  test('explains why creating a topic failed', async () => {
+    const offline = offlineError();
+    vi.spyOn(repository, 'create').mockRejectedValueOnce(offline);
+    await openPicker();
+    typeInto('#topic-picker-search', DISTRIBUTED_SYSTEMS_TOPIC_NAME);
+    await click(buttonWithText('Create'));
+
+    expect(element().querySelector('[role="alert"]')?.textContent).toContain(messageOf(offline));
+    expect(repository.topics.some((topic) => topic.name === DISTRIBUTED_SYSTEMS_TOPIC_NAME)).toBe(false);
   });
 });
