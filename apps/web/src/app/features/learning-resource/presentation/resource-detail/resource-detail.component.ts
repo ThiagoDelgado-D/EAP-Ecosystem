@@ -20,6 +20,7 @@ import { ResourceTypeRepository } from '@features/learning-resource/domain/resou
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository.js';
 import { MarkdownPipe } from '@shared/pipes/markdown.pipe.js';
 import { ToastService } from '@core/toast/toast.service.js';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { messageOf } from '@core/errors/error-messages';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service.js';
 import { PageTitleService } from '@core/title/page-title.service';
@@ -101,6 +102,7 @@ export class ResourceDetailComponent implements OnInit {
   private readonly topicService = inject(TopicService);
   private readonly libraryService = inject(ResourceLibraryService);
   private readonly toastService = inject(ToastService);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly pageTitle = inject(PageTitleService);
 
@@ -253,8 +255,8 @@ export class ResourceDetailComponent implements OnInit {
       });
       this.patchResource({ notes: this.notesDraft() });
       this.toastService.show('Notes saved', 'success');
-    } catch {
-      this.toastService.show('Failed to save notes', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.savingNotes.set(false);
     }

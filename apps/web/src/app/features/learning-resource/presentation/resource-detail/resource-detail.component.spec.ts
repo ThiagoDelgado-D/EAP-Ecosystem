@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service';
 import { messageOf } from '@core/errors/error-messages';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service';
@@ -17,6 +18,7 @@ import { ResourceDetailComponent } from './resource-detail.component';
 
 const RUST_BOOK_TITLE = 'The Rust Programming Language';
 const RUST_BOOK_MINUTES = 240;
+const RUST_BOOK_NOTES = 'Chapter 17 on trait objects';
 
 describe('ResourceDetailComponent', () => {
   const now = new Date();
@@ -69,6 +71,12 @@ describe('ResourceDetailComponent', () => {
     return { fixture, component: fixture.componentInstance };
   };
 
+  const renderLoaded = async () => {
+    const rendered = renderComponent();
+    await vi.waitFor(() => expect(rendered.component.resource()?.id).toBe(rustBook.id));
+    return rendered;
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubGlobal('localStorage', mockLocalStorage());
@@ -88,6 +96,21 @@ describe('ResourceDetailComponent', () => {
     await vi.waitFor(() => expect(component.loadError()).toBe(messageOf(offline)));
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain(messageOf(offline));
+  });
+
+  test('reports why saving notes failed and keeps the resource on screen', async () => {
+    const { fixture, component } = await renderLoaded();
+    const offline = offlineError();
+    resourceService.updateResource.mockRejectedValueOnce(offline);
+    const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+
+    component.notesDraft.set(RUST_BOOK_NOTES);
+    await component.saveNotes();
+    fixture.detectChanges();
+
+    expect(notify).toHaveBeenCalledWith(offline);
+    expect(component.loadError()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain(RUST_BOOK_TITLE);
   });
 
 });
