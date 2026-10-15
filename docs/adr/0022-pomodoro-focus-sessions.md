@@ -323,6 +323,38 @@ decoupled from session/segment attribution, matching this ADR's original
 point that break time is not attributed time. Cycle-aware break length and
 configurable durations remain ADR-0024's problem, not this one.
 
+**Revised 2026-10-15.** The paragraph above kept `Break` entirely separate
+from `Session`, and a later guard made starting a break while a focus
+session was still active an error (`SessionStillActiveError`). The rule
+that taking a break ends the current focus session therefore lived only in
+the client, as two requests: end the session, then start the break. That
+split broke in either order. Starting the break first was always rejected
+while the session was still open, which is what the active screen did.
+Ending the session first, as the end screen did, left the learner with no
+session and no break whenever the second request failed.
+
+The rule is a business rule, so it moves to the server. `startBreak` now
+does the whole thing, in this order:
+
+1. If the learner already has an active break, it returns
+   `BreakAlreadyActiveError` and changes nothing, so a rejected break never
+   closes a session.
+2. If the learner has an active focus session, it closes it with exactly
+   the rules `endSession` applies (the server's clock, the cap at
+   `startedAt + plannedMin`, discarding a session shorter than the
+   minimum). Both use cases share that closing step instead of each
+   defining it.
+3. It creates the break and fires the break-started notification, as
+   before.
+
+`SessionStillActiveError` is removed, since an active session is now the
+expected case rather than a conflict. The client asks for a break with a
+single request, so a dropped connection can no longer leave one step done
+without the other. Closing the session and creating the break are still
+two writes without a shared transaction; a failure between them can only
+come from the server itself. A break still creates no `Segment` row and
+still isn't attributed time; it only closes the session the learner was in.
+
 ## Consequences
 
 **Positive**
