@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -72,8 +72,8 @@ export class GuidedFormComponent implements OnInit {
   currentStep = 1;
   step1Form!: FormGroup;
   step2Form!: FormGroup;
-  isSubmitting = false;
-  submitError: string | null = null;
+  readonly isSubmitting = signal(false);
+  readonly submitError = signal<string | null>(null);
 
   readonly difficulties: readonly DifficultyLevel[] = DIFFICULTY_LEVELS;
   readonly energyLevels: readonly EnergyLevel[] = ENERGY_LEVELS;
@@ -159,8 +159,8 @@ export class GuidedFormComponent implements OnInit {
       return;
     }
 
-    this.isSubmitting = true;
-    this.submitError = null;
+    this.isSubmitting.set(true);
+    this.submitError.set(null);
 
     const payload: AddResourcePayload = {
       title: this.step1Form.value.title,
@@ -181,9 +181,9 @@ export class GuidedFormComponent implements OnInit {
       this.toastService.show('Resource created successfully');
       this.router.navigate(['/dashboard']);
     } catch (error) {
-      this.submitError = messageOf(error);
+      this.submitError.set(messageOf(error));
     } finally {
-      this.isSubmitting = false;
+      this.isSubmitting.set(false);
     }
   }
 
