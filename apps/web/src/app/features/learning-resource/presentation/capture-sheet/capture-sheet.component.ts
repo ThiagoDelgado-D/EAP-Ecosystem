@@ -1,6 +1,7 @@
 import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { messageOf } from '@core/errors/error-messages';
 import { CaptureSheetService, type CaptureTab } from '@core/capture/capture-sheet.service';
 import { ToastService } from '@core/toast/toast.service';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
@@ -202,8 +203,8 @@ export class CaptureSheetComponent {
       this.toast.show(`Captured: ${title}`);
       this.reset();
       this.close();
-    } catch {
-      this.error.set('Could not save. Try again.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.saving.set(false);
     }

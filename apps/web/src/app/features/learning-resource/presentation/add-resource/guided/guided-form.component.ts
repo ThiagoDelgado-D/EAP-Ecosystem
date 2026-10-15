@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { messageOf } from '@core/errors/error-messages';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
 import type {
   AddResourcePayload,
@@ -179,9 +180,8 @@ export class GuidedFormComponent implements OnInit {
       await this.learningResourceService.addResource(payload);
       this.toastService.show('Resource created successfully');
       this.router.navigate(['/dashboard']);
-    } catch {
-      this.toastService.show('Failed to create resource. Please try again.', 'error');
-      this.submitError = 'Failed to create resource. Please try again.';
+    } catch (error) {
+      this.submitError = messageOf(error);
     } finally {
       this.isSubmitting = false;
     }

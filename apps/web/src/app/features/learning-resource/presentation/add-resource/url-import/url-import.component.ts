@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { messageOf } from '@core/errors/error-messages';
 import { UrlPreviewService } from '@features/learning-resource/application/url-preview.service';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service';
 import { ResourceTypeRepository } from '@features/learning-resource/domain/resource-type.repository';
@@ -160,9 +161,7 @@ export class UrlImportComponent implements OnInit, OnDestroy {
       await this.learningResourceService.addResource(payload);
       this.router.navigate(['/resources']);
     } catch (error) {
-      console.error(error);
-      this.previewService.error.set('Failed to save resource');
-      this.saveError.set('Failed to save resource. Please try again.');
+      this.saveError.set(messageOf(error));
     }
   }
 

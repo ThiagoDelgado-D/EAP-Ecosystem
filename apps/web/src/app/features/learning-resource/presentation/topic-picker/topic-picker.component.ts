@@ -10,14 +10,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { messageOf } from '@core/errors/error-messages';
 import { TONES, toneVar, type Tone } from '@shared/utils/tone';
 import {
   DuplicateTopicNameError,
   TopicService,
 } from '@features/learning-resource/application/topic.service';
 import type { Topic } from '@features/learning-resource/domain/topic.model';
-
-const GENERIC_ERROR = 'Something went wrong. Try again.';
 
 @Component({
   selector: 'app-topic-picker',
@@ -205,6 +204,6 @@ export class TopicPickerComponent {
     if (error instanceof DuplicateTopicNameError) {
       return `You already have a topic named "${error.topicName}".`;
     }
-    return GENERIC_ERROR;
+    return messageOf(error);
   }
 }

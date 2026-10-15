@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { messageOf } from '@core/errors/error-messages';
 import {
   SpeechRecognition,
   SpeechRecognitionConstructor,
@@ -205,8 +206,8 @@ export class VoiceCaptureComponent implements OnInit, OnDestroy {
         status: 'Pending',
       });
       this.router.navigate(['/resources']);
-    } catch {
-      this.saveError.set('Failed to save resource. Please try again.');
+    } catch (error) {
+      this.saveError.set(messageOf(error));
     } finally {
       this.saving.set(false);
     }
