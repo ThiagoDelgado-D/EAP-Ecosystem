@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service';
 import { messageOf } from '@core/errors/error-messages';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
@@ -111,6 +111,19 @@ describe('ResourceDetailComponent', () => {
     expect(notify).toHaveBeenCalledWith(offline);
     expect(component.loadError()).toBeNull();
     expect(fixture.nativeElement.textContent).toContain(RUST_BOOK_TITLE);
+  });
+
+  test('reports why deleting failed and stays on the resource', async () => {
+    const { component } = await renderLoaded();
+    const offline = offlineError();
+    resourceService.deleteResource.mockRejectedValueOnce(offline);
+    const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+
+    await component.deleteResource();
+
+    expect(notify).toHaveBeenCalledWith(offline);
+    expect(navigate).not.toHaveBeenCalled();
   });
 
 });

@@ -184,8 +184,7 @@ export class ResourceDetailComponent implements OnInit {
       this.toastService.show('Resource deleted successfully', 'success');
       this.router.navigate(['/resources']);
     } catch (error) {
-      console.error('Delete error:', error);
-      this.toastService.show('Failed to delete resource. Please try again.', 'error');
+      this.errorNotifier.notify(error);
     }
   }
 
