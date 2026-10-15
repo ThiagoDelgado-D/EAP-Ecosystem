@@ -126,7 +126,7 @@
                 }
               </button>
             } @empty {
-              <p class="text-xs text-ink-faint text-center py-6">No hay recursos que coincidan.</p>
+              <p class="text-xs text-ink-faint text-center py-6">No matching resources.</p>
             }
           </div>
         </div>
@@ -265,7 +265,7 @@
         [disabled]="unlinking()"
         class="mt-auto text-[11px] text-energy-high/80 hover:text-energy-high self-start"
       >
-        {{ unlinking() ? 'Desvinculando…' : 'Desvincular recurso' }}
+        {{ unlinking() ? 'Unlinking…' : 'Unlink resource' }}
       </button>
     </div>
   }
