@@ -1,5 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { messageOf } from '@core/errors/error-messages';
 import { firstValueFrom } from 'rxjs';
 import { API_CONFIG } from '@core/config/api.config';
 
@@ -31,10 +32,8 @@ export class UrlPreviewService {
       );
       this.previewData.set(result);
       return result;
-    } catch (err: any) {
-      const msg =
-        err?.error?.message || 'Could not fetch metadata. Please check the URL and try again.';
-      this.error.set(msg);
+    } catch (error) {
+      this.error.set(messageOf(error));
       return null;
     } finally {
       this.loading.set(false);
