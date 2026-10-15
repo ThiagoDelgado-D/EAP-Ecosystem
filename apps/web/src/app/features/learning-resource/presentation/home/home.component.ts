@@ -25,7 +25,7 @@ import { TopicService } from '@features/learning-resource/application/topic.serv
 import { TopicRepository } from '@features/learning-resource/domain/topic.repository.js';
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository.js';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
-import { ToastService } from '@core/toast/toast.service';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
 import { PaginatorComponent } from '@shared/components/paginator/paginator.component';
 import {
@@ -138,7 +138,7 @@ export class HomeComponent implements OnInit {
   private readonly service = inject(LearningResourceService);
   private readonly typeService = inject(ResourceTypeService);
   private readonly topicService = inject(TopicService);
-  private readonly toastService = inject(ToastService);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private readonly http = inject(HttpClient);
   readonly libraryService = inject(ResourceLibraryService);
 
@@ -487,8 +487,8 @@ export class HomeComponent implements OnInit {
     this.toggleLoadingId.set(key);
     try {
       await this.service.toggleField(resource.id, field, value);
-    } catch {
-      this.toastService.show(`Failed to update ${field}`, 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.toggleLoadingId.set(null);
     }
