@@ -167,7 +167,7 @@ export class NodeDetailPanelComponent {
     this.linking.set(true);
     try {
       await this.detailService.linkNode(this.pathId(), this.node().id, id);
-      this.toastService.show('Recurso vinculado', 'success');
+      this.toastService.show('Resource linked', 'success');
       this.closed.emit();
     } catch (error) {
       this.errorNotifier.notify(error);
@@ -191,7 +191,7 @@ export class NodeDetailPanelComponent {
         energyLevel: f.energyLevel,
       });
       await this.detailService.linkNode(this.pathId(), this.node().id, created.id);
-      this.toastService.show('Recurso creado y vinculado', 'success');
+      this.toastService.show('Resource created and linked', 'success');
       this.closed.emit();
     } catch (error) {
       this.errorNotifier.notify(error);
@@ -205,7 +205,7 @@ export class NodeDetailPanelComponent {
     this.unlinking.set(true);
     try {
       await this.detailService.unlinkNode(this.pathId(), this.node().id);
-      this.toastService.show('Recurso desvinculado', 'success');
+      this.toastService.show('Resource unlinked', 'success');
     } catch (error) {
       this.errorNotifier.notify(error);
     } finally {
