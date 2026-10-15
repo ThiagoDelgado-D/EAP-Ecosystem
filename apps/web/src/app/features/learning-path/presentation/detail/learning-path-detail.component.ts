@@ -166,7 +166,7 @@ export class LearningPathDetailComponent {
     const updated = await firstValueFrom(dialogRef.afterClosed());
     if (updated) {
       this.detailService.updatePathInState(updated);
-      this.toastService.show('Learning Path actualizado', 'success');
+      this.toastService.show('Learning Path updated', 'success');
     }
   }
 
@@ -180,7 +180,7 @@ export class LearningPathDetailComponent {
     const node = await firstValueFrom(dialogRef.afterClosed());
     if (node) {
       this.detailService.upsertNodeInState(node);
-      this.toastService.show('Nodo agregado', 'success');
+      this.toastService.show('Node added', 'success');
     }
   }
 
@@ -194,21 +194,21 @@ export class LearningPathDetailComponent {
     const updated = await firstValueFrom(dialogRef.afterClosed());
     if (updated) {
       this.detailService.upsertNodeInState(updated);
-      this.toastService.show('Nodo actualizado', 'success');
+      this.toastService.show('Node updated', 'success');
     }
   }
 
   async removeNode(node: LearningPathNode): Promise<void> {
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Eliminar nodo',
-      message: `¿Seguro que querés eliminar "${node.title}"? Esta acción no se puede deshacer.`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete node',
+      message: `Delete "${node.title}"? This can’t be undone.`,
+      confirmLabel: 'Delete',
     });
     if (!confirmed) return;
 
     try {
       await this.detailService.deleteNode(this.pathId(), node.id);
-      this.toastService.show('Nodo eliminado', 'success');
+      this.toastService.show('Node deleted', 'success');
     } catch (error) {
       this.errorNotifier.notify(error);
     }
@@ -276,9 +276,9 @@ export class LearningPathDetailComponent {
 
   async onEdgeClicked(edge: LearningPathEdge): Promise<void> {
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Eliminar conexión',
-      message: '¿Seguro que querés eliminar esta conexión entre nodos?',
-      confirmLabel: 'Eliminar',
+      title: 'Delete connection',
+      message: 'Delete the connection between these nodes?',
+      confirmLabel: 'Delete',
     });
     if (!confirmed) return;
 
@@ -294,15 +294,15 @@ export class LearningPathDetailComponent {
     if (!path) return;
 
     const confirmed = await this.confirmDialog.confirm({
-      title: 'Eliminar Learning Path',
-      message: `¿Seguro que querés eliminar "${path.title}"? Se van a borrar todos sus nodos y conexiones. Esta acción no se puede deshacer.`,
-      confirmLabel: 'Eliminar',
+      title: 'Delete Learning Path',
+      message: `Delete "${path.title}"? Its nodes and connections go with it. This can’t be undone.`,
+      confirmLabel: 'Delete',
     });
     if (!confirmed) return;
 
     try {
       await this.detailService.deletePath(this.pathId());
-      this.toastService.show('Learning Path eliminado', 'success');
+      this.toastService.show('Learning Path deleted', 'success');
       this.router.navigate(['/paths']);
     } catch (error) {
       this.errorNotifier.notify(error);

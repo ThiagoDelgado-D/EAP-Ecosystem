@@ -1,24 +1,24 @@
 <div class="p-6 flex flex-col gap-4">
   <h2 class="text-lg font-semibold text-ink-strong">
-    {{ isEditing ? 'Editar nodo' : 'Agregar nodo' }}
+    {{ isEditing ? 'Edit node' : 'Add node' }}
   </h2>
 
   <div>
-    <label for="node-title" class="text-xs uppercase tracking-widest text-ink-faint font-medium">Título</label>
+    <label for="node-title" class="text-xs uppercase tracking-widest text-ink-faint font-medium">Title</label>
     <input
       id="node-title"
       type="text"
       maxlength="200"
       [ngModel]="title()"
       (ngModelChange)="title.set($event)"
-      placeholder="Ej: Fundamentos de HTML"
+      placeholder="e.g. HTML fundamentals"
       class="mt-1 w-full bg-surface-inset border border-line-soft rounded-lg px-3 py-2 text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line"
     />
   </div>
 
   <div>
     <label for="node-description" class="text-xs uppercase tracking-widest text-ink-faint font-medium"
-      >Descripción (opcional)</label
+      >Description (optional)</label
     >
     <textarea
       id="node-description"
@@ -32,7 +32,7 @@
 
   <div>
     <label for="node-external-url" class="text-xs uppercase tracking-widest text-ink-faint font-medium"
-      >Link externo (opcional)</label
+      >External link (optional)</label
     >
     <input
       id="node-external-url"
@@ -54,7 +54,7 @@
       (click)="cancel()"
       class="px-4 py-2 text-sm font-medium text-ink-body hover:text-ink-strong transition-colors"
     >
-      Cancelar
+      Cancel
     </button>
     <button
       type="button"
@@ -62,7 +62,7 @@
       [disabled]="!title().trim() || submitting()"
       class="btn btn-primary btn-sm"
     >
-      {{ submitting() ? 'Guardando...' : isEditing ? 'Guardar' : 'Agregar' }}
+      {{ submitting() ? 'Saving…' : isEditing ? 'Save' : 'Add' }}
     </button>
   </div>
 </div>

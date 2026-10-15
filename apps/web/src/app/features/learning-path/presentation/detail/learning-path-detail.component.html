@@ -64,14 +64,14 @@
                 (click)="openEditPath()"
                 class="text-[11px] text-ink-faint hover:text-ink-body transition-colors"
               >
-                Editar
+                Edit
               </button>
               <button
                 type="button"
                 (click)="removePath()"
                 class="text-[11px] text-energy-high hover:text-energy-high transition-colors"
               >
-                Eliminar path
+                Delete path
               </button>
             </div>
           </div>
@@ -146,9 +146,9 @@
             <div
               class="rounded-xl border border-line-soft bg-surface-raised p-6 flex flex-col items-center gap-2 text-center"
             >
-              <p class="text-ink-body text-sm font-medium">Este path todavía no tiene nodos.</p>
+              <p class="text-ink-body text-sm font-medium">This path has no nodes yet.</p>
               <p class="text-xs text-ink-faint max-w-sm">
-                Agregá el primer paso del recorrido para empezar a armarlo.
+                Add the first step to start building it.
               </p>
             </div>
           } @else {
@@ -330,14 +330,14 @@
                         (click)="openEditNode(node)"
                         class="text-[11px] text-ink-faint hover:text-ink-dim transition-colors"
                       >
-                        Editar
+                        Edit
                       </button>
                       <button
                         type="button"
                         (click)="removeNode(node)"
                         class="text-[11px] text-energy-high/70 hover:text-energy-high transition-colors"
                       >
-                        Eliminar
+                        Delete
                       </button>
                     </div>
                   </div>

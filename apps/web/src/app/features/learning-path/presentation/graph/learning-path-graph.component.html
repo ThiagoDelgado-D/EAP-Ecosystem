@@ -28,7 +28,7 @@
           class="cursor-pointer"
           tabindex="0"
           role="button"
-          [attr.aria-label]="'Eliminar conexión'"
+          [attr.aria-label]="'Delete connection'"
           (click)="onEdgeLineClick(line.edge, $event)"
           (keydown.enter)="onEdgeLineClick(line.edge, $event)"
           (keydown.space)="onEdgeLineClick(line.edge, $event)"
@@ -100,7 +100,7 @@
           </div>
 
           <div
-            title="Arrastrá para conectar con otro nodo"
+            title="Drag to connect to another node"
             class="absolute -bottom-1.5 -right-1.5 w-4 h-4 rounded-full bg-surface-overlay border border-line-strong cursor-crosshair hover:bg-accent hover:border-accent-line touch-none"
             (pointerdown)="onEdgeHandlePointerDown($event, entry.node, entry.x, entry.y)"
             (pointermove)="onEdgeHandlePointerMove($event)"
