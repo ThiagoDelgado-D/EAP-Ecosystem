@@ -472,8 +472,8 @@ Advanced TypeScript,,Medium,Medium,120,video,programming,</pre
             class="bg-energy-high/10 border border-energy-high/50 rounded-xl p-4 mb-6 text-left max-w-md mx-auto"
           >
             <p class="text-xs font-semibold text-energy-high mb-2">Failed to import</p>
-            @for (title of importFailures(); track $index) {
-              <p class="text-xs text-energy-high">✗ {{ title }}</p>
+            @for (failure of importFailures(); track $index) {
+              <p class="text-xs text-energy-high">✗ {{ failure.title }}: {{ failure.reason }}</p>
             }
           </div>
         }

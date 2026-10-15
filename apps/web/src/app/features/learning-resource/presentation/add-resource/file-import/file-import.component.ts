@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { messageOf } from '@core/errors/error-messages';
 import Papa from 'papaparse';
 import { RowValidationStatus, validateRows, type ValidatedRow } from './file-import-validator.js';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service';
@@ -36,6 +37,11 @@ export interface ParseResult {
 
 type ViewState = 'idle' | 'parsing' | 'error' | 'preview' | 'importing' | 'summary' | 'done';
 
+interface ImportFailure {
+  title: string;
+  reason: string;
+}
+
 @Component({
   selector: 'app-file-import',
   standalone: true,
@@ -66,7 +72,7 @@ export class FileImportComponent implements OnInit, OnDestroy {
   readonly importProgress = signal(0);
   readonly importTotal = signal(0);
   readonly importSuccesses = signal(0);
-  readonly importFailures = signal<string[]>([]);
+  readonly importFailures = signal<ImportFailure[]>([]);
   readonly dataReady = signal(false);
 
   readonly resourceTypes = this.resourceTypeService.resourceTypes.asReadonly();
@@ -150,8 +156,11 @@ export class FileImportComponent implements OnInit, OnDestroy {
           status: row.resolvedStatus,
         });
         this.importSuccesses.update((n) => n + 1);
-      } catch {
-        this.importFailures.update((f) => [...f, row.resolvedTitle]);
+      } catch (error) {
+        this.importFailures.update((failures) => [
+          ...failures,
+          { title: row.resolvedTitle, reason: messageOf(error) },
+        ]);
       }
       this.importProgress.update((n) => n + 1);
     }
