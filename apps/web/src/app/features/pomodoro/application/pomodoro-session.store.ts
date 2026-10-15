@@ -358,11 +358,18 @@ export class PomodoroSessionStore {
     return true;
   }
 
-  async attachOpenSegment(target: SegmentTarget): Promise<void> {
+  async attachOpenSegment(target: SegmentTarget): Promise<boolean> {
     const session = this.activeSession();
-    if (!session) return;
-    const segment = await this.repository.attachOpenSegment(session.id, target);
+    if (!session) return true;
+    let segment: Segment;
+    try {
+      segment = await this.repository.attachOpenSegment(session.id, target);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.segments.update((segs) => [...segs.slice(0, -1), segment]);
+    return true;
   }
 
   async end(): Promise<EndSessionResult | undefined> {

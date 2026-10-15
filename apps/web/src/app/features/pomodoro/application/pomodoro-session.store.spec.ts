@@ -612,5 +612,16 @@ describe('PomodoroSessionStore', () => {
       expect(store.switchingTarget()).toBe(false);
     });
 
+    test('should report why attaching the open segment failed and keep it as it was', async () => {
+      const segments = store.segments();
+      vi.spyOn(repository, 'attachOpenSegment').mockRejectedValueOnce(offline);
+
+      const attached = await store.attachOpenSegment({ kind: 'resource', resourceId: crypto.randomUUID() });
+
+      expect(attached).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.segments()).toEqual(segments);
+    });
+
   });
 });
