@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { messageOf } from '@core/errors/error-messages';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import type { LearningPathWithNodes } from '@features/learning-path/domain/learning-path.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
@@ -56,8 +57,8 @@ export class PomodoroPickerService {
       ]);
       this.pathsWithNodes.set(pathsWithNodes);
       this.library.set(resources);
-    } catch {
-      this.error.set('We could not load the available material.');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
