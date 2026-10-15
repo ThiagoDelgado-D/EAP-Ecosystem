@@ -20,6 +20,8 @@ import { ResourceTypeRepository } from '@features/learning-resource/domain/resou
 import { ResourceTypeHttpRepository } from '@features/learning-resource/infrastructure/resource-type-http.repository.js';
 import { MarkdownPipe } from '@shared/pipes/markdown.pipe.js';
 import { ToastService } from '@core/toast/toast.service.js';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
+import { messageOf } from '@core/errors/error-messages';
 import { ConfirmDialogService } from '@core/dialogs/confirm-dialog.service.js';
 import { PageTitleService } from '@core/title/page-title.service';
 import { ResourceLibraryService } from '@features/learning-resource/application/resource-library.service.js';
@@ -100,12 +102,13 @@ export class ResourceDetailComponent implements OnInit {
   private readonly topicService = inject(TopicService);
   private readonly libraryService = inject(ResourceLibraryService);
   private readonly toastService = inject(ToastService);
+  private readonly errorNotifier = inject(ErrorNotifier);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly pageTitle = inject(PageTitleService);
 
   readonly resource = signal<LearningResource | null>(null);
   readonly loading = this.resourceService.loading;
-  readonly error = this.resourceService.error;
+  readonly loadError = signal<string | null>(null);
   readonly resourceTypes = this.resourceTypeService.resourceTypes.asReadonly();
   readonly topics = this.topicService.topics;
   readonly toggleLoadingField = signal<string | null>(null);
@@ -141,12 +144,15 @@ export class ResourceDetailComponent implements OnInit {
   }
 
   async loadResource(id: string): Promise<void> {
+    this.loadError.set(null);
     try {
       const data = await this.resourceService.getById(id);
       this.resource.set(data);
       this.notesDraft.set(data.notes ?? '');
       this.libraryService.trackRecent(id);
-    } catch {}
+    } catch (error) {
+      this.loadError.set(messageOf(error));
+    }
   }
 
   goBack(): void {
@@ -178,8 +184,7 @@ export class ResourceDetailComponent implements OnInit {
       this.toastService.show('Resource deleted successfully', 'success');
       this.router.navigate(['/resources']);
     } catch (error) {
-      console.error('Delete error:', error);
-      this.toastService.show('Failed to delete resource. Please try again.', 'error');
+      this.errorNotifier.notify(error);
     }
   }
 
@@ -249,8 +254,8 @@ export class ResourceDetailComponent implements OnInit {
       });
       this.patchResource({ notes: this.notesDraft() });
       this.toastService.show('Notes saved', 'success');
-    } catch {
-      this.toastService.show('Failed to save notes', 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.savingNotes.set(false);
     }
@@ -262,8 +267,8 @@ export class ResourceDetailComponent implements OnInit {
     try {
       await this.resourceService.toggleField(this.resourceId, field, value);
       this.patchResource(FIELD_PATCHERS[field](value));
-    } catch {
-      this.toastService.show(`Failed to update ${field}`, 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.toggleLoadingField.set(null);
     }

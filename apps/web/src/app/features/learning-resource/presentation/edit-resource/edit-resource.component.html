@@ -9,10 +9,10 @@
   </div>
 }
 
-@if (error() && !resource()) {
+@if (loadError() && !resource()) {
   <div class="flex items-center justify-center py-16">
     <div class="text-center space-y-3">
-      <p class="text-energy-high text-sm">{{ error() }}</p>
+      <p class="text-energy-high text-sm">{{ loadError() }}</p>
       <button
         (click)="goBack()"
         class="text-xs text-ink-dim hover:text-ink-strong underline underline-offset-2 transition-colors"

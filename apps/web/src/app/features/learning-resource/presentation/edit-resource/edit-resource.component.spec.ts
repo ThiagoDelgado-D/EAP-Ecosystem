@@ -1,6 +1,9 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
+import { messageOf } from '@core/errors/error-messages';
+import { ErrorNotifier } from '@core/errors/error-notifier.service';
+import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { LearningResourceService } from '@features/learning-resource/application/learning-resource.service';
 import { TopicService } from '@features/learning-resource/application/topic.service';
 import { ResourceTypeService } from '@features/learning-resource/application/resource-type.service';
@@ -46,7 +49,7 @@ describe('EditResourceComponent', () => {
     toggleEnergy: vi.fn().mockResolvedValue(undefined),
   };
 
-  const createComponent = async () => {
+  const renderComponent = () => {
     TestBed.overrideComponent(EditResourceComponent, {
       set: {
         providers: [
@@ -67,9 +70,14 @@ describe('EditResourceComponent', () => {
         },
       ],
     });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
     const fixture = TestBed.createComponent(EditResourceComponent);
     fixture.detectChanges();
-    const component = fixture.componentInstance;
+    return { component: fixture.componentInstance, navigate };
+  };
+
+  const createComponent = async () => {
+    const { component } = renderComponent();
     await vi.waitFor(() => expect(component.resource()?.id).toBe(rustBook.id));
     return component;
   };
@@ -105,5 +113,30 @@ describe('EditResourceComponent', () => {
 
     expect(resourceService.updateResource).not.toHaveBeenCalled();
     expect(resourceService.toggleDifficulty).not.toHaveBeenCalled();
+  });
+
+  test('shows why the resource failed to load and stays on the page', async () => {
+    const offline = offlineError();
+    resourceService.getById.mockRejectedValueOnce(offline);
+
+    const { component, navigate } = renderComponent();
+
+    await vi.waitFor(() => expect(component.loadError()).toBe(messageOf(offline)));
+    expect(component.resource()).toBeNull();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  test('reports why saving failed and stays on the form', async () => {
+    const component = await createComponent();
+    const offline = offlineError();
+    resourceService.updateResource.mockRejectedValueOnce(offline);
+    const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+
+    component.onTopicsChange([systemsTopic.id]);
+    await component.onSubmit();
+
+    expect(notify).toHaveBeenCalledWith(offline);
+    expect(navigate).not.toHaveBeenCalled();
   });
 });
