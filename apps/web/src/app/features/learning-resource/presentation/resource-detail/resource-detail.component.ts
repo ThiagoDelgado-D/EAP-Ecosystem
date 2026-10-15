@@ -267,8 +267,8 @@ export class ResourceDetailComponent implements OnInit {
     try {
       await this.resourceService.toggleField(this.resourceId, field, value);
       this.patchResource(FIELD_PATCHERS[field](value));
-    } catch {
-      this.toastService.show(`Failed to update ${field}`, 'error');
+    } catch (error) {
+      this.errorNotifier.notify(error);
     } finally {
       this.toggleLoadingField.set(null);
     }

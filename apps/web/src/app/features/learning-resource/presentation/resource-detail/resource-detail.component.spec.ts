@@ -19,6 +19,7 @@ import { ResourceDetailComponent } from './resource-detail.component';
 const RUST_BOOK_TITLE = 'The Rust Programming Language';
 const RUST_BOOK_MINUTES = 240;
 const RUST_BOOK_NOTES = 'Chapter 17 on trait objects';
+const COMPLETED_STATUS = 'Completed';
 
 describe('ResourceDetailComponent', () => {
   const now = new Date();
@@ -126,4 +127,14 @@ describe('ResourceDetailComponent', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  test('reports why changing a field failed', async () => {
+    const { component } = await renderLoaded();
+    const offline = offlineError();
+    resourceService.toggleField.mockRejectedValueOnce(offline);
+    const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+
+    await component.onToggle(COMPLETED_STATUS, 'status');
+
+    expect(notify).toHaveBeenCalledWith(offline);
+  });
 });
