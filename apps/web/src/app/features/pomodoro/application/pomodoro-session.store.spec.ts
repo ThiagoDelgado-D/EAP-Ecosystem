@@ -566,4 +566,28 @@ describe('PomodoroSessionStore', () => {
       expect(store.breakRemainingSec()).toBe(0);
     });
   });
+
+  describe('when the API fails', () => {
+    const PLANNED_MIN = 25;
+    let offline: ReturnType<typeof offlineError>;
+    let notify: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(async () => {
+      offline = offlineError();
+      notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+      await store.start({ plannedMin: PLANNED_MIN, target: { kind: 'free' } });
+    });
+
+    test('should report why continuing at planned time failed and keep the session', async () => {
+      const session = store.activeSession();
+      vi.spyOn(repository, 'continueSession').mockRejectedValueOnce(offline);
+
+      const continued = await store.continueAtPlannedTime();
+
+      expect(continued).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.activeSession()).toEqual(session);
+    });
+
+  });
 });

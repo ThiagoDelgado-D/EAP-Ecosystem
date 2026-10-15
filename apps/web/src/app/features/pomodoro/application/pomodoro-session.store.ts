@@ -3,6 +3,7 @@ import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import type {
   Break,
+  ContinueSessionResult,
   EndSessionResult,
   Segment,
   SegmentTarget,
@@ -161,13 +162,20 @@ export class PomodoroSessionStore {
     this.justAutoClosed.set(null);
   }
 
-  async continueAtPlannedTime(): Promise<void> {
+  async continueAtPlannedTime(): Promise<boolean> {
     const session = this.activeSession();
-    if (!session) return;
-    const result = await this.repository.continueSession(session.id);
+    if (!session) return true;
+    let result: ContinueSessionResult;
+    try {
+      result = await this.repository.continueSession(session.id);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.activeSession.set(result.session);
     this.segments.set(result.segments);
     this.plannedTimeReached.set(false);
+    return true;
   }
 
   async extendFocusSession(minutes = 5): Promise<void> {
