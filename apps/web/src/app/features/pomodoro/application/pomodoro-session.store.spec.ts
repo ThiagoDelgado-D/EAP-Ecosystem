@@ -522,6 +522,21 @@ describe('PomodoroSessionStore', () => {
       expect(store.breakRemainingLabel()).toBe('04:30');
     });
 
+    test('should report why extending the break failed and keep its duration', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      await store.startBreak();
+      const offline = offlineError();
+      vi.spyOn(repository, 'extendBreak').mockRejectedValueOnce(offline);
+      const notify = vi.spyOn(TestBed.inject(ErrorNotifier), 'notify');
+      const remainingBefore = store.breakRemainingLabel();
+
+      const extended = await store.extendBreak();
+
+      expect(extended).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.breakRemainingLabel()).toBe(remainingBefore);
+    });
+
     test('should return to idle, with no session, once the break ends', async () => {
       await store.start({ plannedMin: 25, target: { kind: 'free' } });
       await store.startBreak();

@@ -195,11 +195,18 @@ export class PomodoroSessionStore {
     return true;
   }
 
-  async extendBreak(seconds = 300): Promise<void> {
+  async extendBreak(seconds = 300): Promise<boolean> {
     const activeBreak = this.activeBreak();
-    if (!activeBreak) return;
-    const extended = await this.repository.extendBreak(activeBreak.id, seconds);
+    if (!activeBreak) return true;
+    let extended: Break;
+    try {
+      extended = await this.repository.extendBreak(activeBreak.id, seconds);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
+    }
     this.activeBreak.set(extended);
+    return true;
   }
 
   async endBreak(): Promise<void> {
