@@ -1,5 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { messageOf } from '@core/errors/error-messages';
 import { firstValueFrom } from 'rxjs';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import type {
@@ -81,8 +82,8 @@ export class LearningResourceService {
       this.total.set(result.total);
       this.totalPages.set(result.totalPages);
       this.currentPage.set(result.page);
-    } catch {
-      this.error.set('Failed to load resources');
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
