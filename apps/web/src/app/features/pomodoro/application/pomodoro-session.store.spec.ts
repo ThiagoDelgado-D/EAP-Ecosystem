@@ -600,5 +600,17 @@ describe('PomodoroSessionStore', () => {
       expect(store.activeSession()?.plannedMin).toBe(PLANNED_MIN);
     });
 
+    test('should report why switching target failed and keep the current segment', async () => {
+      const segments = store.segments();
+      vi.spyOn(repository, 'switchTarget').mockRejectedValueOnce(offline);
+
+      const switched = await store.switchTarget({ kind: 'resource', resourceId: crypto.randomUUID() });
+
+      expect(switched).toBe(false);
+      expect(notify).toHaveBeenCalledWith(offline);
+      expect(store.segments()).toEqual(segments);
+      expect(store.switchingTarget()).toBe(false);
+    });
+
   });
 });

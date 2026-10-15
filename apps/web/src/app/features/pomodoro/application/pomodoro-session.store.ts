@@ -11,6 +11,7 @@ import type {
   StartSessionPayload,
   SuggestedCandidate,
   SuggestionCalibration,
+  SwitchTargetResult,
 } from '@features/pomodoro/domain/pomodoro.model';
 import {
   playBoundaryChime,
@@ -340,19 +341,21 @@ export class PomodoroSessionStore {
     }
   }
 
-  async switchTarget(target: SegmentTarget): Promise<void> {
+  async switchTarget(target: SegmentTarget): Promise<boolean> {
     const session = this.activeSession();
-    if (!session) return;
+    if (!session) return true;
     this.switchingTarget.set(true);
+    let switched: SwitchTargetResult;
     try {
-      const { closedSegment, openedSegment } = await this.repository.switchTarget(
-        session.id,
-        target,
-      );
-      this.segments.update((segs) => [...segs.slice(0, -1), closedSegment, openedSegment]);
+      switched = await this.repository.switchTarget(session.id, target);
+    } catch (error) {
+      this.errorNotifier.notify(error);
+      return false;
     } finally {
       this.switchingTarget.set(false);
     }
+    this.segments.update((segs) => [...segs.slice(0, -1), switched.closedSegment, switched.openedSegment]);
+    return true;
   }
 
   async attachOpenSegment(target: SegmentTarget): Promise<void> {
