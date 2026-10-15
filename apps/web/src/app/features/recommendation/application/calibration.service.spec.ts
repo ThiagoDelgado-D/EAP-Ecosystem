@@ -162,4 +162,33 @@ describe('CalibrationService', () => {
 
     expect(service.energy()).toBe(NEWER_ENERGY);
   });
+
+  describe('when loading the saved calibration failed', () => {
+    const SAVED_ENERGY_LEVEL = 'low';
+    const SAVED_AVAILABLE_MINUTES = 15;
+    const SAVED_CONTEXT_MENTAL_STATE: MentalStateType = 'review';
+    const NEWER_API_ENERGY_LEVEL = 'high';
+
+    test('should load it again before saving a change, keeping the rest of the saved calibration', async () => {
+      recommendationRepository.context = {
+        energyLevel: SAVED_ENERGY_LEVEL,
+        availableMinutes: SAVED_AVAILABLE_MINUTES,
+        mentalState: SAVED_CONTEXT_MENTAL_STATE,
+      };
+      vi.spyOn(recommendationRepository, 'getContext').mockRejectedValueOnce(offlineError());
+      await service.load();
+
+      const saved = await service.setEnergy(NEWER_ENERGY);
+
+      expect(saved).toBe(true);
+      expect(recommendationRepository.savedContexts).toEqual([
+        {
+          energyLevel: NEWER_API_ENERGY_LEVEL,
+          availableMinutes: SAVED_AVAILABLE_MINUTES,
+          mentalState: SAVED_CONTEXT_MENTAL_STATE,
+        },
+      ]);
+    });
+
+  });
 });
