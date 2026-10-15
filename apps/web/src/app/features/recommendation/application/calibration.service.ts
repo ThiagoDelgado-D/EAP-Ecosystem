@@ -34,6 +34,8 @@ export class CalibrationService {
   private readonly errorNotifier = inject(ErrorNotifier);
   private loading: Promise<void> | null = null;
   private loadedForUserId: string | null = null;
+  private hydrated = false;
+  private loadFailure: unknown = null;
   private saveQueue: Promise<unknown> = Promise.resolve();
 
   readonly energy = signal<EnergyLevel>(DEFAULT_ENERGY);
@@ -46,10 +48,12 @@ export class CalibrationService {
     if (userId !== this.loadedForUserId) {
       this.loadedForUserId = userId;
       this.loading = null;
+      this.hydrated = false;
       this.restoreDefaults();
     }
-    this.loading ??= this.hydrate().catch(() => {
+    this.loading ??= this.hydrate().catch((error: unknown) => {
       this.loading = null;
+      this.loadFailure = error;
     });
     return this.loading;
   }
@@ -67,6 +71,8 @@ export class CalibrationService {
   }
 
   private async change<T>(property: WritableSignal<T>, value: T): Promise<boolean> {
+    const hydrated = await this.ensureHydrated();
+    if (!hydrated) return false;
     const previous = property();
     property.set(value);
     const saved = await this.save();
@@ -79,8 +85,17 @@ export class CalibrationService {
     return false;
   }
 
+  private async ensureHydrated(): Promise<boolean> {
+    if (this.hydrated) return true;
+    await this.load();
+    if (this.hydrated) return true;
+    this.errorNotifier.notify(this.loadFailure);
+    return false;
+  }
+
   private async hydrate(): Promise<void> {
     const context = await this.repository.getContext();
+    this.hydrated = true;
     if (context) {
       this.apply(context);
       return;
