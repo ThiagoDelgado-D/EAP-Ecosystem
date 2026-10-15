@@ -9,9 +9,9 @@
 
   @if (loading()) {
     <div class="card h-64 animate-pulse"></div>
-  } @else if (failed()) {
+  } @else if (error()) {
     <div class="card p-5 text-center">
-      <div class="text-sm text-ink-body mb-3">Couldn't load your weekly summary.</div>
+      <div class="text-sm text-ink-body mb-3">{{ error() }}</div>
       <button
         type="button"
         (click)="load()"

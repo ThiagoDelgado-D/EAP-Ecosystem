@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { messageOf } from '@core/errors/error-messages';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
@@ -35,7 +36,7 @@ export class WeeklySummaryComponent {
   readonly WEEK_LOG_SCOPE = WEEK_LOG_SCOPE;
 
   readonly loading = signal(true);
-  readonly failed = signal(false);
+  readonly error = signal<string | null>(null);
   readonly summary = signal<WeeklySummary | null>(null);
   readonly dayLog = signal<DayLog[]>([]);
   readonly weekStart = startOfWeek(new Date());
@@ -67,14 +68,14 @@ export class WeeklySummaryComponent {
 
   async load(): Promise<void> {
     this.loading.set(true);
-    this.failed.set(false);
+    this.error.set(null);
     try {
       const now = new Date();
       const history = await this.repository.getHistory(summaryWindowSince(now), now);
       this.summary.set(computeWeeklySummary(history, now));
       this.dayLog.set(buildWeekDayLog(history, now));
-    } catch {
-      this.failed.set(true);
+    } catch (error) {
+      this.error.set(messageOf(error));
     } finally {
       this.loading.set(false);
     }
