@@ -7,7 +7,8 @@ import {
 } from "@pomodoro/domain";
 import { type CryptoService, type CurrentUser } from "domain-lib";
 import { BreakAlreadyActiveError } from "../../errors/break-already-active.js";
-import { SessionStillActiveError } from "../../errors/session-still-active.js";
+import { NoOpenSegmentError } from "../../errors/no-open-segment.js";
+import { closeSession } from "./close-session.js";
 
 export const DEFAULT_BREAK_DURATION_SEC = 300;
 
@@ -26,18 +27,24 @@ export const startBreak = async ({
   notificationPort,
   currentUser,
 }: StartBreakDependencies): Promise<
-  Break | BreakAlreadyActiveError | SessionStillActiveError
+  Break | BreakAlreadyActiveError | NoOpenSegmentError
 > => {
   const { id: userId } = currentUser;
-
-  const activeSession = await sessionRepository.findActiveByUserId(userId);
-  if (activeSession) {
-    return new SessionStillActiveError(activeSession.id);
-  }
 
   const activeBreak = await breakRepository.findActiveByUserId(userId);
   if (activeBreak) {
     return new BreakAlreadyActiveError(activeBreak.id);
+  }
+
+  const activeSession = await sessionRepository.findActiveByUserId(userId);
+  if (activeSession) {
+    const openSegment = await sessionRepository.findOpenSegmentBySessionId(
+      activeSession.id,
+    );
+    if (!openSegment) {
+      return new NoOpenSegmentError(activeSession.id);
+    }
+    await closeSession({ sessionRepository, notificationPort }, activeSession, openSegment);
   }
 
   const breakId = await cryptoService.generateUUID();

@@ -29,7 +29,6 @@ export const ERROR_MESSAGES: { [N in ApiErrorName]: ErrorMessage<N> } = {
   AUTH_SESSION_NOT_FOUND_ERROR: 'That session has already ended or was signed out.',
   SESSION_FORBIDDEN_ERROR: 'You don’t have access to this focus session.',
   SESSION_ALREADY_ACTIVE_ERROR: 'You already have a focus session running.',
-  SESSION_STILL_ACTIVE_ERROR: 'Finish your current focus session first.',
   SESSION_NOT_ACTIVE_ERROR: 'This focus session has already ended.',
   SESSION_NOT_COMPLETED_ERROR: 'This focus session isn’t finished yet.',
   SEGMENTS_ALREADY_ATTRIBUTED_ERROR: 'The time in this session is already assigned.',
