@@ -110,6 +110,7 @@ export function mockPomodoroRepository(
     async endSession(sessionId: string): Promise<EndSessionResult> {
       const session = this.sessions.find((s) => s.id === sessionId);
       if (!session) throw new Error(`Session not found: ${sessionId}`);
+      if (session.completedAt) throw new Error(`Session not active: ${sessionId}`);
       const completed = { ...session, completedAt: new Date() };
       const index = this.sessions.findIndex((s) => s.id === sessionId);
       this.sessions[index] = completed;
@@ -117,6 +118,10 @@ export function mockPomodoroRepository(
     },
 
     async startBreak(): Promise<Break> {
+      const activeIndex = this.sessions.findIndex((s) => !s.completedAt);
+      if (activeIndex >= 0) {
+        this.sessions[activeIndex] = { ...this.sessions[activeIndex]!, completedAt: new Date() };
+      }
       const activeBreak: Break = {
         id: crypto.randomUUID(),
         userId: crypto.randomUUID(),
