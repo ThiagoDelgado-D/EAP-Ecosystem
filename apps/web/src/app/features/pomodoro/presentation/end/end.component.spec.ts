@@ -167,7 +167,7 @@ describe('EndComponent', () => {
       expect(navigateByUrl).not.toHaveBeenCalled();
     });
 
-    test('should report why the break did not start and stay on the end screen', async () => {
+    test('should report why the break did not start and keep the session open', async () => {
       const ctx = setup();
       const { component, store, navigateByUrl } = ctx;
       await startPathNodeSession(ctx, { pathTitle: PATH_TITLE, nodeTitle: NODE_TITLE });
@@ -179,6 +179,7 @@ describe('EndComponent', () => {
 
       expect(notify).toHaveBeenCalledWith(offline);
       expect(store.phase()).toBe('focus');
+      expect(store.activeSession()).not.toBeNull();
       expect(navigateByUrl).not.toHaveBeenCalled();
     });
   });

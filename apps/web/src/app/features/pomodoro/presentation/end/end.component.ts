@@ -315,8 +315,7 @@ export class EndComponent {
 
   async saveAndBreak(): Promise<void> {
     await this.withPendingUpdatesSaved(async () => {
-      const closed = await this.closeSession();
-      if (!closed) return;
+      if (!this.store.activeSession()) this.store.clearAutoClosed();
       const breakStarted = await this.store.startBreak();
       if (!breakStarted) return;
       void this.router.navigateByUrl('/pomodoro/active');
