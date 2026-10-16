@@ -1,3 +1,5 @@
+import type { UUID } from 'domain-lib';
+import { ApiError } from '@core/errors/api-error';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
 import {
   DEFAULT_BREAK_DURATION_SEC,
@@ -14,6 +16,13 @@ import {
   type SuggestionCalibration,
   type SwitchTargetResult,
 } from '@features/pomodoro/domain/pomodoro.model';
+
+const NOT_FOUND_STATUS = 404;
+const CONFLICT_STATUS = 409;
+
+function sessionContext(sessionId: string): { sessionId: UUID } {
+  return { sessionId: sessionId as UUID };
+}
 
 export interface MockedPomodoroRepository extends PomodoroRepository {
   sessions: Session[];
@@ -100,7 +109,7 @@ export function mockPomodoroRepository(
 
     async attachOpenSegment(sessionId: string, target: SegmentTarget): Promise<Segment> {
       const openIndex = this.segments.findIndex((s) => s.sessionId === sessionId && s.endSec === undefined);
-      if (openIndex < 0) throw new Error(`No open segment for session: ${sessionId}`);
+      if (openIndex < 0) throw new ApiError('NO_OPEN_SEGMENT_ERROR', CONFLICT_STATUS, sessionContext(sessionId));
       const retargeted = buildOpenedSegment(sessionId, this.segments[openIndex]!.startSec, target);
       const segment: Segment = { ...retargeted, id: this.segments[openIndex]!.id };
       this.segments[openIndex] = segment;
@@ -109,8 +118,8 @@ export function mockPomodoroRepository(
 
     async endSession(sessionId: string): Promise<EndSessionResult> {
       const session = this.sessions.find((s) => s.id === sessionId);
-      if (!session) throw new Error(`Session not found: ${sessionId}`);
-      if (session.completedAt) throw new Error(`Session not active: ${sessionId}`);
+      if (!session) throw new ApiError('SESSION_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined);
+      if (session.completedAt) throw new ApiError('SESSION_NOT_ACTIVE_ERROR', CONFLICT_STATUS, sessionContext(sessionId));
       const completed = { ...session, completedAt: new Date() };
       const index = this.sessions.findIndex((s) => s.id === sessionId);
       this.sessions[index] = completed;
@@ -138,7 +147,7 @@ export function mockPomodoroRepository(
 
     async extendBreak(breakId: string, seconds: number): Promise<Break> {
       const index = this.breaks.findIndex((b) => b.id === breakId);
-      if (index < 0) throw new Error(`Break not found: ${breakId}`);
+      if (index < 0) throw new ApiError('BREAK_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined);
       const extended = { ...this.breaks[index]!, durationSec: this.breaks[index]!.durationSec + seconds };
       this.breaks[index] = extended;
       return extended;
@@ -146,7 +155,7 @@ export function mockPomodoroRepository(
 
     async endBreak(breakId: string): Promise<Break> {
       const index = this.breaks.findIndex((b) => b.id === breakId);
-      if (index < 0) throw new Error(`Break not found: ${breakId}`);
+      if (index < 0) throw new ApiError('BREAK_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined);
       const ended = { ...this.breaks[index]!, endedAt: new Date() };
       this.breaks[index] = ended;
       return ended;
@@ -168,12 +177,12 @@ export function mockPomodoroRepository(
 
     async attributeSession(sessionId: string, target: SegmentTarget): Promise<Segment[]> {
       const session = this.sessions.find((s) => s.id === sessionId);
-      if (!session) throw new Error(`Session not found: ${sessionId}`);
-      if (!session.completedAt) throw new Error(`Session not completed: ${sessionId}`);
+      if (!session) throw new ApiError('SESSION_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined);
+      if (!session.completedAt) throw new ApiError('SESSION_NOT_COMPLETED_ERROR', CONFLICT_STATUS, sessionContext(sessionId));
 
       const sessionSegments = this.segments.filter((segment) => segment.sessionId === sessionId);
       if (sessionSegments.some((segment) => segment.targetKind !== 'free')) {
-        throw new Error(`Segments already attributed for session: ${sessionId}`);
+        throw new ApiError('SEGMENTS_ALREADY_ATTRIBUTED_ERROR', CONFLICT_STATUS, sessionContext(sessionId));
       }
 
       const attributed = sessionSegments.map((segment) => {
@@ -188,7 +197,7 @@ export function mockPomodoroRepository(
 
     async continueSession(sessionId: string): Promise<ContinueSessionResult> {
       const index = this.sessions.findIndex((s) => s.id === sessionId);
-      if (index < 0) throw new Error(`Session not found: ${sessionId}`);
+      if (index < 0) throw new ApiError('SESSION_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined);
       const closedSession = this.sessions[index]!;
       const closed: Session = { ...closedSession, completedAt: new Date(), autoCompleted: false };
       this.sessions[index] = closed;
@@ -216,7 +225,7 @@ export function mockPomodoroRepository(
 
     async extendSession(sessionId: string, minutes: number): Promise<Session> {
       const index = this.sessions.findIndex((s) => s.id === sessionId);
-      if (index < 0) throw new Error(`Session not found: ${sessionId}`);
+      if (index < 0) throw new ApiError('SESSION_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined);
       const extended = { ...this.sessions[index]!, plannedMin: this.sessions[index]!.plannedMin + minutes };
       this.sessions[index] = extended;
       return extended;
