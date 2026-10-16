@@ -199,11 +199,11 @@ export class PomodoroSessionStore {
     let activeBreak: Break;
     try {
       activeBreak = await this.repository.startBreak();
-      if (this.activeSession()) await this.closeActiveSession();
     } catch (error) {
       this.errorNotifier.notify(error);
       return false;
     }
+    this.clearActiveSession();
     this.activeBreak.set(activeBreak);
     this.breakNow.set(new Date());
     this.phase.set('break');
@@ -387,6 +387,10 @@ export class PomodoroSessionStore {
     const session = this.activeSession();
     if (!session) return;
     await this.repository.endSession(session.id);
+    this.clearActiveSession();
+  }
+
+  private clearActiveSession(): void {
     this.stopTicking();
     this.clearPlannedTimePrompt();
     this.activeSession.set(null);

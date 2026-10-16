@@ -484,6 +484,17 @@ describe('PomodoroSessionStore', () => {
       expect(repository.sessions[0]?.completedAt).toBeDefined();
     });
 
+    test('should leave ending the session to the server when a break starts', async () => {
+      await store.start({ plannedMin: 25, target: { kind: 'free' } });
+      const endSession = vi.spyOn(repository, 'endSession');
+
+      await store.startBreak();
+
+      expect(endSession).not.toHaveBeenCalled();
+      expect(store.activeSession()).toBeNull();
+      expect(repository.sessions[0]?.completedAt).toBeDefined();
+    });
+
     test('should report why starting the break failed and keep the session active', async () => {
       await store.start({ plannedMin: 25, target: { kind: 'free' } });
       const offline = offlineError();
