@@ -21,6 +21,7 @@ apps/api/.env
 .gitattributes
 .vscode
 .idea
+.claude
 *.swp
 *.swo
 
