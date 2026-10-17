@@ -1,3 +1,4 @@
+import { ApiError } from '@core/errors/api-error';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import type {
   AddResourcePayload,
@@ -9,6 +10,8 @@ import type {
   ResourceStatus,
   UpdateResourcePayload,
 } from '@features/learning-resource/domain/learning-resource.model';
+
+const NOT_FOUND_STATUS = 404;
 
 export interface MockedLearningResourceRepository extends LearningResourceRepository {
   resources: LearningResource[];
@@ -41,7 +44,9 @@ export function mockLearningResourceRepository(
 
     async getById(id: string): Promise<LearningResource> {
       const resource = this.resources.find((r) => r.id === id);
-      if (!resource) throw new Error(`LearningResource not found: ${id}`);
+      if (!resource) {
+        throw new ApiError('LEARNING_RESOURCE_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined);
+      }
       return resource;
     },
 
