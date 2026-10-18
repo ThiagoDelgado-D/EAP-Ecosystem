@@ -1,19 +1,13 @@
 import { Component, input, computed } from '@angular/core';
 import { WEEKLY_GOAL_MINUTES } from '@features/settings/domain/settings.model';
 import { CounterComponent } from '@shared/components/counter/counter.component';
+import { minutesLabel } from '@shared/utils/minutes-label';
 
 export interface WeekDay {
   key: string;
   label: string;
   focusMinutes: number;
   isToday: boolean;
-}
-
-function formatMinutes(minutes: number): string {
-  if (minutes < 60) return `${minutes}m`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
 
 @Component({
@@ -40,7 +34,7 @@ export class KpiRowComponent {
 
   readonly liveCount = computed(() => this.pendingResourceCount() + this.inProgressCount());
 
-  readonly catalogLabel = computed(() => formatMinutes(this.catalogMinutes()));
+  readonly catalogLabel = computed(() => minutesLabel(this.catalogMinutes()));
 
   readonly goalPct = computed(() => {
     const minutes = this.weeklyFocusMinutes() ?? 0;
