@@ -277,8 +277,9 @@
       </nav>
 
       <div class="p-2 pb-4 w-48">
-        <a
-          routerLink="/add"
+        <button
+          type="button"
+          (click)="openCapture()"
           class="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-ink-body border border-line-strong hover:bg-surface-overlay hover:text-ink-strong transition-all whitespace-nowrap"
         >
           <svg
@@ -293,7 +294,7 @@
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           New Entry
-        </a>
+        </button>
 
         <a
           routerLink="/settings"
@@ -473,9 +474,9 @@
       </div>
 
       <div class="p-3 pb-5 border-t border-line-soft">
-        <a
-          routerLink="/add"
-          (click)="closeMobileDrawer()"
+        <button
+          type="button"
+          (click)="closeMobileDrawer(); openCapture()"
           class="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-ink-body border border-line-strong hover:bg-surface-overlay hover:text-ink-strong transition-all mb-4"
         >
           <svg
@@ -490,7 +491,7 @@
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           New Entry
-        </a>
+        </button>
         <a
           routerLink="/settings"
           (click)="closeMobileDrawer()"
