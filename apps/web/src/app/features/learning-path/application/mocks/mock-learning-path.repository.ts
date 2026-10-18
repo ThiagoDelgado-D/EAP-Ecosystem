@@ -1,3 +1,4 @@
+import { ApiError } from '@core/errors/api-error';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import type {
   AddLearningPathEdgePayload,
@@ -11,6 +12,8 @@ import type {
   UpdateLearningPathNodePayload,
   UpdateLearningPathPayload,
 } from '@features/learning-path/domain/learning-path.model';
+
+const NOT_FOUND_STATUS = 404;
 
 export interface MockedLearningPathRepository extends LearningPathRepository {
   paths: LearningPath[];
@@ -45,7 +48,7 @@ export function mockLearningPathRepository(
 
     async getById(id: string): Promise<LearningPathWithNodes> {
       const path = this.paths.find((p) => p.id === id);
-      if (!path) throw new Error(`LearningPath not found: ${id}`);
+      if (!path) throw new ApiError('LEARNING_PATH_NOT_FOUND_ERROR', NOT_FOUND_STATUS, undefined);
       return {
         path,
         nodes: this.nodes.filter((n) => n.pathId === id),
