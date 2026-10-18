@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal, HostListener, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule, RouterLinkActive } from '@angular/router';
+import { CaptureSheetService } from '@core/capture/capture-sheet.service';
 import { CaptureSheetComponent } from '@features/learning-resource/presentation/capture-sheet/capture-sheet.component';
 import { CommandPaletteComponent } from '@core/command-palette/command-palette.component';
 import { CommandPaletteService } from '@core/command-palette/command-palette.service';
@@ -57,6 +58,7 @@ export class ShellLayoutComponent implements OnInit {
 
   readonly commandPaletteShortcut = this.commandPalette.shortcutLabel;
   private readonly toast = inject(ToastService);
+  private readonly capture = inject(CaptureSheetService);
 
   readonly currentState = this.calibration.mentalState;
   readonly stateMenuOpen = signal(false);
@@ -133,6 +135,10 @@ export class ShellLayoutComponent implements OnInit {
 
   closeMobileDrawer(): void {
     this.mobileDrawerOpen.set(false);
+  }
+
+  openCapture(): void {
+    this.capture.open('manual');
   }
 
   async signOut(): Promise<void> {
