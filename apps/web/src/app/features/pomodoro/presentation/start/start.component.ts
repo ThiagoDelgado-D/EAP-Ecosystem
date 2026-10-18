@@ -26,7 +26,7 @@ import {
   PomodoroZenViewComponent,
   POMODORO_ZEN_KEY,
 } from '@features/pomodoro/presentation/zen-view/pomodoro-zen-view.component';
-import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
+import { BROWSE_PICKER_HEADINGS, BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import { PomodoroRingComponent } from '@features/pomodoro/presentation/pomodoro-ring/pomodoro-ring.component';
 import {
   DURATION_PRESETS,
@@ -268,7 +268,10 @@ export class StartComponent implements OnInit {
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
       panelClass: 'app-dialog',
       autoFocus: '#switch-material-search',
-      data: previous ? { target: previous, label: this.selectedTargetLabel() } : null,
+      data: {
+        heading: BROWSE_PICKER_HEADINGS.choose,
+        quickPick: previous ? { target: previous, label: this.selectedTargetLabel() } : undefined,
+      },
     });
     const target = await firstValueFrom(dialogRef.afterClosed());
     if (!target) return;

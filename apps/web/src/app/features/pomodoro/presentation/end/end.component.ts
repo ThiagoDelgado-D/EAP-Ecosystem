@@ -8,7 +8,7 @@ import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
-import { BrowsePickerDialogComponent, NODE_PROGRESS_LABELS } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
+import { BROWSE_PICKER_HEADINGS, BrowsePickerDialogComponent, NODE_PROGRESS_LABELS } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import { describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
 import { filterLibraryResources } from '@features/pomodoro/application/picker-search';
 import { formatMinutes, segmentToTarget, segmentTotals, targetKey } from '@features/pomodoro/presentation/active/segment-display';
@@ -294,6 +294,7 @@ export class EndComponent {
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
       panelClass: 'app-dialog',
       autoFocus: false,
+      data: { heading: BROWSE_PICKER_HEADINGS.attach },
     });
     const target = await firstValueFrom(dialogRef.afterClosed());
     if (!target) return;

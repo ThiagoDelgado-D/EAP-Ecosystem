@@ -14,7 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
-import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
+import { BROWSE_PICKER_HEADINGS, BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import { createPomodoroRingDisplay } from '@features/pomodoro/presentation/active/pomodoro-ring-display';
 import {
   readMiniWidgetCollapsed,
@@ -127,6 +127,7 @@ export class PomodoroMiniWidgetComponent {
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
       panelClass: 'app-dialog',
       autoFocus: '#switch-material-search',
+      data: { heading: BROWSE_PICKER_HEADINGS.switch },
     });
     const target = await firstValueFrom(dialogRef.afterClosed());
     if (target) await this.store.switchTarget(target);

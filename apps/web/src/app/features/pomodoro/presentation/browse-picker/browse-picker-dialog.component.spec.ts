@@ -5,7 +5,11 @@ import { mockLearningPathRepository } from '@features/learning-path/application/
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
-import { BrowsePickerDialogComponent } from './browse-picker-dialog.component';
+import {
+  BROWSE_PICKER_HEADINGS,
+  BrowsePickerDialogComponent,
+  type BrowsePickerData,
+} from './browse-picker-dialog.component';
 
 const now = new Date('2026-09-11T10:00:00.000Z');
 
@@ -15,7 +19,8 @@ describe('BrowsePickerDialogComponent', () => {
   let dialogRef: { close: ReturnType<typeof vi.fn> };
   let component: BrowsePickerDialogComponent;
 
-  beforeEach(() => {
+  function createDialog(data: BrowsePickerData) {
+    TestBed.resetTestingModule();
     learningPathRepository = mockLearningPathRepository();
     learningResourceRepository = mockLearningResourceRepository();
     dialogRef = { close: vi.fn() };
@@ -32,11 +37,17 @@ describe('BrowsePickerDialogComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: null },
+        { provide: MAT_DIALOG_DATA, useValue: data },
       ],
     });
 
-    component = TestBed.createComponent(BrowsePickerDialogComponent).componentInstance;
+    const fixture = TestBed.createComponent(BrowsePickerDialogComponent);
+    component = fixture.componentInstance;
+    return fixture;
+  }
+
+  beforeEach(() => {
+    createDialog({ heading: BROWSE_PICKER_HEADINGS.switch });
   });
 
   test('should default to the "ready" tab', () => {
@@ -234,29 +245,22 @@ describe('BrowsePickerDialogComponent', () => {
 
   test('should close with the quick pick\'s target when it is picked', () => {
     const quickPick = { target: { kind: 'free' as const }, label: { title: 'Free focus', subtitle: 'No material attached' } };
-    TestBed.resetTestingModule();
-    const freshLearningPathRepository = mockLearningPathRepository();
-    const freshLearningResourceRepository = mockLearningResourceRepository();
-    const freshDialogRef = { close: vi.fn() };
-    TestBed.overrideComponent(BrowsePickerDialogComponent, {
-      set: {
-        providers: [
-          PomodoroPickerService,
-          { provide: LearningPathRepository, useValue: freshLearningPathRepository },
-          { provide: LearningResourceRepository, useValue: freshLearningResourceRepository },
-        ],
-      },
-    });
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: MatDialogRef, useValue: freshDialogRef },
-        { provide: MAT_DIALOG_DATA, useValue: quickPick },
-      ],
-    });
-    const freshComponent = TestBed.createComponent(BrowsePickerDialogComponent).componentInstance;
+    createDialog({ heading: BROWSE_PICKER_HEADINGS.switch, quickPick });
 
-    freshComponent.pickQuickPick();
+    component.pickQuickPick();
 
-    expect(freshDialogRef.close).toHaveBeenCalledWith(quickPick.target);
+    expect(dialogRef.close).toHaveBeenCalledWith(quickPick.target);
+  });
+
+  test('should show the heading its caller opened it with', () => {
+    const attachHeading = BROWSE_PICKER_HEADINGS.attach;
+    const fixture = createDialog({ heading: attachHeading });
+
+    fixture.detectChanges();
+
+    const text = (fixture.nativeElement as HTMLElement).textContent;
+    expect(text).toContain(attachHeading.title);
+    expect(text).toContain(attachHeading.hint);
+    expect(text).not.toContain(BROWSE_PICKER_HEADINGS.switch.title);
   });
 });

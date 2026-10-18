@@ -1,10 +1,8 @@
 <div class="w-[min(35rem,calc(100vw-2rem))] max-h-[80vh] flex flex-col [&_button]:focus:outline-none [&_button]:focus-visible:ring-2 [&_button]:focus-visible:ring-accent-line [&_button]:focus-visible:ring-offset-2 [&_button]:focus-visible:ring-offset-surface-raised">
   <div class="p-6 pb-0 flex items-start justify-between gap-4">
     <div>
-      <h2 class="text-lg font-extrabold text-ink-strong tracking-tight">Switch material</h2>
-      <div class="text-xs text-ink-faint mt-1 leading-relaxed">
-        The clock keeps running. Time already spent stays with the current segment.
-      </div>
+      <h2 class="text-lg font-extrabold text-ink-strong tracking-tight">{{ heading.title }}</h2>
+      <div class="text-xs text-ink-faint mt-1 leading-relaxed">{{ heading.hint }}</div>
     </div>
     <button
       type="button"
