@@ -1,13 +1,7 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
-
-function minutesLabel(minutes: number): string {
-  if (minutes < 60) return `${minutes}m`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
-}
+import { minutesLabel } from '@shared/utils/minutes-label';
 
 function relativeTime(date: Date): string {
   const diffMs = Date.now() - date.getTime();
@@ -27,9 +21,7 @@ function relativeTime(date: Date): string {
 export class RecentActivityComponent {
   readonly resources = input.required<LearningResource[]>();
 
-  minutesLabel(minutes: number): string {
-    return minutesLabel(minutes);
-  }
+  readonly minutesLabel = minutesLabel;
 
   dotColor(resource: LearningResource): string {
     switch (resource.status) {
