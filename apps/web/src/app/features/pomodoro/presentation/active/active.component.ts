@@ -8,7 +8,7 @@ import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-p
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { readHideShortcutHints } from '@features/pomodoro/application/pomodoro-view-preferences';
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
-import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
+import { BROWSE_PICKER_HEADINGS, BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 import {
   PomodoroRingComponent,
   POMODORO_RING_CIRCUMFERENCE,
@@ -165,7 +165,10 @@ export class ActiveComponent {
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
       panelClass: 'app-dialog',
       autoFocus: '#switch-material-search',
-      data: previous ? { target: previous, label: this.resolveTargetDisplay(previous) } : null,
+      data: {
+        heading: BROWSE_PICKER_HEADINGS.switch,
+        quickPick: previous ? { target: previous, label: this.resolveTargetDisplay(previous) } : undefined,
+      },
     });
     const target = await firstValueFrom(dialogRef.afterClosed());
     if (target) await this.applySwitchedTarget(target);

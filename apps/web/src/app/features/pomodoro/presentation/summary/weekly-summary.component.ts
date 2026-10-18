@@ -11,7 +11,7 @@ import { buildWeekDayLog, computeWeeklySummary, startOfWeek, summaryWindowSince 
 import type { DayLog, DaySession, MetricDelta, WeeklySummary } from '@features/pomodoro/application/weekly-summary.model';
 import { formatMinutes, segmentTotals, type SegmentTotal } from '@features/pomodoro/presentation/active/segment-display';
 import { describeTargetLabel, type TargetLabel } from '@features/pomodoro/presentation/start/target-description';
-import { BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
+import { BROWSE_PICKER_HEADINGS, BrowsePickerDialogComponent } from '@features/pomodoro/presentation/browse-picker/browse-picker-dialog.component';
 
 export const WEEK_LOG_SCOPE = {
   ALL: 'all',
@@ -140,6 +140,7 @@ export class WeeklySummaryComponent {
     const dialogRef = this.dialog.open(BrowsePickerDialogComponent, {
       panelClass: 'app-dialog',
       autoFocus: false,
+      data: { heading: BROWSE_PICKER_HEADINGS.attribute },
     });
     const target = await firstValueFrom(dialogRef.afterClosed());
     if (!target) return;

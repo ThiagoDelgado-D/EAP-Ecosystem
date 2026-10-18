@@ -23,6 +23,35 @@ export interface BrowsePickerQuickPick {
   label: { title: string; subtitle?: string };
 }
 
+export interface BrowsePickerHeading {
+  title: string;
+  hint: string;
+}
+
+export const BROWSE_PICKER_HEADINGS = {
+  switch: {
+    title: 'Switch material',
+    hint: 'The clock keeps running. Time already spent stays with the current segment.',
+  },
+  choose: {
+    title: 'Choose material',
+    hint: 'Pick what this session will be about.',
+  },
+  attach: {
+    title: 'Attach material',
+    hint: 'Choose what you actually used in this session.',
+  },
+  attribute: {
+    title: 'Attribute session',
+    hint: "Give this time a home. It's already logged either way.",
+  },
+} satisfies Record<string, BrowsePickerHeading>;
+
+export interface BrowsePickerData {
+  heading: BrowsePickerHeading;
+  quickPick?: BrowsePickerQuickPick;
+}
+
 export const NODE_PROGRESS_LABELS: Record<NodeProgress, string> = {
   pending: 'Pending',
   in_progress: 'In progress',
@@ -43,7 +72,9 @@ export const NODE_PROGRESS_LABELS: Record<NodeProgress, string> = {
 export class BrowsePickerDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<BrowsePickerDialogComponent, SegmentTarget | undefined>);
   readonly picker = inject(PomodoroPickerService);
-  readonly quickPick = inject<BrowsePickerQuickPick | null>(MAT_DIALOG_DATA, { optional: true }) ?? null;
+  private readonly data = inject<BrowsePickerData>(MAT_DIALOG_DATA);
+  readonly heading = this.data.heading;
+  readonly quickPick = this.data.quickPick ?? null;
 
   readonly activeTab = signal<BrowsePickerTab>('ready');
   readonly query = signal('');
