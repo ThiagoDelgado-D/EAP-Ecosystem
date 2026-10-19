@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, computed } from '@angular/core';
 import { PreferencesService } from '@features/settings/application/preferences.service';
-import { FEATURE_KEY, type FeatureKey } from '@features/auth/domain/auth.model';
+import { isOptionalModule } from '@features/auth/domain/auth.model';
 import { MODULE_CATALOG, type ModuleDefinition } from './feature-module-catalog';
 import { MODULE_TONE } from './module-tone';
 import { toneVar } from '@shared/utils/tone';
@@ -19,23 +19,18 @@ export class ModulesComponent implements OnInit {
   readonly loading = this.preferencesService.loading;
   readonly error = this.preferencesService.error;
 
-  readonly enabledKeys = computed(() => new Set(this.preferencesService.featureConfig()));
+  readonly enabledKeys = computed(() => new Set<string>(this.preferencesService.enabledModules()));
 
   async ngOnInit(): Promise<void> {
-    await this.preferencesService.loadFeatureConfig();
-  }
-
-  isFeatureKey(key: string): key is FeatureKey {
-    return Object.values(FEATURE_KEY).includes(key as FeatureKey);
+    await this.preferencesService.loadEnabledModules();
   }
 
   isOn(key: string): boolean {
-    if (!this.isFeatureKey(key)) return false;
     return this.enabledKeys().has(key);
   }
 
   isToggleable(module: ModuleDefinition): boolean {
-    return !module.alwaysOn && this.isFeatureKey(module.key);
+    return !module.alwaysOn && isOptionalModule(module.key);
   }
 
   statusLabel(module: ModuleDefinition): string {
@@ -46,9 +41,8 @@ export class ModulesComponent implements OnInit {
 
   async toggle(module: ModuleDefinition): Promise<void> {
     if (!this.isToggleable(module)) return;
-    const current = new Set(this.enabledKeys());
-    const key = module.key as FeatureKey;
-    current.has(key) ? current.delete(key) : current.add(key);
-    await this.preferencesService.updateFeatureConfig([...current]);
+    const next = this.preferencesService.enabledModules().filter((key) => key !== module.key);
+    if (!this.isOn(module.key) && isOptionalModule(module.key)) next.push(module.key);
+    await this.preferencesService.updateEnabledModules(next);
   }
 }

@@ -1,5 +1,5 @@
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
-import type { FeatureKey } from '@features/auth/domain/auth.model';
+import type { OptionalModuleKey } from '@features/auth/domain/auth.model';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import {
   LANGUAGE_CODE,
@@ -37,12 +37,12 @@ export function mockPreferencesRepository(
     appearancePatches: [],
     failNextUpdate: false,
 
-    getFeatureConfig(): Promise<FeatureKey[]> {
+    getEnabledModules(): Promise<OptionalModuleKey[]> {
       return Promise.resolve([]);
     },
 
-    updateFeatureConfig(config: FeatureKey[]): Promise<FeatureKey[]> {
-      return Promise.resolve(config);
+    updateEnabledModules(enabledModules: OptionalModuleKey[]): Promise<OptionalModuleKey[]> {
+      return Promise.resolve(enabledModules);
     },
 
     getWidgetConfig(): Promise<WidgetKey[]> {

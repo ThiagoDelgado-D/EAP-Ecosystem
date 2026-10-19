@@ -1,10 +1,10 @@
 import { Component, input, output, signal } from '@angular/core';
 import {
-  FEATURE_KEY,
+  isOptionalModule,
   MODULE_KEY,
   OPTIONAL_MODULES,
-  type FeatureKey,
   type ModuleKey,
+  type OptionalModuleKey,
 } from '@features/auth/domain/auth.model';
 import { MODULE_TONE } from '@features/settings/presentation/modules/module-tone';
 import { toneVar } from '@shared/utils/tone';
@@ -69,7 +69,7 @@ export class ModulesStepComponent {
   readonly firstName = input<string>('');
   readonly loading = input<boolean>(false);
   readonly error = input<string | null>(null);
-  readonly modulesSubmit = output<FeatureKey[]>();
+  readonly modulesSubmit = output<OptionalModuleKey[]>();
   readonly back = output<void>();
 
   readonly modules = MODULES;
@@ -94,9 +94,6 @@ export class ModulesStepComponent {
   }
 
   submit(): void {
-    const keys = [...this.selected()].filter((k): k is FeatureKey =>
-      Object.values(FEATURE_KEY).includes(k as FeatureKey),
-    );
-    this.modulesSubmit.emit(keys);
+    this.modulesSubmit.emit([...this.selected()].filter(isOptionalModule));
   }
 }

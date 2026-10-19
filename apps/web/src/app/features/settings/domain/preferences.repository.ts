@@ -1,9 +1,9 @@
-import type { FeatureKey } from '@features/auth/domain/auth.model';
+import type { OptionalModuleKey } from '@features/auth/domain/auth.model';
 import type { AccountStats, UserAppearance, WidgetKey } from './settings.model';
 
 export abstract class PreferencesRepository {
-  abstract getFeatureConfig(): Promise<FeatureKey[]>;
-  abstract updateFeatureConfig(config: FeatureKey[]): Promise<FeatureKey[]>;
+  abstract getEnabledModules(): Promise<OptionalModuleKey[]>;
+  abstract updateEnabledModules(enabledModules: OptionalModuleKey[]): Promise<OptionalModuleKey[]>;
   abstract getWidgetConfig(): Promise<WidgetKey[]>;
   abstract updateWidgetConfig(config: WidgetKey[]): Promise<WidgetKey[]>;
   abstract getAppearance(): Promise<UserAppearance>;

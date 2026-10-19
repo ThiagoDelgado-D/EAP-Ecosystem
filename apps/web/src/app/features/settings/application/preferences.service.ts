@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import type { FeatureKey } from '@features/auth/domain/auth.model';
+import { OPTIONAL_MODULES, type OptionalModuleKey } from '@features/auth/domain/auth.model';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { messageOf } from '@core/errors/error-messages';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
@@ -10,42 +10,41 @@ export class PreferencesService {
   private readonly repository = inject(PreferencesRepository);
   private readonly authStore = inject(AuthStore);
 
-  readonly featureConfig = signal<FeatureKey[]>([]);
+  readonly enabledModules = signal<OptionalModuleKey[]>([]);
   readonly widgetConfig = signal<WidgetKey[]>([]);
   readonly appearance = signal<UserAppearance | null>(null);
   readonly accountStats = signal<AccountStats | null>(null);
-  private readonly _loadingFeature = signal(false);
+  private readonly _loadingModules = signal(false);
   private readonly _loadingWidget = signal(false);
   private readonly _loadingAppearance = signal(false);
   readonly loading = computed(
-    () => this._loadingFeature() || this._loadingWidget() || this._loadingAppearance(),
+    () => this._loadingModules() || this._loadingWidget() || this._loadingAppearance(),
   );
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
 
-  async loadFeatureConfig(): Promise<void> {
-    this._loadingFeature.set(true);
+  async loadEnabledModules(): Promise<void> {
+    this._loadingModules.set(true);
     this.error.set(null);
     try {
-      const config = await this.repository.getFeatureConfig();
-      this.featureConfig.set(config);
+      this.enabledModules.set(await this.repository.getEnabledModules());
     } catch (error) {
       this.error.set(messageOf(error));
     } finally {
-      this._loadingFeature.set(false);
+      this._loadingModules.set(false);
     }
   }
 
-  async updateFeatureConfig(config: FeatureKey[]): Promise<void> {
-    const prev = this.featureConfig();
+  async updateEnabledModules(enabledModules: OptionalModuleKey[]): Promise<void> {
+    const prev = this.enabledModules();
     this.error.set(null);
-    this.featureConfig.set(config);
-    this.authStore.updateFeatureConfig(config);
+    this.enabledModules.set(enabledModules);
+    this.authStore.updateEnabledModules(enabledModules);
     try {
-      await this.repository.updateFeatureConfig(config);
+      await this.repository.updateEnabledModules(enabledModules);
     } catch (error) {
-      this.featureConfig.set(prev);
-      this.authStore.updateFeatureConfig(prev);
+      this.enabledModules.set(prev);
+      this.authStore.updateEnabledModules(prev);
       this.error.set(messageOf(error));
     }
   }
@@ -114,9 +113,9 @@ export class PreferencesService {
     this.error.set(null);
     try {
       await this.repository.resetPreferences();
-      this.featureConfig.set([]);
+      this.enabledModules.set([...OPTIONAL_MODULES]);
       this.widgetConfig.set([]);
-      this.authStore.updateFeatureConfig([]);
+      this.authStore.updateEnabledModules([...OPTIONAL_MODULES]);
     } catch (error) {
       this.error.set(messageOf(error));
       throw error;

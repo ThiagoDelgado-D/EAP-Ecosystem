@@ -53,7 +53,7 @@ export class CommandPaletteComponent {
   readonly cursor = signal(0);
   readonly index = signal<CommandSearchIndex>(EMPTY_INDEX);
 
-  private readonly pathsEnabled = computed(() => this.authStore.featureSet().has('learning-paths'));
+  private readonly pathsEnabled = computed(() => this.authStore.enabledModuleSet().has('learning-paths'));
 
   private readonly baseItems = computed<CommandItem[]>(() => {
     const paperTheme = this.themeService.theme() === 'paper';

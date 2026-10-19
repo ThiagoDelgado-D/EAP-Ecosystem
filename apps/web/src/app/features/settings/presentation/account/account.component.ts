@@ -62,9 +62,9 @@ import { ModuleLabelPipe } from '@shared/pipes/module-label.pipe';
 
             <div>
               <p class="text-[10px] uppercase tracking-widest text-ink-faint mb-1.5">Enabled</p>
-              @if ((authStore.currentUser()?.featureConfig?.length ?? 0) > 0) {
+              @if ((authStore.currentUser()?.enabledModules?.length ?? 0) > 0) {
                 <div class="flex flex-wrap gap-2">
-                  @for (key of authStore.currentUser()?.featureConfig ?? []; track key) {
+                  @for (key of authStore.currentUser()?.enabledModules ?? []; track key) {
                     <span
                       class="inline-flex items-center px-2.5 py-1 rounded-md bg-accent-wash/60 border border-accent-line/50 text-xs text-accent-ink"
                     >

@@ -3,25 +3,25 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { API_CONFIG } from '@core/config/api.config';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
-import type { FeatureKey } from '@features/auth/domain/auth.model';
+import type { OptionalModuleKey } from '@features/auth/domain/auth.model';
 import type { AccountStats, UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
-import type { AccountStatsDto, AppearanceDto, FeatureConfigDto, WidgetConfigDto } from './settings.dto';
+import type { AccountStatsDto, AppearanceDto, EnabledModulesDto, WidgetConfigDto } from './settings.dto';
 
 @Injectable()
 export class PreferencesHttpRepository extends PreferencesRepository {
   private readonly http = inject(HttpClient);
   private readonly base = `${API_CONFIG.baseUrl}/preferences`;
 
-  async getFeatureConfig(): Promise<FeatureKey[]> {
-    const dto = await firstValueFrom(this.http.get<FeatureConfigDto>(`${this.base}/features`));
-    return dto.featureConfig;
+  async getEnabledModules(): Promise<OptionalModuleKey[]> {
+    const dto = await firstValueFrom(this.http.get<EnabledModulesDto>(`${this.base}/modules`));
+    return dto.enabledModules;
   }
 
-  async updateFeatureConfig(config: FeatureKey[]): Promise<FeatureKey[]> {
+  async updateEnabledModules(enabledModules: OptionalModuleKey[]): Promise<OptionalModuleKey[]> {
     const dto = await firstValueFrom(
-      this.http.patch<FeatureConfigDto>(`${this.base}/features`, { featureConfig: config }),
+      this.http.patch<EnabledModulesDto>(`${this.base}/modules`, { enabledModules }),
     );
-    return dto.featureConfig;
+    return dto.enabledModules;
   }
 
   async getWidgetConfig(): Promise<WidgetKey[]> {
