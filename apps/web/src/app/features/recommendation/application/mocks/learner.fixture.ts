@@ -7,6 +7,6 @@ export function learner(firstName: string): AuthUser {
     lastName: 'Learner',
     email: `${firstName.toLowerCase()}@example.com`,
     onboardingCompleted: true,
-    featureConfig: [],
+    enabledModules: [],
   };
 }

@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { MODULE_KEY } from '@features/auth/domain/auth.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
@@ -62,7 +63,7 @@ describe('CommandPaletteComponent', () => {
       lastName: 'Learner',
       email: 'ada@example.com',
       onboardingCompleted: true,
-      featureConfig: ['learning-paths'],
+      enabledModules: [MODULE_KEY.LEARNING_PATHS],
     });
     palette = TestBed.inject(CommandPaletteService);
     fixture = TestBed.createComponent(CommandPaletteComponent);
@@ -143,7 +144,7 @@ describe('CommandPaletteComponent', () => {
 
   test('should leave paths and nodes out for a learner without Learning Paths enabled', async () => {
     const authStore = TestBed.inject(AuthStore);
-    authStore.updateFeatureConfig([]);
+    authStore.updateEnabledModules([]);
     await openWithLoadedIndex();
 
     typeQuery('rust');

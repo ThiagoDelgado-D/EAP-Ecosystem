@@ -47,7 +47,7 @@ export class ShellLayoutComponent implements OnInit {
 
   readonly userInitials = this.authStore.userInitials;
   readonly displayName = this.authStore.displayName;
-  readonly showPaths = computed(() => this.authStore.featureSet().has('learning-paths'));
+  readonly showPaths = computed(() => this.authStore.enabledModuleSet().has('learning-paths'));
 
   readonly sidebarOpen = signal(true);
   readonly mobileDrawerOpen = signal(false);

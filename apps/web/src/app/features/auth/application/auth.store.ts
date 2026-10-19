@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { AuthUser, type FeatureKey } from '@features/auth/domain/auth.model';
+import { AuthUser, type OptionalModuleKey } from '@features/auth/domain/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
@@ -7,7 +7,9 @@ export class AuthStore {
   readonly accessToken = signal<string | null>(null);
   readonly isAuthenticated = computed(() => this.accessToken() !== null);
 
-  readonly featureSet = computed(() => new Set(this.currentUser()?.featureConfig ?? []));
+  readonly enabledModuleSet = computed(
+    () => new Set<string>(this.currentUser()?.enabledModules ?? []),
+  );
 
   readonly displayName = computed(() => {
     const u = this.currentUser();
@@ -29,10 +31,10 @@ export class AuthStore {
     this.accessToken.set(token || null);
   }
 
-  updateFeatureConfig(config: FeatureKey[]): void {
+  updateEnabledModules(enabledModules: OptionalModuleKey[]): void {
     const u = this.currentUser();
     if (!u) return;
-    this.currentUser.set({ ...u, featureConfig: config });
+    this.currentUser.set({ ...u, enabledModules });
   }
 
   clearSession(): void {
