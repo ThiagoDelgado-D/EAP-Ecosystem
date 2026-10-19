@@ -29,8 +29,8 @@ export class UserEntity {
   @Column({ default: false })
   onboardingCompleted!: boolean;
 
-  @Column({ type: "text", array: true, default: "{}" })
-  featureConfig!: string[];
+  @Column({ type: "text", array: true, default: "{learning-paths,pomodoro,recommendation}" })
+  enabledModules!: string[];
 
   @Column({ type: "text", array: true, default: "{}" })
   widgetConfig!: string[];

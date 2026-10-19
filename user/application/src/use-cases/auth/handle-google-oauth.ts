@@ -6,7 +6,7 @@ import type {
   User,
   Session,
 } from "@user/domain";
-import { DEFAULT_APPEARANCE } from "@user/domain";
+import { DEFAULT_APPEARANCE, DEFAULT_ENABLED_MODULES } from "@user/domain";
 import type { CryptoService, JwtService } from "domain-lib";
 
 export interface HandleGoogleOAuthDependencies {
@@ -39,7 +39,7 @@ export interface HandleGoogleOAuthResponseModel {
     | "firstName"
     | "lastName"
     | "onboardingCompleted"
-    | "featureConfig"
+    | "enabledModules"
   >;
 }
 
@@ -126,7 +126,7 @@ export const handleGoogleOAuth = async (
         userName: null,
         enabled: true,
         onboardingCompleted: false,
-        featureConfig: [],
+        enabledModules: [...DEFAULT_ENABLED_MODULES],
         widgetConfig: [],
         appearance: { ...DEFAULT_APPEARANCE },
         createdAt: new Date(),
@@ -201,7 +201,7 @@ export const handleGoogleOAuth = async (
       firstName: user.firstName,
       lastName: user.lastName,
       onboardingCompleted: user.onboardingCompleted,
-      featureConfig: user.featureConfig,
+      enabledModules: user.enabledModules,
     },
   };
 };

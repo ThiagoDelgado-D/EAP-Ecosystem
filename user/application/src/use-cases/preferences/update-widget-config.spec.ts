@@ -22,7 +22,7 @@ describe("updateWidgetConfig", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [WidgetKey.FOCUS_PULSE],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -129,7 +129,7 @@ describe("updateWidgetConfig", () => {
     const updated = await userRepository.findById(existingUser.id);
     expect(updated!.email).toBe(existingUser.email);
     expect(updated!.firstName).toBe(existingUser.firstName);
-    expect(updated!.featureConfig).toEqual(existingUser.featureConfig);
+    expect(updated!.enabledModules).toEqual(existingUser.enabledModules);
     expect(updated!.onboardingCompleted).toBe(existingUser.onboardingCompleted);
     expect(updated!.enabled).toBe(existingUser.enabled);
   });

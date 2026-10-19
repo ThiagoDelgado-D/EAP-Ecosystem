@@ -1,5 +1,11 @@
 import type { IUserRepository, User } from "@user/domain";
-import { DEFAULT_APPEARANCE, FeatureKey, LanguageCode, StartOfWeek, WidgetKey } from "@user/domain";
+import {
+  DEFAULT_APPEARANCE,
+  isOptionalModule,
+  LanguageCode,
+  StartOfWeek,
+  WidgetKey,
+} from "@user/domain";
 import type { UUID } from "domain-lib";
 import type { Repository } from "typeorm";
 import { UserEntity } from "../entities/user.entity.js";
@@ -34,9 +40,7 @@ export class TypeOrmUserRepository implements IUserRepository {
       userName: entity.userName ?? null,
       enabled: entity.enabled,
       onboardingCompleted: entity.onboardingCompleted,
-      featureConfig: entity.featureConfig.filter((k): k is FeatureKey =>
-        (Object.values(FeatureKey) as string[]).includes(k),
-      ),
+      enabledModules: entity.enabledModules.filter(isOptionalModule),
       widgetConfig: entity.widgetConfig.filter((k): k is WidgetKey =>
         (Object.values(WidgetKey) as string[]).includes(k),
       ),
@@ -68,7 +72,7 @@ export class TypeOrmUserRepository implements IUserRepository {
     entity.userName = user.userName ?? null;
     entity.enabled = user.enabled;
     entity.onboardingCompleted = user.onboardingCompleted;
-    entity.featureConfig = user.featureConfig;
+    entity.enabledModules = user.enabledModules;
     entity.widgetConfig = user.widgetConfig;
     entity.language = user.appearance.language;
     entity.timezone = user.appearance.timezone;

@@ -1,13 +1,5 @@
 import type { Entity, Person, TimestampedEntity } from "domain-lib";
-
-export const FeatureKey = {
-  LEARNING_PATHS: "learning-paths",
-  KNOWLEDGE_GRAPH: "knowledge-graph",
-  POMODORO: "pomodoro",
-  SPACED_REPETITION: "spaced-repetition",
-} as const;
-
-export type FeatureKey = (typeof FeatureKey)[keyof typeof FeatureKey];
+import type { ModuleKey } from "./module.js";
 
 export const WidgetKey = {
   SYSTEM_CHECK: "system-check",
@@ -61,7 +53,7 @@ export interface User extends Entity, Person, TimestampedEntity {
   userName?: string | null;
   enabled: boolean;
   onboardingCompleted: boolean;
-  featureConfig: FeatureKey[];
+  enabledModules: ModuleKey[];
   widgetConfig: WidgetKey[];
   appearance: UserAppearancePreferences;
 }

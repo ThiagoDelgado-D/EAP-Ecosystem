@@ -24,7 +24,7 @@ describe("getUserAppearance", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),

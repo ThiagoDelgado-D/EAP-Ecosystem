@@ -1,4 +1,4 @@
-import type { IUserRepository } from "@user/domain";
+import { DEFAULT_ENABLED_MODULES, type IUserRepository, type ModuleKey } from "@user/domain";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
 
 export interface ResetPreferencesDependencies {
@@ -10,7 +10,7 @@ export interface ResetPreferencesRequest {
 }
 
 export interface ResetPreferencesResponse {
-  featureConfig: [];
+  enabledModules: ModuleKey[];
   widgetConfig: [];
 }
 
@@ -23,12 +23,12 @@ export const resetPreferences = async (
 
   const updated = {
     ...user,
-    featureConfig: [],
+    enabledModules: [...DEFAULT_ENABLED_MODULES],
     widgetConfig: [],
     updatedAt: new Date(),
   };
 
   await userRepository.update(updated);
 
-  return { featureConfig: [], widgetConfig: [] };
+  return { enabledModules: updated.enabledModules, widgetConfig: [] };
 };

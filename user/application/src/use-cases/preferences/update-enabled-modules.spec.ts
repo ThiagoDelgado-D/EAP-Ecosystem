@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
-import { updateFeatureConfig } from "./update-feature-config.js";
+import { updateEnabledModules } from "./update-enabled-modules.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
-import { FeatureKey, type User } from "@user/domain";
+import { ModuleKey, OPTIONAL_MODULES, type User } from "@user/domain";
 
-describe("updateFeatureConfig", () => {
+describe("updateEnabledModules", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
   let existingUser: User;
@@ -22,7 +22,7 @@ describe("updateFeatureConfig", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [FeatureKey.LEARNING_PATHS],
+      enabledModules: [ModuleKey.LEARNING_PATHS],
       widgetConfig: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -32,91 +32,91 @@ describe("updateFeatureConfig", () => {
   const deps = () => ({ userRepository });
 
   test("Should return UserNotFoundError when user does not exist", async () => {
-    const result = await updateFeatureConfig(deps(), {
+    const result = await updateEnabledModules(deps(), {
       userId: "non-existent-id",
-      featureConfig: [FeatureKey.POMODORO],
+      enabledModules: [ModuleKey.POMODORO],
     });
 
     expect(result).toBeInstanceOf(UserNotFoundError);
   });
 
-  test("Should persist the new featureConfig", async () => {
+  test("Should persist the new enabled modules", async () => {
     await userRepository.save(existingUser);
 
-    await updateFeatureConfig(deps(), {
+    await updateEnabledModules(deps(), {
       userId: existingUser.id,
-      featureConfig: [FeatureKey.POMODORO, FeatureKey.KNOWLEDGE_GRAPH],
+      enabledModules: [ModuleKey.POMODORO, ModuleKey.RECOMMENDATION],
     });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.featureConfig).toEqual([FeatureKey.POMODORO, FeatureKey.KNOWLEDGE_GRAPH]);
+    expect(updated!.enabledModules).toEqual([ModuleKey.POMODORO, ModuleKey.RECOMMENDATION]);
   });
 
-  test("Should return the updated featureConfig in the response", async () => {
+  test("Should return the updated enabled modules in the response", async () => {
     await userRepository.save(existingUser);
 
-    const result = await updateFeatureConfig(deps(), {
+    const result = await updateEnabledModules(deps(), {
       userId: existingUser.id,
-      featureConfig: [FeatureKey.SPACED_REPETITION],
+      enabledModules: [ModuleKey.RECOMMENDATION],
     });
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual([FeatureKey.SPACED_REPETITION]);
+    expect(result.enabledModules).toEqual([ModuleKey.RECOMMENDATION]);
   });
 
-  test("Should fully replace the previous featureConfig", async () => {
+  test("Should fully replace the previous enabled modules", async () => {
     await userRepository.save(existingUser);
 
-    await updateFeatureConfig(deps(), {
+    await updateEnabledModules(deps(), {
       userId: existingUser.id,
-      featureConfig: [FeatureKey.POMODORO],
+      enabledModules: [ModuleKey.POMODORO],
     });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.featureConfig).not.toContain(FeatureKey.LEARNING_PATHS);
-    expect(updated!.featureConfig).toEqual([FeatureKey.POMODORO]);
+    expect(updated!.enabledModules).not.toContain(ModuleKey.LEARNING_PATHS);
+    expect(updated!.enabledModules).toEqual([ModuleKey.POMODORO]);
   });
 
-  test("Should accept an empty array, clearing all enabled features", async () => {
+  test("Should accept an empty array, turning every optional module off", async () => {
     await userRepository.save(existingUser);
 
-    const result = await updateFeatureConfig(deps(), {
+    const result = await updateEnabledModules(deps(), {
       userId: existingUser.id,
-      featureConfig: [],
+      enabledModules: [],
     });
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual([]);
+    expect(result.enabledModules).toEqual([]);
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.featureConfig).toEqual([]);
+    expect(updated!.enabledModules).toEqual([]);
   });
 
-  test("Should accept all valid feature keys simultaneously", async () => {
+  test("Should accept every optional module at once", async () => {
     await userRepository.save(existingUser);
-    const allKeys = Object.values(FeatureKey) as FeatureKey[];
+    const everyOptionalModule = [...OPTIONAL_MODULES];
 
-    const result = await updateFeatureConfig(deps(), {
+    const result = await updateEnabledModules(deps(), {
       userId: existingUser.id,
-      featureConfig: allKeys,
+      enabledModules: everyOptionalModule,
     });
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual(allKeys);
+    expect(result.enabledModules).toEqual(everyOptionalModule);
   });
 
-  test("Should not modify fields unrelated to featureConfig", async () => {
+  test("Should not modify fields unrelated to enabled modules", async () => {
     await userRepository.save(existingUser);
 
-    await updateFeatureConfig(deps(), {
+    await updateEnabledModules(deps(), {
       userId: existingUser.id,
-      featureConfig: [FeatureKey.POMODORO],
+      enabledModules: [ModuleKey.POMODORO],
     });
 
     const updated = await userRepository.findById(existingUser.id);

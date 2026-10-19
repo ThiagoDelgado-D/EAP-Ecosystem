@@ -31,7 +31,7 @@ describe("updateUserAppearance", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -128,7 +128,7 @@ describe("updateUserAppearance", () => {
     if (!updated) throw new UserNotFoundError();
     expect(updated.email).toBe(existingUser.email);
     expect(updated.firstName).toBe(existingUser.firstName);
-    expect(updated.featureConfig).toEqual(existingUser.featureConfig);
+    expect(updated.enabledModules).toEqual(existingUser.enabledModules);
     expect(updated.widgetConfig).toEqual(existingUser.widgetConfig);
     expect(updated.onboardingCompleted).toBe(existingUser.onboardingCompleted);
   });

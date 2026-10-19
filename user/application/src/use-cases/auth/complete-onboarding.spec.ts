@@ -3,7 +3,7 @@ import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
 import { completeOnboarding } from "./complete-onboarding.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
-import type { User } from "@user/domain";
+import { ModuleKey, type User } from "@user/domain";
 
 describe("completeOnboarding", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -22,7 +22,7 @@ describe("completeOnboarding", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: false,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -32,7 +32,7 @@ describe("completeOnboarding", () => {
   test("Should return UserNotFoundError when user does not exist", async () => {
     const result = await completeOnboarding(
       { userRepository },
-      { userId: "non-existent-id", firstName: "Thiago", featureConfig: [] },
+      { userId: "non-existent-id", firstName: "Thiago", enabledModules: [] },
     );
 
     expect(result).toBeInstanceOf(UserNotFoundError);
@@ -43,7 +43,7 @@ describe("completeOnboarding", () => {
 
     await completeOnboarding(
       { userRepository },
-      { userId: existingUser.id, firstName: "Thiago", featureConfig: [] },
+      { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
     );
 
     const updated = await userRepository.findById(existingUser.id);
@@ -55,14 +55,14 @@ describe("completeOnboarding", () => {
 
     await completeOnboarding(
       { userRepository },
-      { userId: existingUser.id, firstName: "Thiago", featureConfig: [] },
+      { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
     );
 
     const updated = await userRepository.findById(existingUser.id);
     expect(updated!.firstName).toBe("Thiago");
   });
 
-  test("Should persist the provided featureConfig", async () => {
+  test("Should persist the provided enabledModules", async () => {
     await userRepository.save(existingUser);
 
     await completeOnboarding(
@@ -70,12 +70,12 @@ describe("completeOnboarding", () => {
       {
         userId: existingUser.id,
         firstName: "Thiago",
-        featureConfig: ["learning-paths", "pomodoro"],
+        enabledModules: [ModuleKey.LEARNING_PATHS, ModuleKey.POMODORO],
       },
     );
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.featureConfig).toEqual(["learning-paths", "pomodoro"]);
+    expect(updated!.enabledModules).toEqual([ModuleKey.LEARNING_PATHS, ModuleKey.POMODORO]);
   });
 
   test("Should return the updated user data", async () => {
@@ -86,7 +86,7 @@ describe("completeOnboarding", () => {
       {
         userId: existingUser.id,
         firstName: "Thiago",
-        featureConfig: ["learning-paths"],
+        enabledModules: [ModuleKey.LEARNING_PATHS],
       },
     );
 
@@ -97,7 +97,7 @@ describe("completeOnboarding", () => {
     expect(result.user.email).toBe(existingUser.email);
     expect(result.user.firstName).toBe("Thiago");
     expect(result.user.onboardingCompleted).toBe(true);
-    expect(result.user.featureConfig).toEqual(["learning-paths"]);
+    expect(result.user.enabledModules).toEqual([ModuleKey.LEARNING_PATHS]);
   });
 
   test("Should not modify fields unrelated to onboarding", async () => {
@@ -105,7 +105,7 @@ describe("completeOnboarding", () => {
 
     await completeOnboarding(
       { userRepository },
-      { userId: existingUser.id, firstName: "Thiago", featureConfig: [] },
+      { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
     );
 
     const updated = await userRepository.findById(existingUser.id);
@@ -114,17 +114,17 @@ describe("completeOnboarding", () => {
     expect(updated!.enabled).toBe(true);
   });
 
-  test("Should complete onboarding with an empty featureConfig", async () => {
+  test("Should complete onboarding with every optional module turned off", async () => {
     await userRepository.save(existingUser);
 
     const result = await completeOnboarding(
       { userRepository },
-      { userId: existingUser.id, firstName: "Thiago", featureConfig: [] },
+      { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
     );
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.user.featureConfig).toEqual([]);
+    expect(result.user.enabledModules).toEqual([]);
   });
 });

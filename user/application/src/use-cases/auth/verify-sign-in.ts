@@ -7,7 +7,7 @@ import type {
   Session,
   User,
 } from "@user/domain";
-import { DEFAULT_APPEARANCE } from "@user/domain";
+import { DEFAULT_APPEARANCE, DEFAULT_ENABLED_MODULES } from "@user/domain";
 import type { CryptoService, EmailService, JwtService } from "domain-lib";
 import { createValidationSchema, emailField, stringField } from "domain-lib";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
@@ -39,7 +39,7 @@ export interface VerifySignInResponseModel {
     | "firstName"
     | "lastName"
     | "onboardingCompleted"
-    | "featureConfig"
+    | "enabledModules"
   >;
 }
 
@@ -95,7 +95,7 @@ export const verifySignIn = async (
       userName: null,
       enabled: true,
       onboardingCompleted: false,
-      featureConfig: [],
+      enabledModules: [...DEFAULT_ENABLED_MODULES],
       widgetConfig: [],
       appearance: { ...DEFAULT_APPEARANCE },
       createdAt: new Date(),
@@ -155,7 +155,7 @@ export const verifySignIn = async (
       firstName: user.firstName,
       lastName: user.lastName,
       onboardingCompleted: user.onboardingCompleted,
-      featureConfig: user.featureConfig,
+      enabledModules: user.enabledModules,
     },
   };
 };

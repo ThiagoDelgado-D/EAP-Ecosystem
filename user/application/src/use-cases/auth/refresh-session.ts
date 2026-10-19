@@ -30,7 +30,7 @@ export interface RefreshSessionResponseModel {
     | "firstName"
     | "lastName"
     | "onboardingCompleted"
-    | "featureConfig"
+    | "enabledModules"
   >;
 }
 
@@ -78,7 +78,7 @@ export const refreshSession = async (
       firstName: user.firstName,
       lastName: user.lastName,
       onboardingCompleted: user.onboardingCompleted,
-      featureConfig: user.featureConfig,
+      enabledModules: user.enabledModules,
     },
   };
 };

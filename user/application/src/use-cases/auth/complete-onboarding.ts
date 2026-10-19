@@ -1,4 +1,4 @@
-import type { FeatureKey, IUserRepository } from "@user/domain";
+import type { IUserRepository, ModuleKey } from "@user/domain";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
 
 export interface CompleteOnboardingDependencies {
@@ -8,7 +8,7 @@ export interface CompleteOnboardingDependencies {
 export interface CompleteOnboardingRequestModel {
   userId: string;
   firstName: string;
-  featureConfig: FeatureKey[];
+  enabledModules: ModuleKey[];
 }
 
 export interface CompleteOnboardingResponseModel {
@@ -17,7 +17,7 @@ export interface CompleteOnboardingResponseModel {
     email: string;
     firstName: string;
     onboardingCompleted: boolean;
-    featureConfig: FeatureKey[];
+    enabledModules: ModuleKey[];
   };
 }
 
@@ -31,7 +31,7 @@ export const completeOnboarding = async (
   const updated = {
     ...user,
     firstName: request.firstName,
-    featureConfig: request.featureConfig,
+    enabledModules: request.enabledModules,
     onboardingCompleted: true,
     updatedAt: new Date(),
   };
@@ -44,7 +44,7 @@ export const completeOnboarding = async (
       email: updated.email,
       firstName: updated.firstName,
       onboardingCompleted: updated.onboardingCompleted,
-      featureConfig: updated.featureConfig,
+      enabledModules: updated.enabledModules,
     },
   };
 };

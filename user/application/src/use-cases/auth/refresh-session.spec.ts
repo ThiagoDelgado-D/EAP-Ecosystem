@@ -30,7 +30,7 @@ describe("refreshSession", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       createdAt: new Date(),
       updatedAt: new Date(),
