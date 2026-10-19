@@ -35,12 +35,11 @@ export class ModulesComponent implements OnInit {
   }
 
   isToggleable(module: ModuleDefinition): boolean {
-    return !module.alwaysOn && module.badge !== 'planned' && this.isFeatureKey(module.key);
+    return !module.alwaysOn && this.isFeatureKey(module.key);
   }
 
   statusLabel(module: ModuleDefinition): string {
     if (module.alwaysOn) return 'Always enabled';
-    if (module.badge === 'planned') return '';
     if (this.isOn(module.key)) return 'Enabled';
     return 'Disabled';
   }
