@@ -18,6 +18,7 @@
     "seed": "node -r reflect-metadata/lite -r tsconfig-paths/register --loader ts-node/esm src/scripts/seed.ts",
     "migration:generate": "typeorm-ts-node-esm -d src/database/data-source.ts migration:generate src/database/migrations/migration",
     "migration:run": "typeorm-ts-node-esm -d src/database/data-source.ts migration:run",
+    "migration:run:prod": "typeorm migration:run -d dist/apps/api/src/database/data-source.js",
     "migration:revert": "typeorm-ts-node-esm -d src/database/data-source.ts migration:revert"
   },
   "dependencies": {

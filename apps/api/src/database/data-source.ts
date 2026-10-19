@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import { extname, join } from "node:path";
 import { config } from "dotenv";
 import { DataSource } from "typeorm";
 import {
@@ -49,6 +50,12 @@ export const AppDataSource = new DataSource({
     PomodoroBreakEntity,
     RecommendationContextEntity,
   ],
-  migrations: ["src/database/migrations/*.ts"],
+  migrations: [
+    join(
+      import.meta.dirname,
+      "migrations",
+      `*${extname(import.meta.filename)}`,
+    ),
+  ],
   synchronize: false,
 });
