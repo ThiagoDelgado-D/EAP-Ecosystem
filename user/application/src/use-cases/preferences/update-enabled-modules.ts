@@ -1,33 +1,33 @@
-import type { FeatureKey, IUserRepository } from "@user/domain";
+import type { IUserRepository, ModuleKey } from "@user/domain";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
 
-export interface UpdateFeatureConfigDependencies {
+export interface UpdateEnabledModulesDependencies {
   userRepository: IUserRepository;
 }
 
-export interface UpdateFeatureConfigRequest {
+export interface UpdateEnabledModulesRequest {
   userId: string;
-  featureConfig: FeatureKey[];
+  enabledModules: ModuleKey[];
 }
 
-export interface UpdateFeatureConfigResponse {
-  featureConfig: FeatureKey[];
+export interface UpdateEnabledModulesResponse {
+  enabledModules: ModuleKey[];
 }
 
-export const updateFeatureConfig = async (
-  { userRepository }: UpdateFeatureConfigDependencies,
-  request: UpdateFeatureConfigRequest,
-): Promise<UpdateFeatureConfigResponse | UserNotFoundError> => {
+export const updateEnabledModules = async (
+  { userRepository }: UpdateEnabledModulesDependencies,
+  request: UpdateEnabledModulesRequest,
+): Promise<UpdateEnabledModulesResponse | UserNotFoundError> => {
   const user = await userRepository.findById(request.userId);
   if (!user) return new UserNotFoundError();
 
   const updated = {
     ...user,
-    featureConfig: request.featureConfig,
+    enabledModules: request.enabledModules,
     updatedAt: new Date(),
   };
 
   await userRepository.update(updated);
 
-  return { featureConfig: updated.featureConfig };
+  return { enabledModules: updated.enabledModules };
 };

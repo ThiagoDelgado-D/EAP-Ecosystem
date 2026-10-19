@@ -22,7 +22,7 @@ describe("getWidgetConfig", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [WidgetKey.FOCUS_PULSE, WidgetKey.ARCHITECTS_PULSE],
       createdAt: new Date(),
       updatedAt: new Date(),

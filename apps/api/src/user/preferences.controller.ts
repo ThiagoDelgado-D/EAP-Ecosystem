@@ -15,16 +15,16 @@ import type {
 } from "@user/domain";
 import {
   getAccountStats,
-  getFeatureConfig,
+  getEnabledModules,
   getWidgetConfig,
   getUserAppearance,
-  updateFeatureConfig,
+  updateEnabledModules,
   updateWidgetConfig,
   updateUserAppearance,
   resetPreferences,
 } from "@user/application";
 import { BaseError, type UUID } from "domain-lib";
-import { UpdateFeatureConfigDto } from "./dto/request/update-feature-config.dto.js";
+import { UpdateEnabledModulesDto } from "./dto/request/update-enabled-modules.dto.js";
 import { UpdateWidgetConfigDto } from "./dto/request/update-widget-config.dto.js";
 import { UpdateUserAppearanceDto } from "./dto/request/update-user-appearance.dto.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
@@ -44,9 +44,9 @@ export class PreferencesController {
     return getAccountStats({ accountStatsPort: this.accountStatsPort }, { userId });
   }
 
-  @Get("features")
-  async getFeatures(@CurrentUserId() userId: UUID) {
-    const result = await getFeatureConfig(
+  @Get("modules")
+  async getModules(@CurrentUserId() userId: UUID) {
+    const result = await getEnabledModules(
       { userRepository: this.userRepository },
       { userId },
     );
@@ -54,15 +54,15 @@ export class PreferencesController {
     return result;
   }
 
-  @Patch("features")
+  @Patch("modules")
   @HttpCode(200)
-  async updateFeatures(
-    @Body() dto: UpdateFeatureConfigDto,
+  async updateModules(
+    @Body() dto: UpdateEnabledModulesDto,
     @CurrentUserId() userId: UUID,
   ) {
-    const result = await updateFeatureConfig(
+    const result = await updateEnabledModules(
       { userRepository: this.userRepository },
-      { userId, featureConfig: dto.featureConfig },
+      { userId, enabledModules: dto.enabledModules },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;

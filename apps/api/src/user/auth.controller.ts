@@ -20,7 +20,7 @@ import { RATE_LIMITS } from "../rate-limit/rate-limits.js";
 import { randomBytes } from "node:crypto";
 import type {
   EmailService,
-  FeatureKey,
+  ModuleKey,
   IIdentityRepository,
   ISessionRepository,
   ISignInChallengeRepository,
@@ -144,7 +144,7 @@ export class AuthController {
       {
         userId,
         firstName: dto.firstName,
-        featureConfig: dto.featureConfig as FeatureKey[],
+        enabledModules: dto.enabledModules as ModuleKey[],
       },
     );
 
@@ -246,7 +246,7 @@ export class AuthController {
       email: result.user.email,
       first_name: result.user.firstName,
       last_name: result.user.lastName,
-      feature_config: result.user.featureConfig.join(","),
+      enabled_modules: result.user.enabledModules.join(","),
       onboarding: String(!result.user.onboardingCompleted),
     });
 

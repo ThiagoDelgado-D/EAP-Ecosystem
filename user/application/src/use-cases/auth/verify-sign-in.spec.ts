@@ -7,7 +7,7 @@ import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { verifySignIn } from "./verify-sign-in.js";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
 import type { Identity, SignInChallenge, User } from "@user/domain";
-import { DEFAULT_APPEARANCE } from "@user/domain";
+import { DEFAULT_APPEARANCE, DEFAULT_ENABLED_MODULES } from "@user/domain";
 import { MockedEmailService } from "../../mocks/mock-email-service.js";
 import type { TemplateSendEmailOptions } from "domain-lib";
 
@@ -105,7 +105,7 @@ describe("verifySignIn", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -139,7 +139,7 @@ describe("verifySignIn", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -178,7 +178,7 @@ describe("verifySignIn", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -413,5 +413,12 @@ describe("verifySignIn", () => {
 
     const user = userRepository.users[0];
     expect(user.appearance).toEqual(DEFAULT_APPEARANCE);
+  });
+
+  test("Should create a new user with every optional module enabled", async () => {
+    await verifySignIn(deps(), { email: EMAIL, code: VALID_CODE });
+
+    const user = userRepository.users[0];
+    expect(user.enabledModules).toEqual(DEFAULT_ENABLED_MODULES);
   });
 });

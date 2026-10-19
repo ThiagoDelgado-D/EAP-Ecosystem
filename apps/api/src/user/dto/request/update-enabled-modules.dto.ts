@@ -1,8 +1,8 @@
 import { IsArray, IsIn } from "class-validator";
-import { FeatureKey } from "@user/domain";
+import { OPTIONAL_MODULES, type ModuleKey } from "@user/domain";
 
-export class UpdateFeatureConfigDto {
+export class UpdateEnabledModulesDto {
   @IsArray()
-  @IsIn(Object.values(FeatureKey), { each: true })
-  featureConfig: FeatureKey[];
+  @IsIn(OPTIONAL_MODULES, { each: true })
+  enabledModules: ModuleKey[];
 }

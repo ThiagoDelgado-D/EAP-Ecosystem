@@ -1,5 +1,5 @@
 import { IsArray, IsIn, IsString, MinLength } from "class-validator";
-import { FeatureKey } from "@user/domain";
+import { OPTIONAL_MODULES } from "@user/domain";
 import { Transform } from "class-transformer";
 
 export class CompleteOnboardingDto {
@@ -9,6 +9,6 @@ export class CompleteOnboardingDto {
   firstName: string;
 
   @IsArray()
-  @IsIn(Object.values(FeatureKey), { each: true })
-  featureConfig: string[];
+  @IsIn(OPTIONAL_MODULES, { each: true })
+  enabledModules: string[];
 }

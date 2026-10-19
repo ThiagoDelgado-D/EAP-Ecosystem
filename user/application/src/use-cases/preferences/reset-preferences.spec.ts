@@ -3,7 +3,7 @@ import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
 import { resetPreferences } from "./reset-preferences.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
-import { FeatureKey, type User } from "@user/domain";
+import { DEFAULT_ENABLED_MODULES, ModuleKey, type User } from "@user/domain";
 
 describe("resetPreferences", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
@@ -22,7 +22,7 @@ describe("resetPreferences", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [FeatureKey.LEARNING_PATHS, FeatureKey.POMODORO],
+      enabledModules: [ModuleKey.LEARNING_PATHS],
       widgetConfig: ["focus-pulse", "architects-pulse"],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -39,13 +39,13 @@ describe("resetPreferences", () => {
     expect(result).toBeInstanceOf(UserNotFoundError);
   });
 
-  test("Should set featureConfig to an empty array", async () => {
+  test("Should turn every optional module back on", async () => {
     await userRepository.save(existingUser);
 
     await resetPreferences(deps(), { userId: existingUser.id });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.featureConfig).toEqual([]);
+    expect(updated!.enabledModules).toEqual(DEFAULT_ENABLED_MODULES);
   });
 
   test("Should set widgetConfig to an empty array", async () => {
@@ -57,17 +57,17 @@ describe("resetPreferences", () => {
     expect(updated!.widgetConfig).toEqual([]);
   });
 
-  test("Should clear both featureConfig and widgetConfig in a single call", async () => {
+  test("Should reset both enabledModules and widgetConfig in a single call", async () => {
     await userRepository.save(existingUser);
 
     await resetPreferences(deps(), { userId: existingUser.id });
 
     const updated = await userRepository.findById(existingUser.id);
-    expect(updated!.featureConfig).toEqual([]);
+    expect(updated!.enabledModules).toEqual(DEFAULT_ENABLED_MODULES);
     expect(updated!.widgetConfig).toEqual([]);
   });
 
-  test("Should return empty arrays in the response", async () => {
+  test("Should return the reset preferences in the response", async () => {
     await userRepository.save(existingUser);
 
     const result = await resetPreferences(deps(), { userId: existingUser.id });
@@ -75,7 +75,7 @@ describe("resetPreferences", () => {
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual([]);
+    expect(result.enabledModules).toEqual(DEFAULT_ENABLED_MODULES);
     expect(result.widgetConfig).toEqual([]);
   });
 
@@ -91,20 +91,20 @@ describe("resetPreferences", () => {
     expect(updated!.enabled).toBe(true);
   });
 
-  test("Should complete without error when preferences are already empty", async () => {
-    const userWithEmptyConfig: User = {
+  test("Should complete without error when preferences are already at their defaults", async () => {
+    const userAtDefaults: User = {
       ...existingUser,
-      featureConfig: [],
+      enabledModules: [...DEFAULT_ENABLED_MODULES],
       widgetConfig: [],
     };
-    await userRepository.save(userWithEmptyConfig);
+    await userRepository.save(userAtDefaults);
 
     const result = await resetPreferences(deps(), { userId: existingUser.id });
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual([]);
+    expect(result.enabledModules).toEqual(DEFAULT_ENABLED_MODULES);
     expect(result.widgetConfig).toEqual([]);
   });
 });

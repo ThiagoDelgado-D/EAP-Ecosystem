@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
-import { getFeatureConfig } from "./get-feature-config.js";
+import { getEnabledModules } from "./get-enabled-modules.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
-import { FeatureKey, type User } from "@user/domain";
+import { ModuleKey, OPTIONAL_MODULES, type User } from "@user/domain";
 
-describe("getFeatureConfig", () => {
+describe("getEnabledModules", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
   let existingUser: User;
@@ -22,7 +22,7 @@ describe("getFeatureConfig", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [FeatureKey.LEARNING_PATHS, FeatureKey.POMODORO],
+      enabledModules: [ModuleKey.LEARNING_PATHS, ModuleKey.POMODORO],
       widgetConfig: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -32,64 +32,64 @@ describe("getFeatureConfig", () => {
   const deps = () => ({ userRepository });
 
   test("Should return UserNotFoundError when user does not exist", async () => {
-    const result = await getFeatureConfig(deps(), { userId: "non-existent-id" });
+    const result = await getEnabledModules(deps(), { userId: "non-existent-id" });
 
     expect(result).toBeInstanceOf(UserNotFoundError);
   });
 
-  test("Should return the featureConfig for an existing user", async () => {
+  test("Should return the enabled modules for an existing user", async () => {
     await userRepository.save(existingUser);
 
-    const result = await getFeatureConfig(deps(), { userId: existingUser.id });
+    const result = await getEnabledModules(deps(), { userId: existingUser.id });
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual([FeatureKey.LEARNING_PATHS, FeatureKey.POMODORO]);
+    expect(result.enabledModules).toEqual([ModuleKey.LEARNING_PATHS, ModuleKey.POMODORO]);
   });
 
-  test("Should return an empty array when featureConfig is empty", async () => {
-    const userWithEmptyConfig: User = { ...existingUser, featureConfig: [] };
-    await userRepository.save(userWithEmptyConfig);
+  test("Should return an empty array when every optional module is off", async () => {
+    const userWithEveryModuleOff: User = { ...existingUser, enabledModules: [] };
+    await userRepository.save(userWithEveryModuleOff);
 
-    const result = await getFeatureConfig(deps(), { userId: existingUser.id });
+    const result = await getEnabledModules(deps(), { userId: existingUser.id });
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual([]);
+    expect(result.enabledModules).toEqual([]);
   });
 
-  test("Should return all feature keys when all are enabled", async () => {
-    const allKeys = Object.values(FeatureKey) as FeatureKey[];
-    await userRepository.save({ ...existingUser, featureConfig: allKeys });
+  test("Should return every optional module when all are on", async () => {
+    const everyOptionalModule = [...OPTIONAL_MODULES];
+    await userRepository.save({ ...existingUser, enabledModules: everyOptionalModule });
 
-    const result = await getFeatureConfig(deps(), { userId: existingUser.id });
+    const result = await getEnabledModules(deps(), { userId: existingUser.id });
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual(allKeys);
+    expect(result.enabledModules).toEqual(everyOptionalModule);
   });
 
   test("Should not modify the user record", async () => {
     await userRepository.save(existingUser);
 
-    await getFeatureConfig(deps(), { userId: existingUser.id });
+    await getEnabledModules(deps(), { userId: existingUser.id });
 
     const unchanged = await userRepository.findById(existingUser.id);
-    expect(unchanged!.featureConfig).toEqual(existingUser.featureConfig);
+    expect(unchanged!.enabledModules).toEqual(existingUser.enabledModules);
     expect(unchanged!.updatedAt).toEqual(existingUser.updatedAt);
   });
 
-  test("Should return an empty array when featureConfig is null at runtime (defensive null-coalescing)", async () => {
-    await userRepository.save({ ...existingUser, featureConfig: null as any });
+  test("Should return an empty array when enabledModules is null at runtime (defensive null-coalescing)", async () => {
+    await userRepository.save({ ...existingUser, enabledModules: null as any });
 
-    const result = await getFeatureConfig(deps(), { userId: existingUser.id });
+    const result = await getEnabledModules(deps(), { userId: existingUser.id });
 
     expect(result).not.toBeInstanceOf(UserNotFoundError);
     if (result instanceof UserNotFoundError) return;
 
-    expect(result.featureConfig).toEqual([]);
+    expect(result.enabledModules).toEqual([]);
   });
 });

@@ -5,7 +5,7 @@ import { mockIdentityRepository } from "../../mocks/mock-identity-repository.js"
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { handleGoogleOAuth, GoogleOAuthError } from "./handle-google-oauth.js";
 import type { Identity, User } from "@user/domain";
-import { DEFAULT_APPEARANCE } from "@user/domain";
+import { DEFAULT_APPEARANCE, DEFAULT_ENABLED_MODULES } from "@user/domain";
 
 const GOOGLE_PROFILE = {
   id: "google_sub_123",
@@ -119,7 +119,7 @@ describe("handleGoogleOAuth", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -155,7 +155,7 @@ describe("handleGoogleOAuth", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -196,7 +196,7 @@ describe("handleGoogleOAuth", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -238,7 +238,7 @@ describe("handleGoogleOAuth", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: true,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -517,7 +517,7 @@ describe("handleGoogleOAuth", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: false,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
@@ -627,6 +627,15 @@ describe("handleGoogleOAuth", () => {
     expect(user.appearance).toEqual(DEFAULT_APPEARANCE);
   });
 
+  test("Should create a new user with every optional module enabled", async () => {
+    stubGoogleSuccess();
+
+    await handleGoogleOAuth(deps(), GOOGLE_CONFIG, { code: "auth_code" });
+
+    const user = userRepository.users[0];
+    expect(user.enabledModules).toEqual(DEFAULT_ENABLED_MODULES);
+  });
+
   test("Should recover and sign in when a concurrent process linked the Google Identity before the save completed", async () => {
     stubGoogleSuccess();
 
@@ -638,7 +647,7 @@ describe("handleGoogleOAuth", () => {
       userName: null,
       enabled: true,
       onboardingCompleted: false,
-      featureConfig: [],
+      enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
       createdAt: new Date(),
