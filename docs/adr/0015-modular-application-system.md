@@ -2,8 +2,9 @@
 
 ## Status
 
-Accepted. Revised 2026-10-13: Layer 1 is replaced, see the revision at
-the end of this document.
+Accepted. Revised 2026-10-13: Layer 1 is replaced. Revised 2026-10-21:
+capability keys, entitlements and the beta channel are defined. See the
+revisions at the end of this document.
 
 ## Context
 
@@ -457,6 +458,215 @@ check. It never keeps a parallel list of what is on.
   current dashboard, so it belongs with a redesign of the dashboard's
   widgets. The intake can grow a question for it then.
 
+## Revision 2026-10-21 — Capability tree, entitlements and beta channel
+
+**Status of this revision:** Accepted
+
+### What the previous revision left open
+
+The 2026-10-13 revision fixed the formula
+`capabilities = catalog ∩ entitlements ∩ preferences`, the three states
+`enabled`, `disabled` and `locked`, and one rule for plans: capability keys
+may be finer than module keys. It did not say what a capability key is,
+how a finer key relates to its module, how a feature that depends on two
+modules resolves, where entitlements come from, or what shape the resolved
+capabilities take on the wire.
+
+### Why it is decided now
+
+The capability check is the next piece to build, and every surface that
+reads it (navigation, guards, the dashboard, the command palette and the
+recommendation engine) depends on the answers. Deciding the keys after
+those surfaces are wired would mean rewiring them. An opt-in channel for
+experimental features is also close enough to plan for, and it fits the
+same check.
+
+### New decision
+
+#### A capability is a unit of value, not a screen or a way of seeing one
+
+A capability is something the learner can do that is worth having on its
+own: something a plan could grant or a beta could introduce separately.
+Screens and routes are not capabilities, because they change with the
+interface while the value stays the same. How a feature is presented is not
+a capability either. The zen view, the floating mini timer, the default
+view mode and the shortcut hints change how the learner looks at Pomodoro,
+not what Pomodoro does, so they stay presentation preferences in Settings.
+
+A capability joins the catalog in the same change that ships it, as modules
+already do.
+
+#### Capabilities form a tree rooted at the modules
+
+Every capability has one parent. The roots are the modules, and a key is
+written as `<module>.<capability>`. The tree is the record of what each
+module does and what it is made of:
+
+| Capability | Value | Requires |
+|---|---|---|
+| `resource-library` | Save and organize study material. Core, cannot be turned off | |
+| `resource-library.url-import` | Create a resource from a link, with a preview | |
+| `resource-library.voice-capture` | Capture a resource by voice | |
+| `resource-library.file-import` | Import resources from a file | |
+| `learning-paths` | Arrange material into routes of ordered steps | |
+| `learning-paths.graph` | See and edit a path as a graph | |
+| `pomodoro` | Timed focus sessions | |
+| `pomodoro.breaks` | Tracked breaks between sessions | |
+| `pomodoro.weekly-summary` | A weekly readout of focus and breaks | |
+| `pomodoro.path-focus` | Focus a session on a learning path step | `learning-paths` |
+| `pomodoro.suggestion` | A suggestion of what to focus on when starting | `recommendation` |
+| `recommendation` | What to study now, given the learner's state | |
+| `recommendation.calibration` | Calibrate energy, mental state and available minutes | |
+| `recommendation.path-steps` | Propose the next step of a learning path | `learning-paths` |
+| `beta-channel` | Access to features still in beta | |
+
+Navigation entries, routes, dashboard widgets, command palette entries and
+the recommendation engine's candidate selection are surfaces, not
+capabilities. Each surface reads the capability of the module or feature
+that owns it.
+
+#### A feature that spans two modules belongs to one of them
+
+Every feature that touches two modules has an owner and a provider. Focusing
+a session on a path step is Pomodoro's feature, and Learning Paths provides
+the steps. Such a feature is a child of its owner and declares the provider
+in `requires`. Turning the provider off removes only that feature: Pomodoro
+still runs free and resource sessions without Learning Paths, and the
+recommendation engine still proposes resources.
+
+#### Resolving a capability
+
+A capability's state is resolved in this order:
+
+1. If it has a parent that is not `enabled`, it takes the parent's state.
+   Nothing is offered inside a module the learner cannot see.
+2. If the learner's entitlements don't include it, it is `locked`.
+3. If anything it requires is not `enabled`, it takes the worst of those
+   states, where `locked` is worse than `disabled`.
+4. If it is a module the learner turned off, it is `disabled`.
+5. Otherwise it is `enabled`.
+
+`locked` takes precedence over `disabled`. A capability the plan doesn't
+grant has no toggle, so a learner can only have turned it off while it was
+still granted, for example before moving to a plan without it. In that case
+the offer is shown, and the stored preference stays: if the capability is
+granted again, the learner finds it the way they left it.
+
+#### History from a module that is off stays truthful
+
+Turning a module off never deletes its data, and what was already done
+still counts. Time focused on a path step still appears in Pomodoro's
+history and weekly summary, under the path's name, without a link into the
+hidden module. A session already running when its provider is turned off
+continues, since preferences are not enforced by the API, and nothing in
+its outcome points into the hidden module.
+
+The API rejects only what is `locked`, as the previous revision fixed. Until
+plans exist nothing is `locked`, so no request is rejected.
+
+#### Entitlements come from a port
+
+The application layer declares an `EntitlementsProvider` port that returns
+the set of capability keys granted to a learner. Until plans exist, its one
+adapter is an implicit plan that grants every key in the catalog. A plan
+decision replaces the adapter, not the capability check or the screens that
+read it. The port returns keys only: limits are left to the plan decision.
+
+#### The beta channel is a capability like any other
+
+Each capability carries a stage, `stable` or `beta`. A `beta` capability
+requires `beta-channel`, and `beta-channel` resolves through the same rules:
+
+- Being allowed to join is an entitlement. The implicit plan grants it to
+  every learner.
+- Joining is a preference: one switch in Settings, which the learner can
+  turn off at any time.
+
+So a beta capability is `enabled` for a learner who joined and `disabled`
+for one who didn't. When a beta capability becomes stable its stage
+changes and it resolves like any other capability. Leaving the channel, or
+retiring a beta capability, hides it without deleting what was created
+with it.
+
+The opt-in is stored with the learner, next to `enabledModules`.
+
+#### The resolved capabilities on the wire
+
+The API returns every capability in the catalog, keyed by capability, each
+with its state and stage:
+
+```json
+"capabilities": {
+  "learning-paths": { "state": "enabled", "stage": "stable" },
+  "pomodoro.path-focus": { "state": "enabled", "stage": "stable" }
+}
+```
+
+Every key is always present, so a missing key never has to be read as off.
+An object per key leaves room for later fields, such as a limit, without
+changing the contract's shape. The capabilities are added next to
+`enabledModules` in the session responses and the preferences responses.
+`enabledModules` stays the learner's raw choice, which Settings edits, and
+no surface reads it to decide what to show.
+
+### Consequences of this revision
+
+#### Positive
+
+- Each key states the value it stands for, so the catalog doubles as the
+  record of what the product does.
+- A feature that depends on two modules degrades on its own instead of
+  every screen reasoning about both modules.
+- Plans, access to the beta channel and its later restrictions change one
+  adapter, not the check or the screens.
+- A preference outlives a change of plan in both directions.
+
+#### Negative
+
+- Finer keys are defined before plans or betas read most of them, so for
+  now most children resolve exactly like their module.
+- Every surface has to be mapped to the right capability, a larger wiring
+  job than reading module keys.
+- The port makes resolving capabilities asynchronous and adds a dependency
+  to every use case that returns them, for an adapter that grants
+  everything.
+- The beta opt-in is a new persisted field and needs a migration.
+
+### Alternatives rejected in this revision
+
+- **One key per screen or route** — rejected. It ties the domain to the
+  interface's structure, so reorganizing screens would change the contract.
+- **Flat keys with no parent** — rejected. Turning a module off would have
+  to be propagated to its features by hand, and the record of what each
+  module contains would be lost.
+- **Turning individual capabilities on and off** — rejected. The learner
+  chooses modules. Finer keys exist for plans and betas, and a toggle per
+  capability would reopen what preferences are.
+- **Presentation modes as capabilities** — rejected. A way of looking at a
+  feature doesn't change what the learner can do with it.
+- **`disabled` taking precedence over `locked`** — rejected. It hides an
+  offer from a learner who turned something off while it was still
+  granted.
+- **Opting in per beta feature** — rejected. One switch is simpler to
+  understand and to leave.
+- **Entitlements as a domain constant** — rejected. It would change call
+  sites when plans arrive instead of replacing one adapter.
+- **An array of `{ key, state }`** — rejected. Every reader would search
+  the list, and duplicates would have to be guarded against.
+
+### Deferred
+
+- **A fourth state for beta capabilities** a learner hasn't joined, shown
+  as an invitation instead of hidden.
+- **How access to the beta channel is restricted**: access codes, given as
+  an incentive and reward to active learners, or admission in batches.
+  Both are adapters of the same port.
+- **What a retired beta does with its data**, beyond not deleting it.
+- **Limits** within a granted capability, for example a number of learning
+  paths.
+- **Where the API enforces each capability** once something can be
+  `locked`.
+
 ## References
 
 - ADR-0014: Real-time Communication Strategy
@@ -472,3 +682,12 @@ Revision 2026-10-13 — the modules in the new catalog and the one removed:
 - ADR-0022: Pomodoro Focus Sessions — `pomodoro` module
 - ADR-0027: Recommendation Engine — `recommendation` module; stops proposing
   candidates from modules that are off
+
+Revision 2026-10-21 — the decisions the capability tree draws on:
+
+- ADR-0022: Pomodoro Focus Sessions — `pomodoro.path-focus`, sessions
+  focused on a path step
+- ADR-0025: Pomodoro Weekly Summary — `pomodoro.weekly-summary`, which keeps
+  showing time from modules that are off
+- ADR-0027: Recommendation Engine — `recommendation.path-steps`, path step
+  candidates
