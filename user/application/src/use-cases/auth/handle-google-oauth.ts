@@ -1,4 +1,6 @@
 import type {
+  Capabilities,
+  EntitlementsProvider,
   Identity,
   IIdentityRepository,
   ISessionRepository,
@@ -8,6 +10,7 @@ import type {
 } from "@user/domain";
 import { DEFAULT_APPEARANCE, DEFAULT_ENABLED_MODULES } from "@user/domain";
 import type { CryptoService, JwtService } from "domain-lib";
+import { resolveLearnerCapabilities } from "../../utils/resolve-learner-capabilities.js";
 
 export interface HandleGoogleOAuthDependencies {
   userRepository: IUserRepository;
@@ -15,6 +18,7 @@ export interface HandleGoogleOAuthDependencies {
   sessionRepository: ISessionRepository;
   cryptoService: CryptoService;
   jwtService: JwtService;
+  entitlementsProvider: EntitlementsProvider;
 }
 
 export interface GoogleOAuthConfig {
@@ -40,7 +44,7 @@ export interface HandleGoogleOAuthResponseModel {
     | "lastName"
     | "onboardingCompleted"
     | "enabledModules"
-  >;
+  > & { capabilities: Capabilities };
 }
 
 interface GoogleTokenResponse {
@@ -58,6 +62,7 @@ interface GoogleUserProfile {
 export const handleGoogleOAuth = async (
   {
     cryptoService,
+    entitlementsProvider,
     identityRepository,
     jwtService,
     sessionRepository,
@@ -202,6 +207,7 @@ export const handleGoogleOAuth = async (
       lastName: user.lastName,
       onboardingCompleted: user.onboardingCompleted,
       enabledModules: user.enabledModules,
+      capabilities: await resolveLearnerCapabilities(entitlementsProvider, user),
     },
   };
 };

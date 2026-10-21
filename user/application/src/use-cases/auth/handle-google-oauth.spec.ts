@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { mockCryptoService, mockJwtService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { mockIdentityRepository } from "../../mocks/mock-identity-repository.js";
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { handleGoogleOAuth, GoogleOAuthError } from "./handle-google-oauth.js";
 import type { Identity, User } from "@user/domain";
-import { DEFAULT_APPEARANCE, DEFAULT_ENABLED_MODULES } from "@user/domain";
+import {
+  CapabilityState,
+  DEFAULT_APPEARANCE,
+  DEFAULT_ENABLED_MODULES,
+} from "@user/domain";
 
 const GOOGLE_PROFILE = {
   id: "google_sub_123",
@@ -48,6 +53,7 @@ describe("handleGoogleOAuth", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let jwtService: ReturnType<typeof mockJwtService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
+  let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let identityRepository: ReturnType<typeof mockIdentityRepository>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
 
@@ -56,6 +62,7 @@ describe("handleGoogleOAuth", () => {
     cryptoService = mockCryptoService();
     jwtService = mockJwtService();
     userRepository = mockUserRepository();
+    entitlementsProvider = mockEntitlementsProvider();
     identityRepository = mockIdentityRepository();
     sessionRepository = mockSessionRepository();
   });
@@ -66,6 +73,7 @@ describe("handleGoogleOAuth", () => {
     userRepository,
     identityRepository,
     sessionRepository,
+    entitlementsProvider,
   });
 
   test("Should create a new User when no account exists for the Google email", async () => {
@@ -686,5 +694,16 @@ describe("handleGoogleOAuth", () => {
     expect(result.user.email).toBe(GOOGLE_PROFILE.email);
     expect(sessionRepository.count()).toBe(1);
     expect(sessionRepository.sessions[0].userId).toBe(concurrentUser.id);
+  });
+
+  test("Should return every module enabled for a learner who just signed up with Google", async () => {
+    stubGoogleSuccess();
+
+    const result = await handleGoogleOAuth(deps(), GOOGLE_CONFIG, { code: "auth_code" });
+    if (result instanceof GoogleOAuthError) throw result;
+
+    for (const module of DEFAULT_ENABLED_MODULES) {
+      expect(result.user.capabilities[module].state).toBe(CapabilityState.ENABLED);
+    }
   });
 });
