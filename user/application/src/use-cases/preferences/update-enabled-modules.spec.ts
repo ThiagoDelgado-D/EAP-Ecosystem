@@ -1,18 +1,27 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { updateEnabledModules } from "./update-enabled-modules.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
-import { ModuleKey, OPTIONAL_MODULES, type User } from "@user/domain";
+import {
+  CapabilityKey,
+  CapabilityState,
+  ModuleKey,
+  OPTIONAL_MODULES,
+  type User,
+} from "@user/domain";
 
 describe("updateEnabledModules", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
+  let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let existingUser: User;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     userRepository = mockUserRepository();
+    entitlementsProvider = mockEntitlementsProvider();
 
     existingUser = {
       id: await cryptoService.generateUUID(),
@@ -29,7 +38,7 @@ describe("updateEnabledModules", () => {
     };
   });
 
-  const deps = () => ({ userRepository });
+  const deps = () => ({ userRepository, entitlementsProvider });
 
   test("Should return UserNotFoundError when user does not exist", async () => {
     const result = await updateEnabledModules(deps(), {
@@ -125,5 +134,20 @@ describe("updateEnabledModules", () => {
     expect(updated!.widgetConfig).toEqual(existingUser.widgetConfig);
     expect(updated!.onboardingCompleted).toBe(existingUser.onboardingCompleted);
     expect(updated!.enabled).toBe(existingUser.enabled);
+  });
+
+  test("Should return capabilities that follow the new modules", async () => {
+    await userRepository.save(existingUser);
+
+    const result = await updateEnabledModules(deps(), {
+      userId: existingUser.id,
+      enabledModules: [ModuleKey.POMODORO],
+    });
+    if (result instanceof UserNotFoundError) throw result;
+
+    expect(result.capabilities[CapabilityKey.POMODORO].state).toBe(CapabilityState.ENABLED);
+    expect(result.capabilities[CapabilityKey.LEARNING_PATHS].state).toBe(
+      CapabilityState.DISABLED,
+    );
   });
 });
