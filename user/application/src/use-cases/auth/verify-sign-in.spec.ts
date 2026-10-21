@@ -1,13 +1,18 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService, mockJwtService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { mockIdentityRepository } from "../../mocks/mock-identity-repository.js";
 import { mockSignInChallengeRepository } from "../../mocks/mock-sign-in-challenge-repository.js";
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { verifySignIn } from "./verify-sign-in.js";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
 import type { Identity, SignInChallenge, User } from "@user/domain";
-import { DEFAULT_APPEARANCE, DEFAULT_ENABLED_MODULES } from "@user/domain";
+import {
+  CapabilityState,
+  DEFAULT_APPEARANCE,
+  DEFAULT_ENABLED_MODULES,
+} from "@user/domain";
 import { MockedEmailService } from "../../mocks/mock-email-service.js";
 import type { TemplateSendEmailOptions } from "domain-lib";
 
@@ -15,6 +20,7 @@ describe("verifySignIn", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let jwtService: ReturnType<typeof mockJwtService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
+  let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let identityRepository: ReturnType<typeof mockIdentityRepository>;
   let signInChallengeRepository: ReturnType<
     typeof mockSignInChallengeRepository
@@ -31,6 +37,7 @@ describe("verifySignIn", () => {
     cryptoService = mockCryptoService();
     jwtService = mockJwtService();
     userRepository = mockUserRepository();
+    entitlementsProvider = mockEntitlementsProvider();
     identityRepository = mockIdentityRepository();
     signInChallengeRepository = mockSignInChallengeRepository();
     sessionRepository = mockSessionRepository();
@@ -57,6 +64,7 @@ describe("verifySignIn", () => {
     signInChallengeRepository,
     sessionRepository,
     emailService,
+    entitlementsProvider,
   });
 
   const waitForWelcomeEmail = () =>
@@ -420,5 +428,14 @@ describe("verifySignIn", () => {
 
     const user = userRepository.users[0];
     expect(user.enabledModules).toEqual(DEFAULT_ENABLED_MODULES);
+  });
+
+  test("Should return every module enabled for a learner who just signed up", async () => {
+    const result = await verifySignIn(deps(), { email: EMAIL, code: VALID_CODE });
+    if (result instanceof InvalidOrExpiredCodeError) throw result;
+
+    for (const module of DEFAULT_ENABLED_MODULES) {
+      expect(result.user.capabilities[module].state).toBe(CapabilityState.ENABLED);
+    }
   });
 });

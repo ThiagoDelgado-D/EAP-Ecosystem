@@ -566,8 +566,10 @@ plans exist nothing is `locked`, so no request is rejected.
 
 #### Entitlements come from a port
 
-The application layer declares an `EntitlementsProvider` port that returns
-the set of capability keys granted to a learner. Until plans exist, its one
+The domain declares an `EntitlementsProvider` port, next to its other
+ports, that returns the set of capability keys granted to a learner. The
+application layer asks it for the learner's grant before resolving
+capabilities. Until plans exist, its one
 adapter is an implicit plan that grants every key in the catalog. A plan
 decision replaces the adapter, not the capability check or the screens that
 read it. The port returns keys only: limits are left to the plan decision.

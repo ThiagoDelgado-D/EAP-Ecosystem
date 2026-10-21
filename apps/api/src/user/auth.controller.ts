@@ -20,6 +20,7 @@ import { RATE_LIMITS } from "../rate-limit/rate-limits.js";
 import { randomBytes } from "node:crypto";
 import type {
   EmailService,
+  EntitlementsProvider,
   ModuleKey,
   IIdentityRepository,
   ISessionRepository,
@@ -69,6 +70,8 @@ export class AuthController {
     @Inject("ICryptoService") private readonly cryptoService: CryptoService,
     @Inject("IJwtService") private readonly jwtService: JwtService,
     @Inject("IEmailService") private readonly emailService: EmailService,
+    @Inject("IEntitlementsProvider")
+    private readonly entitlementsProvider: EntitlementsProvider,
     private readonly env: EnvironmentService,
   ) {}
 
@@ -111,6 +114,7 @@ export class AuthController {
         cryptoService: this.cryptoService,
         jwtService: this.jwtService,
         emailService: this.emailService,
+        entitlementsProvider: this.entitlementsProvider,
       },
       {
         email: dto.email,
@@ -140,7 +144,10 @@ export class AuthController {
     @CurrentUserId() userId: UUID,
   ) {
     const result = await completeOnboarding(
-      { userRepository: this.userRepository },
+      {
+        userRepository: this.userRepository,
+        entitlementsProvider: this.entitlementsProvider,
+      },
       {
         userId,
         firstName: dto.firstName,
@@ -214,6 +221,7 @@ export class AuthController {
         sessionRepository: this.sessionRepository,
         cryptoService: this.cryptoService,
         jwtService: this.jwtService,
+        entitlementsProvider: this.entitlementsProvider,
       },
       {
         clientId: this.env.googleClientId,
@@ -269,6 +277,7 @@ export class AuthController {
         userRepository: this.userRepository,
         cryptoService: this.cryptoService,
         jwtService: this.jwtService,
+        entitlementsProvider: this.entitlementsProvider,
       },
       {
         rawRefreshToken,

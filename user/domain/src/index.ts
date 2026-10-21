@@ -1,5 +1,7 @@
 export * from "./entities/user.js";
 export * from "./entities/module.js";
+export * from "./entities/capability.js";
+export * from "./entities/capability-catalog.js";
 export * from "./entities/identity.js";
 export * from "./entities/sign-in-challenge.js";
 export * from "./entities/session.js";

@@ -1,7 +1,11 @@
 import type { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { TooManyRequestsError, type TemplateSendEmailOptions } from "domain-lib";
-import { SIGN_IN_REQUEST_BACKOFF } from "@user/domain";
+import {
+  CapabilityState,
+  DEFAULT_ENABLED_MODULES,
+  SIGN_IN_REQUEST_BACKOFF,
+} from "@user/domain";
 import {
   generateEmail,
   generateMalformedEmail,
@@ -123,6 +127,22 @@ describe("AuthController (integration)", () => {
 
       expect(response.body.accessToken).toBe(jwtService.issuedTokens[0]);
       expect(response.body.user.email).toBe(SIGN_IN_EMAIL);
+    });
+
+    test("Should return the learner's capabilities with the user", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/auth/request-sign-in")
+        .send({ email: SIGN_IN_EMAIL })
+        .expect(204);
+
+      const response = await request(app.getHttpServer())
+        .post("/api/v1/auth/verify-sign-in")
+        .send({ email: SIGN_IN_EMAIL, code: getCode() })
+        .expect(200);
+
+      for (const module of DEFAULT_ENABLED_MODULES) {
+        expect(response.body.user.capabilities[module].state).toBe(CapabilityState.ENABLED);
+      }
     });
 
     test("Should set refreshToken as HttpOnly cookie", async () => {

@@ -1,8 +1,15 @@
-import type { IUserRepository, ModuleKey } from "@user/domain";
+import type {
+  Capabilities,
+  EntitlementsProvider,
+  IUserRepository,
+  ModuleKey,
+} from "@user/domain";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
+import { resolveLearnerCapabilities } from "../../utils/resolve-learner-capabilities.js";
 
 export interface UpdateEnabledModulesDependencies {
   userRepository: IUserRepository;
+  entitlementsProvider: EntitlementsProvider;
 }
 
 export interface UpdateEnabledModulesRequest {
@@ -12,10 +19,11 @@ export interface UpdateEnabledModulesRequest {
 
 export interface UpdateEnabledModulesResponse {
   enabledModules: ModuleKey[];
+  capabilities: Capabilities;
 }
 
 export const updateEnabledModules = async (
-  { userRepository }: UpdateEnabledModulesDependencies,
+  { userRepository, entitlementsProvider }: UpdateEnabledModulesDependencies,
   request: UpdateEnabledModulesRequest,
 ): Promise<UpdateEnabledModulesResponse | UserNotFoundError> => {
   const user = await userRepository.findById(request.userId);
@@ -29,5 +37,8 @@ export const updateEnabledModules = async (
 
   await userRepository.update(updated);
 
-  return { enabledModules: updated.enabledModules };
+  return {
+    enabledModules: updated.enabledModules,
+    capabilities: await resolveLearnerCapabilities(entitlementsProvider, updated),
+  };
 };

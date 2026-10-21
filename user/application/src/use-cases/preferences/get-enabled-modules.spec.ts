@@ -1,18 +1,27 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { getEnabledModules } from "./get-enabled-modules.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
-import { ModuleKey, OPTIONAL_MODULES, type User } from "@user/domain";
+import {
+  CapabilityKey,
+  CapabilityState,
+  ModuleKey,
+  OPTIONAL_MODULES,
+  type User,
+} from "@user/domain";
 
 describe("getEnabledModules", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
+  let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let existingUser: User;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     userRepository = mockUserRepository();
+    entitlementsProvider = mockEntitlementsProvider();
 
     existingUser = {
       id: await cryptoService.generateUUID(),
@@ -29,7 +38,7 @@ describe("getEnabledModules", () => {
     };
   });
 
-  const deps = () => ({ userRepository });
+  const deps = () => ({ userRepository, entitlementsProvider });
 
   test("Should return UserNotFoundError when user does not exist", async () => {
     const result = await getEnabledModules(deps(), { userId: "non-existent-id" });
@@ -91,5 +100,17 @@ describe("getEnabledModules", () => {
     if (result instanceof UserNotFoundError) return;
 
     expect(result.enabledModules).toEqual([]);
+  });
+
+  test("Should return capabilities that follow the stored modules", async () => {
+    await userRepository.save(existingUser);
+
+    const result = await getEnabledModules(deps(), { userId: existingUser.id });
+    if (result instanceof UserNotFoundError) throw result;
+
+    expect(result.capabilities[CapabilityKey.POMODORO].state).toBe(CapabilityState.ENABLED);
+    expect(result.capabilities[CapabilityKey.RECOMMENDATION].state).toBe(
+      CapabilityState.DISABLED,
+    );
   });
 });

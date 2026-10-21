@@ -1,4 +1,6 @@
 import type {
+  Capabilities,
+  EntitlementsProvider,
   ISessionRepository,
   IUserRepository,
   Session,
@@ -6,12 +8,14 @@ import type {
 } from "@user/domain";
 import type { CryptoService, JwtService } from "domain-lib";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
+import { resolveLearnerCapabilities } from "../../utils/resolve-learner-capabilities.js";
 
 export interface RefreshSessionDependencies {
   sessionRepository: ISessionRepository;
   userRepository: IUserRepository;
   cryptoService: CryptoService;
   jwtService: JwtService;
+  entitlementsProvider: EntitlementsProvider;
 }
 
 export interface RefreshSessionRequestModel {
@@ -31,7 +35,7 @@ export interface RefreshSessionResponseModel {
     | "lastName"
     | "onboardingCompleted"
     | "enabledModules"
-  >;
+  > & { capabilities: Capabilities };
 }
 
 export const refreshSession = async (
@@ -40,6 +44,7 @@ export const refreshSession = async (
     userRepository,
     cryptoService,
     jwtService,
+    entitlementsProvider,
   }: RefreshSessionDependencies,
   request: RefreshSessionRequestModel,
 ): Promise<RefreshSessionResponseModel | InvalidOrExpiredCodeError> => {
@@ -79,6 +84,7 @@ export const refreshSession = async (
       lastName: user.lastName,
       onboardingCompleted: user.onboardingCompleted,
       enabledModules: user.enabledModules,
+      capabilities: await resolveLearnerCapabilities(entitlementsProvider, user),
     },
   };
 };
