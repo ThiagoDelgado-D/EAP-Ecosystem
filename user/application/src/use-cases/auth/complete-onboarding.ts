@@ -1,8 +1,15 @@
-import type { IUserRepository, ModuleKey } from "@user/domain";
+import type {
+  Capabilities,
+  EntitlementsProvider,
+  IUserRepository,
+  ModuleKey,
+} from "@user/domain";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
+import { resolveLearnerCapabilities } from "../../utils/resolve-learner-capabilities.js";
 
 export interface CompleteOnboardingDependencies {
   userRepository: IUserRepository;
+  entitlementsProvider: EntitlementsProvider;
 }
 
 export interface CompleteOnboardingRequestModel {
@@ -18,11 +25,12 @@ export interface CompleteOnboardingResponseModel {
     firstName: string;
     onboardingCompleted: boolean;
     enabledModules: ModuleKey[];
+    capabilities: Capabilities;
   };
 }
 
 export const completeOnboarding = async (
-  { userRepository }: CompleteOnboardingDependencies,
+  { userRepository, entitlementsProvider }: CompleteOnboardingDependencies,
   request: CompleteOnboardingRequestModel,
 ): Promise<CompleteOnboardingResponseModel | UserNotFoundError> => {
   const user = await userRepository.findById(request.userId);
@@ -45,6 +53,7 @@ export const completeOnboarding = async (
       firstName: updated.firstName,
       onboardingCompleted: updated.onboardingCompleted,
       enabledModules: updated.enabledModules,
+      capabilities: await resolveLearnerCapabilities(entitlementsProvider, updated),
     },
   };
 };

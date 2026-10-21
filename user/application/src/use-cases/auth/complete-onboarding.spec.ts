@@ -1,18 +1,21 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { completeOnboarding } from "./complete-onboarding.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
-import { ModuleKey, type User } from "@user/domain";
+import { CapabilityKey, CapabilityState, ModuleKey, type User } from "@user/domain";
 
 describe("completeOnboarding", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
+  let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let existingUser: User;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     userRepository = mockUserRepository();
+    entitlementsProvider = mockEntitlementsProvider();
 
     existingUser = {
       id: await cryptoService.generateUUID(),
@@ -31,7 +34,7 @@ describe("completeOnboarding", () => {
 
   test("Should return UserNotFoundError when user does not exist", async () => {
     const result = await completeOnboarding(
-      { userRepository },
+      { userRepository, entitlementsProvider },
       { userId: "non-existent-id", firstName: "Thiago", enabledModules: [] },
     );
 
@@ -42,7 +45,7 @@ describe("completeOnboarding", () => {
     await userRepository.save(existingUser);
 
     await completeOnboarding(
-      { userRepository },
+      { userRepository, entitlementsProvider },
       { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
     );
 
@@ -54,7 +57,7 @@ describe("completeOnboarding", () => {
     await userRepository.save(existingUser);
 
     await completeOnboarding(
-      { userRepository },
+      { userRepository, entitlementsProvider },
       { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
     );
 
@@ -66,7 +69,7 @@ describe("completeOnboarding", () => {
     await userRepository.save(existingUser);
 
     await completeOnboarding(
-      { userRepository },
+      { userRepository, entitlementsProvider },
       {
         userId: existingUser.id,
         firstName: "Thiago",
@@ -82,7 +85,7 @@ describe("completeOnboarding", () => {
     await userRepository.save(existingUser);
 
     const result = await completeOnboarding(
-      { userRepository },
+      { userRepository, entitlementsProvider },
       {
         userId: existingUser.id,
         firstName: "Thiago",
@@ -104,7 +107,7 @@ describe("completeOnboarding", () => {
     await userRepository.save(existingUser);
 
     await completeOnboarding(
-      { userRepository },
+      { userRepository, entitlementsProvider },
       { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
     );
 
@@ -118,7 +121,7 @@ describe("completeOnboarding", () => {
     await userRepository.save(existingUser);
 
     const result = await completeOnboarding(
-      { userRepository },
+      { userRepository, entitlementsProvider },
       { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
     );
 
@@ -126,5 +129,20 @@ describe("completeOnboarding", () => {
     if (result instanceof UserNotFoundError) return;
 
     expect(result.user.enabledModules).toEqual([]);
+  });
+
+  test("Should return capabilities that follow the modules chosen during onboarding", async () => {
+    await userRepository.save(existingUser);
+
+    const result = await completeOnboarding(
+      { userRepository, entitlementsProvider },
+      { userId: existingUser.id, firstName: "Thiago", enabledModules: [ModuleKey.POMODORO] },
+    );
+    if (result instanceof UserNotFoundError) throw result;
+
+    expect(result.user.capabilities[CapabilityKey.POMODORO].state).toBe(CapabilityState.ENABLED);
+    expect(result.user.capabilities[CapabilityKey.LEARNING_PATHS].state).toBe(
+      CapabilityState.DISABLED,
+    );
   });
 });
