@@ -1,4 +1,6 @@
 import type {
+  Capabilities,
+  EntitlementsProvider,
   Identity,
   IIdentityRepository,
   ISessionRepository,
@@ -11,6 +13,7 @@ import { DEFAULT_APPEARANCE, DEFAULT_ENABLED_MODULES } from "@user/domain";
 import type { CryptoService, EmailService, JwtService } from "domain-lib";
 import { createValidationSchema, emailField, stringField } from "domain-lib";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
+import { resolveLearnerCapabilities } from "../../utils/resolve-learner-capabilities.js";
 
 export interface VerifySignInDependencies {
   userRepository: IUserRepository;
@@ -20,6 +23,7 @@ export interface VerifySignInDependencies {
   cryptoService: CryptoService;
   jwtService: JwtService;
   emailService: EmailService;
+  entitlementsProvider: EntitlementsProvider;
 }
 
 export interface VerifySignInRequestModel {
@@ -40,7 +44,7 @@ export interface VerifySignInResponseModel {
     | "lastName"
     | "onboardingCompleted"
     | "enabledModules"
-  >;
+  > & { capabilities: Capabilities };
 }
 
 const verifySignInSchema = createValidationSchema<Pick<VerifySignInRequestModel, "email" | "code">>({
@@ -57,6 +61,7 @@ export const verifySignIn = async (
     cryptoService,
     jwtService,
     emailService,
+    entitlementsProvider,
   }: VerifySignInDependencies,
   request: VerifySignInRequestModel,
 ): Promise<VerifySignInResponseModel | InvalidOrExpiredCodeError> => {
@@ -156,6 +161,7 @@ export const verifySignIn = async (
       lastName: user.lastName,
       onboardingCompleted: user.onboardingCompleted,
       enabledModules: user.enabledModules,
+      capabilities: await resolveLearnerCapabilities(entitlementsProvider, user),
     },
   };
 };
