@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import type {
   AccountStatsPort,
+  EntitlementsProvider,
   IUserRepository,
   UserAppearancePreferences,
 } from "@user/domain";
@@ -37,6 +38,8 @@ export class PreferencesController {
   constructor(
     @Inject("IUserRepository") private readonly userRepository: IUserRepository,
     @Inject("IAccountStatsPort") private readonly accountStatsPort: AccountStatsPort,
+    @Inject("IEntitlementsProvider")
+    private readonly entitlementsProvider: EntitlementsProvider,
   ) {}
 
   @Get("stats")
@@ -47,7 +50,10 @@ export class PreferencesController {
   @Get("modules")
   async getModules(@CurrentUserId() userId: UUID) {
     const result = await getEnabledModules(
-      { userRepository: this.userRepository },
+      {
+        userRepository: this.userRepository,
+        entitlementsProvider: this.entitlementsProvider,
+      },
       { userId },
     );
     if (result instanceof BaseError) throw toHttpException(result);
@@ -61,7 +67,10 @@ export class PreferencesController {
     @CurrentUserId() userId: UUID,
   ) {
     const result = await updateEnabledModules(
-      { userRepository: this.userRepository },
+      {
+        userRepository: this.userRepository,
+        entitlementsProvider: this.entitlementsProvider,
+      },
       { userId, enabledModules: dto.enabledModules },
     );
     if (result instanceof BaseError) throw toHttpException(result);
@@ -120,7 +129,10 @@ export class PreferencesController {
   @HttpCode(200)
   async resetPreferences(@CurrentUserId() userId: UUID) {
     const result = await resetPreferences(
-      { userRepository: this.userRepository },
+      {
+        userRepository: this.userRepository,
+        entitlementsProvider: this.entitlementsProvider,
+      },
       { userId },
     );
     if (result instanceof BaseError) throw toHttpException(result);
