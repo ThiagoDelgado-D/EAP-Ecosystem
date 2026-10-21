@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService, mockJwtService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { refreshSession } from "./refresh-session.js";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
-import type { Session, User } from "@user/domain";
+import { CapabilityKey, CapabilityState, type Session, type User } from "@user/domain";
 
 describe("refreshSession", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let jwtService: ReturnType<typeof mockJwtService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
+  let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
 
   let existingUser: User;
@@ -20,6 +22,7 @@ describe("refreshSession", () => {
     cryptoService = mockCryptoService();
     jwtService = mockJwtService();
     userRepository = mockUserRepository();
+    entitlementsProvider = mockEntitlementsProvider();
     sessionRepository = mockSessionRepository();
 
     existingUser = {
@@ -58,6 +61,7 @@ describe("refreshSession", () => {
     jwtService,
     userRepository,
     sessionRepository,
+    entitlementsProvider,
   });
 
   test("Should return a new access token and refresh token on success", async () => {
@@ -225,5 +229,17 @@ describe("refreshSession", () => {
     const newSession = sessionRepository.sessions.find((s) => !s.revokedAt);
     expect(newSession).toBeDefined();
     expect(newSession!.ipAddress).toHaveLength(45);
+  });
+
+  test("Should return the modules the learner turned off as disabled", async () => {
+    const result = await refreshSession(deps(), { rawRefreshToken });
+    if (result instanceof InvalidOrExpiredCodeError) throw result;
+
+    expect(result.user.capabilities[CapabilityKey.LEARNING_PATHS].state).toBe(
+      CapabilityState.DISABLED,
+    );
+    expect(result.user.capabilities[CapabilityKey.RESOURCE_LIBRARY].state).toBe(
+      CapabilityState.ENABLED,
+    );
   });
 });
