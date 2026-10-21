@@ -10,5 +10,9 @@ export * from "./use-cases/preferences/index.js";
 export * from "./use-cases/sessions/index.js";
 export * from "./use-case-map.js";
 
+// ============= UTILS =============
+
+export * from "./utils/index.js";
+
 // ============= MOCKS =============
 export * from "./mocks/index.js";
