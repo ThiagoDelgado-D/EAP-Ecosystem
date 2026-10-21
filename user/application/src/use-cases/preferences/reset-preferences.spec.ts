@@ -1,18 +1,26 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { resetPreferences } from "./reset-preferences.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
-import { DEFAULT_ENABLED_MODULES, ModuleKey, type User } from "@user/domain";
+import {
+  CapabilityState,
+  DEFAULT_ENABLED_MODULES,
+  ModuleKey,
+  type User,
+} from "@user/domain";
 
 describe("resetPreferences", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
+  let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let existingUser: User;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     userRepository = mockUserRepository();
+    entitlementsProvider = mockEntitlementsProvider();
 
     existingUser = {
       id: await cryptoService.generateUUID(),
@@ -29,7 +37,7 @@ describe("resetPreferences", () => {
     };
   });
 
-  const deps = () => ({ userRepository });
+  const deps = () => ({ userRepository, entitlementsProvider });
 
   test("Should return UserNotFoundError when user does not exist", async () => {
     const result = await resetPreferences(deps(), {
@@ -106,5 +114,16 @@ describe("resetPreferences", () => {
 
     expect(result.enabledModules).toEqual(DEFAULT_ENABLED_MODULES);
     expect(result.widgetConfig).toEqual([]);
+  });
+
+  test("Should return every module enabled again after a reset", async () => {
+    await userRepository.save(existingUser);
+
+    const result = await resetPreferences(deps(), { userId: existingUser.id });
+    if (result instanceof UserNotFoundError) throw result;
+
+    for (const module of DEFAULT_ENABLED_MODULES) {
+      expect(result.capabilities[module].state).toBe(CapabilityState.ENABLED);
+    }
   });
 });

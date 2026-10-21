@@ -1,8 +1,16 @@
-import { DEFAULT_ENABLED_MODULES, type IUserRepository, type ModuleKey } from "@user/domain";
+import {
+  DEFAULT_ENABLED_MODULES,
+  type Capabilities,
+  type EntitlementsProvider,
+  type IUserRepository,
+  type ModuleKey,
+} from "@user/domain";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
+import { resolveLearnerCapabilities } from "../../utils/resolve-learner-capabilities.js";
 
 export interface ResetPreferencesDependencies {
   userRepository: IUserRepository;
+  entitlementsProvider: EntitlementsProvider;
 }
 
 export interface ResetPreferencesRequest {
@@ -12,10 +20,11 @@ export interface ResetPreferencesRequest {
 export interface ResetPreferencesResponse {
   enabledModules: ModuleKey[];
   widgetConfig: [];
+  capabilities: Capabilities;
 }
 
 export const resetPreferences = async (
-  { userRepository }: ResetPreferencesDependencies,
+  { userRepository, entitlementsProvider }: ResetPreferencesDependencies,
   request: ResetPreferencesRequest,
 ): Promise<ResetPreferencesResponse | UserNotFoundError> => {
   const user = await userRepository.findById(request.userId);
@@ -30,5 +39,9 @@ export const resetPreferences = async (
 
   await userRepository.update(updated);
 
-  return { enabledModules: updated.enabledModules, widgetConfig: [] };
+  return {
+    enabledModules: updated.enabledModules,
+    widgetConfig: [],
+    capabilities: await resolveLearnerCapabilities(entitlementsProvider, updated),
+  };
 };
