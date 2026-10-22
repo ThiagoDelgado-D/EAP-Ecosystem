@@ -1,8 +1,9 @@
-import type { OptionalModuleKey } from '@features/auth/domain/auth.model';
+import type { Capabilities, OptionalModuleKey } from '@features/auth/domain/auth.model';
 import type { WidgetKey } from '@features/settings/domain/settings.model';
 
 export interface EnabledModulesDto {
   enabledModules: OptionalModuleKey[];
+  capabilities: Capabilities;
 }
 
 export interface WidgetConfigDto {
