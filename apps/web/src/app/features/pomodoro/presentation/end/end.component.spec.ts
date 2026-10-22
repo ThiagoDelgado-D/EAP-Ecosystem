@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { signInLearnerWith } from '@features/auth/application/mocks/signed-in-learner';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
@@ -295,5 +297,16 @@ describe('EndComponent', () => {
 
     expect(store.justAutoClosed()).toBeNull();
     expect(navigateByUrl).toHaveBeenCalledWith('/pomodoro');
+  });
+
+  test('should offer taking a break only while breaks are on', () => {
+    const { component } = setup();
+
+    signInLearnerWith([CAPABILITY_KEY.POMODORO_BREAKS]);
+    const offeredWithBreaks = component.canTakeBreak();
+    signInLearnerWith([]);
+
+    expect(offeredWithBreaks).toBe(true);
+    expect(component.canTakeBreak()).toBe(false);
   });
 });
