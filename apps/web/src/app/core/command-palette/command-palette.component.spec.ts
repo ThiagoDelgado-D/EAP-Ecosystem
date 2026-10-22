@@ -1,9 +1,8 @@
 import { signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { AuthStore } from '@features/auth/application/auth.store';
-import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
-import { CAPABILITY_KEY, MODULE_KEY } from '@features/auth/domain/auth.model';
+import { signInLearnerWith } from '@features/auth/application/mocks/signed-in-learner';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
@@ -58,19 +57,11 @@ describe('CommandPaletteComponent', () => {
         { provide: ThemeService, useValue: { theme: signal('ink'), toggle: vi.fn() } },
       ],
     });
-    TestBed.inject(AuthStore).currentUser.set({
-      id: crypto.randomUUID(),
-      firstName: 'Ada',
-      lastName: 'Learner',
-      email: 'ada@example.com',
-      onboardingCompleted: true,
-      enabledModules: [MODULE_KEY.LEARNING_PATHS, MODULE_KEY.POMODORO],
-      capabilities: capabilitiesEnabling([
-        CAPABILITY_KEY.LEARNING_PATHS,
-        CAPABILITY_KEY.POMODORO,
-        CAPABILITY_KEY.POMODORO_WEEKLY_SUMMARY,
-      ]),
-    });
+    signInLearnerWith([
+      CAPABILITY_KEY.LEARNING_PATHS,
+      CAPABILITY_KEY.POMODORO,
+      CAPABILITY_KEY.POMODORO_WEEKLY_SUMMARY,
+    ]);
     palette = TestBed.inject(CommandPaletteService);
     fixture = TestBed.createComponent(CommandPaletteComponent);
     component = fixture.componentInstance;
@@ -149,10 +140,7 @@ describe('CommandPaletteComponent', () => {
   });
 
   test('should leave paths and nodes out for a learner without Learning Paths enabled', async () => {
-    TestBed.inject(AuthStore).updateModulePreferences({
-      enabledModules: [],
-      capabilities: capabilitiesEnabling([]),
-    });
+    signInLearnerWith([]);
     await openWithLoadedIndex();
 
     typeQuery('rust');
@@ -162,10 +150,7 @@ describe('CommandPaletteComponent', () => {
 
   test('should leave the Pomodoro commands out for a learner without Pomodoro enabled', async () => {
     const pomodoroCommandIds = ['go-pomodoro', 'go-summary', 'start-focus'];
-    TestBed.inject(AuthStore).updateModulePreferences({
-      enabledModules: [MODULE_KEY.LEARNING_PATHS],
-      capabilities: capabilitiesEnabling([CAPABILITY_KEY.LEARNING_PATHS]),
-    });
+    signInLearnerWith([CAPABILITY_KEY.LEARNING_PATHS]);
     await openWithLoadedIndex();
 
     const commandIds = component.items().map((item) => item.id);
@@ -174,10 +159,7 @@ describe('CommandPaletteComponent', () => {
   });
 
   test('should leave the weekly summary out while only it is off', async () => {
-    TestBed.inject(AuthStore).updateModulePreferences({
-      enabledModules: [MODULE_KEY.LEARNING_PATHS, MODULE_KEY.POMODORO],
-      capabilities: capabilitiesEnabling([CAPABILITY_KEY.LEARNING_PATHS, CAPABILITY_KEY.POMODORO]),
-    });
+    signInLearnerWith([CAPABILITY_KEY.LEARNING_PATHS, CAPABILITY_KEY.POMODORO]);
     await openWithLoadedIndex();
 
     const commandIds = component.items().map((item) => item.id);
