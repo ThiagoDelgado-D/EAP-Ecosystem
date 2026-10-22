@@ -4,10 +4,11 @@ import {
   CandidateNodeMentalState,
   CandidateNodeProgress,
 } from "@pomodoro/domain";
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
   mockCandidateNodesPort,
   mockSessionRepository,
+  mockSessionTargetSourcesPort,
 } from "../../mocks/index.js";
 import { suggestSessionTarget } from "./suggest-session-target.js";
 
@@ -15,16 +16,23 @@ describe("suggestSessionTarget", () => {
   let cryptoService: ReturnType<typeof mockCryptoService>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
   let candidateNodesPort: ReturnType<typeof mockCandidateNodesPort>;
+  let sessionTargetSourcesPort: ReturnType<typeof mockSessionTargetSourcesPort>;
   let currentUser: CurrentUser;
 
   beforeEach(async () => {
     cryptoService = mockCryptoService();
     sessionRepository = mockSessionRepository();
     candidateNodesPort = mockCandidateNodesPort();
+    sessionTargetSourcesPort = mockSessionTargetSourcesPort();
     currentUser = await mockCurrentUser(cryptoService);
   });
 
-  const deps = () => ({ sessionRepository, candidateNodesPort, currentUser });
+  const deps = () => ({
+    sessionRepository,
+    candidateNodesPort,
+    sessionTargetSourcesPort,
+    currentUser,
+  });
 
   test("Should return an empty array when the user has no candidates", async () => {
     const result = await suggestSessionTarget(deps(), {});
@@ -273,5 +281,43 @@ describe("suggestSessionTarget", () => {
       mentalState: "daydreaming" as CandidateNodeMentalState,
     });
     expect(result).toBeInstanceOf(InvalidDataError);
+  });
+
+  describe("when the learner can't use path steps", () => {
+    beforeEach(async () => {
+      sessionTargetSourcesPort.usersWithoutPathSteps.add(currentUser.id);
+      candidateNodesPort.nodesByUser[currentUser.id] = [
+        {
+          pathId: await cryptoService.generateUUID(),
+          pathTitle: "Frontend Architecture Mastery",
+          nodeId: await cryptoService.generateUUID(),
+          nodeTitle: "DDD Distilled",
+          progress: CandidateNodeProgress.PENDING,
+          prerequisitesDone: true,
+        },
+      ];
+    });
+
+    test("Should suggest nothing", async () => {
+      const result = await suggestSessionTarget(deps(), {});
+
+      expect(result).toEqual([]);
+    });
+
+    test("Should not look up path step candidates at all", async () => {
+      const findCandidateNodes = vi.spyOn(candidateNodesPort, "findCandidateNodes");
+
+      await suggestSessionTarget(deps(), {});
+
+      expect(findCandidateNodes).not.toHaveBeenCalled();
+    });
+
+    test("Should still reject an unknown energy level", async () => {
+      const result = await suggestSessionTarget(deps(), {
+        energy: "unknown" as CandidateNodeEnergyLevel,
+      });
+
+      expect(result).toBeInstanceOf(InvalidDataError);
+    });
   });
 });
