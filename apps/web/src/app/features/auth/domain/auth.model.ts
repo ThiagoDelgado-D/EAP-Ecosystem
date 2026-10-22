@@ -58,7 +58,7 @@ export interface ResolvedCapability {
   stage: CapabilityStage;
 }
 
-export type Capabilities = Partial<Record<CapabilityKey, ResolvedCapability>>;
+export type Capabilities = Record<CapabilityKey, ResolvedCapability>;
 
 export interface ModulePreferences {
   enabledModules: OptionalModuleKey[];
@@ -72,5 +72,5 @@ export interface AuthUser {
   email: string;
   onboardingCompleted: boolean;
   enabledModules: OptionalModuleKey[];
-  capabilities: Capabilities;
+  capabilities: Capabilities | null;
 }

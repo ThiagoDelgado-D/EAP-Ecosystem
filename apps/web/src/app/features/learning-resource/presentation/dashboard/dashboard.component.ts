@@ -13,6 +13,7 @@ import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repositor
 import { PomodoroHttpRepository } from '@features/pomodoro/infrastructure/pomodoro-http.repository';
 import { computeWeeklySummary, buildWeekDayLog, summaryWindowSince } from '@features/pomodoro/application/weekly-summary.calculator';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { CalibrationService } from '@features/recommendation/application/calibration.service';
 import { WeeklyGoalService } from '@features/settings/application/weekly-goal.service';
 import { TopicService } from '@features/learning-resource/application/topic.service';
@@ -92,6 +93,7 @@ export class DashboardComponent implements OnInit {
   readonly hasLoaded = signal(false);
 
   readonly paths = this.pathService.paths;
+  readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
   readonly dismissedCount = this.dismissals.count;
 
   readonly recommendations = computed(() => {
@@ -142,7 +144,7 @@ export class DashboardComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await Promise.all([
       this.calibration.load().then(() => this.applyFilter()),
-      this.pathService.loadAllWithNodes(),
+      this.showPaths() ? this.pathService.loadAllWithNodes() : Promise.resolve(),
       this.topicService.loadAll(),
       this.loadContinueResources(),
       this.loadWeeklyFocus(),

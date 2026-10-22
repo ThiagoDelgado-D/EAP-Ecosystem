@@ -26,6 +26,8 @@ import { TopicRepository } from '@features/learning-resource/domain/topic.reposi
 import { TopicHttpRepository } from '@features/learning-resource/infrastructure/topic-http.repository.js';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { EnumBadgeComponent } from '@shared/components/enum-badge/enum-badge.component';
 import { PaginatorComponent } from '@shared/components/paginator/paginator.component';
 import {
@@ -141,6 +143,8 @@ export class HomeComponent implements OnInit {
   private readonly errorNotifier = inject(ErrorNotifier);
   private readonly http = inject(HttpClient);
   readonly libraryService = inject(ResourceLibraryService);
+  private readonly authStore = inject(AuthStore);
+  readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
 
   readonly allResources = this.service.resources;
   readonly resourceTypes = this.typeService.resourceTypes;

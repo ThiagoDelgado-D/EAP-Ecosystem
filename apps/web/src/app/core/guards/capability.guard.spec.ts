@@ -1,10 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, UrlTree, provideRouter } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
-import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
+import {
+  capabilitiesEnabling,
+  capabilitiesIn,
+} from '@features/auth/application/mocks/capabilities.fixture';
 import {
   CAPABILITY_KEY,
-  CAPABILITY_STAGE,
   CAPABILITY_STATE,
   type Capabilities,
 } from '@features/auth/domain/auth.model';
@@ -12,12 +14,9 @@ import { learner } from '@features/recommendation/application/mocks/learner.fixt
 import { capabilityGuard } from './capability.guard';
 
 const DASHBOARD_URL = '/dashboard';
-const LOCKED_LEARNING_PATHS: Capabilities = {
-  [CAPABILITY_KEY.LEARNING_PATHS]: {
-    state: CAPABILITY_STATE.LOCKED,
-    stage: CAPABILITY_STAGE.STABLE,
-  },
-};
+const LOCKED_LEARNING_PATHS = capabilitiesIn(CAPABILITY_STATE.LOCKED, [
+  CAPABILITY_KEY.LEARNING_PATHS,
+]);
 
 function signInWith(capabilities: Capabilities) {
   TestBed.configureTestingModule({ providers: [provideRouter([])] });

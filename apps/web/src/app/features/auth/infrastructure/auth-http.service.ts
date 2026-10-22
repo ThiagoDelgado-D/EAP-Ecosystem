@@ -57,7 +57,7 @@ export class AuthHttpService {
         email: dto.user.email,
         onboardingCompleted: dto.user.onboardingCompleted,
         enabledModules: dto.user.enabledModules ?? [],
-        capabilities: dto.user.capabilities ?? {},
+        capabilities: dto.user.capabilities,
       },
     };
   }

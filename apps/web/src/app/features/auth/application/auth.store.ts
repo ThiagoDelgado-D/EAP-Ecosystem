@@ -33,7 +33,7 @@ export class AuthStore {
   }
 
   isEnabled(key: CapabilityKey): boolean {
-    return this.currentUser()?.capabilities[key]?.state === CAPABILITY_STATE.ENABLED;
+    return this.currentUser()?.capabilities?.[key].state === CAPABILITY_STATE.ENABLED;
   }
 
   updateModulePreferences({ enabledModules, capabilities }: ModulePreferences): void {

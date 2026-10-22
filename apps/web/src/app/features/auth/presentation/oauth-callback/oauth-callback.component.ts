@@ -43,7 +43,7 @@ export class OAuthCallbackComponent implements OnInit {
         lastName: params.get('last_name') ?? '',
         onboardingCompleted: !onboarding,
         enabledModules,
-        capabilities: {},
+        capabilities: null,
       },
       accessToken,
     );

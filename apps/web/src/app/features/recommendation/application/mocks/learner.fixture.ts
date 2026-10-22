@@ -8,6 +8,6 @@ export function learner(firstName: string): AuthUser {
     email: `${firstName.toLowerCase()}@example.com`,
     onboardingCompleted: true,
     enabledModules: [],
-    capabilities: {},
+    capabilities: null,
   };
 }
