@@ -29,7 +29,7 @@ export class DangerZoneComponent {
     const confirmed = await this.confirmDialog.confirm({
       title: 'Reset preferences',
       message:
-        'This will clear all your enabled modules and dashboard widget configuration. This action cannot be undone.',
+        'This will turn every module back on and restore the default dashboard widgets. This action cannot be undone.',
       confirmLabel: 'Reset',
     });
     if (!confirmed) return;
