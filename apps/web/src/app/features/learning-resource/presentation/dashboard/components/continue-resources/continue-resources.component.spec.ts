@@ -1,22 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { AuthStore } from '@features/auth/application/auth.store';
-import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
+import { signInLearnerWith } from '@features/auth/application/mocks/signed-in-learner';
 import { CAPABILITY_KEY, type CapabilityKey } from '@features/auth/domain/auth.model';
 import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
 import { RECOMMENDED_ENTRY_PARAM } from '@features/pomodoro/presentation/start/recommended-entry';
 import { learningResourceFixture } from '@features/pomodoro/presentation/start/recommended-entry.fixtures';
-import { learner } from '@features/recommendation/application/mocks/learner.fixture';
 import { ContinueResourcesComponent } from './continue-resources.component';
 
 function render(resources: LearningResource[], enabledCapabilities: CapabilityKey[]): HTMLElement {
   TestBed.configureTestingModule({ providers: [provideRouter([])] });
-  const authStore = TestBed.inject(AuthStore);
-  authStore.currentUser.set(learner('Ada'));
-  authStore.updateModulePreferences({
-    enabledModules: [],
-    capabilities: capabilitiesEnabling(enabledCapabilities),
-  });
+  signInLearnerWith(enabledCapabilities);
   const fixture = TestBed.createComponent(ContinueResourcesComponent);
   fixture.componentRef.setInput('resources', resources);
   fixture.detectChanges();

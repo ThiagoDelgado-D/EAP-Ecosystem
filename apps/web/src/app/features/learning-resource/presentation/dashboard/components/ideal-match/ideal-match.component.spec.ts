@@ -2,13 +2,11 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { messageOf } from '@core/errors/error-messages';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
-import { AuthStore } from '@features/auth/application/auth.store';
-import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
+import { signInLearnerWith } from '@features/auth/application/mocks/signed-in-learner';
 import { CAPABILITY_KEY, type CapabilityKey } from '@features/auth/domain/auth.model';
 import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
 import { learningResourceFixture } from '@features/pomodoro/presentation/start/recommended-entry.fixtures';
 import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
-import { learner } from '@features/recommendation/application/mocks/learner.fixture';
 import {
   pathStepRecommendation,
   resourceRecommendation,
@@ -27,12 +25,7 @@ function render(
   enabledCapabilities: CapabilityKey[] = [CAPABILITY_KEY.POMODORO],
 ) {
   TestBed.configureTestingModule({ providers: [provideRouter([])] });
-  const authStore = TestBed.inject(AuthStore);
-  authStore.currentUser.set(learner('Ada'));
-  authStore.updateModulePreferences({
-    enabledModules: [],
-    capabilities: capabilitiesEnabling(enabledCapabilities),
-  });
+  signInLearnerWith(enabledCapabilities);
   const fixture = TestBed.createComponent(IdealMatchComponent);
   fixture.componentRef.setInput('recommendation', inputs.recommendation ?? null);
   fixture.componentRef.setInput('resource', inputs.resource ?? null);
