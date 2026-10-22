@@ -40,12 +40,12 @@ export class PreferencesService {
     const prev = this.enabledModules();
     this.error.set(null);
     this.enabledModules.set(enabledModules);
-    this.authStore.updateEnabledModules(enabledModules);
     try {
-      await this.repository.updateEnabledModules(enabledModules);
+      this.authStore.updateModulePreferences(
+        await this.repository.updateEnabledModules(enabledModules),
+      );
     } catch (error) {
       this.enabledModules.set(prev);
-      this.authStore.updateEnabledModules(prev);
       this.error.set(messageOf(error));
     }
   }
@@ -113,10 +113,10 @@ export class PreferencesService {
     this.saving.set(true);
     this.error.set(null);
     try {
-      const { enabledModules } = await this.repository.resetPreferences();
-      this.enabledModules.set(enabledModules);
+      const modulePreferences = await this.repository.resetPreferences();
+      this.enabledModules.set(modulePreferences.enabledModules);
       this.widgetConfig.set([]);
-      this.authStore.updateEnabledModules(enabledModules);
+      this.authStore.updateModulePreferences(modulePreferences);
     } catch (error) {
       this.error.set(messageOf(error));
       throw error;

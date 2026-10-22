@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ERROR_MESSAGES } from '@core/errors/error-messages';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { AuthStore } from '@features/auth/application/auth.store';
-import { MODULE_KEY, OPTIONAL_MODULES } from '@features/auth/domain/auth.model';
+import { CAPABILITY_KEY, MODULE_KEY, OPTIONAL_MODULES } from '@features/auth/domain/auth.model';
 import { learner } from '@features/recommendation/application/mocks/learner.fixture';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import {
@@ -59,6 +59,13 @@ describe('PreferencesService', () => {
     expect(service.error()).toBe(ERROR_MESSAGES.NETWORK_ERROR);
   });
 
+  test('should only let the learner reach the modules the saved change left on', async () => {
+    await service.updateEnabledModules(ONLY_POMODORO);
+
+    expect(authStore.isEnabled(CAPABILITY_KEY.POMODORO)).toBe(true);
+    expect(authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS)).toBe(false);
+  });
+
   test('should turn every optional module back on for the learner after a reset', async () => {
     await service.updateEnabledModules(ONLY_POMODORO);
 
@@ -66,6 +73,7 @@ describe('PreferencesService', () => {
 
     expect(service.enabledModules()).toEqual(OPTIONAL_MODULES);
     expect(authStore.currentUser()?.enabledModules).toEqual(OPTIONAL_MODULES);
+    expect(authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS)).toBe(true);
   });
 
   test('should keep the saved modules and explain why when turning one off fails to save', async () => {
@@ -76,6 +84,7 @@ describe('PreferencesService', () => {
 
     expect(service.enabledModules()).toEqual(OPTIONAL_MODULES);
     expect(authStore.currentUser()?.enabledModules).toEqual(OPTIONAL_MODULES);
+    expect(authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS)).toBe(true);
     expect(service.error()).toBe(ERROR_MESSAGES.NETWORK_ERROR);
   });
 });
