@@ -1,32 +1,18 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { generateUser } from "../../mocks/factories.js";
 import { updateWidgetConfig } from "./update-widget-config.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
 import { WidgetKey, type User } from "@user/domain";
 
 describe("updateWidgetConfig", () => {
-  let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
   let existingUser: User;
 
   beforeEach(async () => {
-    cryptoService = mockCryptoService();
     userRepository = mockUserRepository();
 
-    existingUser = {
-      id: await cryptoService.generateUUID(),
-      email: "thiago@example.com",
-      firstName: "Thiago",
-      lastName: "Delgado",
-      userName: null,
-      enabled: true,
-      onboardingCompleted: true,
-      enabledModules: [],
-      widgetConfig: [WidgetKey.FOCUS_PULSE],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    existingUser = generateUser({ widgetConfig: [WidgetKey.FOCUS_PULSE] });
   });
 
   const deps = () => ({ userRepository });

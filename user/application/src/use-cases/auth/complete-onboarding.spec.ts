@@ -1,35 +1,21 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { generateUser } from "../../mocks/factories.js";
 import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { completeOnboarding } from "./complete-onboarding.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
 import { CapabilityKey, CapabilityState, ModuleKey, type User } from "@user/domain";
 
 describe("completeOnboarding", () => {
-  let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
   let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let existingUser: User;
 
   beforeEach(async () => {
-    cryptoService = mockCryptoService();
     userRepository = mockUserRepository();
     entitlementsProvider = mockEntitlementsProvider();
 
-    existingUser = {
-      id: await cryptoService.generateUUID(),
-      email: "thiago@example.com",
-      firstName: "",
-      lastName: "",
-      userName: null,
-      enabled: true,
-      onboardingCompleted: false,
-      enabledModules: [],
-      widgetConfig: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    existingUser = generateUser({ onboardingCompleted: false });
   });
 
   test("Should return UserNotFoundError when user does not exist", async () => {

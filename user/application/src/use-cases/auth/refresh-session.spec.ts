@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService, mockJwtService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { generateUser } from "../../mocks/factories.js";
 import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
 import { refreshSession } from "./refresh-session.js";
@@ -25,19 +26,7 @@ describe("refreshSession", () => {
     entitlementsProvider = mockEntitlementsProvider();
     sessionRepository = mockSessionRepository();
 
-    existingUser = {
-      id: await cryptoService.generateUUID(),
-      email: "thiago@example.com",
-      firstName: "Thiago",
-      lastName: "Delgado",
-      userName: null,
-      enabled: true,
-      onboardingCompleted: true,
-      enabledModules: [],
-      widgetConfig: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    existingUser = generateUser({ enabledModules: [] });
     await userRepository.save(existingUser);
 
     rawRefreshToken = await cryptoService.generateRandomToken();
