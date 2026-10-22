@@ -51,6 +51,7 @@ export class ShellLayoutComponent implements OnInit {
   readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
   readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
   readonly showWeeklySummary = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO_WEEKLY_SUMMARY));
+  readonly showCalibration = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.RECOMMENDATION_CALIBRATION));
   readonly searchHint = computed(() =>
     this.showPaths() ? 'Search resources, paths…' : 'Search resources…',
   );
