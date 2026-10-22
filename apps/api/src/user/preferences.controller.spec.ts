@@ -4,12 +4,11 @@ import {
   CAPABILITY_CATALOG,
   CapabilityKey,
   CapabilityState,
-  DEFAULT_APPEARANCE,
   DEFAULT_ENABLED_MODULES,
   ModuleKey,
   type User,
 } from "@user/domain";
-import { generateEmail } from "@user/application";
+import { generateUser } from "@user/application";
 import { createUserTestApp, type UserTestApp } from "./user-module.fixture.js";
 
 describe("PreferencesController (integration)", () => {
@@ -19,24 +18,10 @@ describe("PreferencesController (integration)", () => {
   let learnerToken: string;
 
   beforeAll(async () => {
-    let cryptoService: UserTestApp["cryptoService"];
     let jwtService: UserTestApp["jwtService"];
-    ({ app, userRepo, cryptoService, jwtService } = await createUserTestApp());
+    ({ app, userRepo, jwtService } = await createUserTestApp());
 
-    learner = {
-      id: await cryptoService.generateUUID(),
-      email: generateEmail(),
-      firstName: "Ana",
-      lastName: "Learner",
-      userName: null,
-      enabled: true,
-      onboardingCompleted: true,
-      enabledModules: [ModuleKey.POMODORO],
-      widgetConfig: [],
-      appearance: { ...DEFAULT_APPEARANCE },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    learner = generateUser({ enabledModules: [ModuleKey.POMODORO] });
     learnerToken = await jwtService.sign({ sub: learner.id });
   });
 
