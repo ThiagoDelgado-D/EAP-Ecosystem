@@ -1,17 +1,17 @@
-import type { RecommendationSourcesPort } from "@recommendation/domain";
 import {
-  CapabilityKey,
   CapabilityState,
+  type CapabilityKey,
   type EntitlementsProvider,
   type IUserRepository,
 } from "@user/domain";
 import { resolveLearnerCapabilities } from "@user/application";
 import type { UUID } from "domain-lib";
 
-export class CapabilityRecommendationSourcesAdapter implements RecommendationSourcesPort {
+export class PathStepsCapabilityAdapter {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly entitlementsProvider: EntitlementsProvider,
+    private readonly pathStepsCapability: CapabilityKey,
   ) {}
 
   async allowsPathSteps(userId: UUID): Promise<boolean> {
@@ -20,8 +20,6 @@ export class CapabilityRecommendationSourcesAdapter implements RecommendationSou
 
     const capabilities = await resolveLearnerCapabilities(this.entitlementsProvider, learner);
 
-    return (
-      capabilities[CapabilityKey.RECOMMENDATION_PATH_STEPS].state === CapabilityState.ENABLED
-    );
+    return capabilities[this.pathStepsCapability].state === CapabilityState.ENABLED;
   }
 }
