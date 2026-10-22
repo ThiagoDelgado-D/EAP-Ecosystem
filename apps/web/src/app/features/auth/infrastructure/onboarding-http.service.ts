@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { API_CONFIG } from '@core/config/api.config';
-import { AuthUser, OptionalModuleKey } from '@features/auth/domain/auth.model';
+import { AuthUser, Capabilities, OptionalModuleKey } from '@features/auth/domain/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class OnboardingHttpService {
@@ -20,6 +20,7 @@ export class OnboardingHttpService {
         firstName: string;
         onboardingCompleted: boolean;
         enabledModules: OptionalModuleKey[];
+        capabilities: Capabilities;
       }>(`${this.base}/onboarding`, { firstName, enabledModules }),
     );
     return {
@@ -29,6 +30,7 @@ export class OnboardingHttpService {
       email: dto.email,
       onboardingCompleted: dto.onboardingCompleted,
       enabledModules: dto.enabledModules,
+      capabilities: dto.capabilities,
     };
   }
 }

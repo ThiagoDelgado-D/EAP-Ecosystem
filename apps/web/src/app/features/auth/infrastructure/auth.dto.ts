@@ -1,4 +1,4 @@
-import type { OptionalModuleKey } from '@features/auth/domain/auth.model.js';
+import type { Capabilities, OptionalModuleKey } from '@features/auth/domain/auth.model.js';
 
 export interface AuthUserDto {
   id: string;
@@ -7,6 +7,7 @@ export interface AuthUserDto {
   email: string;
   onboardingCompleted: boolean;
   enabledModules: OptionalModuleKey[];
+  capabilities: Capabilities;
 }
 
 export interface VerifySignInResponseDto {

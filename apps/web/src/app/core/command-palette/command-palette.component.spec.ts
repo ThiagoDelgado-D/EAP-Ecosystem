@@ -2,7 +2,8 @@ import { signal } from '@angular/core';
 import { TestBed, type ComponentFixture } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
-import { MODULE_KEY } from '@features/auth/domain/auth.model';
+import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
+import { CAPABILITY_KEY, MODULE_KEY } from '@features/auth/domain/auth.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
@@ -64,6 +65,7 @@ describe('CommandPaletteComponent', () => {
       email: 'ada@example.com',
       onboardingCompleted: true,
       enabledModules: [MODULE_KEY.LEARNING_PATHS],
+      capabilities: capabilitiesEnabling([CAPABILITY_KEY.LEARNING_PATHS]),
     });
     palette = TestBed.inject(CommandPaletteService);
     fixture = TestBed.createComponent(CommandPaletteComponent);
