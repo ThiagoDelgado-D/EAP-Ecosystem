@@ -13,7 +13,7 @@
   <div class="grid gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
     <nav class="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto" aria-label="Settings sections">
       <ul class="flex gap-1 overflow-x-auto lg:flex-col">
-        @for (section of sections; track section.id) {
+        @for (section of sections(); track section.id) {
           <li class="shrink-0">
             <button
               type="button"
@@ -85,12 +85,14 @@
         <div class="mt-4"><app-widgets /></div>
       </section>
 
-      <section id="pomodoro" class="card scroll-mt-24 p-6">
-        <p class="eyebrow mb-1">Pomodoro</p>
-        <h2 class="display text-[1.25rem] font-semibold">Focus sessions</h2>
-        <p class="mt-1 text-[0.84rem] text-ink-dim">Sound, default view and hints for focus sessions.</p>
-        <div class="mt-4"><app-pomodoro-settings /></div>
-      </section>
+      @if (showPomodoro()) {
+        <section id="pomodoro" class="card scroll-mt-24 p-6">
+          <p class="eyebrow mb-1">Pomodoro</p>
+          <h2 class="display text-[1.25rem] font-semibold">Focus sessions</h2>
+          <p class="mt-1 text-[0.84rem] text-ink-dim">Sound, default view and hints for focus sessions.</p>
+          <div class="mt-4"><app-pomodoro-settings /></div>
+        </section>
+      }
 
       <section id="sessions" class="card scroll-mt-24 p-6">
         <p class="eyebrow mb-1">Sessions</p>

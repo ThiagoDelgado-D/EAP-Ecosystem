@@ -217,30 +217,32 @@
           </svg>
           Create
         </a>
-        <a
-          routerLink="/pomodoro"
-          [routerLinkActiveOptions]="{ exact: true }"
-          routerLinkActive="bg-surface-overlay !text-accent-ink border border-line-strong"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-ink-body hover:bg-surface-overlay hover:text-ink-strong transition-all whitespace-nowrap"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-            <circle cx="12" cy="12" r="9" />
-            <polyline points="12 7 12 12 15 14" />
-          </svg>
-          Pomodoro
-        </a>
-        <a
-          routerLink="/pomodoro/summary"
-          routerLinkActive="bg-surface-overlay !text-accent-ink border border-line-strong"
-          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-ink-body hover:bg-surface-overlay hover:text-ink-strong transition-all whitespace-nowrap"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-            <line x1="6" y1="20" x2="6" y2="14" />
-            <line x1="12" y1="20" x2="12" y2="8" />
-            <line x1="18" y1="20" x2="18" y2="11" />
-          </svg>
-          Weekly Summary
-        </a>
+        @if (showPomodoro()) {
+          <a
+            routerLink="/pomodoro"
+            [routerLinkActiveOptions]="{ exact: true }"
+            routerLinkActive="bg-surface-overlay !text-accent-ink border border-line-strong"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-ink-body hover:bg-surface-overlay hover:text-ink-strong transition-all whitespace-nowrap"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+              <circle cx="12" cy="12" r="9" />
+              <polyline points="12 7 12 12 15 14" />
+            </svg>
+            Pomodoro
+          </a>
+          <a
+            routerLink="/pomodoro/summary"
+            routerLinkActive="bg-surface-overlay !text-accent-ink border border-line-strong"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-ink-body hover:bg-surface-overlay hover:text-ink-strong transition-all whitespace-nowrap"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+              <line x1="6" y1="20" x2="6" y2="14" />
+              <line x1="12" y1="20" x2="12" y2="8" />
+              <line x1="18" y1="20" x2="18" y2="11" />
+            </svg>
+            Weekly Summary
+          </a>
+        }
         @if (showPaths()) {
           <a
             routerLink="/paths"
@@ -402,32 +404,34 @@
           </svg>
           Create
         </a>
-        <a
-          routerLink="/pomodoro"
-          [routerLinkActiveOptions]="{ exact: true }"
-          routerLinkActive="bg-surface-overlay !text-accent-ink border border-line-strong"
-          (click)="closeMobileDrawer()"
-          class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-ink-body hover:bg-surface-overlay hover:text-ink-strong transition-all"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-            <circle cx="12" cy="12" r="9" />
-            <polyline points="12 7 12 12 15 14" />
-          </svg>
-          Pomodoro
-        </a>
-        <a
-          routerLink="/pomodoro/summary"
-          routerLinkActive="bg-surface-overlay !text-accent-ink border border-line-strong"
-          (click)="closeMobileDrawer()"
-          class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-ink-body hover:bg-surface-overlay hover:text-ink-strong transition-all"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
-            <line x1="6" y1="20" x2="6" y2="14" />
-            <line x1="12" y1="20" x2="12" y2="8" />
-            <line x1="18" y1="20" x2="18" y2="11" />
-          </svg>
-          Weekly Summary
-        </a>
+        @if (showPomodoro()) {
+          <a
+            routerLink="/pomodoro"
+            [routerLinkActiveOptions]="{ exact: true }"
+            routerLinkActive="bg-surface-overlay !text-accent-ink border border-line-strong"
+            (click)="closeMobileDrawer()"
+            class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-ink-body hover:bg-surface-overlay hover:text-ink-strong transition-all"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+              <circle cx="12" cy="12" r="9" />
+              <polyline points="12 7 12 12 15 14" />
+            </svg>
+            Pomodoro
+          </a>
+          <a
+            routerLink="/pomodoro/summary"
+            routerLinkActive="bg-surface-overlay !text-accent-ink border border-line-strong"
+            (click)="closeMobileDrawer()"
+            class="flex items-center gap-3 px-3 py-3 rounded-lg text-base text-ink-body hover:bg-surface-overlay hover:text-ink-strong transition-all"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
+              <line x1="6" y1="20" x2="6" y2="14" />
+              <line x1="12" y1="20" x2="12" y2="8" />
+              <line x1="18" y1="20" x2="18" y2="11" />
+            </svg>
+            Weekly Summary
+          </a>
+        }
         @if (showPaths()) {
           <a
             routerLink="/paths"

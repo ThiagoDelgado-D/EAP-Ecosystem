@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { capabilityGuard } from '@core/guards/capability.guard';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { redirectIfActiveSessionGuard, requireActiveSessionGuard } from './guards/active-session.guards';
 
 export const pomodoroRoutes: Routes = [
@@ -8,7 +10,7 @@ export const pomodoroRoutes: Routes = [
     children: [
       {
         path: '',
-        canActivate: [redirectIfActiveSessionGuard],
+        canActivate: [redirectIfActiveSessionGuard, capabilityGuard(CAPABILITY_KEY.POMODORO)],
         loadComponent: () => import('./start/start.component').then((m) => m.StartComponent),
       },
       {
@@ -26,6 +28,7 @@ export const pomodoroRoutes: Routes = [
       {
         path: 'summary',
         title: 'Weekly Summary',
+        canActivate: [capabilityGuard(CAPABILITY_KEY.POMODORO)],
         loadComponent: () =>
           import('./summary/weekly-summary.component').then((m) => m.WeeklySummaryComponent),
       },

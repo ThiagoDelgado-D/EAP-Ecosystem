@@ -64,8 +64,8 @@ describe('CommandPaletteComponent', () => {
       lastName: 'Learner',
       email: 'ada@example.com',
       onboardingCompleted: true,
-      enabledModules: [MODULE_KEY.LEARNING_PATHS],
-      capabilities: capabilitiesEnabling([CAPABILITY_KEY.LEARNING_PATHS]),
+      enabledModules: [MODULE_KEY.LEARNING_PATHS, MODULE_KEY.POMODORO],
+      capabilities: capabilitiesEnabling([CAPABILITY_KEY.LEARNING_PATHS, CAPABILITY_KEY.POMODORO]),
     });
     palette = TestBed.inject(CommandPaletteService);
     fixture = TestBed.createComponent(CommandPaletteComponent);
@@ -154,5 +154,18 @@ describe('CommandPaletteComponent', () => {
     typeQuery('rust');
 
     expect(component.groups().map((section) => section.group)).toEqual(['Resources']);
+  });
+
+  test('should leave the Pomodoro commands out for a learner without Pomodoro enabled', async () => {
+    const pomodoroCommandIds = ['go-pomodoro', 'go-summary', 'start-focus'];
+    TestBed.inject(AuthStore).updateModulePreferences({
+      enabledModules: [MODULE_KEY.LEARNING_PATHS],
+      capabilities: capabilitiesEnabling([CAPABILITY_KEY.LEARNING_PATHS]),
+    });
+    await openWithLoadedIndex();
+
+    const commandIds = component.items().map((item) => item.id);
+
+    expect(commandIds.filter((id) => pomodoroCommandIds.includes(id))).toEqual([]);
   });
 });
