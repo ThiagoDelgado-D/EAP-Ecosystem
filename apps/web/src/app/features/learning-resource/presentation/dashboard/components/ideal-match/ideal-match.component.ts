@@ -1,10 +1,17 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink, type Params } from '@angular/router';
 import { ScrambleComponent } from '@shared/components/scramble/scramble.component';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import { LearningResource } from '@features/learning-resource/domain/learning-resource.model.js';
 import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
 import { recommendedEntryQueryParams } from '@features/pomodoro/presentation/start/recommended-entry';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
+
+interface EntryLink {
+  commands: string[];
+  queryParams: Params;
+}
 
 function hashHue(title: string): number {
   let h = 0;
@@ -29,6 +36,10 @@ export class IdealMatchComponent {
   readonly dismissed = output<ScoredRecommendation>();
   readonly restored = output<void>();
 
+  private readonly authStore = inject(AuthStore);
+  readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
+  private readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
+
   readonly displayResource = computed(() => {
     const rec = this.recommendation();
     const r = this.resource();
@@ -47,8 +58,24 @@ export class IdealMatchComponent {
     };
   });
 
-  focusQueryParams(rec: ScoredRecommendation): Params {
-    return recommendedEntryQueryParams(rec);
+  entryLink(rec: ScoredRecommendation): EntryLink {
+    if (this.showPomodoro()) return { commands: ['/pomodoro'], queryParams: recommendedEntryQueryParams(rec) };
+    if (this.opensPathStep(rec)) return { commands: ['/paths', rec.pathId!], queryParams: { node: rec.nodeId } };
+    if (rec.resourceId) return { commands: ['/resources', rec.resourceId], queryParams: {} };
+    return { commands: ['/resources'], queryParams: {} };
+  }
+
+  entryLabel(rec: ScoredRecommendation): string {
+    if (this.showPomodoro()) return 'Focus now';
+    return this.opensPathStep(rec) ? 'Open step' : 'Open resource';
+  }
+
+  entryAriaLabel(rec: ScoredRecommendation): string {
+    return this.showPomodoro() ? `Focus on ${rec.title}` : `Open ${rec.title}`;
+  }
+
+  private opensPathStep(rec: ScoredRecommendation): boolean {
+    return this.showPaths() && !!rec.pathId && !!rec.nodeId;
   }
 
   dismissTop(): void {

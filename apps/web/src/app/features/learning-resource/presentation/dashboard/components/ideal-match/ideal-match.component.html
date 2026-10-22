@@ -93,10 +93,14 @@
 
   @if (recommendation()) {
     <div class="relative mt-6 flex flex-wrap items-center gap-2">
-      <a routerLink="/pomodoro" [queryParams]="focusQueryParams(recommendation()!)" class="btn btn-primary">
-        Focus now
+      <a
+        [routerLink]="entryLink(recommendation()!).commands"
+        [queryParams]="entryLink(recommendation()!).queryParams"
+        class="btn btn-primary"
+      >
+        {{ entryLabel(recommendation()!) }}
       </a>
-      @if (displayResource().resource) {
+      @if (showPomodoro() && displayResource().resource) {
         <a [routerLink]="['/resources', displayResource().resource!.id]" class="btn btn-outline">
           Open details
         </a>
@@ -119,9 +123,9 @@
         @for (choice of secondary(); track choice.resourceId ?? choice.nodeId ?? choice.title; let i = $index) {
           <li appReveal [appRevealDelay]="i * 80">
             <a
-              routerLink="/pomodoro"
-              [queryParams]="focusQueryParams(choice)"
-              [attr.aria-label]="'Focus on ' + choice.title"
+              [routerLink]="entryLink(choice).commands"
+              [queryParams]="entryLink(choice).queryParams"
+              [attr.aria-label]="entryAriaLabel(choice)"
               class="group flex items-center gap-3 rounded-[16px_5px_16px_5px] border border-transparent p-2 transition-[border-color,background-color] hover:border-line-soft hover:bg-surface-overlay"
             >
               <div
