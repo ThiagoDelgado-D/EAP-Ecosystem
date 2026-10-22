@@ -14,9 +14,11 @@
     </div>
     <div class="flex flex-col items-start gap-2">
       <a routerLink="/add" class="btn btn-primary">Capture resource</a>
-      <a routerLink="/paths" class="link-underline text-[0.76rem] text-ink-dim hover:text-ink-strong">
-        or add it to a path &rarr;
-      </a>
+      @if (showPaths()) {
+        <a routerLink="/paths" class="link-underline text-[0.76rem] text-ink-dim hover:text-ink-strong">
+          or add it to a path &rarr;
+        </a>
+      }
     </div>
   </header>
 
