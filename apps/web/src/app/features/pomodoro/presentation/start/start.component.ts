@@ -147,7 +147,9 @@ export class StartComponent implements OnInit {
     this.selectedTargetLabel.set(describeTargetLabel(target, groups, library));
     const minutes = recommendedDurationMin({
       estimatedMin: estimatedMinutesFor(target, library),
-      availableMin: this.calibration.availableMinutes(),
+      availableMin: this.authStore.isEnabled(CAPABILITY_KEY.RECOMMENDATION_CALIBRATION)
+        ? this.calibration.availableMinutes()
+        : undefined,
       defaultMin: readDefaultDurationMin(),
     });
     this.selectedDuration.set(minutes);

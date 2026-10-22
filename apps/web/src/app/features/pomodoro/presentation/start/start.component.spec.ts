@@ -56,6 +56,7 @@ function setup(
       CAPABILITY_KEY.POMODORO_PATH_FOCUS,
       CAPABILITY_KEY.POMODORO_SUGGESTION,
       CAPABILITY_KEY.RECOMMENDATION,
+      CAPABILITY_KEY.RECOMMENDATION_CALIBRATION,
     ]);
   TestBed.inject(AuthStore).currentUser.set(pomodoroLearner);
 
@@ -503,6 +504,21 @@ describe('StartComponent', () => {
       expect(component.selectedTargetLabel()).toEqual({ title: dataIntensiveChapter.title });
       expect(component.selectedDuration()).toBe(45);
       expect(component.canStart()).toBe(true);
+    });
+
+    test('should size the recommended resource to its own estimate while calibration is off', async () => {
+      vi.stubGlobal('localStorage', mockLocalStorage(null));
+      const { component } = setup([], {
+        queryParams: { resource: dataIntensiveChapter.id },
+        library,
+        groups,
+        availableMinutes: 45,
+        capabilities: capabilitiesEnabling([CAPABILITY_KEY.RECOMMENDATION]),
+      });
+
+      await settle();
+
+      expect(component.selectedDuration()).toBe(dataIntensiveChapter.estimatedDuration.value);
     });
 
     test('should attach the recommended path step, sized to its shorter estimate', async () => {
