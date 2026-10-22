@@ -73,9 +73,13 @@
     [goalMinutes]="goalMinutes()"
   />
 
-  <div class="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+  <div
+    [class]="showPaths() ? 'grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]' : 'grid gap-5'"
+  >
     <app-continue-resources appReveal [resources]="continueResources()" [topicColorById]="topicColorById()" />
-    <app-active-paths appReveal [appRevealDelay]="90" />
+    @if (showPaths()) {
+      <app-active-paths appReveal [appRevealDelay]="90" />
+    }
   </div>
 
   <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
