@@ -58,7 +58,7 @@ export interface ResolvedCapability {
   stage: CapabilityStage;
 }
 
-export type Capabilities = Partial<Record<CapabilityKey, ResolvedCapability>>;
+export type Capabilities = Record<CapabilityKey, ResolvedCapability>;
 
 export interface ModulePreferences {
   enabledModules: OptionalModuleKey[];
