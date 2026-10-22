@@ -5,6 +5,7 @@ import type {
 } from '@features/learning-resource/domain/learning-resource.model';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
 import type {
   EnergyLevel as ApiEnergyLevel,
@@ -44,6 +45,7 @@ export class CalibrationService {
   readonly savedRevision = signal(0);
 
   load(): Promise<void> {
+    if (!this.authStore.isEnabled(CAPABILITY_KEY.RECOMMENDATION)) return Promise.resolve();
     const userId = this.authStore.currentUser()?.id ?? null;
     if (userId !== this.loadedForUserId) {
       this.loadedForUserId = userId;

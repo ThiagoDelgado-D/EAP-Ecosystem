@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
+import { CAPABILITY_KEY, type AuthUser } from '@features/auth/domain/auth.model';
 import type {
   EnergyLevel,
   MentalStateType,
@@ -19,6 +21,12 @@ const UNSAVED_MENTAL_STATE: MentalStateType = 'creative';
 const UNSAVED_ENERGY: EnergyLevel = 'Low';
 const NEWER_ENERGY: EnergyLevel = 'High';
 
+function recommendationLearner(firstName: string): AuthUser {
+  const signedInLearner = learner(firstName);
+  signedInLearner.capabilities = capabilitiesEnabling([CAPABILITY_KEY.RECOMMENDATION]);
+  return signedInLearner;
+}
+
 describe('CalibrationService', () => {
   let recommendationRepository: MockedRecommendationRepository;
   let authStore: AuthStore;
@@ -33,7 +41,7 @@ describe('CalibrationService', () => {
       ],
     });
     authStore = TestBed.inject(AuthStore);
-    authStore.currentUser.set(learner('Ada'));
+    authStore.currentUser.set(recommendationLearner('Ada'));
     service = TestBed.inject(CalibrationService);
   });
 
@@ -77,7 +85,7 @@ describe('CalibrationService', () => {
     recommendationRepository.context = { energyLevel: 'high', availableMinutes: 90, mentalState: 'creative' };
     await service.load();
 
-    authStore.currentUser.set(learner('Grace'));
+    authStore.currentUser.set(recommendationLearner('Grace'));
     recommendationRepository.context = { energyLevel: 'low', availableMinutes: 15, mentalState: 'light_read' };
     await service.load();
 
@@ -204,5 +212,29 @@ describe('CalibrationService', () => {
       expect(recommendationRepository.savedContexts).toEqual([]);
       expect(service.energy()).toBe(energyBefore);
     });
+  });
+
+  test('should neither load nor persist a context while recommendations are off', async () => {
+    const getContextSpy = vi.spyOn(recommendationRepository, 'getContext');
+    authStore.currentUser.set(learner('Ada'));
+
+    await service.load();
+
+    expect(getContextSpy).not.toHaveBeenCalled();
+    expect(recommendationRepository.savedContexts).toEqual([]);
+  });
+
+  test('should load the context once recommendations are turned back on', async () => {
+    const getContextSpy = vi.spyOn(recommendationRepository, 'getContext');
+    authStore.currentUser.set(learner('Ada'));
+    await service.load();
+
+    authStore.updateModulePreferences({
+      enabledModules: [],
+      capabilities: capabilitiesEnabling([CAPABILITY_KEY.RECOMMENDATION]),
+    });
+    await service.load();
+
+    expect(getContextSpy).toHaveBeenCalledTimes(1);
   });
 });

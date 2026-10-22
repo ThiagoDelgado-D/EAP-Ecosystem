@@ -52,7 +52,11 @@ function setup(
   const pomodoroLearner = learner('Grace');
   pomodoroLearner.capabilities =
     entry?.capabilities ??
-    capabilitiesEnabling([CAPABILITY_KEY.POMODORO_PATH_FOCUS, CAPABILITY_KEY.POMODORO_SUGGESTION]);
+    capabilitiesEnabling([
+      CAPABILITY_KEY.POMODORO_PATH_FOCUS,
+      CAPABILITY_KEY.POMODORO_SUGGESTION,
+      CAPABILITY_KEY.RECOMMENDATION,
+    ]);
   TestBed.inject(AuthStore).currentUser.set(pomodoroLearner);
 
   const overlayHost = TestBed.inject(PomodoroOverlayHostService);
