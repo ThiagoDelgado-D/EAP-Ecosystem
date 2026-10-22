@@ -46,4 +46,16 @@ describe('ContinueResourcesComponent', () => {
 
     expect(resumeLinkFor(element, inProgressResource)).toBeNull();
   });
+
+  test('should point an empty list at the engine and a focus block while both are on', () => {
+    const element = render([], [CAPABILITY_KEY.RECOMMENDATION, CAPABILITY_KEY.POMODORO]);
+
+    expect(element.textContent).toContain('Pick something from the engine and start a 25-minute block.');
+  });
+
+  test('should point an empty list at the library while recommendations and Pomodoro are off', () => {
+    const element = render([], []);
+
+    expect(element.textContent).toContain('Pick something from your resources and mark it in progress.');
+  });
 });
