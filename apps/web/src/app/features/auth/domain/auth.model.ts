@@ -72,5 +72,5 @@ export interface AuthUser {
   email: string;
   onboardingCompleted: boolean;
   enabledModules: OptionalModuleKey[];
-  capabilities: Capabilities;
+  capabilities: Capabilities | null;
 }
