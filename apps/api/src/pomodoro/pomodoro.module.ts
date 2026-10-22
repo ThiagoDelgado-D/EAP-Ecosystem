@@ -14,14 +14,19 @@ import {
   LearningPathNodeEntity,
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
+import { TypeOrmUserRepository, UserEntity } from "@user/infrastructure";
+import { CapabilityKey, type EntitlementsProvider } from "@user/domain";
 import { CryptoServiceImpl, JwtServiceImpl } from "infrastructure-lib";
 import { TypeOrmLearningPathMembershipAdapter } from "./typeorm-learning-path-membership-adapter.js";
 import { TypeOrmCandidateNodesAdapter } from "./typeorm-candidate-nodes-adapter.js";
 import { LoggerNotificationService } from "./logger-notification-service.js";
 import { EnvironmentService } from "../config/environment.service.js";
+import { EntitlementsModule } from "../entitlements/entitlements.module.js";
+import { PathStepsCapabilityAdapter } from "../entitlements/path-steps-capability-adapter.js";
 
 @Module({
   imports: [
+    EntitlementsModule,
     TypeOrmModule.forFeature([
       PomodoroSessionEntity,
       SegmentEntity,
@@ -30,6 +35,7 @@ import { EnvironmentService } from "../config/environment.service.js";
       LearningPathEntity,
       LearningPathEdgeEntity,
       LearningResourceEntity,
+      UserEntity,
     ]),
   ],
   controllers: [PomodoroController],
@@ -63,6 +69,16 @@ import { EnvironmentService } from "../config/environment.service.js";
         getRepositoryToken(LearningPathEdgeEntity),
         getRepositoryToken(LearningResourceEntity),
       ],
+    },
+    {
+      provide: "ISessionTargetSourcesPort",
+      useFactory: (userRepo, entitlementsProvider: EntitlementsProvider) =>
+        new PathStepsCapabilityAdapter(
+          new TypeOrmUserRepository(userRepo),
+          entitlementsProvider,
+          CapabilityKey.POMODORO_PATH_FOCUS,
+        ),
+      inject: [getRepositoryToken(UserEntity), "IEntitlementsProvider"],
     },
     { provide: "ICryptoService", useClass: CryptoServiceImpl },
     { provide: "INotificationPort", useClass: LoggerNotificationService },

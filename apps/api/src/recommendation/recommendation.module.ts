@@ -12,13 +12,13 @@ import {
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
 import { TypeOrmUserRepository, UserEntity } from "@user/infrastructure";
-import type { EntitlementsProvider } from "@user/domain";
+import { CapabilityKey, type EntitlementsProvider } from "@user/domain";
 import { JwtServiceImpl } from "infrastructure-lib";
 import { TypeOrmLearningResourceCandidatesAdapter } from "./typeorm-learning-resource-candidates-adapter.js";
 import { TypeOrmLearningPathCandidatesAdapter } from "./typeorm-learning-path-candidates-adapter.js";
 import { EnvironmentService } from "../config/environment.service.js";
 import { EntitlementsModule } from "../entitlements/entitlements.module.js";
-import { CapabilityRecommendationSourcesAdapter } from "./capability-recommendation-sources-adapter.js";
+import { PathStepsCapabilityAdapter } from "../entitlements/path-steps-capability-adapter.js";
 
 @Module({
   imports: [
@@ -65,9 +65,10 @@ import { CapabilityRecommendationSourcesAdapter } from "./capability-recommendat
     {
       provide: "IRecommendationSourcesPort",
       useFactory: (userRepo, entitlementsProvider: EntitlementsProvider) =>
-        new CapabilityRecommendationSourcesAdapter(
+        new PathStepsCapabilityAdapter(
           new TypeOrmUserRepository(userRepo),
           entitlementsProvider,
+          CapabilityKey.RECOMMENDATION_PATH_STEPS,
         ),
       inject: [getRepositoryToken(UserEntity), "IEntitlementsProvider"],
     },

@@ -18,6 +18,7 @@ import type {
   ISessionRepository,
   LearningPathMembershipPort,
   NotificationPort,
+  SessionTargetSourcesPort,
 } from "@pomodoro/domain";
 import {
   attachOpenSegment,
@@ -64,6 +65,8 @@ export class PomodoroController {
     private readonly notificationPort: NotificationPort,
     @Inject("ICandidateNodesPort")
     private readonly candidateNodesPort: CandidateNodesPort,
+    @Inject("ISessionTargetSourcesPort")
+    private readonly sessionTargetSourcesPort: SessionTargetSourcesPort,
   ) {}
 
   @Get("sessions/active")
@@ -262,6 +265,7 @@ export class PomodoroController {
       {
         sessionRepository: this.sessionRepository,
         candidateNodesPort: this.candidateNodesPort,
+        sessionTargetSourcesPort: this.sessionTargetSourcesPort,
         currentUser,
       },
       { energy, mentalState },

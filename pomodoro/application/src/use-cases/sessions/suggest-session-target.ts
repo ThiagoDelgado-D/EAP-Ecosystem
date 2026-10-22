@@ -10,6 +10,7 @@ import {
   CandidateNodeMentalState,
   type CandidateNodesPort,
   type ISessionRepository,
+  type SessionTargetSourcesPort,
 } from "@pomodoro/domain";
 import { getLastSessionTarget } from "./get-last-session-target.js";
 import { getPathMomentum } from "./get-path-momentum.js";
@@ -22,6 +23,7 @@ import {
 export interface SuggestSessionTargetDependencies {
   sessionRepository: ISessionRepository;
   candidateNodesPort: CandidateNodesPort;
+  sessionTargetSourcesPort: SessionTargetSourcesPort;
   currentUser: CurrentUser;
 }
 
@@ -44,7 +46,12 @@ const suggestSessionTargetSchema = createValidationSchema<SuggestSessionTargetRe
 });
 
 export const suggestSessionTarget = async (
-  { sessionRepository, candidateNodesPort, currentUser }: SuggestSessionTargetDependencies,
+  {
+    sessionRepository,
+    candidateNodesPort,
+    sessionTargetSourcesPort,
+    currentUser,
+  }: SuggestSessionTargetDependencies,
   request: SuggestSessionTargetRequestModel,
 ): Promise<SuggestedCandidateResponseModel[] | InvalidDataError> => {
   const validationResult = suggestSessionTargetSchema(request);
@@ -52,6 +59,8 @@ export const suggestSessionTarget = async (
     return new InvalidDataError(validationResult.context.fields);
   }
   const { energy, mentalState } = validationResult;
+
+  if (!(await sessionTargetSourcesPort.allowsPathSteps(currentUser.id))) return [];
 
   const [candidates, lastTarget, momentum] = await Promise.all([
     candidateNodesPort.findCandidateNodes(currentUser.id),
