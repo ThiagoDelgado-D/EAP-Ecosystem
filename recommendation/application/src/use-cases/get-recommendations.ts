@@ -11,6 +11,7 @@ import type {
   IRecommendationContextRepository,
   LearningResourceCandidatesPort,
   LearningPathCandidatesPort,
+  RecommendationSourcesPort,
 } from "@recommendation/domain";
 import { RecommendationContextNotFoundError } from "../errors/index.js";
 import {
@@ -24,6 +25,7 @@ export interface GetRecommendationsDependencies {
   recommendationContextRepository: IRecommendationContextRepository;
   learningResourceCandidatesPort: LearningResourceCandidatesPort;
   learningPathCandidatesPort: LearningPathCandidatesPort;
+  recommendationSourcesPort: RecommendationSourcesPort;
   currentUser: CurrentUser;
 }
 
@@ -55,6 +57,7 @@ export const getRecommendations = async (
     recommendationContextRepository,
     learningResourceCandidatesPort,
     learningPathCandidatesPort,
+    recommendationSourcesPort,
     currentUser,
   }: GetRecommendationsDependencies,
   request: GetRecommendationsRequestModel,
@@ -74,9 +77,13 @@ export const getRecommendations = async (
   );
   if (!context) return new RecommendationContextNotFoundError();
 
+  const allowsPathSteps = await recommendationSourcesPort.allowsPathSteps(currentUser.id);
+
   const [resourceCandidates, pathCandidates] = await Promise.all([
     learningResourceCandidatesPort.findCandidates(currentUser.id),
-    learningPathCandidatesPort.findActivePathCandidates(currentUser.id),
+    allowsPathSteps
+      ? learningPathCandidatesPort.findActivePathCandidates(currentUser.id)
+      : Promise.resolve([]),
   ]);
 
   const candidates = mergeCandidates(resourceCandidates, pathCandidates).filter(

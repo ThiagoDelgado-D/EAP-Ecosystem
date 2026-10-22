@@ -12,6 +12,7 @@ import type {
   IRecommendationContextRepository,
   LearningPathCandidatesPort,
   LearningResourceCandidatesPort,
+  RecommendationSourcesPort,
 } from "@recommendation/domain";
 import {
   getRecommendationContext,
@@ -36,6 +37,8 @@ export class RecommendationController {
     private readonly learningResourceCandidatesPort: LearningResourceCandidatesPort,
     @Inject("ILearningPathCandidatesPort")
     private readonly learningPathCandidatesPort: LearningPathCandidatesPort,
+    @Inject("IRecommendationSourcesPort")
+    private readonly recommendationSourcesPort: RecommendationSourcesPort,
   ) {}
 
   @Get()
@@ -48,6 +51,7 @@ export class RecommendationController {
         recommendationContextRepository: this.recommendationContextRepository,
         learningResourceCandidatesPort: this.learningResourceCandidatesPort,
         learningPathCandidatesPort: this.learningPathCandidatesPort,
+        recommendationSourcesPort: this.recommendationSourcesPort,
         currentUser,
       },
       { excludedCandidateIds: query.exclude },

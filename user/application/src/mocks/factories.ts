@@ -1,5 +1,10 @@
 import { faker } from "@faker-js/faker";
-import type { SignInChallenge } from "@user/domain";
+import {
+  DEFAULT_APPEARANCE,
+  DEFAULT_ENABLED_MODULES,
+  type SignInChallenge,
+  type User,
+} from "@user/domain";
 import type { UUID } from "domain-lib";
 
 const SIGN_IN_CODE_LENGTH = 6;
@@ -30,3 +35,19 @@ export const generateSignInChallenge = (
     ...opts,
   };
 };
+
+export const generateUser = (opts?: Partial<User>): User => ({
+  id: faker.string.uuid() as UUID,
+  email: generateEmail(),
+  firstName: faker.person.firstName(),
+  lastName: faker.person.lastName(),
+  userName: null,
+  enabled: true,
+  onboardingCompleted: true,
+  enabledModules: [...DEFAULT_ENABLED_MODULES],
+  widgetConfig: [],
+  appearance: { ...DEFAULT_APPEARANCE },
+  createdAt: faker.date.recent(),
+  updatedAt: faker.date.recent(),
+  ...opts,
+});

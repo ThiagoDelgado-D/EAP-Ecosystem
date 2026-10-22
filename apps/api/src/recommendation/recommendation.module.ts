@@ -11,19 +11,25 @@ import {
   LearningPathNodeEntity,
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
+import { TypeOrmUserRepository, UserEntity } from "@user/infrastructure";
+import type { EntitlementsProvider } from "@user/domain";
 import { JwtServiceImpl } from "infrastructure-lib";
 import { TypeOrmLearningResourceCandidatesAdapter } from "./typeorm-learning-resource-candidates-adapter.js";
 import { TypeOrmLearningPathCandidatesAdapter } from "./typeorm-learning-path-candidates-adapter.js";
 import { EnvironmentService } from "../config/environment.service.js";
+import { EntitlementsModule } from "../entitlements/entitlements.module.js";
+import { CapabilityRecommendationSourcesAdapter } from "./capability-recommendation-sources-adapter.js";
 
 @Module({
   imports: [
+    EntitlementsModule,
     TypeOrmModule.forFeature([
       RecommendationContextEntity,
       LearningPathEntity,
       LearningPathNodeEntity,
       LearningPathEdgeEntity,
       LearningResourceEntity,
+      UserEntity,
     ]),
   ],
   controllers: [RecommendationController],
@@ -55,6 +61,15 @@ import { EnvironmentService } from "../config/environment.service.js";
         getRepositoryToken(LearningPathEdgeEntity),
         getRepositoryToken(LearningResourceEntity),
       ],
+    },
+    {
+      provide: "IRecommendationSourcesPort",
+      useFactory: (userRepo, entitlementsProvider: EntitlementsProvider) =>
+        new CapabilityRecommendationSourcesAdapter(
+          new TypeOrmUserRepository(userRepo),
+          entitlementsProvider,
+        ),
+      inject: [getRepositoryToken(UserEntity), "IEntitlementsProvider"],
     },
     {
       provide: "IJwtService",

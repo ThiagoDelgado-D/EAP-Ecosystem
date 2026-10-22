@@ -1,8 +1,10 @@
 import {
+  generateLearningPathNodeCandidate,
   generateLearningResourceCandidate,
   mockLearningPathCandidatesPort,
   mockLearningResourceCandidatesPort,
   mockRecommendationContextRepository,
+  mockRecommendationSourcesPort,
 } from "@recommendation/application";
 import { EnergyLevel, MentalState } from "@recommendation/domain";
 import type { INestApplication } from "@nestjs/common";
@@ -24,6 +26,7 @@ import {
   LearningPathNodeEntity,
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
+import { UserEntity } from "@user/infrastructure";
 import { RecommendationModule } from "./recommendation.module.js";
 import { configureRequestHandling } from "../app-setup.js";
 
@@ -38,6 +41,7 @@ describe("RecommendationController (integration)", () => {
   let learningPathCandidatesPort: ReturnType<
     typeof mockLearningPathCandidatesPort
   >;
+  let recommendationSourcesPort: ReturnType<typeof mockRecommendationSourcesPort>;
   let cryptoService: CryptoServiceImpl;
   let jwtService: MockedJwtService;
 
@@ -51,6 +55,7 @@ describe("RecommendationController (integration)", () => {
     recommendationContextRepository = mockRecommendationContextRepository();
     learningResourceCandidatesPort = mockLearningResourceCandidatesPort();
     learningPathCandidatesPort = mockLearningPathCandidatesPort();
+    recommendationSourcesPort = mockRecommendationSourcesPort();
     jwtService = mockJwtService();
 
     const module = await Test.createTestingModule({
@@ -66,12 +71,16 @@ describe("RecommendationController (integration)", () => {
       .useValue({})
       .overrideProvider(getRepositoryToken(LearningResourceEntity))
       .useValue({})
+      .overrideProvider(getRepositoryToken(UserEntity))
+      .useValue({})
       .overrideProvider("IRecommendationContextRepository")
       .useValue(recommendationContextRepository)
       .overrideProvider("ILearningResourceCandidatesPort")
       .useValue(learningResourceCandidatesPort)
       .overrideProvider("ILearningPathCandidatesPort")
       .useValue(learningPathCandidatesPort)
+      .overrideProvider("IRecommendationSourcesPort")
+      .useValue(recommendationSourcesPort)
       .overrideProvider("IJwtService")
       .useValue(jwtService)
       .compile();
@@ -89,6 +98,7 @@ describe("RecommendationController (integration)", () => {
     recommendationContextRepository.reset();
     learningResourceCandidatesPort.reset();
     learningPathCandidatesPort.reset();
+    recommendationSourcesPort.reset();
   });
 
   const authHeader = (bearerToken: string = ownerToken) => ({
@@ -138,6 +148,25 @@ describe("RecommendationController (integration)", () => {
       expect(response.body).toEqual([
         expect.objectContaining({ resourceId, title: "Intro to Kubernetes" }),
       ]);
+    });
+
+    test("leaves out path steps when the learner can't use them", async () => {
+      recommendationContextRepository.contexts.push({
+        userId: ownerId,
+        energyLevel: EnergyLevel.LOW,
+        updatedAt: new Date(),
+      });
+      learningPathCandidatesPort.candidatesByUser[ownerId] = [
+        generateLearningPathNodeCandidate(),
+      ];
+      recommendationSourcesPort.usersWithoutPathSteps.add(ownerId);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/recommendations")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual([]);
     });
 
     describe("with dismissed candidates excluded", () => {

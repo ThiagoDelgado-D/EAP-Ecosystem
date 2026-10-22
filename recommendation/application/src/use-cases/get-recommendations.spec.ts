@@ -1,11 +1,12 @@
 import {
+  BaseError,
   InvalidDataError,
   mockCryptoService,
   mockCurrentUser,
   type CurrentUser,
   type UUID,
 } from "domain-lib";
-import { beforeEach, describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
   generateLearningPathNodeCandidate,
   generateLearningResourceCandidate,
@@ -13,6 +14,7 @@ import {
   mockLearningPathCandidatesPort,
   mockLearningResourceCandidatesPort,
   mockRecommendationContextRepository,
+  mockRecommendationSourcesPort,
 } from "../mocks/index.js";
 import { RecommendationContextNotFoundError } from "../errors/index.js";
 import {
@@ -31,6 +33,7 @@ describe("getRecommendations", () => {
   let learningPathCandidatesPort: ReturnType<
     typeof mockLearningPathCandidatesPort
   >;
+  let recommendationSourcesPort: ReturnType<typeof mockRecommendationSourcesPort>;
   let currentUser: CurrentUser;
 
   beforeEach(async () => {
@@ -38,6 +41,7 @@ describe("getRecommendations", () => {
     recommendationContextRepository = mockRecommendationContextRepository();
     learningResourceCandidatesPort = mockLearningResourceCandidatesPort();
     learningPathCandidatesPort = mockLearningPathCandidatesPort();
+    recommendationSourcesPort = mockRecommendationSourcesPort();
     currentUser = await mockCurrentUser(cryptoService);
   });
 
@@ -45,6 +49,7 @@ describe("getRecommendations", () => {
     recommendationContextRepository,
     learningResourceCandidatesPort,
     learningPathCandidatesPort,
+    recommendationSourcesPort,
     currentUser,
   });
 
@@ -92,6 +97,51 @@ describe("getRecommendations", () => {
     const result = await getRecommendations(deps(), {});
 
     expect(result).toEqual([]);
+  });
+
+  describe("when the learner can't use path steps", () => {
+    beforeEach(() => {
+      recommendationContextRepository.contexts.push(
+        generateRecommendationContext({ userId: currentUser.id }),
+      );
+      recommendationSourcesPort.usersWithoutPathSteps.add(currentUser.id);
+    });
+
+    test("leaves out path steps that have no resource of their own", async () => {
+      learningPathCandidatesPort.candidatesByUser[currentUser.id] = [
+        generateLearningPathNodeCandidate(),
+      ];
+
+      const result = await getRecommendations(deps(), {});
+
+      expect(result).toEqual([]);
+    });
+
+    test("still recommends a resource that is also a path step, without its path", async () => {
+      const resource = generateLearningResourceCandidate();
+      learningResourceCandidatesPort.candidatesByUser[currentUser.id] = [resource];
+      learningPathCandidatesPort.candidatesByUser[currentUser.id] = [
+        generateLearningPathNodeCandidate({ resourceId: resource.resourceId }),
+      ];
+
+      const result = await getRecommendations(deps(), {});
+      if (result instanceof BaseError) throw result;
+
+      expect(result).toHaveLength(1);
+      expect(result[0].resourceId).toBe(resource.resourceId);
+      expect(result[0].pathId).toBeUndefined();
+    });
+
+    test("doesn't look up path step candidates at all", async () => {
+      const findActivePathCandidates = vi.spyOn(
+        learningPathCandidatesPort,
+        "findActivePathCandidates",
+      );
+
+      await getRecommendations(deps(), {});
+
+      expect(findActivePathCandidates).not.toHaveBeenCalled();
+    });
   });
 
   describe("excluded candidates", () => {
