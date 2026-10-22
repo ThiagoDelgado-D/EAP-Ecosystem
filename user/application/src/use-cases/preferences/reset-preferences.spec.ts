@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest";
-import { mockCryptoService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
+import { generateUser } from "../../mocks/factories.js";
 import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { resetPreferences } from "./reset-preferences.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
@@ -8,33 +8,23 @@ import {
   CapabilityState,
   DEFAULT_ENABLED_MODULES,
   ModuleKey,
+  WidgetKey,
   type User,
 } from "@user/domain";
 
 describe("resetPreferences", () => {
-  let cryptoService: ReturnType<typeof mockCryptoService>;
   let userRepository: ReturnType<typeof mockUserRepository>;
   let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let existingUser: User;
 
   beforeEach(async () => {
-    cryptoService = mockCryptoService();
     userRepository = mockUserRepository();
     entitlementsProvider = mockEntitlementsProvider();
 
-    existingUser = {
-      id: await cryptoService.generateUUID(),
-      email: "thiago@example.com",
-      firstName: "Thiago",
-      lastName: "Delgado",
-      userName: null,
-      enabled: true,
-      onboardingCompleted: true,
+    existingUser = generateUser({
       enabledModules: [ModuleKey.LEARNING_PATHS],
-      widgetConfig: ["focus-pulse", "architects-pulse"],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+      widgetConfig: [WidgetKey.FOCUS_PULSE, WidgetKey.ARCHITECTS_PULSE],
+    });
   });
 
   const deps = () => ({ userRepository, entitlementsProvider });
