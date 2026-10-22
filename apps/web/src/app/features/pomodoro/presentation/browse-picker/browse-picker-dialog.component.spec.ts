@@ -1,10 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
+import { CAPABILITY_KEY, type Capabilities } from '@features/auth/domain/auth.model';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { mockLearningPathRepository } from '@features/learning-path/application/mocks/mock-learning-path.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { mockLearningResourceRepository } from '@features/learning-resource/application/mocks/mock-learning-resource.repository';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
+import { learner } from '@features/recommendation/application/mocks/learner.fixture';
+import { learningResourceFixture, pathGroupFixture } from '../start/recommended-entry.fixtures';
 import {
   BROWSE_PICKER_HEADINGS,
   BrowsePickerDialogComponent,
@@ -19,7 +24,10 @@ describe('BrowsePickerDialogComponent', () => {
   let dialogRef: { close: ReturnType<typeof vi.fn> };
   let component: BrowsePickerDialogComponent;
 
-  function createDialog(data: BrowsePickerData) {
+  function createDialog(
+    data: BrowsePickerData,
+    capabilities: Capabilities = capabilitiesEnabling([CAPABILITY_KEY.POMODORO_PATH_FOCUS]),
+  ) {
     TestBed.resetTestingModule();
     learningPathRepository = mockLearningPathRepository();
     learningResourceRepository = mockLearningResourceRepository();
@@ -40,6 +48,9 @@ describe('BrowsePickerDialogComponent', () => {
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
     });
+    const pomodoroLearner = learner('Grace');
+    pomodoroLearner.capabilities = capabilities;
+    TestBed.inject(AuthStore).currentUser.set(pomodoroLearner);
 
     const fixture = TestBed.createComponent(BrowsePickerDialogComponent);
     component = fixture.componentInstance;
@@ -262,5 +273,51 @@ describe('BrowsePickerDialogComponent', () => {
     expect(text).toContain(attachHeading.title);
     expect(text).toContain(attachHeading.hint);
     expect(text).not.toContain(BROWSE_PICKER_HEADINGS.switch.title);
+  });
+
+  describe('when path focus is off', () => {
+    const cleanArchitectureTalk = learningResourceFixture('Clean Architecture talk', 20);
+    const frontendArchitecturePath = pathGroupFixture('Frontend Architecture Mastery', [
+      { title: 'Clean Architecture', learningResourceId: cleanArchitectureTalk.id },
+    ]);
+
+    function createDialogWithoutPathFocus() {
+      const fixture = createDialog({ heading: BROWSE_PICKER_HEADINGS.choose }, capabilitiesEnabling([]));
+      learningResourceRepository.resources = [cleanArchitectureTalk];
+      learningPathRepository.paths = [frontendArchitecturePath.path];
+      learningPathRepository.nodes = frontendArchitecturePath.nodes;
+      return fixture;
+    }
+
+    test('should open on the library and offer no path tabs', async () => {
+      const fixture = createDialogWithoutPathFocus();
+      await component.picker.load();
+
+      fixture.detectChanges();
+
+      const text = (fixture.nativeElement as HTMLElement).textContent;
+      expect(component.activeTab()).toBe('library');
+      expect(text).toContain('Library');
+      expect(text).not.toContain('Ready to learn');
+      expect(text).not.toContain('In progress');
+      expect(text).not.toContain('All paths');
+    });
+
+    test('should stay on the library when the search only matches a path step', async () => {
+      createDialogWithoutPathFocus();
+      await component.picker.load();
+
+      component.query.set('Frontend Architecture');
+      TestBed.tick();
+
+      expect(component.activeTab()).toBe('library');
+    });
+
+    test('should not count the paths a library resource belongs to', async () => {
+      createDialogWithoutPathFocus();
+      await component.picker.load();
+
+      expect(component.pathCountFor(cleanArchitectureTalk.id)).toBe(0);
+    });
   });
 });

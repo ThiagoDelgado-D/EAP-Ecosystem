@@ -2,6 +2,8 @@ import { Component, HostListener, OnInit, computed, effect, inject, signal } fro
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { firstValueFrom } from 'rxjs';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroRepository } from '@features/pomodoro/domain/pomodoro.repository';
@@ -56,6 +58,7 @@ export class StartComponent implements OnInit {
   private readonly weeklyGoal = inject(WeeklyGoalService);
   private readonly dialog = inject(MatDialog);
   private readonly overlayHost = inject(PomodoroOverlayHostService);
+  private readonly authStore = inject(AuthStore);
   readonly store = inject(PomodoroSessionStore);
   readonly picker = inject(PomodoroPickerService);
   private readonly historyRepository = inject(PomodoroRepository);
@@ -132,7 +135,7 @@ export class StartComponent implements OnInit {
 
   private applyRecommendedEntry(): void {
     if (this.selectedTarget()) return;
-    const groups = this.picker.allPaths();
+    const groups = this.authStore.isEnabled(CAPABILITY_KEY.POMODORO_PATH_FOCUS) ? this.picker.allPaths() : [];
     const library = this.picker.library();
     const target = resolveRecommendedTarget(this.route.snapshot.queryParamMap, groups, library);
     if (!target) return;

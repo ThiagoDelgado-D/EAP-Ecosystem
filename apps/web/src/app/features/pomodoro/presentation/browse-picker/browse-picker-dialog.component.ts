@@ -2,6 +2,8 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { LearningPathHttpRepository } from '@features/learning-path/infrastructure/learning-path-http.repository';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
@@ -75,8 +77,9 @@ export class BrowsePickerDialogComponent {
   private readonly data = inject<BrowsePickerData>(MAT_DIALOG_DATA);
   readonly heading = this.data.heading;
   readonly quickPick = this.data.quickPick ?? null;
+  readonly pathFocus = inject(AuthStore).isEnabled(CAPABILITY_KEY.POMODORO_PATH_FOCUS);
 
-  readonly activeTab = signal<BrowsePickerTab>('ready');
+  readonly activeTab = signal<BrowsePickerTab>(this.pathFocus ? 'ready' : 'library');
   readonly query = signal('');
 
   readonly filteredReady = computed(() => filterPickerNodes(this.picker.readyToLearn(), this.query()));
@@ -90,7 +93,7 @@ export class BrowsePickerDialogComponent {
     void this.picker.load();
 
     effect(() => {
-      if (!this.query().trim()) return;
+      if (!this.pathFocus || !this.query().trim()) return;
       const next = firstTabWithResults(this.activeTab(), {
         ready: this.filteredReady().length,
         'in-progress': this.filteredInProgress().length,
@@ -126,6 +129,7 @@ export class BrowsePickerDialogComponent {
   }
 
   pathCountFor(resourceId: string): number {
+    if (!this.pathFocus) return 0;
     return pathsForResource(this.picker.allPaths(), resourceId).length;
   }
 

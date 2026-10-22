@@ -58,30 +58,32 @@
   </div>
 
   <div class="px-6 pt-4 flex items-center gap-1 border-b border-line-hairline">
-    <button
-      type="button"
-      (click)="selectTab('ready')"
-      [class]="activeTab() === 'ready' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'"
-      class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
-    >
-      Ready to learn <span class="t-mono text-xs text-ink-faint">{{ filteredReady().length }}</span>
-    </button>
-    <button
-      type="button"
-      (click)="selectTab('in-progress')"
-      [class]="activeTab() === 'in-progress' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'"
-      class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
-    >
-      In progress <span class="t-mono text-xs text-ink-faint">{{ filteredInProgress().length }}</span>
-    </button>
-    <button
-      type="button"
-      (click)="selectTab('all-paths')"
-      [class]="activeTab() === 'all-paths' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'"
-      class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
-    >
-      All paths <span class="t-mono text-xs text-ink-faint">{{ picker.allPaths().length }}</span>
-    </button>
+    @if (pathFocus) {
+      <button
+        type="button"
+        (click)="selectTab('ready')"
+        [class]="activeTab() === 'ready' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'"
+        class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
+      >
+        Ready to learn <span class="t-mono text-xs text-ink-faint">{{ filteredReady().length }}</span>
+      </button>
+      <button
+        type="button"
+        (click)="selectTab('in-progress')"
+        [class]="activeTab() === 'in-progress' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'"
+        class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
+      >
+        In progress <span class="t-mono text-xs text-ink-faint">{{ filteredInProgress().length }}</span>
+      </button>
+      <button
+        type="button"
+        (click)="selectTab('all-paths')"
+        [class]="activeTab() === 'all-paths' ? 'text-ink-strong border-accent-line' : 'text-ink-faint border-transparent hover:text-ink-body'"
+        class="px-3 py-2 text-sm font-medium border-b-2 transition-colors"
+      >
+        All paths <span class="t-mono text-xs text-ink-faint">{{ picker.allPaths().length }}</span>
+      </button>
+    }
     <button
       type="button"
       (click)="selectTab('library')"

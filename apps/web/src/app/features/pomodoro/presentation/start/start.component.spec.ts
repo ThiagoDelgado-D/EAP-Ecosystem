@@ -1,5 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import type { Params } from '@angular/router';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
+import { CAPABILITY_KEY, type Capabilities } from '@features/auth/domain/auth.model';
 import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
 import type { PickerPathGroup } from '@features/pomodoro/application/pomodoro-picker.model';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
@@ -7,6 +10,7 @@ import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-loca
 import { createPomodoroComponentTestProviders } from '@features/pomodoro/application/mocks/pomodoro-component-test-providers';
 import type { Session, SuggestedCandidate } from '@features/pomodoro/domain/pomodoro.model';
 import { CalibrationService } from '@features/recommendation/application/calibration.service';
+import { learner } from '@features/recommendation/application/mocks/learner.fixture';
 import type { RecommendationContext } from '@features/recommendation/domain/recommendation.model';
 import { StartComponent } from './start.component';
 import { learningResourceFixture, pathGroupFixture } from './recommended-entry.fixtures';
@@ -16,6 +20,7 @@ interface RecommendedEntrySetup {
   library?: LearningResource[];
   groups?: PickerPathGroup[];
   availableMinutes?: number;
+  capabilities?: Capabilities;
 }
 
 function setup(
@@ -44,6 +49,10 @@ function setup(
   }
 
   TestBed.configureTestingModule({ providers });
+  const pomodoroLearner = learner('Grace');
+  pomodoroLearner.capabilities =
+    entry?.capabilities ?? capabilitiesEnabling([CAPABILITY_KEY.POMODORO_PATH_FOCUS]);
+  TestBed.inject(AuthStore).currentUser.set(pomodoroLearner);
 
   const overlayHost = TestBed.inject(PomodoroOverlayHostService);
   const component = TestBed.createComponent(StartComponent).componentInstance;
@@ -517,6 +526,22 @@ describe('StartComponent', () => {
       await settle();
 
       expect(component.selectedDuration()).toBe(15);
+    });
+
+    test('should leave the recommended path step out when path focus is off', async () => {
+      vi.stubGlobal('localStorage', mockLocalStorage(null));
+      const { component } = setup([], {
+        queryParams: { path: frontendArchitecturePath.path.id, node: cleanArchitectureNode!.id },
+        library,
+        groups,
+        availableMinutes: 45,
+        capabilities: capabilitiesEnabling([]),
+      });
+
+      await settle();
+
+      expect(component.hasAttachedMaterial()).toBe(false);
+      expect(component.selectedDuration()).toBe(25);
     });
 
     test('should fall back to free focus when the recommended item no longer exists', async () => {
