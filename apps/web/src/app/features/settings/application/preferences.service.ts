@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { OPTIONAL_MODULES, type OptionalModuleKey } from '@features/auth/domain/auth.model';
+import type { OptionalModuleKey } from '@features/auth/domain/auth.model';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { messageOf } from '@core/errors/error-messages';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
@@ -27,7 +27,8 @@ export class PreferencesService {
     this._loadingModules.set(true);
     this.error.set(null);
     try {
-      this.enabledModules.set(await this.repository.getEnabledModules());
+      const { enabledModules } = await this.repository.getEnabledModules();
+      this.enabledModules.set(enabledModules);
     } catch (error) {
       this.error.set(messageOf(error));
     } finally {
@@ -112,10 +113,10 @@ export class PreferencesService {
     this.saving.set(true);
     this.error.set(null);
     try {
-      await this.repository.resetPreferences();
-      this.enabledModules.set([...OPTIONAL_MODULES]);
+      const { enabledModules } = await this.repository.resetPreferences();
+      this.enabledModules.set(enabledModules);
       this.widgetConfig.set([]);
-      this.authStore.updateEnabledModules([...OPTIONAL_MODULES]);
+      this.authStore.updateEnabledModules(enabledModules);
     } catch (error) {
       this.error.set(messageOf(error));
       throw error;
