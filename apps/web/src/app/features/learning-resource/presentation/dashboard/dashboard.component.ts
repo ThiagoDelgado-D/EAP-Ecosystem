@@ -96,6 +96,7 @@ export class DashboardComponent implements OnInit {
   readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
   readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
   readonly showRecommendations = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.RECOMMENDATION));
+  readonly showCalibration = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.RECOMMENDATION_CALIBRATION));
   readonly dismissedCount = this.dismissals.count;
 
   readonly recommendations = computed(() => {
@@ -206,8 +207,8 @@ export class DashboardComponent implements OnInit {
   private async applyFilter(): Promise<void> {
     await Promise.all([
       this.resourceService.load({
-        energyLevel: this.selectedEnergy() ?? undefined,
-        mentalState: this.selectedMentalState() ?? undefined,
+        energyLevel: this.showCalibration() ? this.selectedEnergy() : undefined,
+        mentalState: this.showCalibration() ? (this.selectedMentalState() ?? undefined) : undefined,
         status: 'Pending',
         page: 1,
         pageSize: 10,

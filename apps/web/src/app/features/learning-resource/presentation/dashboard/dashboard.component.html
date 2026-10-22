@@ -40,7 +40,11 @@
         <div
           appReveal
           [appRevealDelay]="80"
-          class="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] transition-opacity duration-200"
+          [class]="
+            showCalibration()
+              ? 'grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] transition-opacity duration-200'
+              : 'grid gap-5 transition-opacity duration-200'
+          "
           [class.opacity-60]="loading()"
         >
           <app-ideal-match
@@ -54,15 +58,17 @@
             (dismissed)="onRecommendationDismissed($event)"
             (restored)="onDismissalsRestored()"
           />
-          <app-system-check
-            [selectedEnergy]="selectedEnergy()"
-            [selectedMentalState]="selectedMentalState()"
-            [selectedAvailableMinutes]="availableMinutes()"
-            [availableMinutesOptions]="AVAILABLE_MINUTES_OPTIONS"
-            (energyChange)="onEnergyChange($event)"
-            (mentalStateChange)="onMentalStateChange($event)"
-            (availableMinutesChange)="onAvailableMinutesChange($event)"
-          />
+          @if (showCalibration()) {
+            <app-system-check
+              [selectedEnergy]="selectedEnergy()"
+              [selectedMentalState]="selectedMentalState()"
+              [selectedAvailableMinutes]="availableMinutes()"
+              [availableMinutesOptions]="AVAILABLE_MINUTES_OPTIONS"
+              (energyChange)="onEnergyChange($event)"
+              (mentalStateChange)="onMentalStateChange($event)"
+              (availableMinutesChange)="onAvailableMinutesChange($event)"
+            />
+          }
         </div>
       }
     </div>
