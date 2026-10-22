@@ -145,8 +145,7 @@ describe('CommandPaletteComponent', () => {
   });
 
   test('should leave paths and nodes out for a learner without Learning Paths enabled', async () => {
-    const authStore = TestBed.inject(AuthStore);
-    authStore.updateEnabledModules([]);
+    TestBed.inject(AuthStore).updateModulePreferences({ enabledModules: [], capabilities: {} });
     await openWithLoadedIndex();
 
     typeQuery('rust');

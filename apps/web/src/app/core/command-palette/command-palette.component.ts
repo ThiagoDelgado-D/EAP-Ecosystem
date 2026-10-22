@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { LearningResourceRepository } from '@features/learning-resource/domain/learning-resource.repository';
 import { LearningPathRepository } from '@features/learning-path/domain/learning-path.repository';
 import { CaptureSheetService } from '@core/capture/capture-sheet.service';
@@ -53,7 +54,7 @@ export class CommandPaletteComponent {
   readonly cursor = signal(0);
   readonly index = signal<CommandSearchIndex>(EMPTY_INDEX);
 
-  private readonly pathsEnabled = computed(() => this.authStore.enabledModuleSet().has('learning-paths'));
+  private readonly pathsEnabled = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
 
   private readonly baseItems = computed<CommandItem[]>(() => {
     const paperTheme = this.themeService.theme() === 'paper';
