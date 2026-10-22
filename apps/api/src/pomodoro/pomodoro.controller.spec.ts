@@ -4,6 +4,7 @@ import {
   mockLearningPathMembershipPort,
   mockNotificationPort,
   mockSessionRepository,
+  mockSessionTargetSourcesPort,
   MIN_SESSION_DURATION_SEC,
   DEFAULT_BREAK_DURATION_SEC,
   PlannedTimeNotReachedError,
@@ -38,6 +39,7 @@ import {
   LearningPathNodeEntity,
   LearningResourceEntity,
 } from "@learning-resource/infrastructure";
+import { UserEntity } from "@user/infrastructure";
 import { PomodoroModule } from "./pomodoro.module.js";
 import { configureRequestHandling } from "../app-setup.js";
 
@@ -48,6 +50,7 @@ describe("PomodoroController (integration)", () => {
   let membershipPort: ReturnType<typeof mockLearningPathMembershipPort>;
   let notificationPort: ReturnType<typeof mockNotificationPort>;
   let candidateNodesPort: ReturnType<typeof mockCandidateNodesPort>;
+  let sessionTargetSourcesPort: ReturnType<typeof mockSessionTargetSourcesPort>;
   let cryptoService: CryptoServiceImpl;
   let jwtService: MockedJwtService;
 
@@ -66,6 +69,7 @@ describe("PomodoroController (integration)", () => {
     membershipPort = mockLearningPathMembershipPort();
     notificationPort = mockNotificationPort();
     candidateNodesPort = mockCandidateNodesPort();
+    sessionTargetSourcesPort = mockSessionTargetSourcesPort();
     jwtService = mockJwtService();
 
     const module = await Test.createTestingModule({
@@ -85,6 +89,8 @@ describe("PomodoroController (integration)", () => {
       .useValue({})
       .overrideProvider(getRepositoryToken(LearningResourceEntity))
       .useValue({})
+      .overrideProvider(getRepositoryToken(UserEntity))
+      .useValue({})
       .overrideProvider("IPomodoroSessionRepository")
       .useValue(sessionRepository)
       .overrideProvider("IPomodoroBreakRepository")
@@ -95,6 +101,8 @@ describe("PomodoroController (integration)", () => {
       .useValue(notificationPort)
       .overrideProvider("ICandidateNodesPort")
       .useValue(candidateNodesPort)
+      .overrideProvider("ISessionTargetSourcesPort")
+      .useValue(sessionTargetSourcesPort)
       .overrideProvider("ICryptoService")
       .useValue(cryptoService)
       .overrideProvider("IJwtService")
@@ -117,6 +125,7 @@ describe("PomodoroController (integration)", () => {
     membershipPort.reset();
     notificationPort.reset();
     candidateNodesPort.reset();
+    sessionTargetSourcesPort.reset();
   });
 
   const authHeader = (bearerToken: string = ownerToken) => ({
@@ -797,6 +806,27 @@ describe("PomodoroController (integration)", () => {
 
       expect(response.body[0].nodeId).toBe(inProgressNodeId);
       expect(response.body[0].why).toContain("already open");
+    });
+
+    test("suggests nothing when the learner can't use path steps", async () => {
+      candidateNodesPort.nodesByUser[ownerId] = [
+        {
+          pathId: await cryptoService.generateUUID(),
+          pathTitle: "TypeScript, Step by Step",
+          nodeId: await cryptoService.generateUUID(),
+          nodeTitle: "TypeScript Handbook",
+          progress: CandidateNodeProgress.PENDING,
+          prerequisitesDone: true,
+        },
+      ];
+      sessionTargetSourcesPort.usersWithoutPathSteps.add(ownerId);
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/pomodoro/suggestion")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual([]);
     });
 
     test("excludes a node that is already done", async () => {
