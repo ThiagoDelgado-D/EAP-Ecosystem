@@ -3,7 +3,6 @@ import { Module } from "@nestjs/common";
 import { getRepositoryToken, TypeOrmModule } from "@nestjs/typeorm";
 import {
   IdentityEntity,
-  ImplicitPlanEntitlementsProvider,
   SessionEntity,
   SignInChallengeEntity,
   TypeOrmIdentityRepository,
@@ -32,9 +31,11 @@ import {
   EAP_EMAIL_GLOBALS,
 } from "../email-templates.js";
 import { EnvironmentService } from "../config/environment.service.js";
+import { EntitlementsModule } from "../entitlements/entitlements.module.js";
 
 @Module({
   imports: [
+    EntitlementsModule,
     TypeOrmModule.forFeature([
       UserEntity,
       IdentityEntity,
@@ -78,7 +79,6 @@ import { EnvironmentService } from "../config/environment.service.js";
         getRepositoryToken(PomodoroSessionEntity),
       ],
     },
-    { provide: "IEntitlementsProvider", useClass: ImplicitPlanEntitlementsProvider },
     { provide: "ICryptoService", useClass: CryptoServiceImpl },
     {
       provide: "IJwtService",
