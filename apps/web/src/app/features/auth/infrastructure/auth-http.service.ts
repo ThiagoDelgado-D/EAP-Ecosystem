@@ -2,8 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { API_CONFIG } from '@core/config/api.config';
-import { AuthUser } from '@features/auth/domain/auth.model';
-import { VerifySignInResponseDto } from '@features/auth/infrastructure/auth.dto';
+import { AuthUser, type ModulePreferences } from '@features/auth/domain/auth.model';
+import {
+  ModulePreferencesDto,
+  VerifySignInResponseDto,
+} from '@features/auth/infrastructure/auth.dto';
 
 export interface VerifySignInResult {
   user: AuthUser;
@@ -31,6 +34,13 @@ export class AuthHttpService {
       this.http.post<VerifySignInResponseDto>(`${this.base}/refresh`, {}),
     );
     return this.mapVerifySignInResult(dto);
+  }
+
+  async getModulePreferences(): Promise<ModulePreferences> {
+    const dto = await firstValueFrom(
+      this.http.get<ModulePreferencesDto>(`${API_CONFIG.baseUrl}/preferences/modules`),
+    );
+    return { enabledModules: dto.enabledModules, capabilities: dto.capabilities };
   }
 
   async signOut(): Promise<void> {

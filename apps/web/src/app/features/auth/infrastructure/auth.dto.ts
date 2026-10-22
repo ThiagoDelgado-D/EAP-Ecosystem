@@ -14,3 +14,8 @@ export interface VerifySignInResponseDto {
   user: AuthUserDto;
   accessToken: string;
 }
+
+export interface ModulePreferencesDto {
+  enabledModules: OptionalModuleKey[];
+  capabilities: Capabilities;
+}
