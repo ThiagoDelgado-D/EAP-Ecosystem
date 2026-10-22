@@ -20,7 +20,7 @@
 
       <p class="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-body">
         You have <span class="tnum font-semibold text-ink-strong">{{ pendingResourceCount() }}</span> pending
-        resources and
+        {{ pendingResourceCount() === 1 ? 'resource' : 'resources' }} and
         <span class="tnum font-semibold text-ink-strong">{{ catalogMinutes() }}m</span>
         of material ahead.
         @if (showRecommendations()) {
