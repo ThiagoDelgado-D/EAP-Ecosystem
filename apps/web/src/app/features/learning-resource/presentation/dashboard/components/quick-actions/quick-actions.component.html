@@ -12,16 +12,18 @@
     </div>
   </button>
 
-  <a routerLink="/pomodoro" class="card card-lift flex items-center gap-3 px-4 py-3">
-    <div class="w-9 h-9 rounded-lg bg-accent-wash text-accent flex items-center justify-center flex-shrink-0">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="9" />
-        <polyline points="12,7 12,12 15,14" />
-      </svg>
-    </div>
-    <div>
-      <p class="text-sm font-medium text-ink-strong">Start a focus block</p>
-      <p class="text-[11px] text-ink-faint">Pomodoro session</p>
-    </div>
-  </a>
+  @if (showPomodoro()) {
+    <a routerLink="/pomodoro" class="card card-lift flex items-center gap-3 px-4 py-3">
+      <div class="w-9 h-9 rounded-lg bg-accent-wash text-accent flex items-center justify-center flex-shrink-0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9" />
+          <polyline points="12,7 12,12 15,14" />
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-medium text-ink-strong">Start a focus block</p>
+        <p class="text-[11px] text-ink-faint">Pomodoro session</p>
+      </div>
+    </a>
+  }
 </div>

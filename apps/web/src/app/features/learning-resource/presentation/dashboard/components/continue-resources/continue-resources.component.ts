@@ -1,5 +1,7 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
 
 @Component({
@@ -11,6 +13,9 @@ import type { LearningResource } from '@features/learning-resource/domain/learni
 export class ContinueResourcesComponent {
   readonly resources = input.required<LearningResource[]>();
   readonly topicColorById = input<Record<string, string>>({});
+  private readonly authStore = inject(AuthStore);
+
+  readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
 
   coverStyle(resource: LearningResource): string {
     const color = resource.topicIds
