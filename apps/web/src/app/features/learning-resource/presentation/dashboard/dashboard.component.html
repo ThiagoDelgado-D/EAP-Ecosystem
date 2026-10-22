@@ -3,10 +3,12 @@
     <div class="min-w-0">
       <p class="eyebrow flex flex-wrap items-center gap-x-2 gap-y-1">
         <span>{{ todayLabel }}</span>
-        <span class="text-ink-ghost">/</span>
-        <span class="inline-flex items-center gap-1.5 text-energy-high">
-          {{ todayMinutes() }}m today
-        </span>
+        @if (showPomodoro()) {
+          <span class="text-ink-ghost">/</span>
+          <span class="inline-flex items-center gap-1.5 text-energy-high">
+            {{ todayMinutes() }}m today
+          </span>
+        }
       </p>
 
       <h1 class="display mt-3 text-[clamp(2.3rem,6.2vw,4.1rem)] font-semibold">
@@ -71,6 +73,7 @@
     [weekDays]="weekDays()"
     [streakDays]="streakDays()"
     [goalMinutes]="goalMinutes()"
+    [showFocus]="showPomodoro()"
   />
 
   <div

@@ -26,6 +26,7 @@ export class KpiRowComponent {
   readonly weekDays = input<WeekDay[]>([]);
   readonly streakDays = input<number>(0);
   readonly goalMinutes = input<number>(WEEKLY_GOAL_MINUTES.DEFAULT);
+  readonly showFocus = input(true);
 
   readonly weeklyFocusHours = computed(() => {
     const minutes = this.weeklyFocusMinutes();
