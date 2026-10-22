@@ -95,6 +95,7 @@ export class DashboardComponent implements OnInit {
   readonly paths = this.pathService.paths;
   readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
   readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
+  readonly showRecommendations = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.RECOMMENDATION));
   readonly dismissedCount = this.dismissals.count;
 
   readonly recommendations = computed(() => {
@@ -211,7 +212,7 @@ export class DashboardComponent implements OnInit {
         page: 1,
         pageSize: 10,
       }),
-      this.recommendationService.refresh(),
+      this.showRecommendations() ? this.recommendationService.refresh() : Promise.resolve(),
     ]);
     this.hasLoaded.set(true);
   }
