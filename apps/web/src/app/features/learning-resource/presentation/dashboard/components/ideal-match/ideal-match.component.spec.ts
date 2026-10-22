@@ -5,6 +5,8 @@ import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
 import { CAPABILITY_KEY, type CapabilityKey } from '@features/auth/domain/auth.model';
+import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
+import { learningResourceFixture } from '@features/pomodoro/presentation/start/recommended-entry.fixtures';
 import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
 import { learner } from '@features/recommendation/application/mocks/learner.fixture';
 import {
@@ -16,7 +18,12 @@ import { IdealMatchComponent } from './ideal-match.component';
 const EMPTY_STATE_TEXT = 'Nothing fits this calibration yet';
 
 function render(
-  inputs: { recommendation?: ScoredRecommendation | null; secondary?: ScoredRecommendation[]; error?: string | null },
+  inputs: {
+    recommendation?: ScoredRecommendation | null;
+    resource?: LearningResource | null;
+    secondary?: ScoredRecommendation[];
+    error?: string | null;
+  },
   enabledCapabilities: CapabilityKey[] = [CAPABILITY_KEY.POMODORO],
 ) {
   TestBed.configureTestingModule({ providers: [provideRouter([])] });
@@ -28,6 +35,7 @@ function render(
   });
   const fixture = TestBed.createComponent(IdealMatchComponent);
   fixture.componentRef.setInput('recommendation', inputs.recommendation ?? null);
+  fixture.componentRef.setInput('resource', inputs.resource ?? null);
   fixture.componentRef.setInput('secondary', inputs.secondary ?? []);
   fixture.componentRef.setInput('error', inputs.error ?? null);
   fixture.detectChanges();
@@ -94,5 +102,24 @@ describe('IdealMatchComponent', () => {
     const secondChoice = element.querySelector<HTMLAnchorElement>(`a[aria-label="Open ${lifetimesChapter.title}"]`);
 
     expect(secondChoice?.getAttribute('href')).toBe(`/resources/${lifetimesChapter.resourceId}`);
+  });
+
+  test('should offer the top resource details only next to focusing on it', () => {
+    const borrowCheckerChapter = learningResourceFixture('The Borrow Checker', 30);
+    const borrowCheckerRecommendation: ScoredRecommendation = {
+      resourceId: borrowCheckerChapter.id,
+      title: borrowCheckerChapter.title,
+      score: 80,
+      why: [],
+    };
+    const openDetails = (element: HTMLElement) =>
+      Array.from(element.querySelectorAll('a')).find((link) => link.textContent?.trim() === 'Open details');
+
+    const withPomodoro = render({ recommendation: borrowCheckerRecommendation, resource: borrowCheckerChapter });
+    TestBed.resetTestingModule();
+    const withoutPomodoro = render({ recommendation: borrowCheckerRecommendation, resource: borrowCheckerChapter }, []);
+
+    expect(openDetails(withPomodoro)?.getAttribute('href')).toBe(`/resources/${borrowCheckerChapter.id}`);
+    expect(openDetails(withoutPomodoro)).toBeUndefined();
   });
 });
