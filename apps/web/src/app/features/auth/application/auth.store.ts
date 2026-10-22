@@ -4,7 +4,6 @@ import {
   CAPABILITY_STATE,
   type CapabilityKey,
   type ModulePreferences,
-  type OptionalModuleKey,
 } from '@features/auth/domain/auth.model';
 
 @Injectable({ providedIn: 'root' })
@@ -12,10 +11,6 @@ export class AuthStore {
   readonly currentUser = signal<AuthUser | null>(null);
   readonly accessToken = signal<string | null>(null);
   readonly isAuthenticated = computed(() => this.accessToken() !== null);
-
-  readonly enabledModuleSet = computed(
-    () => new Set<string>(this.currentUser()?.enabledModules ?? []),
-  );
 
   readonly displayName = computed(() => {
     const u = this.currentUser();
@@ -45,12 +40,6 @@ export class AuthStore {
     const u = this.currentUser();
     if (!u) return;
     this.currentUser.set({ ...u, enabledModules, capabilities });
-  }
-
-  updateEnabledModules(enabledModules: OptionalModuleKey[]): void {
-    const u = this.currentUser();
-    if (!u) return;
-    this.currentUser.set({ ...u, enabledModules });
   }
 
   clearSession(): void {
