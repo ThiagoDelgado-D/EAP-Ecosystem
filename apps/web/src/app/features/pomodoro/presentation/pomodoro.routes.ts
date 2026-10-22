@@ -28,7 +28,7 @@ export const pomodoroRoutes: Routes = [
       {
         path: 'summary',
         title: 'Weekly Summary',
-        canActivate: [capabilityGuard(CAPABILITY_KEY.POMODORO)],
+        canActivate: [capabilityGuard(CAPABILITY_KEY.POMODORO_WEEKLY_SUMMARY)],
         loadComponent: () =>
           import('./summary/weekly-summary.component').then((m) => m.WeeklySummaryComponent),
       },

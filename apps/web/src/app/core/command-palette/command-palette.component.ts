@@ -56,6 +56,9 @@ export class CommandPaletteComponent {
 
   private readonly pathsEnabled = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
   private readonly pomodoroEnabled = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
+  private readonly weeklySummaryEnabled = computed(() =>
+    this.authStore.isEnabled(CAPABILITY_KEY.POMODORO_WEEKLY_SUMMARY),
+  );
 
   private readonly baseItems = computed<CommandItem[]>(() => {
     const paperTheme = this.themeService.theme() === 'paper';
@@ -66,10 +69,10 @@ export class CommandPaletteComponent {
         ? [{ id: 'go-paths', label: 'Go to Learning Paths', group: 'Navigate', icon: 'route', run: () => this.go('/paths') } satisfies CommandItem]
         : []),
       ...(this.pomodoroEnabled()
-        ? [
-            { id: 'go-pomodoro', label: 'Go to Pomodoro', group: 'Navigate', icon: 'timer', run: () => this.go('/pomodoro') } satisfies CommandItem,
-            { id: 'go-summary', label: 'Go to Weekly Summary', group: 'Navigate', icon: 'chart', run: () => this.go('/pomodoro/summary') } satisfies CommandItem,
-          ]
+        ? [{ id: 'go-pomodoro', label: 'Go to Pomodoro', group: 'Navigate', icon: 'timer', run: () => this.go('/pomodoro') } satisfies CommandItem]
+        : []),
+      ...(this.weeklySummaryEnabled()
+        ? [{ id: 'go-summary', label: 'Go to Weekly Summary', group: 'Navigate', icon: 'chart', run: () => this.go('/pomodoro/summary') } satisfies CommandItem]
         : []),
       { id: 'go-settings', label: 'Go to Settings', group: 'Navigate', icon: 'settings', run: () => this.go('/settings') },
     ];

@@ -65,7 +65,11 @@ describe('CommandPaletteComponent', () => {
       email: 'ada@example.com',
       onboardingCompleted: true,
       enabledModules: [MODULE_KEY.LEARNING_PATHS, MODULE_KEY.POMODORO],
-      capabilities: capabilitiesEnabling([CAPABILITY_KEY.LEARNING_PATHS, CAPABILITY_KEY.POMODORO]),
+      capabilities: capabilitiesEnabling([
+        CAPABILITY_KEY.LEARNING_PATHS,
+        CAPABILITY_KEY.POMODORO,
+        CAPABILITY_KEY.POMODORO_WEEKLY_SUMMARY,
+      ]),
     });
     palette = TestBed.inject(CommandPaletteService);
     fixture = TestBed.createComponent(CommandPaletteComponent);
@@ -167,5 +171,18 @@ describe('CommandPaletteComponent', () => {
     const commandIds = component.items().map((item) => item.id);
 
     expect(commandIds.filter((id) => pomodoroCommandIds.includes(id))).toEqual([]);
+  });
+
+  test('should leave the weekly summary out while only it is off', async () => {
+    TestBed.inject(AuthStore).updateModulePreferences({
+      enabledModules: [MODULE_KEY.LEARNING_PATHS, MODULE_KEY.POMODORO],
+      capabilities: capabilitiesEnabling([CAPABILITY_KEY.LEARNING_PATHS, CAPABILITY_KEY.POMODORO]),
+    });
+    await openWithLoadedIndex();
+
+    const commandIds = component.items().map((item) => item.id);
+
+    expect(commandIds).toContain('go-pomodoro');
+    expect(commandIds).not.toContain('go-summary');
   });
 });
