@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@core/guards/auth.guard';
+import { capabilityGuard } from '@core/guards/capability.guard';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 
 export const learningResourceRoutes: Routes = [
   {
@@ -84,6 +86,7 @@ export const learningResourceRoutes: Routes = [
       },
       {
         path: 'paths',
+        canActivate: [capabilityGuard(CAPABILITY_KEY.LEARNING_PATHS)],
         loadChildren: () =>
           import('@features/learning-path/presentation/learning-path.routes').then(
             (m) => m.learningPathRoutes,
