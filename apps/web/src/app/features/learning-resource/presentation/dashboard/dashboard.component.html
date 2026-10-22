@@ -20,48 +20,59 @@
 
       <p class="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-body">
         You have <span class="tnum font-semibold text-ink-strong">{{ pendingResourceCount() }}</span> pending
-        resources and
+        {{ pendingResourceCount() === 1 ? 'resource' : 'resources' }} and
         <span class="tnum font-semibold text-ink-strong">{{ catalogMinutes() }}m</span>
-        of material ahead. The engine ranks everything by the energy and time you actually have right now.
+        of material ahead.
+        @if (showRecommendations()) {
+          The engine ranks everything by the energy and time you actually have right now.
+        }
       </p>
     </div>
 
     <app-quick-actions />
   </header>
 
-  <div>
-    @if (loading() && !hasLoaded()) {
-      <div class="card h-56 animate-pulse"></div>
-    } @else {
-      <div
-        appReveal
-        [appRevealDelay]="80"
-        class="grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] transition-opacity duration-200"
-        [class.opacity-60]="loading()"
-      >
-        <app-ideal-match
-          class="block h-full"
-          [recommendation]="topRecommendation()"
-          [resource]="topRecommendationResource()"
-          [secondary]="secondaryRecommendations()"
-          [catalogMinutes]="catalogMinutes()"
-          [dismissedCount]="dismissedCount()"
-          [error]="recommendationError()"
-          (dismissed)="onRecommendationDismissed($event)"
-          (restored)="onDismissalsRestored()"
-        />
-        <app-system-check
-          [selectedEnergy]="selectedEnergy()"
-          [selectedMentalState]="selectedMentalState()"
-          [selectedAvailableMinutes]="availableMinutes()"
-          [availableMinutesOptions]="AVAILABLE_MINUTES_OPTIONS"
-          (energyChange)="onEnergyChange($event)"
-          (mentalStateChange)="onMentalStateChange($event)"
-          (availableMinutesChange)="onAvailableMinutesChange($event)"
-        />
-      </div>
-    }
-  </div>
+  @if (showRecommendations()) {
+    <div>
+      @if (loading() && !hasLoaded()) {
+        <div class="card h-56 animate-pulse"></div>
+      } @else {
+        <div
+          appReveal
+          [appRevealDelay]="80"
+          [class]="
+            showCalibration()
+              ? 'grid gap-5 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] transition-opacity duration-200'
+              : 'grid gap-5 transition-opacity duration-200'
+          "
+          [class.opacity-60]="loading()"
+        >
+          <app-ideal-match
+            class="block h-full"
+            [recommendation]="topRecommendation()"
+            [resource]="topRecommendationResource()"
+            [secondary]="secondaryRecommendations()"
+            [catalogMinutes]="catalogMinutes()"
+            [dismissedCount]="dismissedCount()"
+            [error]="recommendationError()"
+            (dismissed)="onRecommendationDismissed($event)"
+            (restored)="onDismissalsRestored()"
+          />
+          @if (showCalibration()) {
+            <app-system-check
+              [selectedEnergy]="selectedEnergy()"
+              [selectedMentalState]="selectedMentalState()"
+              [selectedAvailableMinutes]="availableMinutes()"
+              [availableMinutesOptions]="AVAILABLE_MINUTES_OPTIONS"
+              (energyChange)="onEnergyChange($event)"
+              (mentalStateChange)="onMentalStateChange($event)"
+              (availableMinutesChange)="onAvailableMinutesChange($event)"
+            />
+          }
+        </div>
+      }
+    </div>
+  }
 
   <app-kpi-row
     appReveal

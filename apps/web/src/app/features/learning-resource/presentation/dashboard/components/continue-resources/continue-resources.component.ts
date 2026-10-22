@@ -17,6 +17,11 @@ export class ContinueResourcesComponent {
   private readonly authStore = inject(AuthStore);
 
   readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
+  readonly emptyHint = computed(() => {
+    const source = this.authStore.isEnabled(CAPABILITY_KEY.RECOMMENDATION) ? 'the engine' : 'your resources';
+    const next = this.showPomodoro() ? 'start a 25-minute block' : 'mark it in progress';
+    return `Nothing in progress yet. Pick something from ${source} and ${next}.`;
+  });
 
   resumeQueryParams(resource: LearningResource): Params {
     return recommendedEntryQueryParams({ resourceId: resource.id });
