@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
 import { isOptionalModule, type OptionalModuleKey } from '@features/auth/domain/auth.model';
 
 @Component({
@@ -16,8 +17,9 @@ export class OAuthCallbackComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authStore = inject(AuthStore);
+  private readonly authHttp = inject(AuthHttpService);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     const fragment = this.route.snapshot.fragment;
     const params = new URLSearchParams(fragment ?? '');
     const accessToken = params.get('access_token');
@@ -41,14 +43,24 @@ export class OAuthCallbackComponent implements OnInit {
         lastName: params.get('last_name') ?? '',
         onboardingCompleted: !onboarding,
         enabledModules,
+        capabilities: {},
       },
       accessToken,
     );
+    await this.loadModulePreferences();
 
     if (onboarding) {
       this.router.navigate(['/onboarding'], { replaceUrl: true });
     } else {
       this.router.navigate(['/dashboard'], { replaceUrl: true });
+    }
+  }
+
+  private async loadModulePreferences(): Promise<void> {
+    try {
+      this.authStore.updateModulePreferences(await this.authHttp.getModulePreferences());
+    } catch {
+      return;
     }
   }
 

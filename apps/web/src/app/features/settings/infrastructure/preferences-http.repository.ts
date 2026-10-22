@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { API_CONFIG } from '@core/config/api.config';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
-import type { OptionalModuleKey } from '@features/auth/domain/auth.model';
+import type { ModulePreferences, OptionalModuleKey } from '@features/auth/domain/auth.model';
 import type { AccountStats, UserAppearance, WidgetKey } from '@features/settings/domain/settings.model';
 import type { AccountStatsDto, AppearanceDto, EnabledModulesDto, WidgetConfigDto } from './settings.dto';
 
@@ -12,16 +12,16 @@ export class PreferencesHttpRepository extends PreferencesRepository {
   private readonly http = inject(HttpClient);
   private readonly base = `${API_CONFIG.baseUrl}/preferences`;
 
-  async getEnabledModules(): Promise<OptionalModuleKey[]> {
+  async getEnabledModules(): Promise<ModulePreferences> {
     const dto = await firstValueFrom(this.http.get<EnabledModulesDto>(`${this.base}/modules`));
-    return dto.enabledModules;
+    return this.toModulePreferences(dto);
   }
 
-  async updateEnabledModules(enabledModules: OptionalModuleKey[]): Promise<OptionalModuleKey[]> {
+  async updateEnabledModules(enabledModules: OptionalModuleKey[]): Promise<ModulePreferences> {
     const dto = await firstValueFrom(
       this.http.patch<EnabledModulesDto>(`${this.base}/modules`, { enabledModules }),
     );
-    return dto.enabledModules;
+    return this.toModulePreferences(dto);
   }
 
   async getWidgetConfig(): Promise<WidgetKey[]> {
@@ -48,12 +48,17 @@ export class PreferencesHttpRepository extends PreferencesRepository {
     return dto.appearance as UserAppearance;
   }
 
-  async resetPreferences(): Promise<void> {
-    await firstValueFrom(this.http.post(`${this.base}/reset`, {}));
+  async resetPreferences(): Promise<ModulePreferences> {
+    const dto = await firstValueFrom(this.http.post<EnabledModulesDto>(`${this.base}/reset`, {}));
+    return this.toModulePreferences(dto);
   }
 
   async getAccountStats(): Promise<AccountStats> {
     const dto = await firstValueFrom(this.http.get<AccountStatsDto>(`${this.base}/stats`));
     return { resources: dto.resources, paths: dto.paths, sessions: dto.sessions };
+  }
+
+  private toModulePreferences(dto: EnabledModulesDto): ModulePreferences {
+    return { enabledModules: dto.enabledModules, capabilities: dto.capabilities };
   }
 }

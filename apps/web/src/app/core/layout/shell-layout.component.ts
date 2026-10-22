@@ -6,6 +6,7 @@ import { CaptureSheetComponent } from '@features/learning-resource/presentation/
 import { CommandPaletteComponent } from '@core/command-palette/command-palette.component';
 import { CommandPaletteService } from '@core/command-palette/command-palette.service';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
 import { ThemeService } from '@core/theme/theme.service';
 import { CalibrationService } from '@features/recommendation/application/calibration.service';
@@ -47,7 +48,7 @@ export class ShellLayoutComponent implements OnInit {
 
   readonly userInitials = this.authStore.userInitials;
   readonly displayName = this.authStore.displayName;
-  readonly showPaths = computed(() => this.authStore.enabledModuleSet().has('learning-paths'));
+  readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
 
   readonly sidebarOpen = signal(true);
   readonly mobileDrawerOpen = signal(false);

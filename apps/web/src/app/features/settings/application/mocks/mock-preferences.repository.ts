@@ -1,5 +1,10 @@
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
-import type { OptionalModuleKey } from '@features/auth/domain/auth.model';
+import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
+import {
+  OPTIONAL_MODULES,
+  type ModulePreferences,
+  type OptionalModuleKey,
+} from '@features/auth/domain/auth.model';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import {
   LANGUAGE_CODE,
@@ -21,6 +26,10 @@ export function defaultAppearanceFixture(): UserAppearance {
   };
 }
 
+function modulePreferencesFor(enabledModules: OptionalModuleKey[]): ModulePreferences {
+  return { enabledModules, capabilities: capabilitiesEnabling(enabledModules) };
+}
+
 export interface MockedPreferencesRepository extends PreferencesRepository {
   appearance: UserAppearance;
   accountStats: AccountStats;
@@ -37,12 +46,12 @@ export function mockPreferencesRepository(
     appearancePatches: [],
     failNextUpdate: false,
 
-    getEnabledModules(): Promise<OptionalModuleKey[]> {
-      return Promise.resolve([]);
+    getEnabledModules(): Promise<ModulePreferences> {
+      return Promise.resolve(modulePreferencesFor([]));
     },
 
-    updateEnabledModules(enabledModules: OptionalModuleKey[]): Promise<OptionalModuleKey[]> {
-      return Promise.resolve(enabledModules);
+    updateEnabledModules(enabledModules: OptionalModuleKey[]): Promise<ModulePreferences> {
+      return Promise.resolve(modulePreferencesFor(enabledModules));
     },
 
     getWidgetConfig(): Promise<WidgetKey[]> {
@@ -74,8 +83,8 @@ export function mockPreferencesRepository(
       return Promise.resolve(this.appearance);
     },
 
-    resetPreferences(): Promise<void> {
-      return Promise.resolve();
+    resetPreferences(): Promise<ModulePreferences> {
+      return Promise.resolve(modulePreferencesFor([...OPTIONAL_MODULES]));
     },
 
     getAccountStats(): Promise<AccountStats> {

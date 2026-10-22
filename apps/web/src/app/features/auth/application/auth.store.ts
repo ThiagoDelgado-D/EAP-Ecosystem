@@ -1,15 +1,16 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { AuthUser, type OptionalModuleKey } from '@features/auth/domain/auth.model';
+import {
+  AuthUser,
+  CAPABILITY_STATE,
+  type CapabilityKey,
+  type ModulePreferences,
+} from '@features/auth/domain/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
   readonly currentUser = signal<AuthUser | null>(null);
   readonly accessToken = signal<string | null>(null);
   readonly isAuthenticated = computed(() => this.accessToken() !== null);
-
-  readonly enabledModuleSet = computed(
-    () => new Set<string>(this.currentUser()?.enabledModules ?? []),
-  );
 
   readonly displayName = computed(() => {
     const u = this.currentUser();
@@ -31,10 +32,14 @@ export class AuthStore {
     this.accessToken.set(token || null);
   }
 
-  updateEnabledModules(enabledModules: OptionalModuleKey[]): void {
+  isEnabled(key: CapabilityKey): boolean {
+    return this.currentUser()?.capabilities[key]?.state === CAPABILITY_STATE.ENABLED;
+  }
+
+  updateModulePreferences({ enabledModules, capabilities }: ModulePreferences): void {
     const u = this.currentUser();
     if (!u) return;
-    this.currentUser.set({ ...u, enabledModules });
+    this.currentUser.set({ ...u, enabledModules, capabilities });
   }
 
   clearSession(): void {
