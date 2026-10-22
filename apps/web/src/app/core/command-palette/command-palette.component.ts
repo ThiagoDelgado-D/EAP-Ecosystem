@@ -55,6 +55,7 @@ export class CommandPaletteComponent {
   readonly index = signal<CommandSearchIndex>(EMPTY_INDEX);
 
   private readonly pathsEnabled = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
+  private readonly pomodoroEnabled = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
 
   private readonly baseItems = computed<CommandItem[]>(() => {
     const paperTheme = this.themeService.theme() === 'paper';
@@ -64,8 +65,12 @@ export class CommandPaletteComponent {
       ...(this.pathsEnabled()
         ? [{ id: 'go-paths', label: 'Go to Learning Paths', group: 'Navigate', icon: 'route', run: () => this.go('/paths') } satisfies CommandItem]
         : []),
-      { id: 'go-pomodoro', label: 'Go to Pomodoro', group: 'Navigate', icon: 'timer', run: () => this.go('/pomodoro') },
-      { id: 'go-summary', label: 'Go to Weekly Summary', group: 'Navigate', icon: 'chart', run: () => this.go('/pomodoro/summary') },
+      ...(this.pomodoroEnabled()
+        ? [
+            { id: 'go-pomodoro', label: 'Go to Pomodoro', group: 'Navigate', icon: 'timer', run: () => this.go('/pomodoro') } satisfies CommandItem,
+            { id: 'go-summary', label: 'Go to Weekly Summary', group: 'Navigate', icon: 'chart', run: () => this.go('/pomodoro/summary') } satisfies CommandItem,
+          ]
+        : []),
       { id: 'go-settings', label: 'Go to Settings', group: 'Navigate', icon: 'settings', run: () => this.go('/settings') },
     ];
     const actions: CommandItem[] = [
@@ -80,7 +85,9 @@ export class CommandPaletteComponent {
       { id: 'capture-url', label: 'Import from URL', group: 'Actions', icon: 'link', run: () => this.capture.open('url') },
       { id: 'capture-voice', label: 'Voice capture', group: 'Actions', icon: 'mic', run: () => this.capture.open('voice') },
       { id: 'capture-file', label: 'Import from file', group: 'Actions', icon: 'file', run: () => this.capture.open('file') },
-      { id: 'start-focus', label: 'Start a focus session', group: 'Actions', icon: 'timer', run: () => this.go('/pomodoro') },
+      ...(this.pomodoroEnabled()
+        ? [{ id: 'start-focus', label: 'Start a focus session', group: 'Actions', icon: 'timer', run: () => this.go('/pomodoro') } satisfies CommandItem]
+        : []),
       {
         id: 'toggle-theme',
         label: paperTheme ? 'Switch to ink theme' : 'Switch to paper theme',
