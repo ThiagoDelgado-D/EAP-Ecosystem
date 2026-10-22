@@ -30,6 +30,7 @@
             </div>
             <a
               [routerLink]="['/pomodoro']"
+              [queryParams]="resumeQueryParams(resource)"
               class="btn btn-outline btn-sm !px-2 opacity-70 transition-all group-hover:opacity-100"
               [attr.aria-label]="'Resume ' + resource.title"
             >
