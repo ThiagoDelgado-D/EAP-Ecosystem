@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ElementRef, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { AccountComponent } from '@features/settings/presentation/account/account.component';
 import { PreferencesComponent } from '@features/settings/presentation/preferences/preferences.component';
 import { ModulesComponent } from '@features/settings/presentation/modules/modules.component';
@@ -11,6 +11,7 @@ import { ImportExportComponent } from '@features/settings/presentation/import-ex
 import { DangerZoneComponent } from '@features/settings/presentation/danger-zone/danger-zone.component';
 import { RevealDirective } from '@shared/components/reveal/reveal.directive';
 import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { PreferencesService } from '@features/settings/application/preferences.service';
 import { SessionService } from '@features/settings/application/session.service';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
@@ -71,12 +72,12 @@ export class SettingsLayoutComponent implements OnInit, AfterViewInit, OnDestroy
   readonly displayName = this.authStore.displayName;
   readonly accountEmail = () => this.authStore.currentUser()?.email ?? null;
   readonly accountStats = this.preferencesService.accountStats;
-  readonly sections: SettingsSection[] = SETTINGS_SECTIONS_DATA.map(([id, label, title, detail]) => ({
-    id,
-    label,
-    title,
-    detail,
-  }));
+  readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
+  readonly sections = computed<SettingsSection[]>(() =>
+    SETTINGS_SECTIONS_DATA.filter(([id]) => id !== 'pomodoro' || this.showPomodoro()).map(
+      ([id, label, title, detail]) => ({ id, label, title, detail }),
+    ),
+  );
 
   readonly activeSection = signal('account');
 
@@ -103,15 +104,16 @@ export class SettingsLayoutComponent implements OnInit, AfterViewInit, OnDestroy
   private updateActiveFromScroll(): void {
     const scroller = this.scroller;
     if (!scroller) return;
-    const last = this.sections[this.sections.length - 1]!.id;
+    const sections = this.sections();
+    const last = sections[sections.length - 1]!.id;
     const atBottom = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 24;
     if (atBottom) {
       this.activeSection.set(last);
       return;
     }
     const line = scroller.getBoundingClientRect().top + scroller.clientHeight * 0.4;
-    let current = this.sections[0]!.id;
-    for (const section of this.sections) {
+    let current = sections[0]!.id;
+    for (const section of sections) {
       const el = document.getElementById(section.id);
       if (el && el.getBoundingClientRect().top <= line) current = section.id;
     }
