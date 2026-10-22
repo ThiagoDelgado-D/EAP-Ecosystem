@@ -49,6 +49,7 @@ export class ShellLayoutComponent implements OnInit {
   readonly userInitials = this.authStore.userInitials;
   readonly displayName = this.authStore.displayName;
   readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
+  readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
   readonly searchHint = computed(() =>
     this.showPaths() ? 'Search resources, paths…' : 'Search resources…',
   );
