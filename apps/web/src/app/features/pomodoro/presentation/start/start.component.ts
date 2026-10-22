@@ -88,7 +88,10 @@ export class StartComponent implements OnInit {
   readonly canOfferIntention = computed(() => !this.showIntentInput() && !this.intent());
   readonly hasMoreActions = computed(() => !this.hasAttachedMaterial() || this.canOfferIntention());
   readonly topSuggestion = computed<SuggestedCandidate | null>(() => this.store.suggestions()[0] ?? null);
-  readonly canSuggestQuickStart = computed(() => !this.hasAttachedMaterial() && this.topSuggestion() !== null);
+  private readonly suggestionsEnabled = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO_SUGGESTION));
+  readonly canSuggestQuickStart = computed(
+    () => this.suggestionsEnabled() && !this.hasAttachedMaterial() && this.topSuggestion() !== null,
+  );
 
   private readonly calibrationLoaded = signal(false);
   private readonly suggestionCalibration = computed(() =>
@@ -116,7 +119,7 @@ export class StartComponent implements OnInit {
   constructor() {
     effect(() => {
       const calibration = this.suggestionCalibration();
-      if (!this.calibrationLoaded()) return;
+      if (!this.calibrationLoaded() || !this.suggestionsEnabled()) return;
       void this.store.loadSuggestions(calibration);
     });
   }

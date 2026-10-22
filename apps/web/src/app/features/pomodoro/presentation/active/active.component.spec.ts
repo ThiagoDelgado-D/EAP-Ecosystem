@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { signInLearnerWith } from '@features/auth/application/mocks/signed-in-learner';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
 import { mockLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
@@ -306,5 +308,16 @@ describe('ActiveComponent', () => {
   test('should stay in the break and report why when ending it fails', async () => {
     const { component, store, navigateByUrl } = setup();
     await expectFailedFinishBreakToStay(component, store, navigateByUrl);
+  });
+
+  test('should offer taking a break only while breaks are on', () => {
+    const { component } = setup();
+
+    signInLearnerWith([CAPABILITY_KEY.POMODORO_BREAKS]);
+    const offeredWithBreaks = component.canTakeBreak();
+    signInLearnerWith([]);
+
+    expect(offeredWithBreaks).toBe(true);
+    expect(component.canTakeBreak()).toBe(false);
   });
 });

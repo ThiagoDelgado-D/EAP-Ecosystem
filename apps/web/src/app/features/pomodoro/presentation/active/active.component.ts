@@ -3,6 +3,8 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import { PomodoroOverlayHostService } from '@features/pomodoro/application/pomodoro-overlay-host.service';
@@ -44,6 +46,7 @@ export class ActiveComponent {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly overlayHost = inject(PomodoroOverlayHostService);
+  private readonly authStore = inject(AuthStore);
   readonly store = inject(PomodoroSessionStore);
   readonly picker = inject(PomodoroPickerService);
 
@@ -60,6 +63,7 @@ export class ActiveComponent {
   readonly soundEnabled = this.store.soundEnabled;
   readonly hideShortcutHints = signal(readHideShortcutHints());
   readonly startingBreak = signal(false);
+  readonly canTakeBreak = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO_BREAKS));
   readonly railOpen = signal(true);
   readonly activeTab = signal<RailTab>('session');
   readonly moreMenuOpen = signal(false);

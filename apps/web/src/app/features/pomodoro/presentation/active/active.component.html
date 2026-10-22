@@ -193,14 +193,16 @@
               >
                 {{ store.switchingTarget() ? 'Switching...' : 'Switch material' }}
               </button>
-              <button
-                type="button"
-                (click)="chooseTakeBreak()"
-                [disabled]="startingBreak()"
-                class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors text-left"
-              >
-                {{ startingBreak() ? 'Starting...' : 'Take a break' }}
-              </button>
+              @if (canTakeBreak()) {
+                <button
+                  type="button"
+                  (click)="chooseTakeBreak()"
+                  [disabled]="startingBreak()"
+                  class="font-mono px-3.5 py-2.5 rounded-md text-[12.5px] font-semibold bg-status-done/10 border border-status-done/30 text-status-done hover:opacity-80 disabled:opacity-50 transition-colors text-left"
+                >
+                  {{ startingBreak() ? 'Starting...' : 'Take a break' }}
+                </button>
+              }
             </div>
           }
         </div>

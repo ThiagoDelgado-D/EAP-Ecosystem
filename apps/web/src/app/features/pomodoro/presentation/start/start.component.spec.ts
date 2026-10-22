@@ -51,7 +51,8 @@ function setup(
   TestBed.configureTestingModule({ providers });
   const pomodoroLearner = learner('Grace');
   pomodoroLearner.capabilities =
-    entry?.capabilities ?? capabilitiesEnabling([CAPABILITY_KEY.POMODORO_PATH_FOCUS]);
+    entry?.capabilities ??
+    capabilitiesEnabling([CAPABILITY_KEY.POMODORO_PATH_FOCUS, CAPABILITY_KEY.POMODORO_SUGGESTION]);
   TestBed.inject(AuthStore).currentUser.set(pomodoroLearner);
 
   const overlayHost = TestBed.inject(PomodoroOverlayHostService);
@@ -203,6 +204,17 @@ describe('StartComponent', () => {
     const { component } = setup([]);
     await settle();
 
+    expect(component.canSuggestQuickStart()).toBe(false);
+  });
+
+  test('should neither ask for nor offer a suggestion while suggestions are off', async () => {
+    const { component, pomodoroRepository } = setup([cleanArchSuggestion], {
+      queryParams: {},
+      capabilities: capabilitiesEnabling([CAPABILITY_KEY.POMODORO_PATH_FOCUS]),
+    });
+    await settle();
+
+    expect(pomodoroRepository.suggestionRequests).toEqual([]);
     expect(component.canSuggestQuickStart()).toBe(false);
   });
 

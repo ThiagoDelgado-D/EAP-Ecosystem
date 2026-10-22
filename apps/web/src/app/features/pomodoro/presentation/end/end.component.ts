@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { ErrorNotifier } from '@core/errors/error-notifier.service';
 import { firstValueFrom } from 'rxjs';
+import { AuthStore } from '@features/auth/application/auth.store';
+import { CAPABILITY_KEY } from '@features/auth/domain/auth.model';
 import { PomodoroSessionStore } from '@features/pomodoro/application/pomodoro-session.store';
 import { PomodoroPickerService } from '@features/pomodoro/application/pomodoro-picker.service';
 import type { SegmentTarget } from '@features/pomodoro/domain/pomodoro.model';
@@ -61,6 +63,7 @@ export class EndComponent {
   private readonly learningResourceRepository = inject(LearningResourceRepository);
   private readonly resourceTypeRepository = inject(ResourceTypeRepository);
   private readonly topicRepository = inject(TopicRepository);
+  private readonly authStore = inject(AuthStore);
   readonly store = inject(PomodoroSessionStore);
   readonly picker = inject(PomodoroPickerService);
 
@@ -79,6 +82,7 @@ export class EndComponent {
   readonly resourceTypes = signal<ResourceType[]>([]);
   readonly topics = signal<Topic[]>([]);
   readonly saving = signal(false);
+  readonly canTakeBreak = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO_BREAKS));
   readonly attaching = signal(false);
 
   readonly openAdjust = signal<Set<string>>(new Set());
