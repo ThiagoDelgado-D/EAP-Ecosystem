@@ -2,22 +2,18 @@ import { TestBed } from '@angular/core/testing';
 import { ERROR_MESSAGES } from '@core/errors/error-messages';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { RecommendationRepository } from '@features/recommendation/domain/recommendation.repository';
-import type { ScoredRecommendation } from '@features/recommendation/domain/recommendation.model';
 import { inMemoryLocalStorage } from '@features/pomodoro/application/mocks/mock-local-storage';
 import { learner } from './mocks/learner.fixture';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { mockRecommendationRepository } from './mocks/mock-recommendation.repository';
+import { resourceRecommendation } from './mocks/recommendation.fixture';
 import { RecommendationDismissalsService } from './recommendation-dismissals.service';
 import { RecommendationService } from './recommendation.service';
 
-function recommendation(title: string, score: number): ScoredRecommendation {
-  return { resourceId: crypto.randomUUID(), title, score, why: [] };
-}
-
 describe('RecommendationService', () => {
-  const ownershipChapter = recommendation('Ownership & Borrowing', 88);
-  const traitObjectsChapter = recommendation('Trait Objects', 74);
-  const lifetimesChapter = recommendation('Lifetimes in Depth', 61);
+  const ownershipChapter = resourceRecommendation('Ownership & Borrowing', 88);
+  const traitObjectsChapter = resourceRecommendation('Trait Objects', 74);
+  const lifetimesChapter = resourceRecommendation('Lifetimes in Depth', 61);
 
   function setup() {
     const recommendationRepository = mockRecommendationRepository({

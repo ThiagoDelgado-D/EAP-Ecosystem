@@ -94,6 +94,7 @@ export class DashboardComponent implements OnInit {
 
   readonly paths = this.pathService.paths;
   readonly showPaths = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS));
+  readonly showPomodoro = computed(() => this.authStore.isEnabled(CAPABILITY_KEY.POMODORO));
   readonly dismissedCount = this.dismissals.count;
 
   readonly recommendations = computed(() => {
@@ -147,8 +148,8 @@ export class DashboardComponent implements OnInit {
       this.showPaths() ? this.pathService.loadAllWithNodes() : Promise.resolve(),
       this.topicService.loadAll(),
       this.loadContinueResources(),
-      this.loadWeeklyFocus(),
-      this.weeklyGoal.load(),
+      this.showPomodoro() ? this.loadWeeklyFocus() : Promise.resolve(),
+      this.showPomodoro() ? this.weeklyGoal.load() : Promise.resolve(),
     ]);
     this.deriveCatalogTotals();
   }

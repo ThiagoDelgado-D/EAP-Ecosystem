@@ -28,14 +28,16 @@
                 <span class="text-[0.66rem] text-ink-faint">{{ lastViewedLabel(resource) }} &middot; {{ resource.estimatedDuration.value }}m left</span>
               </div>
             </div>
-            <a
-              [routerLink]="['/pomodoro']"
-              [queryParams]="resumeQueryParams(resource)"
-              class="btn btn-outline btn-sm !px-2 opacity-70 transition-all group-hover:opacity-100"
-              [attr.aria-label]="'Resume ' + resource.title"
-            >
-              &#9654;
-            </a>
+            @if (showPomodoro()) {
+              <a
+                [routerLink]="['/pomodoro']"
+                [queryParams]="resumeQueryParams(resource)"
+                class="btn btn-outline btn-sm !px-2 opacity-70 transition-all group-hover:opacity-100"
+                [attr.aria-label]="'Resume ' + resource.title"
+              >
+                &#9654;
+              </a>
+            }
           </div>
         </li>
       }
