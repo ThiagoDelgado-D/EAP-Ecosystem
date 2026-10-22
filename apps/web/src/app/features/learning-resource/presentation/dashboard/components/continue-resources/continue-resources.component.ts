@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, type Params } from '@angular/router';
 import type { LearningResource } from '@features/learning-resource/domain/learning-resource.model';
+import { recommendedEntryQueryParams } from '@features/pomodoro/presentation/start/recommended-entry';
 
 @Component({
   selector: 'app-continue-resources',
@@ -11,6 +12,10 @@ import type { LearningResource } from '@features/learning-resource/domain/learni
 export class ContinueResourcesComponent {
   readonly resources = input.required<LearningResource[]>();
   readonly topicColorById = input<Record<string, string>>({});
+
+  resumeQueryParams(resource: LearningResource): Params {
+    return recommendedEntryQueryParams({ resourceId: resource.id });
+  }
 
   coverStyle(resource: LearningResource): string {
     const color = resource.topicIds
