@@ -98,8 +98,9 @@ cases as an injected `CurrentUser`, never as a field of the request model
   `authInterceptor` adds the Bearer header to every request.
 - `authGuard` protects the shell. With no token in memory, as on every cold
   load, it refreshes. A refresh that fails for a transient reason (network,
-  429, 5xx) is retried after one and two seconds before the learner is sent
-  to sign-in with the error.
+  429, 5xx) is retried twice before the learner is sent to sign-in with the
+  error: after one and then two seconds, or, on a 429, after the
+  `retryAfterSeconds` the API sends, up to five seconds.
 - `tokenRefreshInterceptor` handles a 401: it retries with the current
   token if another refresh already renewed it, and otherwise refreshes and
   retries.
