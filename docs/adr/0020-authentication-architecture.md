@@ -304,9 +304,15 @@ session's chain or every session the user has, is decided then.
 
 ## References
 
-- ADR-0004: Functional use cases with explicit DI
 - ADR-0010: Auth integrated within user module
 - ADR-0015: Modular application system (`featureConfig`, `widgetConfig`)
 - ADR-0019: Self-hosting and Docker strategy (SMTP context)
 - OWASP Authentication Cheat Sheet
 - OWASP Session Management Cheat Sheet
+
+Revision 2026-10-23 — the decisions and guidance the grace window draws on:
+
+- ADR-0026: `CurrentUser` as an Injected Dependency — the access token the
+  grace window still issues is what every guarded request is checked against
+- RFC 9700: Best Current Practice for OAuth 2.0 Security, §4.14 Refresh
+  Token Protection — refresh token rotation for public clients
