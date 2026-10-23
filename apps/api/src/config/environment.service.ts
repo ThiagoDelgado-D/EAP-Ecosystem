@@ -37,7 +37,7 @@ export class EnvironmentService {
         "Missing required environment variable: REFRESH_TOKEN_SECRET",
       );
     }
-    this._refreshTokenGraceSeconds = parseInt(
+    this._refreshTokenGraceSeconds = Number.parseInt(
       this.readVar("REFRESH_TOKEN_GRACE_SECONDS", "30"),
       10,
     );
