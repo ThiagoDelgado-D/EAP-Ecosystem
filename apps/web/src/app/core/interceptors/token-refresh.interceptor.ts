@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, type HttpRequest } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, from, switchMap, throwError } from 'rxjs';
 import { AuthStore } from '@features/auth/application/auth.store';
@@ -20,15 +20,16 @@ export const tokenRefreshInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
+      const currentToken = authStore.accessToken();
+      if (currentToken && req.headers.get('Authorization') !== `Bearer ${currentToken}`) {
+        return next(withAccessToken(req, currentToken));
+      }
+
       return from(authHttp.refresh()).pipe(
         switchMap((result) => {
           authStore.setSession(result.user, result.accessToken);
 
-          const retried = req.clone({
-            withCredentials: true,
-            setHeaders: { Authorization: `Bearer ${result.accessToken}` },
-          });
-          return next(retried);
+          return next(withAccessToken(req, result.accessToken));
         }),
         catchError((refreshError: unknown) => {
           authStore.clearSession();
@@ -39,3 +40,10 @@ export const tokenRefreshInterceptor: HttpInterceptorFn = (req, next) => {
     }),
   );
 };
+
+function withAccessToken<T>(req: HttpRequest<T>, accessToken: string): HttpRequest<T> {
+  return req.clone({
+    withCredentials: true,
+    setHeaders: { Authorization: `Bearer ${accessToken}` },
+  });
+}
