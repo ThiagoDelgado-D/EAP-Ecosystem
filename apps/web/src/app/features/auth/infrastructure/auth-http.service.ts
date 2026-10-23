@@ -17,6 +17,7 @@ export interface VerifySignInResult {
 export class AuthHttpService {
   private readonly http = inject(HttpClient);
   private readonly base = `${API_CONFIG.baseUrl}/auth`;
+  private inFlightRefresh: Promise<VerifySignInResult> | null = null;
 
   async requestSignIn(email: string): Promise<void> {
     await firstValueFrom(this.http.post<void>(`${this.base}/request-sign-in`, { email }));
@@ -29,7 +30,14 @@ export class AuthHttpService {
     return this.mapVerifySignInResult(dto);
   }
 
-  async refresh(): Promise<VerifySignInResult> {
+  refresh(): Promise<VerifySignInResult> {
+    this.inFlightRefresh ??= this.postRefresh().finally(() => {
+      this.inFlightRefresh = null;
+    });
+    return this.inFlightRefresh;
+  }
+
+  private async postRefresh(): Promise<VerifySignInResult> {
     const dto = await firstValueFrom(
       this.http.post<VerifySignInResponseDto>(`${this.base}/refresh`, {}),
     );

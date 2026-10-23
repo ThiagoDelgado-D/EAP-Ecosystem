@@ -3,12 +3,7 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, from, switchMap, throwError } from 'rxjs';
 import { AuthStore } from '@features/auth/application/auth.store';
-import {
-  AuthHttpService,
-  type VerifySignInResult,
-} from '@features/auth/infrastructure/auth-http.service';
-
-let refreshPromise: Promise<VerifySignInResult> | null = null;
+import { AuthHttpService } from '@features/auth/infrastructure/auth-http.service';
 
 export const tokenRefreshInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.url.includes('/auth/refresh') || req.url.includes('/auth/sign-out')) {
@@ -25,11 +20,7 @@ export const tokenRefreshInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
-      refreshPromise ??= authHttp.refresh().finally(() => {
-        refreshPromise = null;
-      });
-
-      return from(refreshPromise).pipe(
+      return from(authHttp.refresh()).pipe(
         switchMap((result) => {
           authStore.setSession(result.user, result.accessToken);
 
