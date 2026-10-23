@@ -35,16 +35,16 @@ export const authGuard: CanActivateFn = async () => {
 
 async function refreshRetryingTransientFailures(
   authHttp: AuthHttpService,
+  retryDelaysMs: readonly number[] = REFRESH_RETRY_DELAYS_MS,
 ): Promise<VerifySignInResult> {
-  for (const delayMs of REFRESH_RETRY_DELAYS_MS) {
-    try {
-      return await authHttp.refresh();
-    } catch (refreshError) {
-      if (isSessionRejected(refreshError)) throw refreshError;
-      await wait(retryDelayMs(refreshError, delayMs));
-    }
+  try {
+    return await authHttp.refresh();
+  } catch (refreshError) {
+    const [delayMs, ...laterDelaysMs] = retryDelaysMs;
+    if (delayMs === undefined || isSessionRejected(refreshError)) throw refreshError;
+    await wait(retryDelayMs(refreshError, delayMs));
+    return refreshRetryingTransientFailures(authHttp, laterDelaysMs);
   }
-  return authHttp.refresh();
 }
 
 function retryDelayMs(refreshError: unknown, backoffMs: number): number {
