@@ -31,6 +31,12 @@ export class SessionEntity {
   @Column({ type: "timestamp", nullable: true })
   revokedAt!: Date | null;
 
+  @Column({ type: "timestamp", nullable: true })
+  rotatedAt!: Date | null;
+
+  @Column({ type: "uuid", nullable: true })
+  replacedBySessionId!: string | null;
+
   @Column({ type: "varchar", nullable: true })
   userAgent!: string | null;
 

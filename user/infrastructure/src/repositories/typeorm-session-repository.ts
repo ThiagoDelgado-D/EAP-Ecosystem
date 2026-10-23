@@ -73,6 +73,8 @@ export class TypeOrmSessionRepository implements ISessionRepository {
       refreshTokenHash: entity.refreshTokenHash,
       expiresAt: entity.expiresAt,
       revokedAt: entity.revokedAt,
+      rotatedAt: entity.rotatedAt,
+      replacedBySessionId: entity.replacedBySessionId,
       userAgent: entity.userAgent ?? undefined,
       ipAddress: entity.ipAddress ?? undefined,
       createdAt: entity.createdAt,
@@ -86,6 +88,8 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     entity.refreshTokenHash = session.refreshTokenHash;
     entity.expiresAt = session.expiresAt;
     entity.revokedAt = session.revokedAt ?? null;
+    entity.rotatedAt = session.rotatedAt ?? null;
+    entity.replacedBySessionId = session.replacedBySessionId ?? null;
     entity.userAgent = session.userAgent ?? null;
     entity.ipAddress = session.ipAddress ?? null;
     return entity;
