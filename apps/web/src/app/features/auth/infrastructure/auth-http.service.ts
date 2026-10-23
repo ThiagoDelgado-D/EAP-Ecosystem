@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { API_CONFIG } from '@core/config/api.config';
+import { isApiError } from '@core/errors/api-error';
 import { AuthUser, type ModulePreferences } from '@features/auth/domain/auth.model';
 import {
   ModulePreferencesDto,
@@ -11,6 +12,12 @@ import {
 export interface VerifySignInResult {
   user: AuthUser;
   accessToken: string;
+}
+
+const SESSION_REJECTED_STATUSES: readonly number[] = [400, 401];
+
+export function isSessionRejected(refreshError: unknown): boolean {
+  return isApiError(refreshError) && SESSION_REJECTED_STATUSES.includes(refreshError.status);
 }
 
 @Injectable({ providedIn: 'root' })
