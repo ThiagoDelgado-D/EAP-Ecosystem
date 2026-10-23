@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockCryptoService, mockJwtService } from "domain-lib";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
-import { generateUser } from "../../mocks/factories.js";
+import {
+  generateRefreshTokenRotationConfig,
+  generateUser,
+} from "../../mocks/factories.js";
 import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { mockSessionRepository } from "../../mocks/mock-session-repository.js";
-import { refreshSession } from "./refresh-session.js";
+import { refreshSession, type RefreshTokenRotationConfig } from "./refresh-session.js";
 import { InvalidOrExpiredCodeError } from "../../errors/invalid-or-expired-code.js";
 import { CapabilityKey, CapabilityState, type Session, type User } from "@user/domain";
 
@@ -15,6 +18,7 @@ describe("refreshSession", () => {
   let entitlementsProvider: ReturnType<typeof mockEntitlementsProvider>;
   let sessionRepository: ReturnType<typeof mockSessionRepository>;
 
+  let rotationConfig: RefreshTokenRotationConfig;
   let existingUser: User;
   let rawRefreshToken: string;
   let activeSession: Session;
@@ -25,6 +29,7 @@ describe("refreshSession", () => {
     userRepository = mockUserRepository();
     entitlementsProvider = mockEntitlementsProvider();
     sessionRepository = mockSessionRepository();
+    rotationConfig = generateRefreshTokenRotationConfig();
 
     existingUser = generateUser({ enabledModules: [] });
     await userRepository.save(existingUser);
@@ -54,7 +59,7 @@ describe("refreshSession", () => {
   });
 
   test("Should return a new access token and refresh token on success", async () => {
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).not.toBeInstanceOf(InvalidOrExpiredCodeError);
     if (result instanceof InvalidOrExpiredCodeError) return;
@@ -64,7 +69,7 @@ describe("refreshSession", () => {
   });
 
   test("Should return different tokens from the originals", async () => {
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).not.toBeInstanceOf(InvalidOrExpiredCodeError);
     if (result instanceof InvalidOrExpiredCodeError) return;
@@ -73,7 +78,7 @@ describe("refreshSession", () => {
   });
 
   test("Should encode the user ID in the new access token sub claim", async () => {
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).not.toBeInstanceOf(InvalidOrExpiredCodeError);
     if (result instanceof InvalidOrExpiredCodeError) return;
@@ -84,7 +89,7 @@ describe("refreshSession", () => {
   });
 
   test("Should return the authenticated user's data", async () => {
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).not.toBeInstanceOf(InvalidOrExpiredCodeError);
     if (result instanceof InvalidOrExpiredCodeError) return;
@@ -96,7 +101,7 @@ describe("refreshSession", () => {
   });
 
   test("Should revoke the old session (token rotation)", async () => {
-    await refreshSession(deps(), { rawRefreshToken });
+    await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     const oldSession = sessionRepository.sessions.find(
       (s) => s.id === activeSession.id,
@@ -105,7 +110,7 @@ describe("refreshSession", () => {
   });
 
   test("Should create a new session replacing the old one", async () => {
-    await refreshSession(deps(), { rawRefreshToken });
+    await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     const activeSessions = sessionRepository.sessions.filter(
       (s) => !s.revokedAt,
@@ -115,7 +120,7 @@ describe("refreshSession", () => {
   });
 
   test("Should store the hashed refresh token in the new session, not the plain value", async () => {
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).not.toBeInstanceOf(InvalidOrExpiredCodeError);
     if (result instanceof InvalidOrExpiredCodeError) return;
@@ -130,7 +135,7 @@ describe("refreshSession", () => {
   test("Should create the new session with a ~30-day expiry", async () => {
     const before = new Date();
 
-    await refreshSession(deps(), { rawRefreshToken });
+    await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     const after = new Date();
     const newSession = sessionRepository.sessions.find((s) => !s.revokedAt);
@@ -146,14 +151,14 @@ describe("refreshSession", () => {
   });
 
   test("Should link the new session to the same user", async () => {
-    await refreshSession(deps(), { rawRefreshToken });
+    await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     const newSession = sessionRepository.sessions.find((s) => !s.revokedAt);
     expect(newSession!.userId).toBe(existingUser.id);
   });
 
   test("Should return InvalidOrExpiredCodeError when the refresh token is not found", async () => {
-    const result = await refreshSession(deps(), {
+    const result = await refreshSession(deps(), rotationConfig, {
       rawRefreshToken: "unknown-token",
     });
 
@@ -163,7 +168,7 @@ describe("refreshSession", () => {
   test("Should return InvalidOrExpiredCodeError when the session is already revoked", async () => {
     await sessionRepository.revoke(activeSession.id);
 
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).toBeInstanceOf(InvalidOrExpiredCodeError);
   });
@@ -178,7 +183,7 @@ describe("refreshSession", () => {
     sessionRepository.reset();
     await sessionRepository.save(expiredSession);
 
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).toBeInstanceOf(InvalidOrExpiredCodeError);
   });
@@ -186,7 +191,7 @@ describe("refreshSession", () => {
   test("Should return InvalidOrExpiredCodeError when the user no longer exists", async () => {
     userRepository.reset();
 
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).toBeInstanceOf(InvalidOrExpiredCodeError);
   });
@@ -195,7 +200,7 @@ describe("refreshSession", () => {
     const disabledUser: User = { ...existingUser, enabled: false };
     await userRepository.save(disabledUser);
 
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
 
     expect(result).toBeInstanceOf(InvalidOrExpiredCodeError);
   });
@@ -203,7 +208,7 @@ describe("refreshSession", () => {
   test("Should truncate userAgent to 500 characters when it exceeds the limit", async () => {
     const longUserAgent = "A".repeat(501);
 
-    await refreshSession(deps(), { rawRefreshToken, userAgent: longUserAgent });
+    await refreshSession(deps(), rotationConfig, { rawRefreshToken, userAgent: longUserAgent });
 
     const newSession = sessionRepository.sessions.find((s) => !s.revokedAt);
     expect(newSession).toBeDefined();
@@ -213,7 +218,7 @@ describe("refreshSession", () => {
   test("Should truncate ipAddress to 45 characters when it exceeds the limit", async () => {
     const longIpAddress = "1".repeat(46);
 
-    await refreshSession(deps(), { rawRefreshToken, ipAddress: longIpAddress });
+    await refreshSession(deps(), rotationConfig, { rawRefreshToken, ipAddress: longIpAddress });
 
     const newSession = sessionRepository.sessions.find((s) => !s.revokedAt);
     expect(newSession).toBeDefined();
@@ -221,7 +226,7 @@ describe("refreshSession", () => {
   });
 
   test("Should return the modules the learner turned off as disabled", async () => {
-    const result = await refreshSession(deps(), { rawRefreshToken });
+    const result = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
     if (result instanceof InvalidOrExpiredCodeError) throw result;
 
     expect(result.user.capabilities[CapabilityKey.LEARNING_PATHS].state).toBe(

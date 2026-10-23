@@ -6,6 +6,7 @@ import {
   type User,
 } from "@user/domain";
 import type { UUID } from "domain-lib";
+import type { RefreshTokenRotationConfig } from "../use-cases/auth/refresh-session.js";
 
 const SIGN_IN_CODE_LENGTH = 6;
 const SIGN_IN_CHALLENGE_TTL_MS = 10 * 60 * 1000;
@@ -16,6 +17,12 @@ export const generateDistinctEmails = (count: number): string[] =>
   faker.helpers.uniqueArray(generateEmail, count);
 
 export const generateMalformedEmail = (): string => faker.lorem.word();
+
+export const generateRefreshTokenRotationConfig =
+  (): RefreshTokenRotationConfig => ({
+    secret: faker.string.alphanumeric(64),
+    graceSeconds: faker.number.int({ min: 10, max: 60 }),
+  });
 
 export const generateSignInCode = (): string =>
   faker.string.numeric(SIGN_IN_CODE_LENGTH);

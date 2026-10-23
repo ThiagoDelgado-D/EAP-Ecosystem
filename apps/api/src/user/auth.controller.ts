@@ -280,6 +280,10 @@ export class AuthController {
         entitlementsProvider: this.entitlementsProvider,
       },
       {
+        secret: this.env.refreshTokenSecret,
+        graceSeconds: this.env.refreshTokenGraceSeconds,
+      },
+      {
         rawRefreshToken,
         ipAddress: this.extractIp(req),
         userAgent: req.headers["user-agent"] ?? null,
