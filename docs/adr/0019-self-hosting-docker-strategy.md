@@ -157,6 +157,95 @@ binaries — Docker is irrelevant for those clients. Docker covers the
   or small-team tool. Docker Compose is the right complexity level for the
   self-hosting audience.
 
+## Revision 2026-10-23 — Google sign-in replaces the password fallback
+
+**Status of this revision:** Accepted
+
+### What prompted this revision
+
+While the references of ADR-0020 were being audited for its 2026-10-23
+revision, its decision 4 and this ADR's "Authentication in self-hosted
+context" turned out to contradict each other. This ADR offers email and
+password sign-in as a fallback for self-hosters without SMTP, and says the
+fallback is "documented in the auth ADR". ADR-0020 says the opposite:
+password-based authentication is explicitly out of scope, and the SMTP
+dependency is the accepted trade-off. No password sign-in was ever built.
+
+Reading the API's configuration for this revision also showed something
+this ADR never mentions. Outside development, the API refuses to start
+without `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and
+`GOOGLE_REDIRECT_URI`, so every self-hosted instance already needs Google
+OAuth credentials. SMTP is not checked at startup: an instance without it
+starts, and requesting a sign-in code fails when the email can't be sent.
+
+### What the original decision assumed
+
+That Magic Link would be the only way to sign in, so an instance without
+SMTP would have no way in unless a second, SMTP-free method was added, and
+that the second method would be email and password.
+
+### Why it changed
+
+ADR-0020 rejected passwords for the whole project, and added Google
+sign-in as a provider next to Magic Link. Google sign-in doesn't send
+email, so it already is the SMTP-free way in that this ADR was looking
+for. Keeping the password fallback here would describe a feature the auth
+architecture forbids.
+
+### New decision
+
+#### Google sign-in is the alternative to SMTP
+
+A self-hosted instance offers Magic Link when SMTP is configured, and
+Google sign-in in every case. An instance without SMTP is usable through
+Google sign-in alone. There is no email and password sign-in, in line with
+ADR-0020 decision 4.
+
+#### Google OAuth credentials are required to self-host
+
+Outside development, the API doesn't start without the three Google
+variables, and this ADR now documents that as a requirement. A self-hoster
+creates an OAuth client in Google Cloud and sets:
+
+```env
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=secret
+GOOGLE_REDIRECT_URI=https://eap.example.com/api/v1/auth/google/callback
+```
+
+SMTP stays optional. Without it, Magic Link is unavailable on that
+instance.
+
+### Consequences of the revision
+
+#### Positive
+
+- This ADR and ADR-0020 agree: no part of the project offers passwords.
+- An instance without SMTP still has a way in, with nothing new to build.
+- The self-hosting requirements match what the API enforces today.
+
+#### Negative
+
+- Setting up Google OAuth credentials is friction of its own, and every
+  self-hoster has to go through it, with or without SMTP.
+- On an instance without SMTP, a learner without a Google account can't
+  sign in.
+- Without SMTP, the sign-in page still offers Magic Link, and requesting a
+  code fails with an error instead of saying the instance doesn't send
+  email.
+
+### Alternatives rejected in this revision
+
+- **Keep email and password as the fallback.** It contradicts ADR-0020
+  decision 4 and would bring back the password storage, reset flow and
+  credential-stuffing exposure that ADR-0020 avoids.
+- **Require SMTP and offer no alternative.** Simpler to state, but it
+  ignores that Google sign-in already works without SMTP.
+- **Print sign-in codes to the server log when SMTP is missing.** Workable
+  for a single-user instance whose owner reads the logs, but anyone who
+  can read the logs could sign in as anyone, and an instance enabled this
+  way by mistake would be open.
+
 ## References
 
 - ADR-0014: Real-time Communication (WebSockets run inside the API container
@@ -164,3 +253,8 @@ binaries — Docker is irrelevant for those clients. Docker covers the
 - ADR-0017: Mobile Client Strategy
 - ADR-0018: Desktop Client Strategy
 - Roadmap: v0.8.0 — full-stack Compose; v1.0.0 — GHCR images
+
+Revision 2026-10-23 — Google sign-in replaces the password fallback:
+
+- ADR-0020: Authentication Architecture — decision 4 rules out passwords,
+  and its providers include Google sign-in, the alternative to SMTP here
