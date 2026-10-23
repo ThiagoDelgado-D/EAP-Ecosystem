@@ -15,8 +15,8 @@ export class CryptoServiceImpl implements CryptoService {
     return createHash("sha256").update(token).digest("hex");
   }
 
-  async hmacToken(token: string, key: string) {
-    return createHmac("sha256", key).update(token).digest("hex");
+  hmacToken(token: string, key: string): Promise<string> {
+    return Promise.resolve(createHmac("sha256", key).update(token).digest("hex"));
   }
 
   async generateUUID() {
