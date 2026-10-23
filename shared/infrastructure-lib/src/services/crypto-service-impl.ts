@@ -1,6 +1,6 @@
 import type { CryptoService } from "domain-lib";
 import bcrypt from "bcryptjs";
-import { createHash, randomBytes, randomInt } from "crypto";
+import { createHash, createHmac, randomBytes, randomInt } from "crypto";
 
 export class CryptoServiceImpl implements CryptoService {
   async hashPassword(password: string) {
@@ -13,6 +13,10 @@ export class CryptoServiceImpl implements CryptoService {
 
   async hashToken(token: string) {
     return createHash("sha256").update(token).digest("hex");
+  }
+
+  async hmacToken(token: string, key: string) {
+    return createHmac("sha256", key).update(token).digest("hex");
   }
 
   async generateUUID() {
