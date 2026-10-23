@@ -152,7 +152,7 @@ document is written.
 | ------------------------------- | -------------------------------------------------------- | ---------------- |
 | Authentication and sessions     | [authentication.md](docs/architecture/authentication.md) | 0010, 0020, 0026 |
 | Capabilities and entitlements   | [capabilities.md](docs/architecture/capabilities.md)     | 0015             |
-| API error contract              | —                                                        | 0030             |
+| API error contract              | [error-contract.md](docs/architecture/error-contract.md) | 0030             |
 | Rate limiting                   | —                                                        | —                |
 | Pomodoro session lifecycle      | —                                                        | 0022, 0024       |
 | Recommendation engine           | —                                                        | 0027             |
