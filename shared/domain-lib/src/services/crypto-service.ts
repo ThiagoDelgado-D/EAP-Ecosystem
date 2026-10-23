@@ -5,6 +5,8 @@ export interface CryptoService {
   comparePassword(password: string, hashPass: string): Promise<boolean>;
   /** Deterministic SHA-256 hash — use for token lookup keys, not passwords. */
   hashToken(token: string): Promise<string>;
+  /** Deterministic HMAC-SHA256 of a token under a server-held key. */
+  hmacToken(token: string, key: string): Promise<string>;
   generateUUID(): Promise<UUID>;
   generateRandomToken(): Promise<string>;
   generateNumericCode(length: number): Promise<string>;

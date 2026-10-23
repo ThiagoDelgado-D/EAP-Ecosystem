@@ -6,6 +6,9 @@ export interface Session extends Entity {
   refreshTokenHash: string;
   expiresAt: Date;
   revokedAt?: Date | null;
+  /** Set together with `revokedAt` when a refresh replaced this session. */
+  rotatedAt?: Date | null;
+  replacedBySessionId?: string | null;
   userAgent?: string | null;
   /** IPv4 or IPv6 address of the client at sign-in time. */
   ipAddress?: string | null;

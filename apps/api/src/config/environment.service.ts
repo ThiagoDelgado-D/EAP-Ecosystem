@@ -7,6 +7,8 @@ export class EnvironmentService {
 
   private readonly _jwtSecret: string;
   private readonly _jwtExpiresInSeconds: number;
+  private readonly _refreshTokenSecret: string;
+  private readonly _refreshTokenGraceSeconds: number;
   private readonly _corsOrigin: string;
   private readonly _webHost: string;
   private readonly _nodeEnv: string;
@@ -28,6 +30,16 @@ export class EnvironmentService {
     }
     this._jwtExpiresInSeconds = this.parseDuration(
       this.readVar("JWT_EXPIRES_IN", "15m"),
+    );
+    this._refreshTokenSecret = this.readVar("REFRESH_TOKEN_SECRET");
+    if (!this._refreshTokenSecret) {
+      throw new Error(
+        "Missing required environment variable: REFRESH_TOKEN_SECRET",
+      );
+    }
+    this._refreshTokenGraceSeconds = Number.parseInt(
+      this.readVar("REFRESH_TOKEN_GRACE_SECONDS", "30"),
+      10,
     );
     this._corsOrigin = this.readVar("CORS_ORIGIN", "http://localhost:4200");
     this._webHost = this.readVar("WEB_HOST", "http://localhost:4200");
@@ -56,6 +68,14 @@ export class EnvironmentService {
 
   get jwtExpiresInSeconds(): number {
     return this._jwtExpiresInSeconds;
+  }
+
+  get refreshTokenSecret(): string {
+    return this._refreshTokenSecret;
+  }
+
+  get refreshTokenGraceSeconds(): number {
+    return this._refreshTokenGraceSeconds;
   }
 
   get corsOrigin(): string {

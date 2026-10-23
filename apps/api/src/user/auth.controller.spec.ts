@@ -10,6 +10,7 @@ import {
   generateEmail,
   generateMalformedEmail,
 } from "@user/application";
+import { CryptoServiceImpl } from "infrastructure-lib";
 import { createUserTestApp, type UserTestApp } from "./user-module.fixture.js";
 
 const SIGN_IN_EMAIL = generateEmail();
@@ -217,6 +218,87 @@ describe("AuthController (integration)", () => {
         .post("/api/v1/auth/verify-sign-in")
         .send({ email: SIGN_IN_EMAIL, code: "123" })
         .expect(400);
+    });
+  });
+
+  describe("POST /api/v1/auth/refresh", () => {
+    const REFRESH_URL = "/api/v1/auth/refresh";
+
+    const refreshCookieOf = (response: request.Response): string => {
+      const rawCookies = response.headers["set-cookie"];
+      const cookies = Array.isArray(rawCookies) ? rawCookies : [rawCookies ?? ""];
+      const refreshCookie = cookies.find((c) => c.startsWith("refreshToken="));
+      if (!refreshCookie) throw new Error("No refreshToken cookie was set");
+      return refreshCookie.split(";")[0];
+    };
+
+    const signInCookie = async (): Promise<string> => {
+      await request(app.getHttpServer())
+        .post("/api/v1/auth/request-sign-in")
+        .send({ email: SIGN_IN_EMAIL })
+        .expect(204);
+      const last =
+        emailService.getLastEmail() as TemplateSendEmailOptions<"MAGIC_LINK_CODE">;
+      const response = await request(app.getHttpServer())
+        .post("/api/v1/auth/verify-sign-in")
+        .send({ email: SIGN_IN_EMAIL, code: last.data.code as string })
+        .expect(200);
+      return refreshCookieOf(response);
+    };
+
+    test("Should return 401 without a refresh cookie", async () => {
+      await request(app.getHttpServer()).post(REFRESH_URL).expect(401);
+    });
+
+    test("Should return 400 for an unknown refresh cookie", async () => {
+      const unknownToken = await new CryptoServiceImpl().generateRandomToken();
+      const unknownCookie = `refreshToken=${unknownToken}`;
+
+      await request(app.getHttpServer())
+        .post(REFRESH_URL)
+        .set("Cookie", unknownCookie)
+        .expect(400);
+    });
+
+    test("Should rotate the refresh cookie and return an access token", async () => {
+      const signedInCookie = await signInCookie();
+
+      const response = await request(app.getHttpServer())
+        .post(REFRESH_URL)
+        .set("Cookie", signedInCookie)
+        .expect(200);
+
+      expect(response.body.accessToken).toBeTruthy();
+      expect(refreshCookieOf(response)).not.toBe(signedInCookie);
+    });
+
+    test("Should return the same replacement cookie when the old one is sent again", async () => {
+      const signedInCookie = await signInCookie();
+
+      const firstRefresh = await request(app.getHttpServer())
+        .post(REFRESH_URL)
+        .set("Cookie", signedInCookie)
+        .expect(200);
+      const retry = await request(app.getHttpServer())
+        .post(REFRESH_URL)
+        .set("Cookie", signedInCookie)
+        .expect(200);
+
+      expect(refreshCookieOf(retry)).toBe(refreshCookieOf(firstRefresh));
+    });
+
+    test("Should answer two parallel refreshes with one cookie with the same replacement", async () => {
+      const signedInCookie = await signInCookie();
+
+      const [firstRefresh, secondRefresh] = await Promise.all([
+        request(app.getHttpServer()).post(REFRESH_URL).set("Cookie", signedInCookie),
+        request(app.getHttpServer()).post(REFRESH_URL).set("Cookie", signedInCookie),
+      ]);
+
+      expect(firstRefresh.status).toBe(200);
+      expect(secondRefresh.status).toBe(200);
+      expect(refreshCookieOf(secondRefresh)).toBe(refreshCookieOf(firstRefresh));
+      expect(sessionRepo.sessions.filter((s) => !s.revokedAt)).toHaveLength(1);
     });
   });
 });

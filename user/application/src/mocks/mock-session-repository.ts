@@ -23,11 +23,7 @@ export function mockSessionRepository(
     },
 
     async findByRefreshTokenHash(hash: string): Promise<Session | null> {
-      return (
-        this.sessions.find(
-          (s) => s.refreshTokenHash === hash && !s.revokedAt,
-        ) ?? null
-      );
+      return this.sessions.find((s) => s.refreshTokenHash === hash) ?? null;
     },
 
     async findById(id: string): Promise<Session | null> {
@@ -41,17 +37,21 @@ export function mockSessionRepository(
       }
     },
 
-    async rotate(oldSessionId: string, newSession: Session): Promise<void> {
-      const index = this.sessions.findIndex((s) => s.id === oldSessionId);
-      if (index >= 0) {
-        this.sessions[index] = { ...this.sessions[index], revokedAt: new Date() };
-      }
-      const existing = this.sessions.findIndex((s) => s.id === newSession.id);
-      if (existing >= 0) {
-        this.sessions[existing] = newSession;
-      } else {
-        this.sessions.push(newSession);
-      }
+    rotate(oldSessionId: string, newSession: Session): Promise<boolean> {
+      const index = this.sessions.findIndex(
+        (s) => s.id === oldSessionId && !s.revokedAt,
+      );
+      if (index < 0) return Promise.resolve(false);
+
+      const rotatedAt = new Date();
+      this.sessions[index] = {
+        ...this.sessions[index],
+        revokedAt: rotatedAt,
+        rotatedAt,
+        replacedBySessionId: newSession.id,
+      };
+      this.sessions.push(newSession);
+      return Promise.resolve(true);
     },
 
     async revokeAllByUserId(userId: string): Promise<void> {

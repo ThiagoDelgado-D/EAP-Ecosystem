@@ -3,6 +3,7 @@ import { Test } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import {
   MockedEmailService,
+  generateRefreshTokenRotationConfig,
   mockAccountStatsPort,
   mockIdentityRepository,
   mockSessionRepository,
@@ -26,7 +27,11 @@ import { UserModule } from "./user.module.js";
 import { configureRequestHandling } from "../app-setup.js";
 import { EnvironmentService } from "../config/environment.service.js";
 
+const testRotationConfig = generateRefreshTokenRotationConfig();
+
 const testEnvironment = {
+  refreshTokenSecret: testRotationConfig.secret,
+  refreshTokenGraceSeconds: testRotationConfig.graceSeconds,
   isProduction: false,
   isDevelopment: true,
   webHost: "http://localhost:4200",

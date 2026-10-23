@@ -16,6 +16,10 @@ export function mockCryptoService(): CryptoService {
       await ms(10);
       return "[TOKEN_HASH]" + token;
     },
+    async hmacToken(token: string, key: string) {
+      await ms(10);
+      return "[HMAC:" + key + "]" + token;
+    },
     async generateRandomToken(): Promise<string> {
       await ms(50);
       const char =
