@@ -236,4 +236,100 @@ describe("refreshSession", () => {
       CapabilityState.ENABLED,
     );
   });
+
+  describe("when a rotated token is presented again", () => {
+    let replacementToken: string;
+
+    beforeEach(async () => {
+      const firstRefresh = await refreshSession(deps(), rotationConfig, {
+        rawRefreshToken,
+      });
+      if (firstRefresh instanceof InvalidOrExpiredCodeError) throw firstRefresh;
+      replacementToken = firstRefresh.refreshToken;
+    });
+
+    const moveRotationBeyondGrace = () => {
+      const index = sessionRepository.sessions.findIndex(
+        (s) => s.id === activeSession.id,
+      );
+      const beyondGrace = new Date(
+        Date.now() - (rotationConfig.graceSeconds + 1) * 1000,
+      );
+      sessionRepository.sessions[index] = {
+        ...sessionRepository.sessions[index],
+        rotatedAt: beyondGrace,
+      };
+    };
+
+    test("Should return the same replacement token within the grace window", async () => {
+      const retry = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
+      if (retry instanceof InvalidOrExpiredCodeError) throw retry;
+
+      expect(retry.refreshToken).toBe(replacementToken);
+    });
+
+    test("Should issue an access token for the learner within the grace window", async () => {
+      const retry = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
+      if (retry instanceof InvalidOrExpiredCodeError) throw retry;
+
+      const payload = await jwtService.verify(retry.accessToken);
+      expect(payload!.sub).toBe(existingUser.id);
+    });
+
+    test("Should not create another session within the grace window", async () => {
+      const sessionsAfterRotation = sessionRepository.count();
+
+      await refreshSession(deps(), rotationConfig, { rawRefreshToken });
+
+      expect(sessionRepository.count()).toBe(sessionsAfterRotation);
+    });
+
+    test("Should return InvalidOrExpiredCodeError after the grace window", async () => {
+      moveRotationBeyondGrace();
+
+      const retry = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
+
+      expect(retry).toBeInstanceOf(InvalidOrExpiredCodeError);
+    });
+
+    test("Should return InvalidOrExpiredCodeError once the replacement was signed out", async () => {
+      const replacementHash = await cryptoService.hashToken(replacementToken);
+      const replacement = await sessionRepository.findByRefreshTokenHash(replacementHash);
+      await sessionRepository.revoke(replacement!.id);
+
+      const retry = await refreshSession(deps(), rotationConfig, { rawRefreshToken });
+
+      expect(retry).toBeInstanceOf(InvalidOrExpiredCodeError);
+    });
+
+    test("Should keep the replacement token usable", async () => {
+      const nextRefresh = await refreshSession(deps(), rotationConfig, {
+        rawRefreshToken: replacementToken,
+      });
+
+      expect(nextRefresh).not.toBeInstanceOf(InvalidOrExpiredCodeError);
+    });
+  });
+
+  describe("when two refreshes race on the same token", () => {
+    test("Should succeed for both with the same replacement token", async () => {
+      const [firstRefresh, secondRefresh] = await Promise.all([
+        refreshSession(deps(), rotationConfig, { rawRefreshToken }),
+        refreshSession(deps(), rotationConfig, { rawRefreshToken }),
+      ]);
+      if (firstRefresh instanceof InvalidOrExpiredCodeError) throw firstRefresh;
+      if (secondRefresh instanceof InvalidOrExpiredCodeError) throw secondRefresh;
+
+      expect(secondRefresh.refreshToken).toBe(firstRefresh.refreshToken);
+    });
+
+    test("Should leave a single active session", async () => {
+      await Promise.all([
+        refreshSession(deps(), rotationConfig, { rawRefreshToken }),
+        refreshSession(deps(), rotationConfig, { rawRefreshToken }),
+      ]);
+
+      expect(sessionRepository.sessions.filter((s) => !s.revokedAt)).toHaveLength(1);
+    });
+  });
 });
