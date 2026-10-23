@@ -14,10 +14,10 @@ export interface VerifySignInResult {
   accessToken: string;
 }
 
-const SESSION_REJECTED_STATUSES: readonly number[] = [400, 401];
+const SESSION_REJECTED_STATUSES: ReadonlySet<number> = new Set([400, 401]);
 
 export function isSessionRejected(refreshError: unknown): boolean {
-  return isApiError(refreshError) && SESSION_REJECTED_STATUSES.includes(refreshError.status);
+  return isApiError(refreshError) && SESSION_REJECTED_STATUSES.has(refreshError.status);
 }
 
 @Injectable({ providedIn: 'root' })
