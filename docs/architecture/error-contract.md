@@ -1,6 +1,9 @@
 # API error contract
 
-How a failure travels from a use case to the message a learner reads. Every error response has one shape, `{ error: NAME, ...context }`, the name comes from the domain, and the web client reads it by name with types it shares with the API.
+How a failure travels from a use case to the message a learner reads. Every
+error response has one shape, `{ error: NAME, ...context }`, the name comes
+from the domain, and the web client reads it by name with types it shares
+with the API.
 
 ## How it works today
 
@@ -24,7 +27,10 @@ sequenceDiagram
 ```
 
 1. **Errors are values.** A use case returns a `BaseError`
-   (`shared/domain-lib/src/errors/base-error.ts`) instead of throwing. Each error has a `name` such as `LEARNING_PATH_NOT_FOUND_ERROR` and an optional typed `context`, for example `{ retryAfterSeconds }` on `TooManyRequestsError`.
+   (`shared/domain-lib/src/errors/base-error.ts`) instead of throwing. Each
+   error has a `name` such as `LEARNING_PATH_NOT_FOUND_ERROR` and an
+   optional typed `context`, for example `{ retryAfterSeconds }` on
+   `TooManyRequestsError`.
 2. **Each module's error union is derived.** Every application package
    exports a use case map and `UseCaseErrors<Map>` extracts the union of
    errors its use cases can return, for example `UserDomainError`
@@ -49,9 +55,10 @@ sequenceDiagram
    from the backend packages (ADR-0030). `ApiErrorName` is that union's
    names plus `NETWORK_ERROR`.
 6. **Reading a failed response.** `apiErrorInterceptor`, the outermost
-   interceptor, turns every `HttpErrorResponse` into an `ApiError(name,
-status, context)`. A status of 0 becomes `NETWORK_ERROR`. A body without a known name becomes `UNEXPECTED_ERROR`,
-   which covers a proxy's error page or an error added to a newer API than the tab loaded.
+   interceptor, turns every `HttpErrorResponse` into an
+   `ApiError(name, status, context)`. A status of 0 becomes `NETWORK_ERROR`.
+   A body without a known name becomes `UNEXPECTED_ERROR`, which covers a
+   proxy's error page or an error added to a newer API than the tab loaded.
 7. **Saying it to the learner.** `ERROR_MESSAGES`
    (`core/errors/error-messages.ts`) has a message for every name, as a
    string or a function of the context. `messageFor(error)` returns it,
@@ -88,69 +95,50 @@ status, context)`. A status of 0 becomes `NETWORK_ERROR`. A body without a known
 
 Use case errors needed HTTP statuses without a hand-kept list.
 `UseCaseErrors` began deriving each module's union from its use cases, and
-the mapper became a `Record` that fails to compile when a name has no
-status ([#32](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/32)).
-A global filter started turning anything unexpected into
-`UnexpectedError` ([#35](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/35)).
+the mapper became a `Record` that fails to compile when a name has no status
+([#32]). A global filter started turning anything unexpected into
+`UnexpectedError` ([#35]).
 
 ### 2026-09-25 — Keeping the name
 
 A security audit found the mapper answering with the error's context and
 dropping its name, so clients couldn't tell errors apart. The body started
-carrying `error: NAME`
-([#237](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/237)).
+carrying `error: NAME` ([#237]).
 
 ### 2026-10-11 — One format, and types shared with the web client
 
 The web client showed generic messages because it had nothing reliable to
 read. ADR-0030 decided it would share the domain's error types, type-only
-([#315](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/315)). Each
-error's context got its own type and only the context reached clients
-([#318](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/318)). The
-API wrote errors in five shapes depending on where they were raised, and
-the global filter became the only writer, with one shape for all of them
-([#319](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/319)).
+([#315]). Each error's context got its own type and only the context reached
+clients ([#318]). The API wrote errors in five shapes depending on where
+they were raised, and the global filter became the only writer, with one
+shape for all of them ([#319]).
 
 ### 2026-10-12 — The web client reads every error by name
 
-The web client imported the error types
-([#323](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/323)) and
-began reading every failed response as an `ApiError`, with a message for
-each name ([#324](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/324)).
+The web client imported the error types ([#323]) and began reading every
+failed response as an `ApiError`, with a message for each name ([#324]).
 
 ### 2026-10-13 — Every screen says what went wrong
 
 Screen by screen, generic failures were replaced with the error the API
-returned: sign-in and onboarding
-([#325](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/325)), rate
-limits in minutes ([#327](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/327)),
-calibration ([#328](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/328)),
-Settings ([#329](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/329)),
-Learning Paths ([#331](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/331)),
-Pomodoro ([#333](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/333)),
-the library and recommendations
-([#334](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/334)), the
-resource page and edit form
-([#335](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/335)) and
-capture ([#336](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/336)).
-Two modules turned out to share `SESSION_NOT_FOUND_ERROR`, and the
-sign-in one was renamed
-([#330](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/330)).
+returned: sign-in and onboarding ([#325]), rate limits in minutes ([#327]),
+calibration ([#328]), Settings ([#329]), Learning Paths ([#331]), Pomodoro
+([#333]), the library and recommendations ([#334]), the resource page and
+edit form ([#335]) and capture ([#336]). Two modules turned out to share
+`SESSION_NOT_FOUND_ERROR`, and the sign-in one was renamed ([#330]).
 
 ### 2026-10-16 — Test doubles fail like the API
 
 The web client's test doubles began rejecting with the API's own errors
-instead of generic ones, in Pomodoro
-([#343](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/343)) and in
-the library and Learning Paths
-([#345](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/345)).
+instead of generic ones, in Pomodoro ([#343]) and in the library and
+Learning Paths ([#345]).
 
 ## Known limits and deferred
 
-- **Names are unique by convention.** Nothing checks across modules that
-  two errors don't share a name; the collision in
-  [#330](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/330) was
-  found by reading a wrong message.
+- **Names are unique by convention.** Nothing checks across modules that two
+  errors don't share a name; the collision in [#330] was found by reading a
+  wrong message.
 - **Unexpected errors are only logged to the console**; there is no error
   tracking service.
 
@@ -159,3 +147,24 @@ the library and Learning Paths
 - ADR-0003: Defense-in-Depth Validation Strategy
 - ADR-0004: Functional Use Cases with Explicit Dependency Injection
 - ADR-0030: Web Client Shares the Domain's Error Types
+
+[#32]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/32
+[#35]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/35
+[#237]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/237
+[#315]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/315
+[#318]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/318
+[#319]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/319
+[#323]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/323
+[#324]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/324
+[#325]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/325
+[#327]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/327
+[#328]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/328
+[#329]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/329
+[#330]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/330
+[#331]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/331
+[#333]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/333
+[#334]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/334
+[#335]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/335
+[#336]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/336
+[#343]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/343
+[#345]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/345
