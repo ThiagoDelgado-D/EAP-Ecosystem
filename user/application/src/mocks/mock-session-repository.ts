@@ -37,11 +37,11 @@ export function mockSessionRepository(
       }
     },
 
-    async rotate(oldSessionId: string, newSession: Session): Promise<boolean> {
+    rotate(oldSessionId: string, newSession: Session): Promise<boolean> {
       const index = this.sessions.findIndex(
         (s) => s.id === oldSessionId && !s.revokedAt,
       );
-      if (index < 0) return false;
+      if (index < 0) return Promise.resolve(false);
 
       const rotatedAt = new Date();
       this.sessions[index] = {
@@ -51,7 +51,7 @@ export function mockSessionRepository(
         replacedBySessionId: newSession.id,
       };
       this.sessions.push(newSession);
-      return true;
+      return Promise.resolve(true);
     },
 
     async revokeAllByUserId(userId: string): Promise<void> {

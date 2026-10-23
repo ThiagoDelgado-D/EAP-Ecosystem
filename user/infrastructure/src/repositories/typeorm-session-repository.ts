@@ -26,7 +26,7 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     await this.repository.update(id, { revokedAt: new Date() });
   }
 
-  async rotate(oldSessionId: string, newSession: Session): Promise<boolean> {
+  rotate(oldSessionId: string, newSession: Session): Promise<boolean> {
     return this.repository.manager.transaction(async (manager) => {
       const rotatedAt = new Date();
       const result = await manager
