@@ -1,14 +1,12 @@
 import { inject } from '@angular/core';
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn, type HttpRequest } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, from, switchMap, throwError } from 'rxjs';
 import { AuthStore } from '@features/auth/application/auth.store';
 import {
   AuthHttpService,
-  type VerifySignInResult,
+  isSessionRejected,
 } from '@features/auth/infrastructure/auth-http.service';
-
-let refreshPromise: Promise<VerifySignInResult> | null = null;
 
 export const tokenRefreshInterceptor: HttpInterceptorFn = (req, next) => {
   if (req.url.includes('/auth/refresh') || req.url.includes('/auth/sign-out')) {
@@ -25,26 +23,32 @@ export const tokenRefreshInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
-      refreshPromise ??= authHttp.refresh().finally(() => {
-        refreshPromise = null;
-      });
+      const currentToken = authStore.accessToken();
+      if (currentToken && req.headers.get('Authorization') !== `Bearer ${currentToken}`) {
+        return next(withAccessToken(req, currentToken));
+      }
 
-      return from(refreshPromise).pipe(
+      return from(authHttp.refresh()).pipe(
+        catchError((refreshError: unknown) => {
+          if (isSessionRejected(refreshError)) {
+            authStore.clearSession();
+            void router.navigate(['/auth/sign-in']);
+          }
+          return throwError(() => refreshError);
+        }),
         switchMap((result) => {
           authStore.setSession(result.user, result.accessToken);
 
-          const retried = req.clone({
-            withCredentials: true,
-            setHeaders: { Authorization: `Bearer ${result.accessToken}` },
-          });
-          return next(retried);
-        }),
-        catchError((refreshError: unknown) => {
-          authStore.clearSession();
-          void router.navigate(['/auth/sign-in']);
-          return throwError(() => refreshError);
+          return next(withAccessToken(req, result.accessToken));
         }),
       );
     }),
   );
 };
+
+function withAccessToken<T>(req: HttpRequest<T>, accessToken: string): HttpRequest<T> {
+  return req.clone({
+    withCredentials: true,
+    setHeaders: { Authorization: `Bearer ${accessToken}` },
+  });
+}
