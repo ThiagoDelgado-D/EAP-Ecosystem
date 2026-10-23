@@ -23,11 +23,7 @@ export function mockSessionRepository(
     },
 
     async findByRefreshTokenHash(hash: string): Promise<Session | null> {
-      return (
-        this.sessions.find(
-          (s) => s.refreshTokenHash === hash && !s.revokedAt,
-        ) ?? null
-      );
+      return this.sessions.find((s) => s.refreshTokenHash === hash) ?? null;
     },
 
     async findById(id: string): Promise<Session | null> {
