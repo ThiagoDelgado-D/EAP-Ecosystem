@@ -223,7 +223,7 @@ EAP-Ecosystem/
 
 ## Documentation
 
-- [Architecture](ARCHITECTURE.md) — architectural principles, patterns, and decisions
+- [Architecture](ARCHITECTURE.md) — a map of the modules, layers and the mechanisms that cross them
 - [Changelog](CHANGELOG.md) — version history
 - [ADRs](docs/adr/) — individual architectural decision records
 - [Roadmap & Progress](https://github.com/ThiagoDelgado-D/EAP-Ecosystem/wiki) — versioned roadmap and feature tracking
