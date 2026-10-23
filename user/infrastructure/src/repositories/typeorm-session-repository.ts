@@ -26,10 +26,23 @@ export class TypeOrmSessionRepository implements ISessionRepository {
     await this.repository.update(id, { revokedAt: new Date() });
   }
 
-  async rotate(oldSessionId: string, newSession: Session): Promise<void> {
-    await this.repository.manager.transaction(async (manager) => {
-      await manager.update(SessionEntity, oldSessionId, { revokedAt: new Date() });
+  async rotate(oldSessionId: string, newSession: Session): Promise<boolean> {
+    return this.repository.manager.transaction(async (manager) => {
+      const rotatedAt = new Date();
+      const result = await manager
+        .createQueryBuilder()
+        .update(SessionEntity)
+        .set({
+          revokedAt: rotatedAt,
+          rotatedAt,
+          replacedBySessionId: newSession.id,
+        })
+        .where('"id" = :oldSessionId AND "revokedAt" IS NULL', { oldSessionId })
+        .execute();
+      if (result.affected !== 1) return false;
+
       await manager.save(SessionEntity, this.toEntity(newSession));
+      return true;
     });
   }
 
