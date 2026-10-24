@@ -155,7 +155,7 @@ document is written.
 | API error contract              | [error-contract.md](docs/architecture/error-contract.md)                         | 0030             |
 | Rate limiting                   | [rate-limiting.md](docs/architecture/rate-limiting.md)                           | —                |
 | Pomodoro session lifecycle      | [pomodoro-session-lifecycle.md](docs/architecture/pomodoro-session-lifecycle.md) | 0022, 0024       |
-| Recommendation engine           | —                                                                                | 0027             |
+| Recommendation engine           | [recommendation-engine.md](docs/architecture/recommendation-engine.md)           | 0027             |
 | Loading, error and empty states | —                                                                                | 0032             |
 
 ## Decision record
