@@ -148,15 +148,15 @@ gets a document in `docs/architecture/` with how it works today and an
 append-only history of how it got there. The column fills in as each
 document is written.
 
-| Mechanism                       | Document | ADRs             |
-| ------------------------------- | -------- | ---------------- |
-| Authentication and sessions     | —        | 0010, 0020, 0026 |
-| Capabilities and entitlements   | —        | 0015             |
-| API error contract              | —        | 0030             |
-| Rate limiting                   | —        | —                |
-| Pomodoro session lifecycle      | —        | 0022, 0024       |
-| Recommendation engine           | —        | 0027             |
-| Loading, error and empty states | —        | 0032             |
+| Mechanism                       | Document                                                                         | ADRs             |
+| ------------------------------- | -------------------------------------------------------------------------------- | ---------------- |
+| Authentication and sessions     | [authentication.md](docs/architecture/authentication.md)                         | 0010, 0020, 0026 |
+| Capabilities and entitlements   | [capabilities.md](docs/architecture/capabilities.md)                             | 0015             |
+| API error contract              | [error-contract.md](docs/architecture/error-contract.md)                         | 0030             |
+| Rate limiting                   | [rate-limiting.md](docs/architecture/rate-limiting.md)                           | —                |
+| Pomodoro session lifecycle      | [pomodoro-session-lifecycle.md](docs/architecture/pomodoro-session-lifecycle.md) | 0022, 0024       |
+| Recommendation engine           | [recommendation-engine.md](docs/architecture/recommendation-engine.md)           | 0027             |
+| Loading, error and empty states | — (ADR-0032 is proposed, not adopted yet)                                        | 0032             |
 
 ## Decision record
 
