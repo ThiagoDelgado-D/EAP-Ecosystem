@@ -156,7 +156,7 @@ document is written.
 | Rate limiting                   | [rate-limiting.md](docs/architecture/rate-limiting.md)                           | —                |
 | Pomodoro session lifecycle      | [pomodoro-session-lifecycle.md](docs/architecture/pomodoro-session-lifecycle.md) | 0022, 0024       |
 | Recommendation engine           | [recommendation-engine.md](docs/architecture/recommendation-engine.md)           | 0027             |
-| Loading, error and empty states | —                                                                                | 0032             |
+| Loading, error and empty states | — (ADR-0032 is proposed, not adopted yet)                                        | 0032             |
 
 ## Decision record
 
