@@ -44,6 +44,13 @@ describe('OnboardingComponent', () => {
     component = TestBed.createComponent(OnboardingComponent).componentInstance;
   });
 
+  test('starts from the name and email the learner signed in with', () => {
+    const signedIn = TestBed.inject(AuthStore).currentUser()!;
+
+    expect(component.firstName()).toBe(signedIn.firstName);
+    expect(component.email).toBe(signedIn.email);
+  });
+
   test('previews the setup composed from the answers', async () => {
     intakeService.previewSetup.mockResolvedValue(examPrepSetup);
 

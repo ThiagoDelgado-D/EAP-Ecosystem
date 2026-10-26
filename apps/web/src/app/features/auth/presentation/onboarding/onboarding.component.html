@@ -7,7 +7,11 @@
 
       @switch (step()) {
         @case ('name') {
-          <app-name-step (nameSubmit)="onNameSubmit($event)" />
+          <app-name-step
+            [initialName]="firstName()"
+            [email]="email"
+            (nameSubmit)="onNameSubmit($event)"
+          />
         }
         @case ('goals') {
           <app-intake-step

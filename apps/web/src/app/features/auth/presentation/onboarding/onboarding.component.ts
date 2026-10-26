@@ -43,7 +43,8 @@ export class OnboardingComponent {
   readonly STUDY_STYLE_OPTIONS = STUDY_STYLE_OPTIONS;
   readonly step = signal<OnboardingStep>('name');
   readonly stepNumber = computed(() => STEPS.indexOf(this.step()) + 1);
-  readonly firstName = signal('');
+  readonly firstName = signal(this.authStore.currentUser()?.firstName ?? '');
+  readonly email = this.authStore.currentUser()?.email ?? '';
   readonly goals = signal<IntakeGoal[]>([]);
   readonly studyStyle = signal<StudyStyle | null>(null);
   readonly answeredStyle = computed(() => {
