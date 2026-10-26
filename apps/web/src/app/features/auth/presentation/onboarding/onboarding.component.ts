@@ -34,10 +34,10 @@ export class OnboardingComponent {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const user = await this.onboardingService.completeOnboarding(
-        this.firstName(),
+      const user = await this.onboardingService.completeOnboarding({
+        firstName: this.firstName(),
         enabledModules,
-      );
+      });
       this.authStore.setSession(user, this.authStore.accessToken()!);
       await this.router.navigate(['/dashboard']);
     } catch (error) {
