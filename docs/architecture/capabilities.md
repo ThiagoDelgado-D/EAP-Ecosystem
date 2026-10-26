@@ -187,6 +187,13 @@ onboarding replaced that step with the intake: two questions, the setup
 the API composes from them with each reason worded from the answers, and
 the modules and goal the learner confirms ([#379]).
 
+### 2026-10-26 — Settings retakes the intake
+
+With the answers stored and an endpoint to apply new ones, Settings gained
+the retake beside the module toggles: the current answers, and a side panel
+that shows what a new proposal would change before the learner applies it
+([#380]).
+
 ## Known limits and deferred
 
 - **The beta channel can't be joined yet.** `resolveLearnerCapabilities`
@@ -205,7 +212,8 @@ the modules and goal the learner confirms ([#379]).
 - ADR-0015: Modular Application System, with its revisions of 2026-10-13 and
   2026-10-21
 - PRs [#98], [#326], [#350], [#351], [#354], [#355], [#356], [#357], [#359],
-  [#360], [#361], [#362], [#364], [#365], [#366], [#377], [#378], [#379]
+  [#360], [#361], [#362], [#364], [#365], [#366], [#377], [#378], [#379],
+  [#380]
 
 [#98]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/98
 [#326]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/326
@@ -225,3 +233,4 @@ the modules and goal the learner confirms ([#379]).
 [#377]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/377
 [#378]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/378
 [#379]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/379
+[#380]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/380
