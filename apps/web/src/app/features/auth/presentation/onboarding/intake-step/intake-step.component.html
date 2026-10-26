@@ -1,0 +1,117 @@
+<div class="rise flex flex-col gap-5">
+  <header>
+    <p class="eyebrow">{{ eyebrow() }}</p>
+    <h1 class="display mt-2 text-[clamp(1.9rem,4.4vw,2.6rem)] font-semibold">{{ title() }}</h1>
+    <p class="mt-2 max-w-lg text-[0.9rem] leading-relaxed text-ink-body">{{ subtitle() }}</p>
+  </header>
+
+  <div class="grid gap-2 sm:grid-cols-2" [attr.role]="multiple() ? 'group' : 'radiogroup'">
+    @for (option of options(); track option.key) {
+      <button
+        type="button"
+        (click)="choose(option.key)"
+        [attr.role]="multiple() ? null : 'radio'"
+        [attr.aria-pressed]="multiple() ? isChosen(option.key) : null"
+        [attr.aria-checked]="multiple() ? null : isChosen(option.key)"
+        [style.--tone]="toneVar(option.tone)"
+        class="group flex items-start gap-3 rounded-[18px_6px_18px_6px] border p-3.5 text-left transition-[transform,background-color,border-color,box-shadow] duration-300 hover:-translate-y-0.5"
+        [class]="isChosen(option.key) ? CHOSEN_CLASSES.card : IDLE_CLASSES.card"
+      >
+        <span
+          aria-hidden="true"
+          class="grid h-8 w-8 shrink-0 place-items-center rounded-[11px_3px_11px_3px] text-[0.85rem] transition-[background-color,color] duration-300"
+          [class]="isChosen(option.key) ? CHOSEN_CLASSES.glyph : IDLE_CLASSES.glyph"
+          >{{ option.glyph }}</span
+        >
+        <span class="min-w-0 flex-1">
+          <span class="flex items-center gap-2 text-[0.88rem] font-semibold text-ink-strong">
+            {{ option.label }}
+            @if (isChosen(option.key)) {
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="shrink-0 text-accent"
+                aria-hidden="true"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            }
+          </span>
+          <span class="mt-0.5 block text-[0.74rem] leading-snug text-ink-dim">{{
+            option.hint
+          }}</span>
+        </span>
+      </button>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="text-xs text-energy-high">{{ error() }}</p>
+  }
+
+  <div class="flex items-center justify-between gap-3 border-t border-line-soft pt-4">
+    <button
+      type="button"
+      (click)="back.emit()"
+      [disabled]="loading()"
+      class="btn btn-ghost btn-sm disabled:opacity-40"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 12H5M11 18l-6-6 6-6" />
+      </svg>
+      Back
+    </button>
+    <button
+      type="button"
+      (click)="submit()"
+      [disabled]="chosen().length === 0 || loading()"
+      class="btn btn-primary btn-sm disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+    >
+      @if (loading()) {
+        Putting your setup together...
+      } @else {
+        Continue
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      }
+    </button>
+  </div>
+
+  @if (skippable()) {
+    <button
+      type="button"
+      (click)="skip.emit()"
+      [disabled]="loading()"
+      class="link-underline mx-auto text-[0.76rem] font-semibold text-ink-dim hover:text-ink-strong disabled:opacity-40"
+    >
+      Skip, I'll set it up later
+    </button>
+  }
+</div>

@@ -1,37 +1,71 @@
-<div class="w-full max-w-lg">
-  <div class="bg-surface-raised border border-line-soft rounded-2xl p-10 shadow-xl">
-    <div class="flex flex-col items-center mb-8">
-      <app-brand-mark size="hero" />
-    </div>
+<div class="rise flex flex-col gap-6">
+  <header>
+    <p class="eyebrow">Before we start</p>
+    <h1 class="display mt-2 text-[clamp(1.9rem,4.4vw,2.7rem)] leading-tight font-semibold">
+      What should we call you?
+    </h1>
+    <p class="mt-2 text-[0.9rem] leading-relaxed text-ink-body">
+      That's how Cauce greets you each day. Next we'll ask how you like to work.
+    </p>
+  </header>
 
-    <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-ink-strong mb-1">Welcome. Let's set up your space.</h1>
-      <p class="text-sm text-ink-faint leading-relaxed">What should we call you?</p>
-    </div>
+  <div class="flex flex-col gap-1.5">
+    <label for="first-name-input" class="label">Name</label>
+    <input
+      id="first-name-input"
+      type="text"
+      placeholder="Your first name"
+      autocomplete="given-name"
+      [(ngModel)]="nameValue"
+      (keydown.enter)="submit()"
+      class="input py-3! text-base"
+    />
+  </div>
 
-    <div class="mb-4">
-      <label for="first-name-input" class="sr-only">First name</label>
+  @if (email()) {
+    <div class="flex flex-col gap-1.5">
+      <label for="email-input" class="label">Email</label>
       <input
-        id="first-name-input"
-        type="text"
-        placeholder="Your first name"
-        [(ngModel)]="nameValue"
-        (keydown.enter)="submit()"
-        class="w-full bg-surface-overlay border border-line-strong rounded-xl px-4 py-3 text-sm text-ink-strong placeholder:text-ink-faint focus:outline-none focus:border-accent-line transition-colors"
+        id="email-input"
+        type="email"
+        [value]="email()"
+        readonly
+        class="input py-3! opacity-70"
       />
     </div>
+  }
 
-    <button
-      (click)="submit()"
-      [disabled]="!isValid()"
-      class="btn btn-primary w-full"
+  <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+    @for (module of modules; track module.key; let index = $index) {
+      <div
+        class="rise rounded-[14px_4px_14px_4px] border border-line-soft bg-surface-overlay p-2.5"
+        [style.--d.ms]="index * 60"
+      >
+        <p class="text-[0.7rem] font-semibold text-ink-strong">{{ module.label }}</p>
+        <p class="mt-0.5 text-[0.62rem] leading-snug text-ink-dim">{{ module.desc }}</p>
+      </div>
+    }
+  </div>
+
+  <button
+    type="button"
+    (click)="submit()"
+    [disabled]="!isValid()"
+    class="btn btn-primary w-full justify-center py-3! disabled:cursor-not-allowed disabled:opacity-40"
+  >
+    Continue
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
     >
-      Continue
-    </button>
-  </div>
-
-  <div class="flex justify-center items-center gap-2 mt-5">
-    <div class="w-6 h-1.5 rounded-full bg-accent"></div>
-    <div class="w-1.5 h-1.5 rounded-full bg-surface-overlay"></div>
-  </div>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  </button>
 </div>

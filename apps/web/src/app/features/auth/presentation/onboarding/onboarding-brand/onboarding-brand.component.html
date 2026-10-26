@@ -1,0 +1,32 @@
+<aside class="relative h-full overflow-hidden border-r border-line-soft" aria-label="About Cauce">
+  <div class="texture" aria-hidden="true"></div>
+  <div class="veil" aria-hidden="true"></div>
+
+  <div class="relative flex h-full flex-col justify-between p-10">
+    <app-brand-mark />
+
+    <div>
+      <p class="eyebrow">Not another pile of bookmarks</p>
+      <h2 class="display mt-3 max-w-md text-[clamp(2rem,3.4vw,3rem)] leading-[1.02] font-semibold">
+        You choose how to learn. Cauce adapts.
+      </h2>
+      <p class="mt-4 max-w-md text-[0.9rem] leading-relaxed text-ink-body">
+        Recommendations, learning paths and a focus timer. None of it is required: start from what
+        helps you today and change it when your context changes.
+      </p>
+      <ol class="mt-7 flex max-w-md flex-col gap-2.5">
+        @for (step of steps; track step; let index = $index) {
+          <li class="flex items-start gap-3 text-[0.86rem] leading-relaxed text-ink-body">
+            <span
+              class="tnum mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-(--tone-ochre) text-[0.6rem] font-bold text-white"
+              >{{ index + 1 }}</span
+            >
+            {{ step }}
+          </li>
+        }
+      </ol>
+    </div>
+
+    <p class="text-[0.7rem] text-ink-dim">Four steps · under a minute · all editable later</p>
+  </div>
+</aside>

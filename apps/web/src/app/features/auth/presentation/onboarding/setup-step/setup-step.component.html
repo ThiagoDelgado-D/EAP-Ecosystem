@@ -1,0 +1,159 @@
+<div class="rise flex flex-col gap-6">
+  <header>
+    <p class="eyebrow">Ready</p>
+    <h1 class="display mt-2 text-[clamp(1.9rem,4.4vw,2.6rem)] font-semibold">
+      Here's your setup, {{ firstName() }}.
+    </h1>
+    <p class="mt-2 max-w-lg text-[0.9rem] leading-relaxed text-ink-body">
+      Nothing here is final. Tap a block to turn it on or off, and retake this from Settings when
+      your context changes.
+    </p>
+  </header>
+
+  <div>
+    <p class="label mb-2">Your setup</p>
+    <div class="flex flex-wrap gap-1.5">
+      @for (module of modules; track module.key) {
+        <button
+          type="button"
+          (click)="toggle(module)"
+          [disabled]="module.locked"
+          [attr.aria-pressed]="isOn(module.key)"
+          [attr.aria-label]="module.label + (module.locked ? ' (always on)' : '')"
+          [style.--tone]="toneVar(module.tone)"
+          class="inline-flex min-h-9 items-center gap-2 rounded-[12px_4px_12px_4px] border py-1.5 pr-2.5 pl-1.5 text-[0.76rem] font-semibold text-ink-strong transition-[opacity,background-color,border-color] duration-200"
+          [class]="classesFor(module.key).block"
+        >
+          <span
+            aria-hidden="true"
+            class="grid h-5.5 w-5.5 place-items-center rounded-md text-[0.72rem] text-white"
+            [class]="classesFor(module.key).glyph"
+            >{{ module.glyph }}</span
+          >
+          {{ module.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="rounded-[16px_5px_16px_5px] border border-line-soft bg-surface-overlay p-3.5">
+    <div class="flex items-baseline justify-between gap-3">
+      <label for="weekly-goal-input" class="label">Weekly focus goal</label>
+      <span class="tnum text-[0.95rem] font-semibold text-ink-strong">{{
+        minutesLabel(goalMinutes())
+      }}</span>
+    </div>
+    <input
+      id="weekly-goal-input"
+      type="range"
+      class="mt-2.5 w-full cursor-pointer accent-accent"
+      [min]="WEEKLY_GOAL_MINUTES.MIN"
+      [max]="WEEKLY_GOAL_MINUTES.MAX"
+      [step]="WEEKLY_GOAL_MINUTES.STEP"
+      [value]="goalMinutes()"
+      [disabled]="loading()"
+      (input)="goalMinutes.set(+$any($event.target).value)"
+    />
+    <div class="mt-0.5 flex justify-between text-[0.66rem] text-ink-dim">
+      <span class="tnum">{{ minutesLabel(WEEKLY_GOAL_MINUTES.MIN) }}</span>
+      <span class="tnum">{{ minutesLabel(WEEKLY_GOAL_MINUTES.MAX) }}</span>
+    </div>
+  </div>
+
+  <div>
+    <p class="label mb-2 flex items-center gap-1.5">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z" />
+      </svg>
+      Why
+    </p>
+    @if (reasons().length > 0) {
+      <ul class="flex flex-col gap-1.5">
+        @for (reason of reasons(); track reason.label) {
+          <li class="flex items-start gap-2 text-[0.8rem] leading-snug">
+            <span
+              aria-hidden="true"
+              class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-(--tone)"
+              [style.--tone]="toneVar(reason.tone)"
+            ></span>
+            <span class="text-ink-body">
+              <strong class="font-semibold text-ink-strong">{{ reason.label }}</strong>
+              <span class="text-ink-dim"> — {{ reason.detail }}</span>
+            </span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="text-[0.8rem] text-ink-dim">
+        You changed every proposed module, so there's nothing left to explain. It's all yours.
+      </p>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="text-xs text-energy-high">{{ error() }}</p>
+  }
+
+  <button
+    type="button"
+    (click)="submit()"
+    [disabled]="loading()"
+    class="btn w-full justify-center bg-accent py-3! text-surface-base shadow-(--shadow-soft) hover:-translate-y-px hover:brightness-110 disabled:opacity-60"
+  >
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path
+        d="M15 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8L19 13M17.8 6.2L19 5M3 21l9-9M12.2 6.2L11 5"
+      />
+    </svg>
+    @if (loading()) {
+      Setting up your space...
+    } @else {
+      Apply and start
+    }
+  </button>
+
+  <div class="flex items-center justify-between gap-3 border-t border-line-soft pt-4">
+    <button
+      type="button"
+      (click)="back.emit()"
+      [disabled]="loading()"
+      class="btn btn-ghost btn-sm disabled:opacity-40"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 12H5M11 18l-6-6 6-6" />
+      </svg>
+      Back
+    </button>
+    <span class="text-[0.74rem] text-ink-dim">Saved to your profile</span>
+  </div>
+</div>
