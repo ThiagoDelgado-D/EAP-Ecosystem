@@ -6,6 +6,7 @@ import {
   Inject,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from "@nestjs/common";
 import type {
@@ -24,12 +25,15 @@ import {
   updateUserAppearance,
   resetPreferences,
   previewIntakeSetup,
+  getIntake,
+  applyIntake,
 } from "@user/application";
 import { BaseError, type UUID } from "domain-lib";
 import { UpdateEnabledModulesDto } from "./dto/request/update-enabled-modules.dto.js";
 import { UpdateWidgetConfigDto } from "./dto/request/update-widget-config.dto.js";
 import { UpdateUserAppearanceDto } from "./dto/request/update-user-appearance.dto.js";
 import { IntakeAnswersDto } from "./dto/request/intake-answers.dto.js";
+import { ApplyIntakeDto } from "./dto/request/apply-intake.dto.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { CurrentUserId } from "../auth/current-user-id.decorator.js";
@@ -122,6 +126,32 @@ export class PreferencesController {
     const result = await updateUserAppearance(
       { userRepository: this.userRepository },
       { userId, appearance: dto as Partial<UserAppearancePreferences> },
+    );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Get("intake")
+  async getIntake(@CurrentUserId() userId: UUID) {
+    const result = await getIntake({ userRepository: this.userRepository }, { userId });
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Put("intake")
+  @HttpCode(200)
+  async applyIntake(@Body() dto: ApplyIntakeDto, @CurrentUserId() userId: UUID) {
+    const result = await applyIntake(
+      {
+        userRepository: this.userRepository,
+        entitlementsProvider: this.entitlementsProvider,
+      },
+      {
+        userId,
+        intake: { goals: dto.intake.goals, studyStyle: dto.intake.studyStyle },
+        enabledModules: dto.enabledModules,
+        weeklyGoalMinutes: dto.weeklyGoalMinutes,
+      },
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;

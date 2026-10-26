@@ -6,10 +6,15 @@ import {
   CapabilityState,
   DEFAULT_ENABLED_MODULES,
   ModuleKey,
+  WEEKLY_GOAL_MINUTES_RANGE,
   composeSetup,
   type User,
 } from "@user/domain";
-import { generateIntakeAnswers, generateUser } from "@user/application";
+import {
+  generateIntakeAnswers,
+  generateUser,
+  generateWeeklyGoalMinutes,
+} from "@user/application";
 import { createUserTestApp, type UserTestApp } from "./user-module.fixture.js";
 
 describe("PreferencesController (integration)", () => {
@@ -94,6 +99,77 @@ describe("PreferencesController (integration)", () => {
       for (const module of DEFAULT_ENABLED_MODULES) {
         expect(response.body.capabilities[module].state).toBe(CapabilityState.ENABLED);
       }
+    });
+  });
+
+  describe("GET /api/v1/preferences/intake", () => {
+    test("Should return the learner's stored answers", async () => {
+      const intake = generateIntakeAnswers();
+      await userRepo.save({ ...learner, intake });
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/preferences/intake")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual({ intake });
+    });
+
+    test("Should return no answers when the learner skipped the intake", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/preferences/intake")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual({ intake: null });
+    });
+  });
+
+  describe("PUT /api/v1/preferences/intake", () => {
+    const confirmedSetup = () => ({
+      intake: generateIntakeAnswers(),
+      enabledModules: [ModuleKey.LEARNING_PATHS],
+      weeklyGoalMinutes: generateWeeklyGoalMinutes(),
+    });
+
+    test("Should store the confirmed setup and return it with capabilities", async () => {
+      const setup = confirmedSetup();
+
+      const response = await request(app.getHttpServer())
+        .put("/api/v1/preferences/intake")
+        .set(authHeader())
+        .send(setup)
+        .expect(200);
+
+      expect(response.body.intake).toEqual(setup.intake);
+      expect(response.body.enabledModules).toEqual(setup.enabledModules);
+      expect(response.body.weeklyGoalMinutes).toBe(setup.weeklyGoalMinutes);
+      expect(response.body.capabilities[CapabilityKey.LEARNING_PATHS].state).toBe(
+        CapabilityState.ENABLED,
+      );
+      const stored = await userRepo.findById(learner.id);
+      expect(stored!.intake).toEqual(setup.intake);
+      expect(stored!.appearance.weeklyGoalMinutes).toBe(setup.weeklyGoalMinutes);
+    });
+
+    test("Should reject a setup without answers", async () => {
+      const { enabledModules, weeklyGoalMinutes } = confirmedSetup();
+
+      await request(app.getHttpServer())
+        .put("/api/v1/preferences/intake")
+        .set(authHeader())
+        .send({ enabledModules, weeklyGoalMinutes })
+        .expect(400);
+    });
+
+    test("Should reject a weekly goal outside the allowed range", async () => {
+      const { intake, enabledModules } = confirmedSetup();
+
+      await request(app.getHttpServer())
+        .put("/api/v1/preferences/intake")
+        .set(authHeader())
+        .send({ intake, enabledModules, weeklyGoalMinutes: WEEKLY_GOAL_MINUTES_RANGE.MAX + 1 })
+        .expect(400);
     });
   });
 
