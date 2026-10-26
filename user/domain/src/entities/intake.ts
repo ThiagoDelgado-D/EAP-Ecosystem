@@ -24,3 +24,9 @@ export interface IntakeAnswers {
   goals: IntakeGoal[];
   studyStyle: StudyStyle;
 }
+
+export const isIntakeGoal = (value: string): value is IntakeGoal =>
+  (Object.values(IntakeGoal) as string[]).includes(value);
+
+export const isStudyStyle = (value: string): value is StudyStyle =>
+  (Object.values(StudyStyle) as string[]).includes(value);
