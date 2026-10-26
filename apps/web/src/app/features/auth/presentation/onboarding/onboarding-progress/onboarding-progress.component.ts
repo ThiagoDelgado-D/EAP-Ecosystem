@@ -5,19 +5,22 @@ import { Component, computed, input } from '@angular/core';
   standalone: true,
   template: `
     <div
-      class="flex justify-center items-center gap-2 mt-5"
+      class="flex items-center gap-3"
       role="progressbar"
       aria-label="Onboarding progress"
       [attr.aria-valuenow]="current()"
       aria-valuemin="1"
       [attr.aria-valuemax]="total()"
     >
-      @for (step of steps(); track step) {
-        <div
-          class="h-1.5 rounded-full transition-[width,background-color] duration-200"
-          [class]="step === current() ? 'w-6 bg-accent' : 'w-1.5 bg-surface-overlay'"
-        ></div>
+      @for (segment of segments(); track segment.step) {
+        <span class="relative h-1 flex-1 overflow-hidden rounded-full bg-line-soft">
+          <span
+            class="absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-700"
+            [style.width.%]="segment.fill"
+          ></span>
+        </span>
       }
+      <span class="tnum shrink-0 text-[0.7rem] text-ink-dim">{{ current() }}/{{ total() }}</span>
     </div>
   `,
 })
@@ -25,5 +28,12 @@ export class OnboardingProgressComponent {
   readonly current = input.required<number>();
   readonly total = input.required<number>();
 
-  readonly steps = computed(() => Array.from({ length: this.total() }, (_, index) => index + 1));
+  readonly segments = computed(() =>
+    Array.from({ length: this.total() }, (_, index) => {
+      const step = index + 1;
+      if (step < this.current()) return { step, fill: 100 };
+      if (step === this.current()) return { step, fill: 50 };
+      return { step, fill: 0 };
+    }),
+  );
 }
