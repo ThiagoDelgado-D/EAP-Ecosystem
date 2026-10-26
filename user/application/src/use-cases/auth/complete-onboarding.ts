@@ -18,6 +18,7 @@ export interface CompleteOnboardingRequestModel {
   firstName: string;
   enabledModules: ModuleKey[];
   intake?: IntakeAnswers;
+  weeklyGoalMinutes?: number;
 }
 
 export interface CompleteOnboardingResponseModel {
@@ -43,6 +44,10 @@ export const completeOnboarding = async (
     firstName: request.firstName,
     enabledModules: request.enabledModules,
     intake: request.intake ?? null,
+    appearance: {
+      ...user.appearance,
+      weeklyGoalMinutes: request.weeklyGoalMinutes ?? user.appearance.weeklyGoalMinutes,
+    },
     onboardingCompleted: true,
     updatedAt: new Date(),
   };
