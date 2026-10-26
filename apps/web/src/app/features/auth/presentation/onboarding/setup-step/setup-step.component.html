@@ -1,0 +1,117 @@
+<div class="bg-surface-raised border border-line-soft rounded-2xl p-8 shadow-xl">
+  <div class="text-center mb-6">
+    <h1 class="text-2xl font-bold text-ink-strong mb-2">Here's your setup, {{ firstName() }}.</h1>
+    <p class="text-sm text-ink-dim leading-relaxed">
+      Built from your answers. Change anything before you start, or later in Settings.
+    </p>
+  </div>
+
+  <div class="flex flex-col gap-2 mb-4">
+    @for (module of modules; track module.key) {
+      <button
+        type="button"
+        (click)="toggle(module)"
+        [disabled]="module.locked"
+        [attr.aria-pressed]="isOn(module.key)"
+        [attr.aria-label]="module.label + (module.locked ? ' (always on)' : '')"
+        [style.--tone]="toneVar(MODULE_TONE[module.key])"
+        class="w-full flex items-center gap-3 px-3 py-3 rounded-xl border text-left transition-[background-color,border-color] duration-150"
+        [class]="classesFor(module.key).card"
+      >
+        <div
+          class="w-8 h-8 rounded-lg shrink-0 flex items-center justify-center border bg-surface-raised transition-[border-color,color] duration-150"
+          [class]="classesFor(module.key).icon"
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path [attr.d]="module.icon" />
+          </svg>
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold" [class]="classesFor(module.key).label">{{
+              module.label
+            }}</span>
+            @if (module.locked) {
+              <span
+                class="text-xs font-semibold px-1.5 py-0.5 rounded-full border border-(--tone)/35 bg-(--tone)/10 text-(--tone)"
+                >Always on</span
+              >
+            }
+          </div>
+          <p class="text-xs text-ink-faint mt-0.5 leading-relaxed">{{ module.desc }}</p>
+          @if (isOn(module.key) && reasonOf(module.key); as reason) {
+            <p class="text-xs text-ink-dim mt-1 leading-relaxed">Because {{ reason }}.</p>
+          }
+        </div>
+
+        <div
+          class="w-9 h-5 rounded-full relative shrink-0 transition-colors duration-200"
+          [class]="classesFor(module.key).track"
+          [class.opacity-50]="module.locked"
+        >
+          <div
+            class="absolute top-0.5 left-[3px] w-3.5 h-3.5 bg-white rounded-full shadow transition-transform duration-200"
+            [class.translate-x-[15px]]="isOn(module.key)"
+          ></div>
+        </div>
+      </button>
+    }
+  </div>
+
+  <div class="rounded-xl border border-line-soft bg-surface-inset px-3 py-3 mb-6">
+    <div class="flex items-center justify-between gap-3">
+      <p class="text-xs font-bold text-ink-strong">Weekly focus goal</p>
+      <span class="tnum text-xs font-semibold text-ink-strong">{{
+        minutesLabel(goalMinutes())
+      }}</span>
+    </div>
+    @if (goalReason(); as reason) {
+      <p class="text-xs text-ink-dim mt-1 leading-relaxed">Because {{ reason }}.</p>
+    }
+    <input
+      type="range"
+      aria-label="Weekly focus goal in minutes"
+      class="mt-3 w-full cursor-pointer accent-accent"
+      [min]="WEEKLY_GOAL_MINUTES.MIN"
+      [max]="WEEKLY_GOAL_MINUTES.MAX"
+      [step]="WEEKLY_GOAL_MINUTES.STEP"
+      [value]="goalMinutes()"
+      [disabled]="loading()"
+      (input)="goalMinutes.set(+$any($event.target).value)"
+    />
+    <div class="mt-1 flex justify-between text-[0.66rem] text-ink-faint">
+      <span>{{ minutesLabel(WEEKLY_GOAL_MINUTES.MIN) }}</span>
+      <span>{{ minutesLabel(WEEKLY_GOAL_MINUTES.MAX) }}</span>
+    </div>
+  </div>
+
+  @if (error()) {
+    <p class="text-xs text-energy-high mb-3 text-center">{{ error() }}</p>
+  }
+
+  <div class="flex gap-3">
+    <button
+      type="button"
+      (click)="back.emit()"
+      [disabled]="loading()"
+      class="px-5 py-3 rounded-xl text-sm font-medium text-ink-dim border border-line-strong hover:text-ink-body transition-colors disabled:opacity-50"
+    >
+      Back
+    </button>
+    <button type="button" (click)="submit()" [disabled]="loading()" class="btn btn-primary flex-1">
+      @if (loading()) {
+        Setting up your space...
+      } @else {
+        Start learning
+      }
+    </button>
+  </div>
+</div>
