@@ -18,7 +18,14 @@ interface ShownReason {
   tone: Tone;
 }
 
+type ModuleChange = 'new' | 'off';
+
 const GOAL_REASON_TONE: Tone = 'ochre';
+
+const CHANGE_LABELS: Record<ModuleChange, string> = {
+  new: 'New',
+  off: 'Turns off',
+};
 
 const BLOCK_CLASSES: Record<'on' | 'off', Record<'block' | 'glyph', string>> = {
   on: {
@@ -37,8 +44,16 @@ const BLOCK_CLASSES: Record<'on' | 'off', Record<'block' | 'glyph', string>> = {
   templateUrl: './setup-step.component.html',
 })
 export class SetupStepComponent {
-  readonly firstName = input<string>('');
+  readonly eyebrow = input('Ready');
+  readonly title = input.required<string>();
+  readonly subtitle = input(
+    'Nothing here is final. Tap a block to turn it on or off, and retake this from Settings when your context changes.',
+  );
+  readonly confirmLabel = input('Apply and start');
+  readonly pendingLabel = input('Setting up your space...');
+  readonly note = input('Saved to your profile');
   readonly setup = input.required<ComposedSetup>();
+  readonly current = input<ConfirmedSetup | null>(null);
   readonly loading = input<boolean>(false);
   readonly error = input<string | null>(null);
   readonly confirm = output<ConfirmedSetup>();
@@ -48,6 +63,7 @@ export class SetupStepComponent {
   readonly WEEKLY_GOAL_MINUTES = WEEKLY_GOAL_MINUTES;
   readonly toneVar = toneVar;
   readonly minutesLabel = minutesLabel;
+  readonly CHANGE_LABELS = CHANGE_LABELS;
 
   readonly selected = linkedSignal(() => new Set<ModuleKey>(this.setup().enabledModules));
   readonly goalMinutes = linkedSignal(() => this.setup().weeklyGoalMinutes);
@@ -70,6 +86,28 @@ export class SetupStepComponent {
     }
     return shown;
   });
+
+  readonly previousGoalMinutes = computed(() => {
+    const current = this.current();
+    if (!current || current.weeklyGoalMinutes === this.goalMinutes()) return null;
+    return current.weeklyGoalMinutes;
+  });
+
+  changeOf(key: ModuleKey): ModuleChange | null {
+    const current = this.current();
+    if (!current || key === MODULE_KEY.RESOURCE_LIBRARY) return null;
+    const wasOn = current.enabledModules.some((enabled) => enabled === key);
+    if (this.isOn(key) && !wasOn) return 'new';
+    if (!this.isOn(key) && wasOn) return 'off';
+    return null;
+  }
+
+  blockLabel(module: ModuleCard): string {
+    if (module.locked) return `${module.label} (always on)`;
+    const change = this.changeOf(module.key);
+    if (!change) return module.label;
+    return `${module.label} (${CHANGE_LABELS[change].toLowerCase()})`;
+  }
 
   isOn(key: ModuleKey): boolean {
     return key === MODULE_KEY.RESOURCE_LIBRARY || this.selected().has(key);

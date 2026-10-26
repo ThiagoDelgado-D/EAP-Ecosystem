@@ -10,7 +10,8 @@ import { minutesLabel } from '@shared/utils/minutes-label';
 import { reasonFor } from '../intake-options';
 import { SetupStepComponent } from './setup-step.component';
 
-const LEARNER_NAME = 'Ada';
+const SETUP_TITLE = "Here's your setup, Ada.";
+const CURRENT_GOAL_MINUTES = WEEKLY_GOAL_MINUTES.DEFAULT;
 const ADJUSTED_GOAL_MINUTES = LONG_SESSIONS_GOAL_MINUTES - WEEKLY_GOAL_MINUTES.STEP;
 
 describe('SetupStepComponent', () => {
@@ -24,7 +25,7 @@ describe('SetupStepComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(SetupStepComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('firstName', LEARNER_NAME);
+    fixture.componentRef.setInput('title', SETUP_TITLE);
     fixture.componentRef.setInput('setup', examPrepSetup);
     fixture.detectChanges();
   });
@@ -94,5 +95,41 @@ describe('SetupStepComponent', () => {
       enabledModules: [MODULE_KEY.POMODORO, MODULE_KEY.RECOMMENDATION],
       weeklyGoalMinutes: ADJUSTED_GOAL_MINUTES,
     });
+  });
+
+  describe('against the current setup', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('current', {
+        enabledModules: [MODULE_KEY.POMODORO, MODULE_KEY.RECOMMENDATION],
+        weeklyGoalMinutes: CURRENT_GOAL_MINUTES,
+      });
+      fixture.detectChanges();
+    });
+
+    test('marks a module the proposal turns on and one it turns off', () => {
+      expect(component.changeOf(MODULE_KEY.LEARNING_PATHS)).toBe('new');
+      expect(component.changeOf(MODULE_KEY.RECOMMENDATION)).toBe('off');
+      expect(component.changeOf(MODULE_KEY.POMODORO)).toBeNull();
+      expect(blockFor('Learning Paths').getAttribute('aria-label')).toBe('Learning Paths (new)');
+    });
+
+    test('drops the mark once the learner puts a module back as it was', () => {
+      blockFor('Recommendations').click();
+
+      expect(component.changeOf(MODULE_KEY.RECOMMENDATION)).toBeNull();
+    });
+
+    test('shows the weekly goal it replaces', () => {
+      expect(component.previousGoalMinutes()).toBe(CURRENT_GOAL_MINUTES);
+
+      component.goalMinutes.set(CURRENT_GOAL_MINUTES);
+
+      expect(component.previousGoalMinutes()).toBeNull();
+    });
+  });
+
+  test('marks no changes without a current setup to compare with', () => {
+    expect(component.changeOf(MODULE_KEY.LEARNING_PATHS)).toBeNull();
+    expect(component.previousGoalMinutes()).toBeNull();
   });
 });

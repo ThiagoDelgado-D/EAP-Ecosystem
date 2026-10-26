@@ -1,13 +1,8 @@
 <div class="rise flex flex-col gap-6">
   <header>
-    <p class="eyebrow">Ready</p>
-    <h1 class="display mt-2 text-[clamp(1.9rem,4.4vw,2.6rem)] font-semibold">
-      Here's your setup, {{ firstName() }}.
-    </h1>
-    <p class="mt-2 max-w-lg text-[0.9rem] leading-relaxed text-ink-body">
-      Nothing here is final. Tap a block to turn it on or off, and retake this from Settings when
-      your context changes.
-    </p>
+    <p class="eyebrow">{{ eyebrow() }}</p>
+    <h1 class="display mt-2 text-[clamp(1.9rem,4.4vw,2.6rem)] font-semibold">{{ title() }}</h1>
+    <p class="mt-2 max-w-lg text-[0.9rem] leading-relaxed text-ink-body">{{ subtitle() }}</p>
   </header>
 
   <div>
@@ -19,7 +14,7 @@
           (click)="toggle(module)"
           [disabled]="module.locked"
           [attr.aria-pressed]="isOn(module.key)"
-          [attr.aria-label]="module.label + (module.locked ? ' (always on)' : '')"
+          [attr.aria-label]="blockLabel(module)"
           [style.--tone]="toneVar(module.tone)"
           class="inline-flex min-h-9 items-center gap-2 rounded-[12px_4px_12px_4px] border py-1.5 pr-2.5 pl-1.5 text-[0.76rem] font-semibold text-ink-strong transition-[opacity,background-color,border-color] duration-200"
           [class]="classesFor(module.key).block"
@@ -31,6 +26,17 @@
             >{{ module.glyph }}</span
           >
           {{ module.label }}
+          @if (changeOf(module.key); as change) {
+            <span
+              class="rounded-full px-1.5 py-px text-[0.6rem] font-bold tracking-wide uppercase"
+              [class]="
+                change === 'new'
+                  ? 'bg-(--tone) text-white'
+                  : 'border border-line-strong text-ink-dim'
+              "
+              >{{ CHANGE_LABELS[change] }}</span
+            >
+          }
         </button>
       }
     </div>
@@ -39,9 +45,13 @@
   <div class="rounded-[16px_5px_16px_5px] border border-line-soft bg-surface-overlay p-3.5">
     <div class="flex items-baseline justify-between gap-3">
       <label for="weekly-goal-input" class="label">Weekly focus goal</label>
-      <span class="tnum text-[0.95rem] font-semibold text-ink-strong">{{
-        minutesLabel(goalMinutes())
-      }}</span>
+      <span class="tnum text-[0.95rem] font-semibold text-ink-strong">
+        @if (previousGoalMinutes(); as previous) {
+          <span class="font-normal text-ink-dim line-through">{{ minutesLabel(previous) }}</span>
+          <span class="mx-1 font-normal text-ink-dim" aria-hidden="true">→</span>
+        }
+        {{ minutesLabel(goalMinutes()) }}
+      </span>
     </div>
     <input
       id="weekly-goal-input"
@@ -126,9 +136,9 @@
       />
     </svg>
     @if (loading()) {
-      Setting up your space...
+      {{ pendingLabel() }}
     } @else {
-      Apply and start
+      {{ confirmLabel() }}
     }
   </button>
 
@@ -154,6 +164,6 @@
       </svg>
       Back
     </button>
-    <span class="text-[0.74rem] text-ink-dim">Saved to your profile</span>
+    <span class="text-[0.74rem] text-ink-dim">{{ note() }}</span>
   </div>
 </div>
