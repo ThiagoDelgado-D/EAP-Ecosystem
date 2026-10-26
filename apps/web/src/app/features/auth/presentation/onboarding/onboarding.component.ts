@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { OnboardingHttpService } from '@features/auth/infrastructure/onboarding-http.service';
@@ -6,13 +6,16 @@ import { OptionalModuleKey } from '@features/auth/domain/auth.model';
 import { messageOf } from '@core/errors/error-messages';
 import { NameStepComponent } from './name-step/name-step.component';
 import { ModulesStepComponent } from './modules-step/modules-step.component';
+import { OnboardingProgressComponent } from './onboarding-progress/onboarding-progress.component';
 
-type OnboardingStep = 'name' | 'modules';
+const STEPS = ['name', 'modules'] as const;
+
+type OnboardingStep = (typeof STEPS)[number];
 
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [NameStepComponent, ModulesStepComponent],
+  imports: [NameStepComponent, ModulesStepComponent, OnboardingProgressComponent],
   templateUrl: './onboarding.component.html',
 })
 export class OnboardingComponent {
@@ -20,7 +23,9 @@ export class OnboardingComponent {
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
 
+  readonly STEPS = STEPS;
   readonly step = signal<OnboardingStep>('name');
+  readonly stepNumber = computed(() => STEPS.indexOf(this.step()) + 1);
   readonly firstName = signal('');
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);

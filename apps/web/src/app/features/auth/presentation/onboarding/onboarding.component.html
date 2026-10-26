@@ -1,14 +1,18 @@
-@switch (step()) {
-  @case ('name') {
-    <app-name-step (nameSubmit)="onNameSubmit($event)" />
+<div class="w-full max-w-lg">
+  @switch (step()) {
+    @case ('name') {
+      <app-name-step (nameSubmit)="onNameSubmit($event)" />
+    }
+    @case ('modules') {
+      <app-modules-step
+        [firstName]="firstName()"
+        [loading]="loading()"
+        [error]="error()"
+        (back)="step.set('name')"
+        (modulesSubmit)="onModulesSubmit($event)"
+      />
+    }
   }
-  @case ('modules') {
-    <app-modules-step
-      [firstName]="firstName()"
-      [loading]="loading()"
-      [error]="error()"
-      (back)="step.set('name')"
-      (modulesSubmit)="onModulesSubmit($event)"
-    />
-  }
-}
+
+  <app-onboarding-progress [current]="stepNumber()" [total]="STEPS.length" />
+</div>
