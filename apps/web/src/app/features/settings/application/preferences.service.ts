@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import type { OptionalModuleKey } from '@features/auth/domain/auth.model';
+import type { ModulePreferences, OptionalModuleKey } from '@features/auth/domain/auth.model';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { messageOf } from '@core/errors/error-messages';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
@@ -48,6 +48,11 @@ export class PreferencesService {
       this.enabledModules.set(prev);
       this.error.set(messageOf(error));
     }
+  }
+
+  adoptModulePreferences(modulePreferences: ModulePreferences): void {
+    this.enabledModules.set(modulePreferences.enabledModules);
+    this.authStore.updateModulePreferences(modulePreferences);
   }
 
   async loadWidgetConfig(): Promise<void> {

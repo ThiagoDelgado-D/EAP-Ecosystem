@@ -3,6 +3,7 @@ import { ERROR_MESSAGES } from '@core/errors/error-messages';
 import { offlineError } from '@core/errors/mocks/offline-error.fixture';
 import { AuthStore } from '@features/auth/application/auth.store';
 import { CAPABILITY_KEY, MODULE_KEY, OPTIONAL_MODULES } from '@features/auth/domain/auth.model';
+import { capabilitiesEnabling } from '@features/auth/application/mocks/capabilities.fixture';
 import { learner } from '@features/recommendation/application/mocks/learner.fixture';
 import { PreferencesRepository } from '@features/settings/domain/preferences.repository';
 import {
@@ -62,6 +63,17 @@ describe('PreferencesService', () => {
   test('should only let the learner reach the modules the saved change left on', async () => {
     await service.updateEnabledModules(ONLY_POMODORO);
 
+    expect(authStore.isEnabled(CAPABILITY_KEY.POMODORO)).toBe(true);
+    expect(authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS)).toBe(false);
+  });
+
+  test('should adopt module preferences saved by another change, such as a retaken intake', () => {
+    service.adoptModulePreferences({
+      enabledModules: ONLY_POMODORO,
+      capabilities: capabilitiesEnabling(ONLY_POMODORO),
+    });
+
+    expect(service.enabledModules()).toEqual(ONLY_POMODORO);
     expect(authStore.isEnabled(CAPABILITY_KEY.POMODORO)).toBe(true);
     expect(authStore.isEnabled(CAPABILITY_KEY.LEARNING_PATHS)).toBe(false);
   });
