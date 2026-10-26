@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, linkedSignal, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PreferencesService } from '@features/settings/application/preferences.service';
 import { ThemeService } from '@core/theme/theme.service';
@@ -214,7 +214,7 @@ export class PreferencesComponent implements OnInit {
   readonly loading = this.preferencesService.loading;
   readonly error = this.preferencesService.error;
 
-  readonly goalDraft = signal<number>(this.weeklyGoal.goalMinutes());
+  readonly goalDraft = linkedSignal(() => this.weeklyGoal.goalMinutes());
   readonly goalError = signal<string | null>(null);
   readonly goalPct = computed(() => Math.round((this.goalDraft() / WEEKLY_GOAL_MINUTES.MAX) * 100));
 
@@ -237,7 +237,6 @@ export class PreferencesComponent implements OnInit {
     } catch (error) {
       this.goalError.set(messageOf(error));
     }
-    this.goalDraft.set(this.weeklyGoal.goalMinutes());
   }
 
   async save(patch: Parameters<PreferencesService['updateAppearance']>[0]): Promise<void> {
@@ -250,6 +249,5 @@ export class PreferencesComponent implements OnInit {
 
   private async loadGoal(): Promise<void> {
     await this.weeklyGoal.load();
-    this.goalDraft.set(this.weeklyGoal.goalMinutes());
   }
 }
