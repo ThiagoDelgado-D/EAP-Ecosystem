@@ -3,14 +3,44 @@
     @case ('name') {
       <app-name-step (nameSubmit)="onNameSubmit($event)" />
     }
-    @case ('modules') {
-      <app-modules-step
-        [firstName]="firstName()"
+    @case ('goals') {
+      <app-intake-step
+        [title]="'What are you here for, ' + firstName() + '?'"
+        subtitle="Pick as many as you like. We'll set things up around them."
+        [options]="GOAL_OPTIONS"
+        [multiple]="true"
+        [answered]="goals()"
+        [skippable]="true"
         [loading]="loading()"
         [error]="error()"
-        (back)="step.set('name')"
-        (modulesSubmit)="onModulesSubmit($event)"
+        (back)="goTo('name')"
+        (skip)="onSkip()"
+        (answer)="onGoalsSubmit($event)"
       />
+    }
+    @case ('style') {
+      <app-intake-step
+        title="How do you like to study?"
+        subtitle="Just a starting point. You can change it anytime."
+        [options]="STUDY_STYLE_OPTIONS"
+        [answered]="answeredStyle()"
+        [loading]="loading()"
+        [error]="error()"
+        (back)="goTo('goals')"
+        (answer)="onStyleSubmit($event)"
+      />
+    }
+    @case ('setup') {
+      @if (setup(); as setup) {
+        <app-setup-step
+          [firstName]="firstName()"
+          [setup]="setup"
+          [loading]="loading()"
+          [error]="error()"
+          (back)="goTo('style')"
+          (confirm)="onSetupConfirm($event)"
+        />
+      }
     }
   }
 
