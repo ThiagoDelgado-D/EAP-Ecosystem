@@ -4,10 +4,12 @@ import { isOptionalModule } from '@features/auth/domain/auth.model';
 import { MODULE_CATALOG, type ModuleDefinition } from './feature-module-catalog';
 import { MODULE_TONE } from './module-tone';
 import { toneVar } from '@shared/utils/tone';
+import { IntakeCardComponent } from '../intake/intake-card/intake-card.component';
 
 @Component({
   selector: 'app-modules',
   standalone: true,
+  imports: [IntakeCardComponent],
   templateUrl: './modules.component.html',
 })
 export class ModulesComponent implements OnInit {
