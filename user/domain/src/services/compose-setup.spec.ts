@@ -6,6 +6,7 @@ import {
   GOAL_MODULES,
   STUDY_STYLE_MODULES,
   STUDY_STYLE_WEEKLY_GOAL_MINUTES,
+  WEEKLY_GOAL_SETTING,
   composeSetup,
 } from "./compose-setup.js";
 
@@ -67,4 +68,42 @@ describe("composeSetup", () => {
     }
   });
 
+  test("Should give every enabled module a reason naming the answers that turned it on", () => {
+    const interviewGoal = IntakeGoal.PREPARE_INTERVIEW;
+    const topicGoal = IntakeGoal.MASTER_TOPIC;
+    const studyStyle = StudyStyle.LONG_SESSIONS;
+
+    const setup = composeSetup({ goals: [interviewGoal, topicGoal], studyStyle });
+
+    for (const module of setup.enabledModules) {
+      const reason = setup.reasons.find(({ setting }) => setting === module);
+      const expectedAnswers = [
+        ...[interviewGoal, topicGoal].filter((goal) => GOAL_MODULES[goal].includes(module)),
+        ...(STUDY_STYLE_MODULES[studyStyle].includes(module) ? [studyStyle] : []),
+      ];
+
+      expect(reason?.answers).toEqual(expectedAnswers);
+    }
+  });
+
+  test("Should give the weekly goal a reason naming the study style", () => {
+    const studyStyle = StudyStyle.SHORT_BLOCKS;
+
+    const setup = composeSetup({ goals: [IntakeGoal.BUILD_HABIT], studyStyle });
+
+    const reason = setup.reasons.find(({ setting }) => setting === WEEKLY_GOAL_SETTING);
+    expect(reason?.answers).toEqual([studyStyle]);
+  });
+
+  test("Should not give a reason for a module it left off", () => {
+    const setup = composeSetup({
+      goals: [IntakeGoal.ORGANIZE_BACKLOG],
+      studyStyle: StudyStyle.DAY_BY_DAY,
+    });
+
+    const reasonedModules = setup.reasons
+      .map(({ setting }) => setting)
+      .filter((setting) => setting !== WEEKLY_GOAL_SETTING);
+    expect(reasonedModules).toEqual(setup.enabledModules);
+  });
 });

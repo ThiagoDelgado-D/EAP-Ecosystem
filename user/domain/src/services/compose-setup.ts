@@ -1,10 +1,25 @@
-import { IntakeGoal, StudyStyle, type IntakeAnswers } from "../entities/intake.js";
+import {
+  IntakeGoal,
+  StudyStyle,
+  type IntakeAnswer,
+  type IntakeAnswers,
+} from "../entities/intake.js";
 import { ModuleKey, OPTIONAL_MODULES } from "../entities/module.js";
 import { DEFAULT_APPEARANCE } from "../entities/user.js";
+
+export const WEEKLY_GOAL_SETTING = "weekly-goal" as const;
+
+export type SetupSetting = ModuleKey | typeof WEEKLY_GOAL_SETTING;
+
+export interface SetupReason {
+  setting: SetupSetting;
+  answers: IntakeAnswer[];
+}
 
 export interface ComposedSetup {
   enabledModules: ModuleKey[];
   weeklyGoalMinutes: number;
+  reasons: SetupReason[];
 }
 
 export const GOAL_MODULES: Record<IntakeGoal, readonly ModuleKey[]> = {
@@ -35,13 +50,27 @@ export const STUDY_STYLE_WEEKLY_GOAL_MINUTES: Record<StudyStyle, number> = {
 };
 
 export const composeSetup = ({ goals, studyStyle }: IntakeAnswers): ComposedSetup => {
-  const chosen = new Set<ModuleKey>([
-    ...goals.flatMap((goal) => GOAL_MODULES[goal]),
-    ...STUDY_STYLE_MODULES[studyStyle],
-  ]);
+  const answersByModule = new Map<ModuleKey, IntakeAnswer[]>();
+  const record = (answer: IntakeAnswer, modules: readonly ModuleKey[]) => {
+    for (const module of modules) {
+      const answers = answersByModule.get(module) ?? [];
+      if (!answers.includes(answer)) answers.push(answer);
+      answersByModule.set(module, answers);
+    }
+  };
+
+  for (const goal of goals) record(goal, GOAL_MODULES[goal]);
+  record(studyStyle, STUDY_STYLE_MODULES[studyStyle]);
+
+  const enabledModules = OPTIONAL_MODULES.filter((module) => answersByModule.has(module));
+  const moduleReasons: SetupReason[] = enabledModules.map((module) => ({
+    setting: module,
+    answers: answersByModule.get(module) ?? [],
+  }));
 
   return {
-    enabledModules: OPTIONAL_MODULES.filter((module) => chosen.has(module)),
+    enabledModules,
     weeklyGoalMinutes: STUDY_STYLE_WEEKLY_GOAL_MINUTES[studyStyle],
+    reasons: [...moduleReasons, { setting: WEEKLY_GOAL_SETTING, answers: [studyStyle] }],
   };
 };
