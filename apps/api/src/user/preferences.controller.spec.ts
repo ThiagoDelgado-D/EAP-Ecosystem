@@ -97,6 +97,29 @@ describe("PreferencesController (integration)", () => {
     });
   });
 
+  describe("GET /api/v1/preferences/intake", () => {
+    test("Should return the learner's stored answers", async () => {
+      const intake = generateIntakeAnswers();
+      await userRepo.save({ ...learner, intake });
+
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/preferences/intake")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual({ intake });
+    });
+
+    test("Should return no answers when the learner skipped the intake", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/api/v1/preferences/intake")
+        .set(authHeader())
+        .expect(200);
+
+      expect(response.body).toEqual({ intake: null });
+    });
+  });
+
   describe("POST /api/v1/preferences/intake/preview", () => {
     test("Should return the setup composed from the answers", async () => {
       const intake = generateIntakeAnswers();

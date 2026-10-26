@@ -24,6 +24,7 @@ import {
   updateUserAppearance,
   resetPreferences,
   previewIntakeSetup,
+  getIntake,
 } from "@user/application";
 import { BaseError, type UUID } from "domain-lib";
 import { UpdateEnabledModulesDto } from "./dto/request/update-enabled-modules.dto.js";
@@ -123,6 +124,13 @@ export class PreferencesController {
       { userRepository: this.userRepository },
       { userId, appearance: dto as Partial<UserAppearancePreferences> },
     );
+    if (result instanceof BaseError) throw toHttpException(result);
+    return result;
+  }
+
+  @Get("intake")
+  async getIntake(@CurrentUserId() userId: UUID) {
+    const result = await getIntake({ userRepository: this.userRepository }, { userId });
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
   }
