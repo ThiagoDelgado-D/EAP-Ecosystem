@@ -45,8 +45,11 @@ sequenceDiagram
    like to study. `composeSetup` (`user/domain/src/services/compose-setup.ts`)
    turns the answers into enabled modules, a weekly goal and the answers
    behind each choice, which `POST /preferences/intake/preview` returns
-   without saving anything. The learner adjusts and confirms it, and
-   onboarding completion stores the confirmed setup with the answers as the
+   without saving anything. The web client's onboarding asks the two
+   questions, shows that setup with each reason worded from the answers
+   behind it (`reasonFor` in `intake-options.ts`), and lets the learner
+   change the modules and the goal before confirming. Onboarding completion
+   stores the confirmed setup with the answers as the
    `User`'s `intake`, or leaves `intake` empty when they skipped it. Later,
    Settings reads the stored answers from `GET /preferences/intake`, and
    `PUT /preferences/intake` applies a retaken intake: the answers, the
@@ -113,7 +116,7 @@ sequenceDiagram
 | Resolution         | `user/domain/src/services/resolve-capabilities.ts`, `user/application/src/utils/resolve-learner-capabilities.ts`                                             |
 | Entitlements       | `user/domain/src/services/entitlements-provider.ts`, `user/infrastructure/src/services/implicit-plan-entitlements-provider.ts`, `apps/api/src/entitlements/` |
 | Preferences API    | `user/application/src/use-cases/preferences/`, `apps/api/src/user/preferences.controller.ts`                                                                 |
-| Intake             | `user/domain/src/entities/intake.ts`, `user/domain/src/services/compose-setup.ts`, `user/application/src/use-cases/auth/complete-onboarding.ts`, `use-cases/preferences/apply-intake.ts` |
+| Intake             | `user/domain/src/entities/intake.ts`, `user/domain/src/services/compose-setup.ts`, `user/application/src/use-cases/auth/complete-onboarding.ts`, `use-cases/preferences/apply-intake.ts`, `features/auth/presentation/onboarding/` |
 | Server-side checks | `apps/api/src/entitlements/path-steps-capability-adapter.ts`                                                                                                 |
 | Web client         | `features/auth/application/auth.store.ts`, `core/guards/capability.guard.ts`, `features/settings/application/preferences.service.ts`                         |
 
