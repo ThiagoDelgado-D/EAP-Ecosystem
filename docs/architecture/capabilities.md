@@ -47,7 +47,11 @@ sequenceDiagram
    behind each choice, which `POST /preferences/intake/preview` returns
    without saving anything. The learner adjusts and confirms it, and
    onboarding completion stores the confirmed setup with the answers as the
-   `User`'s `intake`, or leaves `intake` empty when they skipped it.
+   `User`'s `intake`, or leaves `intake` empty when they skipped it. Later,
+   Settings reads the stored answers from `GET /preferences/intake`, and
+   `PUT /preferences/intake` applies a retaken intake: the answers, the
+   modules and the weekly goal the learner confirmed, returned with the
+   resolved capabilities.
 3. **Entitlements.** `EntitlementsProvider.grantedTo(learnerId)` returns the
    keys the learner's plan grants. Its only adapter today,
    `ImplicitPlanEntitlementsProvider` (`user/infrastructure`), grants every
@@ -109,7 +113,7 @@ sequenceDiagram
 | Resolution         | `user/domain/src/services/resolve-capabilities.ts`, `user/application/src/utils/resolve-learner-capabilities.ts`                                             |
 | Entitlements       | `user/domain/src/services/entitlements-provider.ts`, `user/infrastructure/src/services/implicit-plan-entitlements-provider.ts`, `apps/api/src/entitlements/` |
 | Preferences API    | `user/application/src/use-cases/preferences/`, `apps/api/src/user/preferences.controller.ts`                                                                 |
-| Intake             | `user/domain/src/entities/intake.ts`, `user/domain/src/services/compose-setup.ts`, `user/application/src/use-cases/auth/complete-onboarding.ts`              |
+| Intake             | `user/domain/src/entities/intake.ts`, `user/domain/src/services/compose-setup.ts`, `user/application/src/use-cases/auth/complete-onboarding.ts`, `use-cases/preferences/apply-intake.ts` |
 | Server-side checks | `apps/api/src/entitlements/path-steps-capability-adapter.ts`                                                                                                 |
 | Web client         | `features/auth/application/auth.store.ts`, `core/guards/capability.guard.ts`, `features/settings/application/preferences.service.ts`                         |
 
