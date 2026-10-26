@@ -7,11 +7,16 @@ import {
 } from '@features/auth/infrastructure/onboarding-http.service';
 import { IntakeHttpService } from '@features/auth/infrastructure/intake-http.service';
 import { OPTIONAL_MODULES } from '@features/auth/domain/auth.model';
-import type { ComposedSetup, IntakeGoal, StudyStyle } from '@features/auth/domain/intake.model';
+import type {
+  ComposedSetup,
+  ConfirmedSetup,
+  IntakeGoal,
+  StudyStyle,
+} from '@features/auth/domain/intake.model';
 import { messageOf } from '@core/errors/error-messages';
 import { NameStepComponent } from './name-step/name-step.component';
 import { IntakeStepComponent } from './intake-step/intake-step.component';
-import { SetupStepComponent, type ConfirmedSetup } from './setup-step/setup-step.component';
+import { SetupStepComponent } from './setup-step/setup-step.component';
 import { OnboardingProgressComponent } from './onboarding-progress/onboarding-progress.component';
 import { OnboardingBrandComponent } from './onboarding-brand/onboarding-brand.component';
 import { GOAL_OPTIONS, STUDY_STYLE_OPTIONS } from './intake-options';

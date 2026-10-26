@@ -1,13 +1,9 @@
 import { Component, computed, input, linkedSignal, output } from '@angular/core';
-import {
-  MODULE_KEY,
-  OPTIONAL_MODULES,
-  type ModuleKey,
-  type OptionalModuleKey,
-} from '@features/auth/domain/auth.model';
+import { MODULE_KEY, OPTIONAL_MODULES, type ModuleKey } from '@features/auth/domain/auth.model';
 import {
   WEEKLY_GOAL_SETTING,
   type ComposedSetup,
+  type ConfirmedSetup,
   type SetupSetting,
 } from '@features/auth/domain/intake.model';
 import { WEEKLY_GOAL_MINUTES } from '@features/settings/domain/settings.model';
@@ -15,11 +11,6 @@ import { minutesLabel } from '@shared/utils/minutes-label';
 import { toneVar, type Tone } from '@shared/utils/tone';
 import { reasonFor } from '../intake-options';
 import { MODULE_CARDS, type ModuleCard } from '../module-cards';
-
-export interface ConfirmedSetup {
-  enabledModules: OptionalModuleKey[];
-  weeklyGoalMinutes: number;
-}
 
 interface ShownReason {
   label: string;
