@@ -1,6 +1,7 @@
 import type {
   Capabilities,
   EntitlementsProvider,
+  IntakeAnswers,
   IUserRepository,
   ModuleKey,
 } from "@user/domain";
@@ -16,6 +17,7 @@ export interface CompleteOnboardingRequestModel {
   userId: string;
   firstName: string;
   enabledModules: ModuleKey[];
+  intake?: IntakeAnswers;
 }
 
 export interface CompleteOnboardingResponseModel {
@@ -40,6 +42,7 @@ export const completeOnboarding = async (
     ...user,
     firstName: request.firstName,
     enabledModules: request.enabledModules,
+    intake: request.intake ?? null,
     onboardingCompleted: true,
     updatedAt: new Date(),
   };
