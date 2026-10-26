@@ -6,3 +6,4 @@ export * from "./reset-preferences.js";
 export * from "./get-user-appearance.js";
 export * from "./update-user-appearance.js";
 export * from "./preview-intake-setup.js";
+export * from "./get-intake.js";
