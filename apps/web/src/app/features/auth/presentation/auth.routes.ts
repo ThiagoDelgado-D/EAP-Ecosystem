@@ -30,13 +30,6 @@ export const onboardingRoutes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./auth-layout/auth-layout.component').then((m) => m.AuthLayoutComponent),
-    children: [
-      {
-        path: '',
-        loadComponent: () =>
-          import('./onboarding/onboarding.component').then((m) => m.OnboardingComponent),
-      },
-    ],
+      import('./onboarding/onboarding.component').then((m) => m.OnboardingComponent),
   },
 ];

@@ -1,50 +1,56 @@
-<div class="w-full max-w-lg">
-  @switch (step()) {
-    @case ('name') {
-      <app-name-step (nameSubmit)="onNameSubmit($event)" />
-    }
-    @case ('goals') {
-      <app-intake-step
-        eyebrow="First, what matters to you"
-        [title]="'What are you here for, ' + firstName() + '?'"
-        subtitle="Pick as many as you like. We'll decide what to show you first and what to keep for later."
-        [options]="GOAL_OPTIONS"
-        [multiple]="true"
-        [answered]="goals()"
-        [skippable]="true"
-        [loading]="loading()"
-        [error]="error()"
-        (back)="goTo('name')"
-        (skip)="onSkip()"
-        (answer)="onGoalsSubmit($event)"
-      />
-    }
-    @case ('style') {
-      <app-intake-step
-        eyebrow="How you move"
-        title="What pace works as a starting point?"
-        subtitle="Only a starting point: recommendations still adjust to each day, and you can change it anytime."
-        [options]="STUDY_STYLE_OPTIONS"
-        [answered]="answeredStyle()"
-        [loading]="loading()"
-        [error]="error()"
-        (back)="goTo('goals')"
-        (answer)="onStyleSubmit($event)"
-      />
-    }
-    @case ('setup') {
-      @if (setup(); as setup) {
-        <app-setup-step
-          [firstName]="firstName()"
-          [setup]="setup"
-          [loading]="loading()"
-          [error]="error()"
-          (back)="goTo('style')"
-          (confirm)="onSetupConfirm($event)"
-        />
-      }
-    }
-  }
+<div class="grid min-h-screen bg-surface-base lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+  <app-onboarding-brand class="hidden lg:block" />
 
-  <app-onboarding-progress [current]="stepNumber()" [total]="STEPS.length" />
+  <main class="flex flex-col justify-center px-5 py-10 sm:px-10">
+    <div class="mx-auto w-full max-w-xl">
+      <app-onboarding-progress class="mb-8 block" [current]="stepNumber()" [total]="STEPS.length" />
+
+      @switch (step()) {
+        @case ('name') {
+          <app-name-step (nameSubmit)="onNameSubmit($event)" />
+        }
+        @case ('goals') {
+          <app-intake-step
+            eyebrow="First, what matters to you"
+            [title]="'What are you here for, ' + firstName() + '?'"
+            subtitle="Pick as many as you like. We'll decide what to show you first and what to keep for later."
+            [options]="GOAL_OPTIONS"
+            [multiple]="true"
+            [answered]="goals()"
+            [skippable]="true"
+            [loading]="loading()"
+            [error]="error()"
+            (back)="goTo('name')"
+            (skip)="onSkip()"
+            (answer)="onGoalsSubmit($event)"
+          />
+        }
+        @case ('style') {
+          <app-intake-step
+            eyebrow="How you move"
+            title="What pace works as a starting point?"
+            subtitle="Only a starting point: recommendations still adjust to each day, and you can change it anytime."
+            [options]="STUDY_STYLE_OPTIONS"
+            [answered]="answeredStyle()"
+            [loading]="loading()"
+            [error]="error()"
+            (back)="goTo('goals')"
+            (answer)="onStyleSubmit($event)"
+          />
+        }
+        @case ('setup') {
+          @if (setup(); as setup) {
+            <app-setup-step
+              [firstName]="firstName()"
+              [setup]="setup"
+              [loading]="loading()"
+              [error]="error()"
+              (back)="goTo('style')"
+              (confirm)="onSetupConfirm($event)"
+            />
+          }
+        }
+      }
+    </div>
+  </main>
 </div>
