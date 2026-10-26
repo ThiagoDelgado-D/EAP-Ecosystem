@@ -1,0 +1,97 @@
+<div
+  class="fixed inset-0 z-[65] flex justify-end bg-ink-strong/25"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="intake-retake-title"
+>
+  <button
+    type="button"
+    class="absolute inset-0 cursor-default"
+    aria-label="Close without changing your setup"
+    tabindex="-1"
+    (click)="closed.emit()"
+  ></button>
+  <aside
+    class="relative flex h-full w-full flex-col overflow-y-auto border-l border-line-soft bg-surface-base shadow-2xl sm:w-[38rem]"
+  >
+    <header class="flex items-start justify-between gap-4 px-6 pt-5">
+      <div>
+        <h2 id="intake-retake-title" class="display text-2xl">Retake the intake</h2>
+        <p class="mt-1 text-sm text-ink-dim">
+          Two questions. Your setup only changes when you apply it.
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="closed.emit()"
+        [disabled]="loading()"
+        class="-m-1 rounded-lg p-2 text-ink-dim transition-colors hover:bg-surface-overlay hover:text-ink-strong"
+        aria-label="Close without changing your setup"
+      >
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="px-6 pt-6 pb-8">
+      <app-onboarding-progress class="mb-8 block" [current]="stepNumber()" [total]="STEPS.length" />
+
+      @switch (step()) {
+        @case ('goals') {
+          <app-intake-step
+            eyebrow="What matters to you now"
+            title="What are you here for?"
+            subtitle="Pick as many as you like. Your current answers are already selected."
+            [options]="GOAL_OPTIONS"
+            [multiple]="true"
+            [answered]="goals()"
+            [loading]="loading()"
+            [error]="error()"
+            (back)="closed.emit()"
+            (answer)="onGoalsSubmit($event)"
+          />
+        }
+        @case ('style') {
+          <app-intake-step
+            eyebrow="How you move"
+            title="What pace works for you now?"
+            subtitle="Only a starting point: recommendations still adjust to each day."
+            [options]="STUDY_STYLE_OPTIONS"
+            [answered]="answeredStyle()"
+            [loading]="loading()"
+            [error]="error()"
+            (back)="goTo('goals')"
+            (answer)="onStyleSubmit($event)"
+          />
+        }
+        @case ('setup') {
+          @if (setup(); as setup) {
+            <app-setup-step
+              eyebrow="Your new setup"
+              title="Here's what would change."
+              subtitle="Compared with what you have now. Tap a block to adjust it before applying."
+              confirmLabel="Apply changes"
+              pendingLabel="Applying..."
+              note="Nothing changes until you apply"
+              [setup]="setup"
+              [current]="current()"
+              [loading]="loading()"
+              [error]="error()"
+              (back)="goTo('style')"
+              (confirm)="onSetupConfirm($event)"
+            />
+          }
+        }
+      }
+    </div>
+  </aside>
+</div>
