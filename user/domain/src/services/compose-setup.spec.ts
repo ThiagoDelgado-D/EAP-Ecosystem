@@ -1,9 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { IntakeGoal, StudyStyle } from "../entities/intake.js";
 import { ModuleKey, OPTIONAL_MODULES } from "../entities/module.js";
+import { WEEKLY_GOAL_MINUTES_RANGE } from "../entities/user.js";
 import {
   GOAL_MODULES,
   STUDY_STYLE_MODULES,
+  STUDY_STYLE_WEEKLY_GOAL_MINUTES,
   composeSetup,
 } from "./compose-setup.js";
 
@@ -53,6 +55,16 @@ describe("composeSetup", () => {
       setup.enabledModules.includes(module),
     );
     expect(setup.enabledModules).toEqual(inCatalogOrder);
+  });
+
+  test("Should set the weekly goal from the study style within the allowed range", () => {
+    for (const studyStyle of EVERY_STUDY_STYLE) {
+      const setup = composeSetup({ goals: [IntakeGoal.MASTER_TOPIC], studyStyle });
+
+      expect(setup.weeklyGoalMinutes).toBe(STUDY_STYLE_WEEKLY_GOAL_MINUTES[studyStyle]);
+      expect(setup.weeklyGoalMinutes).toBeGreaterThanOrEqual(WEEKLY_GOAL_MINUTES_RANGE.MIN);
+      expect(setup.weeklyGoalMinutes).toBeLessThanOrEqual(WEEKLY_GOAL_MINUTES_RANGE.MAX);
+    }
   });
 
 });
