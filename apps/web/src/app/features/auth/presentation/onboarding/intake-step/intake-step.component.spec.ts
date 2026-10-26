@@ -3,6 +3,7 @@ import { INTAKE_GOAL, STUDY_STYLE, type IntakeAnswer } from '@features/auth/doma
 import { GOAL_OPTIONS, STUDY_STYLE_OPTIONS, type IntakeOption } from '../intake-options';
 import { IntakeStepComponent } from './intake-step.component';
 
+const QUESTION_EYEBROW = 'First, what matters to you';
 const QUESTION_TITLE = 'What are you here for?';
 const QUESTION_SUBTITLE = 'Pick as many as you like.';
 
@@ -13,6 +14,7 @@ describe('IntakeStepComponent', () => {
   function askWith(options: readonly IntakeOption<IntakeAnswer>[], multiple: boolean): void {
     fixture = TestBed.createComponent<IntakeStepComponent<IntakeAnswer>>(IntakeStepComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('eyebrow', QUESTION_EYEBROW);
     fixture.componentRef.setInput('title', QUESTION_TITLE);
     fixture.componentRef.setInput('subtitle', QUESTION_SUBTITLE);
     fixture.componentRef.setInput('options', options);

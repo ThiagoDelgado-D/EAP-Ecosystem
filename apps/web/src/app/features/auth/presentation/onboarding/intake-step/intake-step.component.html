@@ -1,10 +1,11 @@
-<div class="bg-surface-raised border border-line-soft rounded-2xl p-8 shadow-xl">
-  <div class="text-center mb-6">
-    <h1 class="text-2xl font-bold text-ink-strong mb-2">{{ title() }}</h1>
-    <p class="text-sm text-ink-dim leading-relaxed">{{ subtitle() }}</p>
-  </div>
+<div class="rise flex flex-col gap-5">
+  <header>
+    <p class="eyebrow">{{ eyebrow() }}</p>
+    <h1 class="display mt-2 text-[clamp(1.9rem,4.4vw,2.6rem)] font-semibold">{{ title() }}</h1>
+    <p class="mt-2 max-w-lg text-[0.9rem] leading-relaxed text-ink-body">{{ subtitle() }}</p>
+  </header>
 
-  <div class="grid gap-2 sm:grid-cols-2 mb-6" [attr.role]="multiple() ? 'group' : 'radiogroup'">
+  <div class="grid gap-2 sm:grid-cols-2" [attr.role]="multiple() ? 'group' : 'radiogroup'">
     @for (option of options(); track option.key) {
       <button
         type="button"
@@ -12,62 +13,93 @@
         [attr.role]="multiple() ? null : 'radio'"
         [attr.aria-pressed]="multiple() ? isChosen(option.key) : null"
         [attr.aria-checked]="multiple() ? null : isChosen(option.key)"
-        class="flex items-start gap-3 px-3 py-3 rounded-xl border text-left transition-[background-color,border-color] duration-150"
-        [class]="
-          isChosen(option.key)
-            ? 'bg-accent-wash border-accent-line'
-            : 'bg-surface-inset border-line-soft hover:border-line-strong'
-        "
+        [style.--tone]="toneVar(option.tone)"
+        class="group flex items-start gap-3 rounded-[18px_6px_18px_6px] border p-3.5 text-left transition-[transform,background-color,border-color,box-shadow] duration-300 hover:-translate-y-0.5"
+        [class]="isChosen(option.key) ? CHOSEN_CLASSES.card : IDLE_CLASSES.card"
       >
         <span
-          class="mt-0.5 w-4 h-4 shrink-0 rounded-full border flex items-center justify-center transition-[background-color,border-color] duration-150"
-          [class]="isChosen(option.key) ? 'bg-accent border-accent' : 'border-line-strong'"
+          aria-hidden="true"
+          class="grid h-8 w-8 shrink-0 place-items-center rounded-[11px_3px_11px_3px] text-[0.85rem] transition-[background-color,color] duration-300"
+          [class]="isChosen(option.key) ? CHOSEN_CLASSES.glyph : IDLE_CLASSES.glyph"
+          >{{ option.glyph }}</span
         >
-          @if (isChosen(option.key)) {
-            <svg
-              width="9"
-              height="9"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="4"
-              class="text-surface-base"
-            >
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
-          }
-        </span>
-        <span class="min-w-0">
-          <span class="block text-xs font-bold text-ink-strong">{{ option.label }}</span>
-          <span class="block text-xs text-ink-faint mt-0.5 leading-relaxed">{{ option.hint }}</span>
+        <span class="min-w-0 flex-1">
+          <span class="flex items-center gap-2 text-[0.88rem] font-semibold text-ink-strong">
+            {{ option.label }}
+            @if (isChosen(option.key)) {
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="shrink-0 text-accent"
+                aria-hidden="true"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            }
+          </span>
+          <span class="mt-0.5 block text-[0.74rem] leading-snug text-ink-dim">{{
+            option.hint
+          }}</span>
         </span>
       </button>
     }
   </div>
 
   @if (error()) {
-    <p class="text-xs text-energy-high mb-3 text-center">{{ error() }}</p>
+    <p class="text-xs text-energy-high">{{ error() }}</p>
   }
 
-  <div class="flex gap-3">
+  <div class="flex items-center justify-between gap-3 border-t border-line-soft pt-4">
     <button
       type="button"
       (click)="back.emit()"
       [disabled]="loading()"
-      class="px-5 py-3 rounded-xl text-sm font-medium text-ink-dim border border-line-strong hover:text-ink-body transition-colors disabled:opacity-50"
+      class="btn btn-ghost btn-sm disabled:opacity-40"
     >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M19 12H5M11 18l-6-6 6-6" />
+      </svg>
       Back
     </button>
     <button
       type="button"
       (click)="submit()"
       [disabled]="chosen().length === 0 || loading()"
-      class="btn btn-primary flex-1"
+      class="btn btn-primary btn-sm disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
     >
       @if (loading()) {
         Putting your setup together...
       } @else {
         Continue
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
       }
     </button>
   </div>
@@ -77,7 +109,7 @@
       type="button"
       (click)="skip.emit()"
       [disabled]="loading()"
-      class="block mx-auto mt-4 text-xs font-medium text-ink-faint hover:text-ink-body transition-colors disabled:opacity-50"
+      class="link-underline mx-auto text-[0.76rem] font-semibold text-ink-dim hover:text-ink-strong disabled:opacity-40"
     >
       Skip, I'll set it up later
     </button>

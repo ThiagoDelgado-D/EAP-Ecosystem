@@ -5,11 +5,14 @@ import {
   type IntakeGoal,
   type StudyStyle,
 } from '@features/auth/domain/intake.model';
+import type { Tone } from '@shared/utils/tone';
 
 export interface IntakeOption<T extends IntakeAnswer> {
   key: T;
   label: string;
   hint: string;
+  glyph: string;
+  tone: Tone;
   reason: string;
 }
 
@@ -17,37 +20,49 @@ export const GOAL_OPTIONS: readonly IntakeOption<IntakeGoal>[] = [
   {
     key: INTAKE_GOAL.PASS_EXAM,
     label: 'Pass an exam',
-    hint: 'Be ready by a date.',
+    hint: 'I have a date and a syllabus.',
+    glyph: '◎',
+    tone: 'ember',
     reason: "you're preparing for an exam",
   },
   {
     key: INTAKE_GOAL.PREPARE_INTERVIEW,
     label: 'Prepare for an interview',
-    hint: 'Get sharp on what they will ask.',
+    hint: 'Technical, system design or in another language.',
+    glyph: '◆',
+    tone: 'info',
     reason: "you're preparing for an interview",
   },
   {
     key: INTAKE_GOAL.MASTER_TOPIC,
     label: 'Master a topic',
-    hint: 'Go deep, one step after another.',
+    hint: 'No deadline, I want to really get it.',
+    glyph: '❡',
+    tone: 'pine',
     reason: 'you want to master a topic',
   },
   {
     key: INTAKE_GOAL.ORGANIZE_BACKLOG,
     label: 'Organize what I already have',
-    hint: 'Links, courses and books piling up.',
+    hint: 'Links, courses and books scattered everywhere.',
+    glyph: '▤',
+    tone: 'ochre',
     reason: 'you want to organize what you saved',
   },
   {
     key: INTAKE_GOAL.BUILD_HABIT,
     label: 'Build a study habit',
-    hint: 'A little, often.',
+    hint: 'I want to study regularly.',
+    glyph: '↻',
+    tone: 'plum',
     reason: "you're building a study habit",
   },
   {
     key: INTAKE_GOAL.EXPLORE,
     label: 'Explore without pressure',
-    hint: 'Follow your curiosity.',
+    hint: 'Out of curiosity, no guilt.',
+    glyph: '✦',
+    tone: 'slate',
     reason: "you're exploring without pressure",
   },
 ];
@@ -55,26 +70,34 @@ export const GOAL_OPTIONS: readonly IntakeOption<IntakeGoal>[] = [
 export const STUDY_STYLE_OPTIONS: readonly IntakeOption<StudyStyle>[] = [
   {
     key: STUDY_STYLE.DAY_BY_DAY,
-    label: 'Day by day',
-    hint: 'Decide each day what fits.',
+    label: 'I adapt day by day',
+    hint: 'Recommendations propose, you choose what fits.',
+    glyph: '✦',
+    tone: 'plum',
     reason: 'you adapt day by day',
   },
   {
     key: STUDY_STYLE.SHORT_BLOCKS,
     label: 'Short blocks',
-    hint: 'Around half an hour at a time.',
+    hint: '20–40 minutes, several times a week.',
+    glyph: '◷',
+    tone: 'pine',
     reason: 'you study in short blocks',
   },
   {
     key: STUDY_STYLE.LONG_SESSIONS,
     label: 'Long sessions',
-    hint: 'An hour or more once you sit down.',
+    hint: '50–90 minutes of focus in one go.',
+    glyph: '◐',
+    tone: 'ember',
     reason: 'you like long sessions',
   },
   {
     key: STUDY_STYLE.STRUCTURED_SCHEDULE,
     label: 'A structured schedule',
-    hint: 'A plan you follow week by week.',
+    hint: 'Dates and a clear plan to follow.',
+    glyph: '▤',
+    tone: 'info',
     reason: 'you like a structured schedule',
   },
 ];

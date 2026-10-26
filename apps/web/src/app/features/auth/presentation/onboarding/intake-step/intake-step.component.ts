@@ -1,6 +1,17 @@
 import { Component, input, linkedSignal, output } from '@angular/core';
 import type { IntakeAnswer } from '@features/auth/domain/intake.model';
+import { toneVar } from '@shared/utils/tone';
 import type { IntakeOption } from '../intake-options';
+
+const CHOSEN_CLASSES = {
+  card: 'border-(--tone)/50 bg-(--tone)/13 shadow-(--shadow-soft)',
+  glyph: 'bg-(--tone) text-white',
+};
+
+const IDLE_CLASSES = {
+  card: 'border-line-soft bg-surface-raised hover:border-line-strong',
+  glyph: 'bg-surface-overlay text-ink-dim group-hover:text-ink-strong',
+};
 
 @Component({
   selector: 'app-intake-step',
@@ -8,6 +19,7 @@ import type { IntakeOption } from '../intake-options';
   templateUrl: './intake-step.component.html',
 })
 export class IntakeStepComponent<T extends IntakeAnswer> {
+  readonly eyebrow = input.required<string>();
   readonly title = input.required<string>();
   readonly subtitle = input.required<string>();
   readonly options = input.required<readonly IntakeOption<T>[]>();
@@ -19,6 +31,10 @@ export class IntakeStepComponent<T extends IntakeAnswer> {
   readonly answer = output<T[]>();
   readonly back = output<void>();
   readonly skip = output<void>();
+
+  readonly toneVar = toneVar;
+  readonly CHOSEN_CLASSES = CHOSEN_CLASSES;
+  readonly IDLE_CLASSES = IDLE_CLASSES;
 
   readonly chosen = linkedSignal<T[]>(() => [...this.answered()]);
 

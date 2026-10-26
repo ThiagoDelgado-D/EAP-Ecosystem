@@ -725,6 +725,23 @@
   transform: none;
 }
 
+@keyframes eap-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: eap-rise 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;
@@ -733,7 +750,8 @@
   }
 
   .breathe,
-  .ambient {
+  .ambient,
+  .rise {
     animation: none;
   }
 }
