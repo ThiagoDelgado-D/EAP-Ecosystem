@@ -1,7 +1,9 @@
-import type { IUserRepository, User } from "@user/domain";
+import type { IntakeAnswers, IUserRepository, User } from "@user/domain";
 import {
   DEFAULT_APPEARANCE,
+  isIntakeGoal,
   isOptionalModule,
+  isStudyStyle,
   LanguageCode,
   StartOfWeek,
   WidgetKey,
@@ -56,10 +58,20 @@ export class TypeOrmUserRepository implements IUserRepository {
         compactMode: entity.compactMode ?? DEFAULT_APPEARANCE.compactMode,
         weeklyGoalMinutes: entity.weeklyGoalMinutes ?? DEFAULT_APPEARANCE.weeklyGoalMinutes,
       },
+      intake: this.toIntake(entity.intake),
       bio: entity.bio ?? undefined,
       avatar: (entity.avatar as UUID) ?? undefined,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+    };
+  }
+
+  private toIntake(stored: UserEntity["intake"]): IntakeAnswers | null {
+    if (!stored || !isStudyStyle(stored.studyStyle)) return null;
+
+    return {
+      goals: stored.goals.filter(isIntakeGoal),
+      studyStyle: stored.studyStyle,
     };
   }
 
@@ -80,6 +92,7 @@ export class TypeOrmUserRepository implements IUserRepository {
     entity.reduceMotion = user.appearance.reduceMotion;
     entity.compactMode = user.appearance.compactMode;
     entity.weeklyGoalMinutes = user.appearance.weeklyGoalMinutes;
+    entity.intake = user.intake;
     entity.bio = user.bio ?? null;
     entity.avatar = user.avatar ?? null;
     return entity;

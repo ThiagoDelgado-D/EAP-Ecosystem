@@ -116,6 +116,7 @@ describe("verifySignIn", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -150,6 +151,7 @@ describe("verifySignIn", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -189,6 +191,7 @@ describe("verifySignIn", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

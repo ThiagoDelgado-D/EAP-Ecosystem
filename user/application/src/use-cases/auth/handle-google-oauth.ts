@@ -134,6 +134,7 @@ export const handleGoogleOAuth = async (
         enabledModules: [...DEFAULT_ENABLED_MODULES],
         widgetConfig: [],
         appearance: { ...DEFAULT_APPEARANCE },
+        intake: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
