@@ -5,3 +5,4 @@ export * from "./update-widget-config.js";
 export * from "./reset-preferences.js";
 export * from "./get-user-appearance.js";
 export * from "./update-user-appearance.js";
+export * from "./preview-intake-setup.js";

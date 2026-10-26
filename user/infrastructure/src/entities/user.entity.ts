@@ -53,6 +53,9 @@ export class UserEntity {
   @Column({ type: "integer", default: 600 })
   weeklyGoalMinutes!: number;
 
+  @Column({ type: "jsonb", nullable: true })
+  intake!: { goals: string[]; studyStyle: string } | null;
+
   @Column({ type: "text", nullable: true })
   bio!: string | null;
 

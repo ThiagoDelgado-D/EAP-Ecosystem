@@ -23,11 +23,13 @@ import {
   updateWidgetConfig,
   updateUserAppearance,
   resetPreferences,
+  previewIntakeSetup,
 } from "@user/application";
 import { BaseError, type UUID } from "domain-lib";
 import { UpdateEnabledModulesDto } from "./dto/request/update-enabled-modules.dto.js";
 import { UpdateWidgetConfigDto } from "./dto/request/update-widget-config.dto.js";
 import { UpdateUserAppearanceDto } from "./dto/request/update-user-appearance.dto.js";
+import { IntakeAnswersDto } from "./dto/request/intake-answers.dto.js";
 import { toHttpException } from "../errors/domain-error-mapper.js";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard.js";
 import { CurrentUserId } from "../auth/current-user-id.decorator.js";
@@ -123,6 +125,14 @@ export class PreferencesController {
     );
     if (result instanceof BaseError) throw toHttpException(result);
     return result;
+  }
+
+  @Post("intake/preview")
+  @HttpCode(200)
+  previewIntake(@Body() dto: IntakeAnswersDto) {
+    return previewIntakeSetup({
+      intake: { goals: dto.goals, studyStyle: dto.studyStyle },
+    });
   }
 
   @Post("reset")

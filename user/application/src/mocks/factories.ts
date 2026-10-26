@@ -2,6 +2,10 @@ import { faker } from "@faker-js/faker";
 import {
   DEFAULT_APPEARANCE,
   DEFAULT_ENABLED_MODULES,
+  IntakeGoal,
+  StudyStyle,
+  WEEKLY_GOAL_MINUTES_RANGE,
+  type IntakeAnswers,
   type SignInChallenge,
   type User,
 } from "@user/domain";
@@ -54,7 +58,16 @@ export const generateUser = (opts?: Partial<User>): User => ({
   enabledModules: [...DEFAULT_ENABLED_MODULES],
   widgetConfig: [],
   appearance: { ...DEFAULT_APPEARANCE },
+  intake: null,
   createdAt: faker.date.recent(),
   updatedAt: faker.date.recent(),
   ...opts,
 });
+
+export const generateIntakeAnswers = (): IntakeAnswers => ({
+  goals: faker.helpers.arrayElements(Object.values(IntakeGoal), { min: 1, max: 3 }),
+  studyStyle: faker.helpers.arrayElement(Object.values(StudyStyle)),
+});
+
+export const generateWeeklyGoalMinutes = (): number =>
+  faker.number.int({ min: WEEKLY_GOAL_MINUTES_RANGE.MIN, max: WEEKLY_GOAL_MINUTES_RANGE.MAX });

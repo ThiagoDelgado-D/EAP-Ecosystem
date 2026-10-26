@@ -4,11 +4,15 @@ import { TooManyRequestsError, type TemplateSendEmailOptions } from "domain-lib"
 import {
   CapabilityState,
   DEFAULT_ENABLED_MODULES,
+  ModuleKey,
   SIGN_IN_REQUEST_BACKOFF,
 } from "@user/domain";
 import {
   generateEmail,
+  generateIntakeAnswers,
   generateMalformedEmail,
+  generateUser,
+  generateWeeklyGoalMinutes,
 } from "@user/application";
 import { CryptoServiceImpl } from "infrastructure-lib";
 import { createUserTestApp, type UserTestApp } from "./user-module.fixture.js";
@@ -299,6 +303,62 @@ describe("AuthController (integration)", () => {
       expect(secondRefresh.status).toBe(200);
       expect(refreshCookieOf(secondRefresh)).toBe(refreshCookieOf(firstRefresh));
       expect(sessionRepo.sessions.filter((s) => !s.revokedAt)).toHaveLength(1);
+    });
+  });
+
+  describe("PATCH /api/v1/auth/onboarding", () => {
+    const completeOnboardingAs = async (body: object) => {
+      const newcomer = generateUser({ onboardingCompleted: false });
+      await userRepo.save(newcomer);
+      const token = await jwtService.sign({ sub: newcomer.id });
+
+      const response = await request(app.getHttpServer())
+        .patch("/api/v1/auth/onboarding")
+        .set({ Authorization: `Bearer ${token}` })
+        .send(body);
+
+      return { newcomer, response };
+    };
+
+    test("Should store the intake answers and the confirmed weekly goal", async () => {
+      const intake = generateIntakeAnswers();
+      const confirmedWeeklyGoal = generateWeeklyGoalMinutes();
+
+      const { newcomer, response } = await completeOnboardingAs({
+        firstName: generateUser().firstName,
+        enabledModules: [ModuleKey.POMODORO],
+        intake,
+        weeklyGoalMinutes: confirmedWeeklyGoal,
+      });
+
+      expect(response.status).toBe(200);
+      const stored = await userRepo.findById(newcomer.id);
+      expect(stored!.intake).toEqual(intake);
+      expect(stored!.appearance.weeklyGoalMinutes).toBe(confirmedWeeklyGoal);
+    });
+
+    test("Should complete onboarding without an intake when the learner skipped it", async () => {
+      const { newcomer, response } = await completeOnboardingAs({
+        firstName: generateUser().firstName,
+        enabledModules: [...DEFAULT_ENABLED_MODULES],
+      });
+
+      expect(response.status).toBe(200);
+      const stored = await userRepo.findById(newcomer.id);
+      expect(stored!.intake).toBeNull();
+    });
+
+    test("Should reject an intake with a study style it doesn't offer", async () => {
+      const { goals } = generateIntakeAnswers();
+      const unknownStudyStyle = ModuleKey.POMODORO;
+
+      const { response } = await completeOnboardingAs({
+        firstName: generateUser().firstName,
+        enabledModules: [],
+        intake: { goals, studyStyle: unknownStudyStyle },
+      });
+
+      expect(response.status).toBe(400);
     });
   });
 });

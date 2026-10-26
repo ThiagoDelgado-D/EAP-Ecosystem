@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, test } from "vitest";
 import { mockUserRepository } from "../../mocks/mock-user-repository.js";
-import { generateUser } from "../../mocks/factories.js";
+import {
+  generateIntakeAnswers,
+  generateUser,
+  generateWeeklyGoalMinutes,
+} from "../../mocks/factories.js";
 import { mockEntitlementsProvider } from "../../mocks/mock-entitlements-provider.js";
 import { completeOnboarding } from "./complete-onboarding.js";
 import { UserNotFoundError } from "../../errors/user-not-found.js";
@@ -130,5 +134,60 @@ describe("completeOnboarding", () => {
     expect(result.user.capabilities[CapabilityKey.LEARNING_PATHS].state).toBe(
       CapabilityState.DISABLED,
     );
+  });
+
+  test("Should store the intake answers the setup was composed from", async () => {
+    await userRepository.save(existingUser);
+    const intake = generateIntakeAnswers();
+
+    await completeOnboarding(
+      { userRepository, entitlementsProvider },
+      { userId: existingUser.id, firstName: "Thiago", enabledModules: [], intake },
+    );
+
+    const updated = await userRepository.findById(existingUser.id);
+    expect(updated!.intake).toEqual(intake);
+  });
+
+  test("Should leave the intake empty when the learner skipped it", async () => {
+    await userRepository.save(existingUser);
+
+    await completeOnboarding(
+      { userRepository, entitlementsProvider },
+      { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
+    );
+
+    const updated = await userRepository.findById(existingUser.id);
+    expect(updated!.intake).toBeNull();
+  });
+
+  test("Should set the confirmed weekly goal", async () => {
+    await userRepository.save(existingUser);
+    const confirmedWeeklyGoal = generateWeeklyGoalMinutes();
+
+    await completeOnboarding(
+      { userRepository, entitlementsProvider },
+      {
+        userId: existingUser.id,
+        firstName: "Thiago",
+        enabledModules: [],
+        weeklyGoalMinutes: confirmedWeeklyGoal,
+      },
+    );
+
+    const updated = await userRepository.findById(existingUser.id);
+    expect(updated!.appearance.weeklyGoalMinutes).toBe(confirmedWeeklyGoal);
+  });
+
+  test("Should keep the current weekly goal and the rest of the appearance when none is confirmed", async () => {
+    await userRepository.save(existingUser);
+
+    await completeOnboarding(
+      { userRepository, entitlementsProvider },
+      { userId: existingUser.id, firstName: "Thiago", enabledModules: [] },
+    );
+
+    const updated = await userRepository.findById(existingUser.id);
+    expect(updated!.appearance).toEqual(existingUser.appearance);
   });
 });

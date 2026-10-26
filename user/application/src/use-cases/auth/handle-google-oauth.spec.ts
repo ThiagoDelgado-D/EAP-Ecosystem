@@ -130,6 +130,7 @@ describe("handleGoogleOAuth", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -166,6 +167,7 @@ describe("handleGoogleOAuth", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -207,6 +209,7 @@ describe("handleGoogleOAuth", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -249,6 +252,7 @@ describe("handleGoogleOAuth", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -528,6 +532,7 @@ describe("handleGoogleOAuth", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -658,6 +663,7 @@ describe("handleGoogleOAuth", () => {
       enabledModules: [],
       widgetConfig: [],
       appearance: DEFAULT_APPEARANCE,
+      intake: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

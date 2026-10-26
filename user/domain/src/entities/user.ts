@@ -1,4 +1,5 @@
 import type { Entity, Person, TimestampedEntity } from "domain-lib";
+import type { IntakeAnswers } from "./intake.js";
 import type { ModuleKey } from "./module.js";
 
 export const WidgetKey = {
@@ -56,4 +57,5 @@ export interface User extends Entity, Person, TimestampedEntity {
   enabledModules: ModuleKey[];
   widgetConfig: WidgetKey[];
   appearance: UserAppearancePreferences;
+  intake: IntakeAnswers | null;
 }

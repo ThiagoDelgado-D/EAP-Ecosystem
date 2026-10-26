@@ -6,9 +6,10 @@ import {
   CapabilityState,
   DEFAULT_ENABLED_MODULES,
   ModuleKey,
+  composeSetup,
   type User,
 } from "@user/domain";
-import { generateUser } from "@user/application";
+import { generateIntakeAnswers, generateUser } from "@user/application";
 import { createUserTestApp, type UserTestApp } from "./user-module.fixture.js";
 
 describe("PreferencesController (integration)", () => {
@@ -93,6 +94,53 @@ describe("PreferencesController (integration)", () => {
       for (const module of DEFAULT_ENABLED_MODULES) {
         expect(response.body.capabilities[module].state).toBe(CapabilityState.ENABLED);
       }
+    });
+  });
+
+  describe("POST /api/v1/preferences/intake/preview", () => {
+    test("Should return the setup composed from the answers", async () => {
+      const intake = generateIntakeAnswers();
+
+      const response = await request(app.getHttpServer())
+        .post("/api/v1/preferences/intake/preview")
+        .set(authHeader())
+        .send(intake)
+        .expect(200);
+
+      expect(response.body).toEqual(composeSetup(intake));
+    });
+
+    test("Should not change the learner's stored setup", async () => {
+      await request(app.getHttpServer())
+        .post("/api/v1/preferences/intake/preview")
+        .set(authHeader())
+        .send(generateIntakeAnswers())
+        .expect(200);
+
+      const stored = await userRepo.findById(learner.id);
+      expect(stored!.enabledModules).toEqual(learner.enabledModules);
+      expect(stored!.intake).toEqual(learner.intake);
+    });
+
+    test("Should reject answers without any goal", async () => {
+      const { studyStyle } = generateIntakeAnswers();
+
+      await request(app.getHttpServer())
+        .post("/api/v1/preferences/intake/preview")
+        .set(authHeader())
+        .send({ goals: [], studyStyle })
+        .expect(400);
+    });
+
+    test("Should reject a goal the intake doesn't offer", async () => {
+      const { studyStyle } = generateIntakeAnswers();
+      const unknownGoal = ModuleKey.POMODORO;
+
+      await request(app.getHttpServer())
+        .post("/api/v1/preferences/intake/preview")
+        .set(authHeader())
+        .send({ goals: [unknownGoal], studyStyle })
+        .expect(400);
     });
   });
 });

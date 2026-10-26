@@ -152,6 +152,8 @@ export class AuthController {
         userId,
         firstName: dto.firstName,
         enabledModules: dto.enabledModules as ModuleKey[],
+        intake: dto.intake,
+        weeklyGoalMinutes: dto.weeklyGoalMinutes,
       },
     );
 

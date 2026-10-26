@@ -40,7 +40,14 @@ sequenceDiagram
    capability too.
 2. **Preferences.** The learner turns optional modules on and off, stored as
    `enabledModules` on the `User`. `resource-library` can't be turned off
-   (`MODULE_CATALOG` in `module.ts`).
+   (`MODULE_CATALOG` in `module.ts`). During onboarding the learner can
+   start from a short intake instead: what they're here for and how they
+   like to study. `composeSetup` (`user/domain/src/services/compose-setup.ts`)
+   turns the answers into enabled modules, a weekly goal and the answers
+   behind each choice, which `POST /preferences/intake/preview` returns
+   without saving anything. The learner adjusts and confirms it, and
+   onboarding completion stores the confirmed setup with the answers as the
+   `User`'s `intake`, or leaves `intake` empty when they skipped it.
 3. **Entitlements.** `EntitlementsProvider.grantedTo(learnerId)` returns the
    keys the learner's plan grants. Its only adapter today,
    `ImplicitPlanEntitlementsProvider` (`user/infrastructure`), grants every
@@ -102,6 +109,7 @@ sequenceDiagram
 | Resolution         | `user/domain/src/services/resolve-capabilities.ts`, `user/application/src/utils/resolve-learner-capabilities.ts`                                             |
 | Entitlements       | `user/domain/src/services/entitlements-provider.ts`, `user/infrastructure/src/services/implicit-plan-entitlements-provider.ts`, `apps/api/src/entitlements/` |
 | Preferences API    | `user/application/src/use-cases/preferences/`, `apps/api/src/user/preferences.controller.ts`                                                                 |
+| Intake             | `user/domain/src/entities/intake.ts`, `user/domain/src/services/compose-setup.ts`, `user/application/src/use-cases/auth/complete-onboarding.ts`              |
 | Server-side checks | `apps/api/src/entitlements/path-steps-capability-adapter.ts`                                                                                                 |
 | Web client         | `features/auth/application/auth.store.ts`, `core/guards/capability.guard.ts`, `features/settings/application/preferences.service.ts`                         |
 
@@ -147,6 +155,15 @@ Learning Paths ([#360]), path focus in Pomodoro ([#361]), Pomodoro itself
 ([#362]), the dashboard's ways into it ([#364]), its breaks, weekly summary
 and suggestion ([#365]), and Recommendations with calibration ([#366]).
 
+### 2026-10-26 — Onboarding composes the first setup
+
+Onboarding asked new learners to pick modules before they knew what each
+one would do for them. The API gained the intake from ADR-0015's
+2026-10-13 revision: `composeSetup` turns what the learner is here for and
+how they like to study into enabled modules and a weekly goal, with the
+answers behind each choice, and onboarding stores the confirmed setup with
+those answers ([#377]).
+
 ## Known limits and deferred
 
 - **The beta channel can't be joined yet.** `resolveLearnerCapabilities`
@@ -165,7 +182,7 @@ and suggestion ([#365]), and Recommendations with calibration ([#366]).
 - ADR-0015: Modular Application System, with its revisions of 2026-10-13 and
   2026-10-21
 - PRs [#98], [#326], [#350], [#351], [#354], [#355], [#356], [#357], [#359],
-  [#360], [#361], [#362], [#364], [#365], [#366]
+  [#360], [#361], [#362], [#364], [#365], [#366], [#377]
 
 [#98]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/98
 [#326]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/326
@@ -182,3 +199,4 @@ and suggestion ([#365]), and Recommendations with calibration ([#366]).
 [#364]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/364
 [#365]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/365
 [#366]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/366
+[#377]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/377
