@@ -155,6 +155,15 @@ Learning Paths ([#360]), path focus in Pomodoro ([#361]), Pomodoro itself
 ([#362]), the dashboard's ways into it ([#364]), its breaks, weekly summary
 and suggestion ([#365]), and Recommendations with calibration ([#366]).
 
+### 2026-10-26 — Onboarding composes the first setup
+
+Onboarding asked new learners to pick modules before they knew what each
+one would do for them. The API gained the intake from ADR-0015's
+2026-10-13 revision: `composeSetup` turns what the learner is here for and
+how they like to study into enabled modules and a weekly goal, with the
+answers behind each choice, and onboarding stores the confirmed setup with
+those answers ([#377]).
+
 ## Known limits and deferred
 
 - **The beta channel can't be joined yet.** `resolveLearnerCapabilities`
@@ -173,7 +182,7 @@ and suggestion ([#365]), and Recommendations with calibration ([#366]).
 - ADR-0015: Modular Application System, with its revisions of 2026-10-13 and
   2026-10-21
 - PRs [#98], [#326], [#350], [#351], [#354], [#355], [#356], [#357], [#359],
-  [#360], [#361], [#362], [#364], [#365], [#366]
+  [#360], [#361], [#362], [#364], [#365], [#366], [#377]
 
 [#98]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/98
 [#326]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/326
@@ -190,3 +199,4 @@ and suggestion ([#365]), and Recommendations with calibration ([#366]).
 [#364]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/364
 [#365]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/365
 [#366]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/366
+[#377]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/377
