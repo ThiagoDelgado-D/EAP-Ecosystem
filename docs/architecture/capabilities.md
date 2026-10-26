@@ -177,6 +177,13 @@ What a learner came for changes, and the answers stored at onboarding had no
 way back out. The preferences API gained reading those answers and applying
 a retaken intake with the setup the learner confirms ([#378]).
 
+### 2026-10-26 — New learners answer the intake
+
+The web client still asked new learners to pick modules blind. Its
+onboarding replaced that step with the intake: two questions, the setup
+the API composes from them with each reason worded from the answers, and
+the modules and goal the learner confirms ([#379]).
+
 ## Known limits and deferred
 
 - **The beta channel can't be joined yet.** `resolveLearnerCapabilities`
@@ -195,7 +202,7 @@ a retaken intake with the setup the learner confirms ([#378]).
 - ADR-0015: Modular Application System, with its revisions of 2026-10-13 and
   2026-10-21
 - PRs [#98], [#326], [#350], [#351], [#354], [#355], [#356], [#357], [#359],
-  [#360], [#361], [#362], [#364], [#365], [#366], [#377], [#378]
+  [#360], [#361], [#362], [#364], [#365], [#366], [#377], [#378], [#379]
 
 [#98]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/98
 [#326]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/326
@@ -214,3 +221,4 @@ a retaken intake with the setup the learner confirms ([#378]).
 [#366]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/366
 [#377]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/377
 [#378]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/378
+[#379]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/379
