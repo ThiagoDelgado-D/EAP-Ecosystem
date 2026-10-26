@@ -168,6 +168,12 @@ how they like to study into enabled modules and a weekly goal, with the
 answers behind each choice, and onboarding stores the confirmed setup with
 those answers ([#377]).
 
+### 2026-10-26 — The intake can be retaken from Settings
+
+What a learner came for changes, and the answers stored at onboarding had no
+way back out. The preferences API gained reading those answers and applying
+a retaken intake with the setup the learner confirms ([#378]).
+
 ## Known limits and deferred
 
 - **The beta channel can't be joined yet.** `resolveLearnerCapabilities`
@@ -186,7 +192,7 @@ those answers ([#377]).
 - ADR-0015: Modular Application System, with its revisions of 2026-10-13 and
   2026-10-21
 - PRs [#98], [#326], [#350], [#351], [#354], [#355], [#356], [#357], [#359],
-  [#360], [#361], [#362], [#364], [#365], [#366], [#377]
+  [#360], [#361], [#362], [#364], [#365], [#366], [#377], [#378]
 
 [#98]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/98
 [#326]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/326
@@ -204,3 +210,4 @@ those answers ([#377]).
 [#365]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/365
 [#366]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/366
 [#377]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/377
+[#378]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/378
