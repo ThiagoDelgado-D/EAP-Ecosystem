@@ -6,6 +6,7 @@ import {
   LONG_SESSIONS_GOAL_MINUTES,
   examPrepSetup,
 } from '@features/auth/infrastructure/mocks/intake.fixture';
+import { minutesLabel } from '@shared/utils/minutes-label';
 import { reasonFor } from '../intake-options';
 import { SetupStepComponent } from './setup-step.component';
 
@@ -16,8 +17,9 @@ describe('SetupStepComponent', () => {
   let fixture: ComponentFixture<SetupStepComponent>;
   let component: SetupStepComponent;
 
-  const cardFor = (label: string): HTMLButtonElement =>
+  const blockFor = (label: string): HTMLButtonElement =>
     fixture.nativeElement.querySelector(`button[aria-label^="${label}"]`);
+  const reasonLabels = () => component.reasons().map((reason) => reason.label);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SetupStepComponent);
@@ -34,36 +36,47 @@ describe('SetupStepComponent', () => {
     expect(component.goalMinutes()).toBe(LONG_SESSIONS_GOAL_MINUTES);
   });
 
-  test('shows why each proposed module is on', () => {
-    expect(cardFor('Learning Paths').textContent).toContain(
-      reasonFor([INTAKE_GOAL.PASS_EXAM, INTAKE_GOAL.MASTER_TOPIC]),
-    );
-    expect(cardFor('Pomodoro').textContent).toContain(
-      reasonFor([INTAKE_GOAL.PASS_EXAM, STUDY_STYLE.LONG_SESSIONS]),
-    );
-  });
-
-  test('shows why the weekly goal was proposed', () => {
-    expect(component.goalReason()).toBe(reasonFor([STUDY_STYLE.LONG_SESSIONS]));
+  test('explains each proposed module and the weekly goal', () => {
+    expect(component.reasons()).toEqual([
+      {
+        label: 'Learning Paths',
+        detail: reasonFor([INTAKE_GOAL.PASS_EXAM, INTAKE_GOAL.MASTER_TOPIC]),
+        tone: expect.any(String),
+      },
+      {
+        label: 'Pomodoro',
+        detail: reasonFor([INTAKE_GOAL.PASS_EXAM, STUDY_STYLE.LONG_SESSIONS]),
+        tone: expect.any(String),
+      },
+      {
+        label: `${minutesLabel(LONG_SESSIONS_GOAL_MINUTES)} a week`,
+        detail: reasonFor([STUDY_STYLE.LONG_SESSIONS]),
+        tone: expect.any(String),
+      },
+    ]);
   });
 
   test('gives no reason for a module the learner turned on', () => {
-    cardFor('Recommendations').click();
-    fixture.detectChanges();
+    blockFor('Recommendations').click();
 
     expect(component.isOn(MODULE_KEY.RECOMMENDATION)).toBe(true);
-    expect(cardFor('Recommendations').textContent).not.toContain('Because');
+    expect(reasonLabels()).not.toContain('Recommendations');
   });
 
-  test('hides the reason of a module the learner turned off', () => {
-    cardFor('Pomodoro').click();
-    fixture.detectChanges();
+  test('drops the reason of a module the learner turned off', () => {
+    blockFor('Pomodoro').click();
 
-    expect(cardFor('Pomodoro').textContent).not.toContain('Because');
+    expect(reasonLabels()).not.toContain('Pomodoro');
+  });
+
+  test('drops the weekly goal reason once the learner changes the goal', () => {
+    component.goalMinutes.set(ADJUSTED_GOAL_MINUTES);
+
+    expect(reasonLabels()).not.toContain(`${minutesLabel(LONG_SESSIONS_GOAL_MINUTES)} a week`);
   });
 
   test('keeps the resource library on', () => {
-    cardFor('Resource Library').click();
+    blockFor('Resource Library').click();
 
     expect(component.isOn(MODULE_KEY.RESOURCE_LIBRARY)).toBe(true);
   });
@@ -72,8 +85,8 @@ describe('SetupStepComponent', () => {
     const confirm = vi.fn();
     component.confirm.subscribe(confirm);
 
-    cardFor('Recommendations').click();
-    cardFor('Learning Paths').click();
+    blockFor('Recommendations').click();
+    blockFor('Learning Paths').click();
     component.goalMinutes.set(ADJUSTED_GOAL_MINUTES);
     component.submit();
 
