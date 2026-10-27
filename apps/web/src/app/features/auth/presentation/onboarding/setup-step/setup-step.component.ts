@@ -1,5 +1,10 @@
 import { Component, computed, input, linkedSignal, output } from '@angular/core';
-import { MODULE_KEY, OPTIONAL_MODULES, type ModuleKey } from '@features/auth/domain/auth.model';
+import {
+  isOptionalModule,
+  MODULE_KEY,
+  OPTIONAL_MODULES,
+  type ModuleKey,
+} from '@features/auth/domain/auth.model';
 import {
   WEEKLY_GOAL_SETTING,
   type ComposedSetup,
@@ -96,7 +101,7 @@ export class SetupStepComponent {
   changeOf(key: ModuleKey): ModuleChange | null {
     const current = this.current();
     if (!current || key === MODULE_KEY.RESOURCE_LIBRARY) return null;
-    const wasOn = current.enabledModules.some((enabled) => enabled === key);
+    const wasOn = isOptionalModule(key) && current.enabledModules.includes(key);
     if (this.isOn(key) && !wasOn) return 'new';
     if (!this.isOn(key) && wasOn) return 'off';
     return null;
