@@ -127,12 +127,14 @@ describe('IntakeRetakeComponent', () => {
     expect(applied).not.toHaveBeenCalled();
   });
 
-  test('closes on Escape', () => {
+  test('closes when the learner dismisses the dialog', () => {
     const closed = vi.fn();
     component.closed.subscribe(closed);
+    const dismissal = new Event('cancel', { cancelable: true });
 
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.nativeElement.querySelector('dialog').dispatchEvent(dismissal);
 
     expect(closed).toHaveBeenCalled();
+    expect(dismissal.defaultPrevented).toBe(true);
   });
 });

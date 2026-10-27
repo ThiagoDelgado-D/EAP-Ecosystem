@@ -1,12 +1,14 @@
 import {
   Component,
-  HostListener,
+  ElementRef,
+  afterNextRender,
   computed,
   inject,
   input,
   linkedSignal,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { messageOf } from '@core/errors/error-messages';
 import { ToastService } from '@core/toast/toast.service';
@@ -67,9 +69,20 @@ export class IntakeRetakeComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  @HostListener('window:keydown', ['$event'])
-  onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && !this.loading()) this.closed.emit();
+  private readonly retakeDialog = viewChild.required<ElementRef<HTMLDialogElement>>('retakeDialog');
+
+  constructor() {
+    afterNextRender(() => this.retakeDialog().nativeElement.showModal?.());
+  }
+
+  onCancel(event: Event): void {
+    event.preventDefault();
+    this.close();
+  }
+
+  close(): void {
+    if (this.loading()) return;
+    this.closed.emit();
   }
 
   goTo(step: RetakeStep): void {

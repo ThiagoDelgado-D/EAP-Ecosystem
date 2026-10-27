@@ -1,15 +1,15 @@
-<div
-  class="fixed inset-0 z-[65] flex justify-end bg-ink-strong/25"
-  role="dialog"
-  aria-modal="true"
+<dialog
+  #retakeDialog
   aria-labelledby="intake-retake-title"
+  (cancel)="onCancel($event)"
+  class="fixed inset-0 m-0 h-full max-h-none w-full max-w-none justify-end border-0 bg-transparent p-0 backdrop:bg-transparent open:flex"
 >
   <button
     type="button"
-    class="absolute inset-0 cursor-default"
+    class="absolute inset-0 cursor-default bg-ink-strong/25"
     aria-label="Close without changing your setup"
     tabindex="-1"
-    (click)="closed.emit()"
+    (click)="close()"
   ></button>
   <aside
     class="relative flex h-full w-full flex-col overflow-y-auto border-l border-line-soft bg-surface-base shadow-2xl sm:w-[38rem]"
@@ -23,7 +23,7 @@
       </div>
       <button
         type="button"
-        (click)="closed.emit()"
+        (click)="close()"
         [disabled]="loading()"
         class="-m-1 rounded-lg p-2 text-ink-dim transition-colors hover:bg-surface-overlay hover:text-ink-strong"
         aria-label="Close without changing your setup"
@@ -56,7 +56,7 @@
             [answered]="goals()"
             [loading]="loading()"
             [error]="error()"
-            (back)="closed.emit()"
+            (back)="close()"
             (answer)="onGoalsSubmit($event)"
           />
         }
@@ -94,4 +94,4 @@
       }
     </div>
   </aside>
-</div>
+</dialog>
