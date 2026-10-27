@@ -8,7 +8,8 @@ import {
   type IntakeAnswers,
 } from '@features/auth/domain/intake.model';
 
-export const INTAKE_PREVIEW_URL = `${API_CONFIG.baseUrl}/preferences/intake/preview`;
+export const INTAKE_URL = `${API_CONFIG.baseUrl}/preferences/intake`;
+export const INTAKE_PREVIEW_URL = `${INTAKE_URL}/preview`;
 
 export const LONG_SESSIONS_GOAL_MINUTES = 900;
 

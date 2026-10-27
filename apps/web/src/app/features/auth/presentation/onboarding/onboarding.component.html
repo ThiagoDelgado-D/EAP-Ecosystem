@@ -45,7 +45,7 @@
         @case ('setup') {
           @if (setup(); as setup) {
             <app-setup-step
-              [firstName]="firstName()"
+              [title]="'Here\'s your setup, ' + firstName() + '.'"
               [setup]="setup"
               [loading]="loading()"
               [error]="error()"

@@ -54,7 +54,10 @@ sequenceDiagram
    Settings reads the stored answers from `GET /preferences/intake`, and
    `PUT /preferences/intake` applies a retaken intake: the answers, the
    modules and the weekly goal the learner confirmed, returned with the
-   resolved capabilities.
+   resolved capabilities. Settings shows the answers in Active modules and
+   retakes the intake in a side panel (`features/settings/presentation/intake/`)
+   that marks what the proposal would turn on or off and the goal it
+   replaces, and changes nothing until the learner applies it.
 3. **Entitlements.** `EntitlementsProvider.grantedTo(learnerId)` returns the
    keys the learner's plan grants. Its only adapter today,
    `ImplicitPlanEntitlementsProvider` (`user/infrastructure`), grants every
@@ -116,7 +119,7 @@ sequenceDiagram
 | Resolution         | `user/domain/src/services/resolve-capabilities.ts`, `user/application/src/utils/resolve-learner-capabilities.ts`                                             |
 | Entitlements       | `user/domain/src/services/entitlements-provider.ts`, `user/infrastructure/src/services/implicit-plan-entitlements-provider.ts`, `apps/api/src/entitlements/` |
 | Preferences API    | `user/application/src/use-cases/preferences/`, `apps/api/src/user/preferences.controller.ts`                                                                 |
-| Intake             | `user/domain/src/entities/intake.ts`, `user/domain/src/services/compose-setup.ts`, `user/application/src/use-cases/auth/complete-onboarding.ts`, `use-cases/preferences/apply-intake.ts`, `features/auth/presentation/onboarding/` |
+| Intake             | `user/domain/src/entities/intake.ts`, `user/domain/src/services/compose-setup.ts`, `user/application/src/use-cases/auth/complete-onboarding.ts`, `use-cases/preferences/apply-intake.ts`, `features/auth/presentation/onboarding/`, `features/settings/presentation/intake/` |
 | Server-side checks | `apps/api/src/entitlements/path-steps-capability-adapter.ts`                                                                                                 |
 | Web client         | `features/auth/application/auth.store.ts`, `core/guards/capability.guard.ts`, `features/settings/application/preferences.service.ts`                         |
 
@@ -184,6 +187,13 @@ onboarding replaced that step with the intake: two questions, the setup
 the API composes from them with each reason worded from the answers, and
 the modules and goal the learner confirms ([#379]).
 
+### 2026-10-26 — Settings retakes the intake
+
+With the answers stored and an endpoint to apply new ones, Settings gained
+the retake beside the module toggles: the current answers, and a side panel
+that shows what a new proposal would change before the learner applies it
+([#380]).
+
 ## Known limits and deferred
 
 - **The beta channel can't be joined yet.** `resolveLearnerCapabilities`
@@ -202,7 +212,8 @@ the modules and goal the learner confirms ([#379]).
 - ADR-0015: Modular Application System, with its revisions of 2026-10-13 and
   2026-10-21
 - PRs [#98], [#326], [#350], [#351], [#354], [#355], [#356], [#357], [#359],
-  [#360], [#361], [#362], [#364], [#365], [#366], [#377], [#378], [#379]
+  [#360], [#361], [#362], [#364], [#365], [#366], [#377], [#378], [#379],
+  [#380]
 
 [#98]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/98
 [#326]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/326
@@ -222,3 +233,4 @@ the modules and goal the learner confirms ([#379]).
 [#377]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/377
 [#378]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/378
 [#379]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/379
+[#380]: https://github.com/ThiagoDelgado-D/EAP-Ecosystem/pull/380

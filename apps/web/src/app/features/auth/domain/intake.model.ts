@@ -1,4 +1,4 @@
-import type { ModuleKey, OptionalModuleKey } from './auth.model';
+import type { Capabilities, ModuleKey, OptionalModuleKey } from './auth.model';
 
 export const INTAKE_GOAL = {
   PASS_EXAM: 'pass-exam',
@@ -40,4 +40,14 @@ export interface ComposedSetup {
   enabledModules: OptionalModuleKey[];
   weeklyGoalMinutes: number;
   reasons: SetupReason[];
+}
+
+export interface ConfirmedSetup {
+  enabledModules: OptionalModuleKey[];
+  weeklyGoalMinutes: number;
+}
+
+export interface AppliedIntake extends ConfirmedSetup {
+  intake: IntakeAnswers;
+  capabilities: Capabilities;
 }
