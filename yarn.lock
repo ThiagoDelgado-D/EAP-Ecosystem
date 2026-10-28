@@ -5341,6 +5341,7 @@ __metadata:
     "@user/application": "workspace:^"
     "@user/domain": "workspace:^"
     "@user/infrastructure": "workspace:^"
+    better-sqlite3-multiple-ciphers: "patch:better-sqlite3-multiple-ciphers@npm%3A13.0.3#~/.yarn/patches/better-sqlite3-multiple-ciphers-npm-13.0.3-0cc69d2380.patch"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
     domain-lib: "workspace:^"
@@ -5599,6 +5600,26 @@ __metadata:
     postcss-media-query-parser: "npm:^0.2.3"
     postcss-safe-parser: "npm:^7.0.1"
   checksum: 10c0/acc4394ab01fdb0d56604ca5b8019226eabdb1a7640a350425941a66d2b28593f4303f61142496a1ac68e1d530bab067d5bd6a196405dcfb34421bdbd8f2b459
+  languageName: node
+  linkType: hard
+
+"better-sqlite3-multiple-ciphers@npm:13.0.3":
+  version: 13.0.3
+  resolution: "better-sqlite3-multiple-ciphers@npm:13.0.3"
+  dependencies:
+    node-addon-api: "npm:^8.0.0"
+    node-gyp: "npm:latest"
+  checksum: 10c0/e4728417093845dd194063638d66633d53f9dc6b1ac3f82c661e44bdedaf54b26c9aa6d8710fda6c344e056d6599d51601d7171365fc238306defb85e9dbeecc
+  languageName: node
+  linkType: hard
+
+"better-sqlite3-multiple-ciphers@patch:better-sqlite3-multiple-ciphers@npm%3A13.0.3#~/.yarn/patches/better-sqlite3-multiple-ciphers-npm-13.0.3-0cc69d2380.patch":
+  version: 13.0.3
+  resolution: "better-sqlite3-multiple-ciphers@patch:better-sqlite3-multiple-ciphers@npm%3A13.0.3#~/.yarn/patches/better-sqlite3-multiple-ciphers-npm-13.0.3-0cc69d2380.patch::version=13.0.3&hash=e5909e"
+  dependencies:
+    node-addon-api: "npm:^8.0.0"
+    node-gyp: "npm:latest"
+  checksum: 10c0/7c9c3f4c33db3f96e2ca8f34d3eee87af1209383dad5b418634843fc256523ce389b21d6c6de8a05aada5fe9d0130231d489d476f19a251cfb37fc6e8c9d05e4
   languageName: node
   linkType: hard
 
@@ -9789,6 +9810,15 @@ __metadata:
   dependencies:
     node-gyp: "npm:latest"
   checksum: 10c0/fb32a206276d608037fa1bcd7e9921e177fe992fc610d098aa3128baca3c0050fc1e014fa007e9b3874cf865ddb4f5bd9f43ccb7cbbbe4efaff6a83e920b17e9
+  languageName: node
+  linkType: hard
+
+"node-addon-api@npm:^8.0.0":
+  version: 8.9.2
+  resolution: "node-addon-api@npm:8.9.2"
+  dependencies:
+    node-gyp: "npm:latest"
+  checksum: 10c0/5cf5231e0da22b22862e6b593982a0e390ca89d022a9ac666c83deceecf20378cb8afe47c456ac1a58a9f62ef60099c950aec05814a287fdfd751d9d154fb12d
   languageName: node
   linkType: hard
 

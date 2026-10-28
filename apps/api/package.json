@@ -40,6 +40,7 @@
     "@user/application": "workspace:^",
     "@user/domain": "workspace:^",
     "@user/infrastructure": "workspace:^",
+    "better-sqlite3-multiple-ciphers": "patch:better-sqlite3-multiple-ciphers@npm%3A13.0.3#~/.yarn/patches/better-sqlite3-multiple-ciphers-npm-13.0.3-0cc69d2380.patch",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "domain-lib": "workspace:^",
