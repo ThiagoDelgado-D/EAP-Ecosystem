@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import EncryptedSqlite from "better-sqlite3-multiple-ciphers";
+import { resolveDatabaseKey } from "../desktop-shell.js";
 import {
   LearningResourceEntity,
   TopicEntity,
@@ -49,13 +50,13 @@ const unicodeLower = (value: unknown) =>
   imports: [
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => {
+      useFactory: async (configService: ConfigService) => {
         if (configService.get<string>("DB_TYPE") === "sqlite") {
           return {
             type: "better-sqlite3",
             driver: EncryptedSqlite,
             database: configService.getOrThrow<string>("DB_PATH"),
-            key: configService.getOrThrow<string>("DB_KEY"),
+            key: await resolveDatabaseKey(configService),
             prepareDatabase: (db: EncryptedSqlite.Database) => {
               db.pragma("temp_store = MEMORY");
               db.function("lower", { deterministic: true }, unicodeLower);

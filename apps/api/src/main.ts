@@ -3,10 +3,12 @@ import { AppModule } from "./app.module.js";
 import { configureRequestHandling } from "./app-setup.js";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { serveWebClient } from "./web-client.js";
+import { closeWhenShellAsks } from "./desktop-shell.js";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableShutdownHooks();
+  closeWhenShellAsks(app);
   app.set("trust proxy", 1);
   configureRequestHandling(app);
   if (process.env.WEB_DIST) {
