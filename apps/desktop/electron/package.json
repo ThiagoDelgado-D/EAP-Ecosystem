@@ -1,0 +1,51 @@
+{
+  "name": "desktop-electron",
+  "productName": "Cauce",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "main.mjs",
+  "scripts": {
+    "dist": "electron-builder --publish never"
+  },
+  "build": {
+    "appId": "study.cauce.desktop",
+    "productName": "Cauce",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.mjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../build/api",
+        "to": "api"
+      },
+      {
+        "from": "../build/web",
+        "to": "web"
+      }
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Education"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    }
+  },
+  "devDependencies": {
+    "electron": "45.1.0",
+    "electron-builder": "26.18.0"
+  }
+}
