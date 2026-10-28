@@ -57,6 +57,7 @@ const unicodeLower = (value: unknown) =>
             database: configService.getOrThrow<string>("DB_PATH"),
             key: configService.getOrThrow<string>("DB_KEY"),
             prepareDatabase: (db: EncryptedSqlite.Database) => {
+              db.pragma("temp_store = MEMORY");
               db.function("lower", { deterministic: true }, unicodeLower);
             },
             enableWAL: true,
