@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryColumn } from "typeorm";
+import { timestamptzType } from "infrastructure-lib";
 
 @Entity("pomodoro_sessions")
 export class PomodoroSessionEntity {
@@ -8,10 +9,10 @@ export class PomodoroSessionEntity {
   @Column("uuid")
   userId!: string;
 
-  @Column({ type: "timestamptz" })
+  @Column({ type: timestamptzType() })
   startedAt!: Date;
 
-  @Column({ type: "timestamptz", nullable: true })
+  @Column({ type: timestamptzType(), nullable: true })
   completedAt!: Date | null;
 
   @Column({ type: "varchar", length: 500, nullable: true })

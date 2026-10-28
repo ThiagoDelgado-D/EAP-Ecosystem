@@ -5,6 +5,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { jsonType, textArrayColumn } from "infrastructure-lib";
 
 @Entity("users")
 export class UserEntity {
@@ -29,10 +30,10 @@ export class UserEntity {
   @Column({ default: false })
   onboardingCompleted!: boolean;
 
-  @Column({ type: "text", array: true, default: "{learning-paths,pomodoro,recommendation}" })
+  @Column(textArrayColumn(["learning-paths", "pomodoro", "recommendation"]))
   enabledModules!: string[];
 
-  @Column({ type: "text", array: true, default: "{}" })
+  @Column(textArrayColumn([]))
   widgetConfig!: string[];
 
   @Column({ type: "varchar", length: 10, default: "en" })
@@ -53,7 +54,7 @@ export class UserEntity {
   @Column({ type: "integer", default: 600 })
   weeklyGoalMinutes!: number;
 
-  @Column({ type: "jsonb", nullable: true })
+  @Column({ type: jsonType(), nullable: true })
   intake!: { goals: string[]; studyStyle: string } | null;
 
   @Column({ type: "text", nullable: true })

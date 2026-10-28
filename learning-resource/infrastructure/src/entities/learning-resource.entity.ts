@@ -11,6 +11,7 @@ import {
 } from "typeorm";
 import { TopicEntity } from "./topic.entity.js";
 import { ResourceTypeEntity } from "./resource-type.entity.js";
+import { timestampType } from "infrastructure-lib";
 
 @Entity("learning_resources")
 export class LearningResourceEntity {
@@ -50,7 +51,7 @@ export class LearningResourceEntity {
   @Column({ default: true })
   isDurationEstimated!: boolean;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: timestampType(), nullable: true })
   lastViewedAt!: Date | null;
 
   @ManyToOne(() => ResourceTypeEntity)

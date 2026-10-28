@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryColumn, UpdateDateColumn } from "typeorm";
+import { timestamptzType } from "infrastructure-lib";
 
 @Entity("recommendation_contexts")
 export class RecommendationContextEntity {
@@ -14,6 +15,6 @@ export class RecommendationContextEntity {
   @Column({ type: "varchar", length: 20, nullable: true })
   mentalState!: string | null;
 
-  @UpdateDateColumn({ type: "timestamptz" })
+  @UpdateDateColumn({ type: timestamptzType() })
   updatedAt!: Date;
 }

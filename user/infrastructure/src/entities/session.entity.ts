@@ -8,6 +8,7 @@ import {
   PrimaryColumn,
 } from "typeorm";
 import { UserEntity } from "./user.entity.js";
+import { timestampType } from "infrastructure-lib";
 
 @Entity("sessions")
 export class SessionEntity {
@@ -25,13 +26,13 @@ export class SessionEntity {
   @Column({ unique: true })
   refreshTokenHash!: string;
 
-  @Column("timestamp")
+  @Column({ type: timestampType() })
   expiresAt!: Date;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: timestampType(), nullable: true })
   revokedAt!: Date | null;
 
-  @Column({ type: "timestamp", nullable: true })
+  @Column({ type: timestampType(), nullable: true })
   rotatedAt!: Date | null;
 
   @Column({ type: "uuid", nullable: true })

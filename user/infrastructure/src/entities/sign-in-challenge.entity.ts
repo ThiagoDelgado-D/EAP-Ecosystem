@@ -5,6 +5,7 @@ import {
   Index,
   PrimaryColumn,
 } from "typeorm";
+import { timestampType } from "infrastructure-lib";
 
 @Entity("sign_in_challenges")
 @Index(["email", "consumed"])
@@ -18,7 +19,7 @@ export class SignInChallengeEntity {
   @Column()
   codeHash!: string;
 
-  @Column("timestamp")
+  @Column({ type: timestampType() })
   expiresAt!: Date;
 
   @Column({ default: 0 })

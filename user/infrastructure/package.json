@@ -6,6 +6,7 @@
   "dependencies": {
     "@user/domain": "workspace:^",
     "domain-lib": "workspace:^",
+    "infrastructure-lib": "workspace:^",
     "typeorm": "^0.3.31"
   },
   "devDependencies": {
