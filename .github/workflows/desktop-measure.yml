@@ -1,0 +1,109 @@
+name: Desktop shell measurements
+
+on:
+  push:
+    branches: ["exp/v100-desktop-*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  YARN_ENABLE_SCRIPTS: false
+
+jobs:
+  detect:
+    name: Detect shells
+    runs-on: ubuntu-latest
+    outputs:
+      shells: ${{ steps.list.outputs.shells }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          shells=()
+          [ -d apps/desktop/electron ] && shells+=('"electron"')
+          [ -d apps/desktop/tauri ] && shells+=('"tauri"')
+          echo "shells=[$(IFS=,; echo "${shells[*]}")]" >> "$GITHUB_OUTPUT"
+
+  measure:
+    name: Build and measure (${{ matrix.shell }})
+    needs: detect
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: ${{ fromJSON(needs.detect.outputs.shells) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build API and web client
+        run: yarn build
+
+      - name: Prepare app resources
+        run: node apps/desktop/scripts/prepare-resources.mjs win32-x64
+
+      - name: Package Electron installer
+        if: matrix.shell == 'electron'
+        shell: bash
+        run: |
+          node node_modules/electron/install.js
+          yarn workspace desktop-electron dist --win nsis
+          echo "INSTALLER=$(ls apps/desktop/electron/release/*.exe | head -n 1)" >> "$GITHUB_ENV"
+
+      - name: Package Tauri installer
+        if: matrix.shell == 'tauri'
+        shell: bash
+        run: |
+          node apps/desktop/scripts/prepare-node-sidecar.mjs
+          yarn workspace desktop-tauri tauri build --bundles nsis
+          echo "INSTALLER=$(ls apps/desktop/tauri/src-tauri/target/release/bundle/nsis/*.exe | head -n 1)" >> "$GITHUB_ENV"
+
+      - name: Install, launch and measure
+        shell: pwsh
+        run: ./apps/desktop/scripts/measure-windows.ps1 -Shell ${{ matrix.shell }} -Installer "$env:INSTALLER" -OutFile "results-${{ matrix.shell }}.json"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.shell }}
+          path: results-${{ matrix.shell }}.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.shell }}
+          path: ${{ env.INSTALLER }}
+          retention-days: 14
+
+  report:
+    name: Comparison report
+    needs: measure
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: results-*
+          path: results
+
+      - name: Write report
+        run: node apps/desktop/scripts/compare-report.mjs results desktop-comparison.md && cat desktop-comparison.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-comparison
+          path: |
+            desktop-comparison.md
+            results
