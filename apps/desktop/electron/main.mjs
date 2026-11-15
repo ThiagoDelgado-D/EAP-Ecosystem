@@ -88,6 +88,11 @@ const openWindow = (origin) => {
   window.webContents.on("will-navigate", (event, url) => {
     if (!url.startsWith(origin)) event.preventDefault();
   });
+  window.webContents.once("did-finish-load", () => {
+    if (process.env.CAUCE_MEASURE_FILE) {
+      void writeFile(process.env.CAUCE_MEASURE_FILE, String(Date.now()));
+    }
+  });
   void window.loadURL(origin);
 };
 
