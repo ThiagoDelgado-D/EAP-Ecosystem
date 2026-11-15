@@ -8,6 +8,7 @@
     "apps/api",
     "apps/web",
     "apps/desktop/electron",
+    "apps/desktop/tauri",
     "shared/domain-lib",
     "shared/infrastructure-lib",
     "learning-resource/domain",
