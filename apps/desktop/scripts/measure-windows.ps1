@@ -2,7 +2,7 @@ param(
   [Parameter(Mandatory)] [string] $Shell,
   [Parameter(Mandatory)] [string] $Installer,
   [Parameter(Mandatory)] [string] $OutFile,
-  [int] $Runs = 5,
+  [int] $Launches = 5,
   [int] $IdleSeconds = 20,
   [int] $ReadyTimeoutSeconds = 120
 )
@@ -85,7 +85,7 @@ $env:CAUCE_MEASURE_FILE = $measureFile
 $runs = @()
 $memory = $null
 
-for ($run = 1; $run -le $Runs; $run++) {
+for ($run = 1; $run -le $Launches; $run++) {
   Remove-Item -LiteralPath $measureFile -Force -ErrorAction SilentlyContinue
   $startedAt = Get-EpochMillis
   $process = Start-Process -FilePath $app -PassThru
@@ -101,7 +101,7 @@ for ($run = 1; $run -le $Runs; $run++) {
   Start-Sleep -Milliseconds 200
   $readyMs = [long] (Get-Content -LiteralPath $measureFile -Raw).Trim() - $startedAt
 
-  if ($run -eq $Runs) {
+  if ($run -eq $Launches) {
     Start-Sleep -Seconds $IdleSeconds
     $memory = Measure-Memory $process.Id
   }
