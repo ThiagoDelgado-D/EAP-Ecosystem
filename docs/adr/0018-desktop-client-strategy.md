@@ -184,9 +184,8 @@ runtime with either shell: Electron already contains one, while Tauri has to
 carry a separate Node binary next to its Rust executable. Rewriting the API in
 Rust was never an option.
 
-Both shells were built on experimental branches with the same API, web client
-and encrypted SQLite database, packaged as Windows installers and measured on
-the same kind of Windows runner, one shell per fresh machine:
+Both shells were built and measured before choosing; the next section
+describes how. The results on Windows:
 
 | Metric | Electron | Tauri with a Node sidecar |
 |---|---|---|
@@ -201,13 +200,54 @@ Once Node is bundled, memory is the same: the API weighs the same in both, and
 the system WebView on Windows is itself a Chromium engine with several
 processes. Tauri keeps a clear advantage in download and disk size; Electron
 opens more than twice as fast every day and about six times as fast the first
-time. For learners who open the app daily, launch time matters more than a
-one-time download. These are single runs on a CI machine, useful to compare
-the two shells with each other, not as absolute numbers.
+time.
 
-Electron also keeps the shell in TypeScript and JavaScript, the languages of
-the rest of the monorepo, and includes the operating system keystore access
-the database key needs.
+### How the numbers were obtained
+
+- **Two experimental branches**, never merged:
+  `exp/v100-desktop-shell-spike` holds the Electron shell, and
+  `exp/v100-desktop-tauri-spike` adds a Tauri shell on top of it. Both run the
+  same API bundle, the same web client build and the same encrypted SQLite
+  database; only the shell differs. The Tauri shell starts the API as a
+  separate Node binary and passes it the database key over standard input,
+  the way Electron passes it over its own process channel.
+- **One workflow builds and measures both:**
+  `.github/workflows/desktop-measure.yml` runs on every push to those
+  branches. For each shell it builds the API and the web client, packages the
+  Windows installer, installs it silently and runs
+  `apps/desktop/scripts/measure-windows.ps1`.
+- **What the script measures:** the installer and installed sizes; five
+  launches, the first one on a fresh install, each timed from starting the
+  executable until the app's page has finished loading in the window; memory
+  20 seconds after the last launch, summed over every process the app started
+  (WebView processes included); and the time to close, checking that no
+  process is left behind.
+- **Where it ran:** GitHub's `windows-latest` runner (Windows Server 2025,
+  4 CPUs), each shell on its own fresh machine, in run #10 of the workflow on
+  2026-11-16. The workflow publishes the comparison table and both installers
+  as artifacts of the run.
+- **Limits:** each number comes from a single run on a CI machine, not on a
+  learner's computer. They are good for comparing the two shells with each
+  other, not as the times a learner will see. An earlier run of the same
+  workflow measured Tauri's first launch at 6.6 s instead of 9.0 s; the order
+  between the shells did not change.
+
+### Why Electron, in this project
+
+- **Launch time is what learners feel.** The app is opened every study
+  session, while the installer is downloaded once. Electron is faster on
+  every launch, and its slowest launch is faster than Tauri's usual one.
+- **Tauri's memory advantage does not apply here.** It comes from keeping the
+  backend in Rust. This project's backend is a Node application that has to
+  ship anyway, and with it bundled both shells use the same memory.
+- **Getting Tauri's real advantages means rewriting the backend in Rust.**
+  That is most of the codebase: every bounded context, its use cases and its
+  persistence, plus the tests around them. It is not something to take on
+  for v1.0.0, but it is not ruled out either; see the alternatives below.
+- **One language and fewer moving parts.** The shell stays in TypeScript and
+  JavaScript like the rest of the monorepo, runs the API on the Node runtime
+  it already contains, and includes the operating system keystore access the
+  database key needs.
 
 ### New decision
 
@@ -287,9 +327,14 @@ where the time actually goes.
   advantage once Node is bundled, a launch more than twice as slow, a second
   language in the monorepo, and keystore access added through a separate
   library.
-- **Tauri with the API rewritten in Rust:** would bring back Tauri's size and
-  memory advantages, at the cost of rewriting and maintaining the whole API in
-  a second language.
+- **Tauri with the API rewritten in Rust (deferred, not discarded):** it is
+  the only way to get Tauri's size and memory advantages, and it would also
+  remove the bundled Node runtime. Today it would mean rewriting and
+  maintaining most of the codebase in a second language before v1.0.0 can
+  ship. It can be reconsidered later, for example if installer size or memory
+  become real complaints from learners, or if parts of the backend move to
+  Rust for other reasons. The measurement workflow can be pointed at such a
+  build to compare it the same way.
 - **A browser app on a hosted server:** needs a server, a domain and running
   costs before anyone can use Cauce, which is what the desktop app avoids for
   v1.0.0.
