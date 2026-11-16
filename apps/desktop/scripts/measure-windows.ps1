@@ -95,6 +95,7 @@ for ($run = 1; $run -le $Launches; $run++) {
     Start-Sleep -Milliseconds 50
   }
   if (-not (Test-Path -LiteralPath $measureFile)) {
+    Get-ProcessTree $process.Id | ForEach-Object { Write-Host "still running: $($_.Name) $($_.ProcessId)" }
     Stop-Tree $process.Id
     throw "$Shell run $run did not show the app within $ReadyTimeoutSeconds s"
   }

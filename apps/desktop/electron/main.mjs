@@ -56,6 +56,7 @@ const startApi = (port, secrets) => {
   const api = utilityProcess.fork(apiEntry, [], {
     serviceName: "Cauce API",
     env: {
+      ...process.env,
       NODE_ENV: "development",
       HOST: "127.0.0.1",
       PORT: String(port),
