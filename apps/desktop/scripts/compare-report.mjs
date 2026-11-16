@@ -3,11 +3,20 @@ import { join } from "node:path";
 
 const [resultsDir, outFile] = process.argv.slice(2);
 
-const files = (await readdir(resultsDir, { recursive: true })).filter((file) => file.endsWith(".json"));
+const files = (await readdir(resultsDir, { recursive: true }).catch(() => [])).filter((file) =>
+  file.endsWith(".json"),
+);
 const results = await Promise.all(
   files.map(async (file) => JSON.parse((await readFile(join(resultsDir, file), "utf8")).replace(/^﻿/, ""))),
 );
 results.sort((left, right) => left.shell.localeCompare(right.shell));
+
+if (results.length === 0) {
+  const message = "## Desktop shell comparison (Windows)\n\nNo shell produced results; check the measure jobs.\n";
+  await writeFile(outFile, message);
+  console.log(message);
+  process.exit(0);
+}
 
 const row = (label, value) => `| ${label} | ${results.map(value).join(" | ")} |`;
 const breakdown = (result) =>
