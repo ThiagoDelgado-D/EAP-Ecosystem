@@ -55,19 +55,33 @@ database today: repositories are covered through mocks.
 The API reads `DB_TYPE` at startup (`sqlite` or `postgres`, PostgreSQL by
 default). One running API uses one engine; nothing syncs between them.
 
-### Entities are shared; column types adapt to the engine
+### Entities are shared; column types come from one map per engine
 
-There is one set of entities. The few columns whose type depends on the engine
-declare it through a shared helper in `infrastructure-lib`:
+There is one set of entities. Entities never name an engine type: the columns
+whose type depends on the engine declare a logical type instead, and each
+engine provides its own map from logical types to its column types.
 
-| Purpose | PostgreSQL | SQLite |
-|---|---|---|
-| Date and time | `timestamp` / `timestamptz` | `datetime` (stored as UTC text) |
-| Structured value | `jsonb` | `simple-json` |
-| List of strings | `text[]` | `simple-json` |
+`infrastructure-lib` defines the logical types as a `ColumnTypes` interface and
+one implementation per engine:
 
-Entity decorators run when their module is imported, so the engine is read
-from the process environment, not from the injected configuration.
+| Logical type | Meaning | PostgreSQL | SQLite |
+|---|---|---|---|
+| `dateTime` | A date and time with no time zone | `timestamp` | `datetime` |
+| `instant` | An exact moment, stored in UTC | `timestamptz` | `datetime` (UTC text) |
+| `structured` | A structured value | `jsonb` | `simple-json` |
+| `stringList` | A list of strings with a default | `text[]` | `simple-json` |
+
+The engine is chosen in a single place, which exports the map for the engine
+in use; entities read `columnTypes.instant`, `columnTypes.structured` and so
+on. Each map must implement the whole interface, so a logical type added for
+one engine fails to compile until the other engine provides it too. A third
+engine would be one more map, with no change to the entities.
+
+Entity decorators run when their module is imported, before the application
+starts, so the map cannot come from the injected configuration. It is chosen
+from `DB_TYPE` in the process environment, which has to be set before any
+entity module loads: the desktop shell sets it when it starts the API, and in
+development it comes from the environment file loaded at startup.
 
 ### Two migration folders
 
@@ -149,6 +163,13 @@ belongs to the local access mode in ADR-0020 and is decided there.
   installation.
 
 ## Rejected Alternatives
+
+- **Building entity schemas at runtime instead of with decorators:** TypeORM
+  can describe entities as schema objects created while the application
+  starts, which would let the engine arrive through injected configuration
+  like every other setting. It means rewriting every entity and its mapping,
+  for a gain that only matters at import time; the column type map covers the
+  same need.
 
 - **PostgreSQL binaries started by the app:** keeps one dialect, but adds a
   server process to manage on the learner's machine, a larger installer per
