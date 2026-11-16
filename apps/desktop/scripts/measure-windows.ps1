@@ -8,6 +8,11 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+trap {
+  Write-Host "Failed at line $($_.InvocationInfo.ScriptLineNumber): $($_.InvocationInfo.Line.Trim())"
+  Write-Host $_.ScriptStackTrace
+  break
+}
 
 function Get-EpochMillis { [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() }
 
@@ -16,14 +21,17 @@ function Get-FolderBytes([string] $Path) {
 }
 
 function Find-InstalledApp {
-  $candidates = @(
-    (Join-Path $env:LOCALAPPDATA "Programs\Cauce\Cauce.exe"),
-    (Join-Path $env:LOCALAPPDATA "Cauce\Cauce.exe")
-  )
-  foreach ($candidate in $candidates) {
-    if (Test-Path -LiteralPath $candidate) { return $candidate }
+  $roots = @((Join-Path $env:LOCALAPPDATA "Programs"), $env:LOCALAPPDATA)
+  $deadline = (Get-Date).AddSeconds(60)
+  while ((Get-Date) -lt $deadline) {
+    foreach ($root in $roots) {
+      $found = Get-ChildItem -LiteralPath $root -Filter "Cauce.exe" -File -Recurse -Depth 2 -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+      if ($found) { return $found.FullName }
+    }
+    Start-Sleep -Seconds 1
   }
-  throw "Cauce.exe not found after install. Looked in: $($candidates -join ', ')"
+  throw "Cauce.exe not found after install under: $($roots -join ', ')"
 }
 
 function Get-ProcessTree([int] $RootId) {
@@ -33,15 +41,15 @@ function Get-ProcessTree([int] $RootId) {
   $queue.Enqueue($RootId)
   while ($queue.Count -gt 0) {
     $id = $queue.Dequeue()
-    $process = $all | Where-Object ProcessId -eq $id
-    if (-not $process -or $tree.ContainsKey($id)) { continue }
-    $tree[$id] = $process
+    $entry = $all | Where-Object ProcessId -eq $id | Select-Object -First 1
+    if (-not $entry -or $tree.ContainsKey($id)) { continue }
+    $tree[$id] = $entry
     $all | Where-Object ParentProcessId -eq $id | ForEach-Object { $queue.Enqueue([int] $_.ProcessId) }
   }
   $all | Where-Object {
     $_.Name -eq "msedgewebview2.exe" -and $_.CommandLine -like "*study.cauce.desktop*" -and -not $tree.ContainsKey([int] $_.ProcessId)
   } | ForEach-Object { $tree[[int] $_.ProcessId] = $_ }
-  $tree.Values
+  return @($tree.Values | ForEach-Object { $_ })
 }
 
 function Measure-Memory([int] $RootId) {
@@ -111,6 +119,7 @@ for ($run = 1; $run -le $Runs; $run++) {
   $closeMs = (Get-EpochMillis) - $closingAt
   $leftovers | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
 
+  Write-Host "$Shell run ${run}: ready ${readyMs} ms, closed in ${closeMs} ms, leftovers $($leftovers.Count)"
   $runs += [ordered] @{
     run = $run
     firstLaunch = ($run -eq 1)
