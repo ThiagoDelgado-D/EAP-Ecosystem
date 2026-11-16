@@ -246,6 +246,19 @@ instance.
   can read the logs could sign in as anyone, and an instance enabled this
   way by mistake would be open.
 
+### Correction 2026-11-16 — the API does not start without SMTP
+
+The "What prompted this revision" section above says SMTP is not checked at
+startup and that an instance without it starts. That is wrong. When
+`NODE_ENV` is `production`, the email service refuses to start without
+`SMTP_HOST`, so the API does not start at all, and an instance without SMTP
+never reaches the point where Google sign-in could be used.
+
+The decision of this revision stands: SMTP is optional and Google sign-in is
+the way in without it. The code does not follow it yet. Until the API starts
+without SMTP in production and the sign-in page stops offering Magic Link
+when no SMTP is configured, a self-hosted instance still needs SMTP to run.
+
 ## References
 
 - ADR-0014: Real-time Communication (WebSockets run inside the API container
