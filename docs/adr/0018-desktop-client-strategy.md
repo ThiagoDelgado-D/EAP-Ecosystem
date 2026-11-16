@@ -155,6 +155,145 @@ No separate app store submission for desktop (unlike mobile).
   URL capture but not OS-level tray, global shortcuts, or offline database.
   It is a complementary tool (v0.9.5), not a desktop client replacement.
 
+## Revision 2026-11-16 — Electron, with the API and database bundled
+
+**Status of this revision:** Accepted
+
+### What prompted this revision
+
+Version 1.0.0 ships Cauce first as a desktop app for people who are not
+technical: they download an installer, open it and start, with no server to
+set up. The desktop app is no longer a client of a remote API; it carries the
+API, the web client and an encrypted database (ADR-0034) inside the installer.
+That changes what the shell has to do, so both shells were built around the
+same API and measured the same way before choosing.
+
+### What the original decision assumed
+
+- The desktop app would be a thin client of a remote API, so the shell only
+  had to render the web client.
+- Native work would live in a small Rust backend reached through IPC.
+- A Tauri installer would weigh about 10 MB and use far less memory than
+  Electron, because it uses the system WebView instead of shipping Chromium.
+- Desktop would ship after mobile, as the last surface before v1.0.0.
+
+### Why it changed
+
+The API is a NestJS application on Node.js. Bundling it means shipping a Node
+runtime with either shell: Electron already contains one, while Tauri has to
+carry a separate Node binary next to its Rust executable. Rewriting the API in
+Rust was never an option.
+
+Both shells were built on experimental branches with the same API, web client
+and encrypted SQLite database, packaged as Windows installers and measured on
+the same kind of Windows runner, one shell per fresh machine:
+
+| Metric | Electron | Tauri with a Node sidecar |
+|---|---|---|
+| Installer download | 119 MB | 26 MB |
+| Installed on disk | 374 MB | 103 MB |
+| First launch to window ready | 1.5 s | 9.0 s |
+| Later launches to window ready (median) | 0.76 s | 1.83 s |
+| Memory at rest, private bytes | 257 MB | 259 MB |
+| Close | 74 ms | 345 ms |
+
+Once Node is bundled, memory is the same: the API weighs the same in both, and
+the system WebView on Windows is itself a Chromium engine with several
+processes. Tauri keeps a clear advantage in download and disk size; Electron
+opens more than twice as fast every day and about six times as fast the first
+time. For learners who open the app daily, launch time matters more than a
+one-time download. These are single runs on a CI machine, useful to compare
+the two shells with each other, not as absolute numbers.
+
+Electron also keeps the shell in TypeScript and JavaScript, the languages of
+the rest of the monorepo, and includes the operating system keystore access
+the database key needs.
+
+### New decision
+
+#### Electron is the desktop shell
+
+`apps/desktop/electron/` holds the shell. Tauri, the Rust backend and its IPC
+command list from the original decision are dropped.
+
+#### The desktop app is the main v1.0.0 product
+
+It ships before mobile and before any hosted version. ADR-0017's order changes
+accordingly; the hosted deployment, drafted as ADR-0033, is out of v1.0.0.
+
+#### The app bundles the API, the database and the web client
+
+- The API runs in a separate Node process started by the shell, listening only
+  on `127.0.0.1` on a free port chosen at each launch, and serves the web
+  client from the same origin.
+- The process inherits the shell's environment and adds its own settings: on
+  Windows, Node needs system variables such as `SystemRoot` that a replaced
+  environment would drop.
+- The database is the encrypted SQLite file of ADR-0034, in the app's data
+  folder.
+
+#### Secrets never pass through the environment
+
+The shell generates the database key and the token signing secrets on first
+launch, keeps them protected by the operating system keystore, and hands them
+to the API over the channel between the two processes. If no keystore is
+available, the app refuses to start instead of storing them unprotected. If
+the API does not receive its key, or does not answer, within a fixed time, it
+exits with a clear error and the shell shows it, instead of waiting forever.
+
+#### The window is locked down
+
+The window runs sandboxed, with context isolation and without Node
+integration. It can only navigate within the app's own origin; links to other
+sites open in the system browser.
+
+#### Distribution
+
+Windows gets a per-user installer that needs no administrator rights; Linux
+gets an AppImage. Both are published on GitHub Releases. Installers are
+unsigned in v1.0.0, so Windows shows a warning on first install; signing is a
+cost decided later. macOS is not part of v1.0.0.
+
+#### Launch time is a tracked metric
+
+The measurement workflow stays in the repository. Before optimizing, launch is
+measured by phase (process start, API ready, window painted), so the work goes
+where the time actually goes.
+
+### Consequences of the revision
+
+#### Positive
+
+- The fastest launch of the two shells, every day.
+- One language across the monorepo, shell included.
+- Keystore access and a sandboxed window come with the shell.
+- The same measurement workflow catches regressions in size, memory and launch
+  time.
+
+#### Negative
+
+- A 119 MB download and 374 MB on disk, about four times Tauri's.
+- Electron ships its own Chromium, so security fixes reach learners only when
+  Cauce ships an update with a newer Electron. Keeping Electron current
+  becomes part of every release.
+- Unsigned installers trigger a warning on Windows that non-technical learners
+  may find alarming.
+- The tray, notifications and global shortcuts of the original decision have
+  to be rebuilt on Electron's APIs when they are scheduled.
+
+### Alternatives rejected in this revision
+
+- **Tauri with a Node sidecar:** the smallest installer, but no memory
+  advantage once Node is bundled, a launch more than twice as slow, a second
+  language in the monorepo, and keystore access added through a separate
+  library.
+- **Tauri with the API rewritten in Rust:** would bring back Tauri's size and
+  memory advantages, at the cost of rewriting and maintaining the whole API in
+  a second language.
+- **A browser app on a hosted server:** needs a server, a domain and running
+  costs before anyone can use Cauce, which is what the desktop app avoids for
+  v1.0.0.
+
 ## References
 
 - ADR-0012: Modular Application System (featureConfig is the same on desktop
@@ -164,4 +303,6 @@ No separate app store submission for desktop (unlike mobile).
 - ADR-0019: Self-Hosting (desktop can connect to self-hosted API via
   configurable base URL in Tauri settings)
 - ADR-0017: Mobile Client Strategy (mobile ships before desktop)
-- Roadmap: v0.13.0 — Tauri desktop client
+- Roadmap: v0.13.0 — Tauri desktop client (superseded by the 2026-11-16 revision)
+- ADR-0020: Authentication architecture (local access mode for the desktop app, revision pending)
+- ADR-0034: Database engine per deployment
