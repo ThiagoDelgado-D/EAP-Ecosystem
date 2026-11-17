@@ -302,6 +302,266 @@ session's chain or every session the user has, is decided then.
   unloads loses the response no matter what the client does. The client
   changes are still worth making, on top of the grace window.
 
+## Revision 2026-11-17 — Local access mode for the desktop app
+
+**Status of this revision:** Proposed
+
+### What prompted this revision
+
+Version 1.0.0 ships Cauce first as a desktop app that carries the API and an
+encrypted SQLite database (ADR-0018 revision 2026-11-16, ADR-0034). The
+learners it is for are students who aren't technical, on their own Windows
+computer, with no server, no account and no email involved. Every way in that
+this ADR defines needs something the desktop app doesn't have: Magic Link
+needs SMTP, and Google sign-in needs an OAuth client and a network round trip
+for a learner who only wants to open a study app. The database also needs a
+key that survives daily use without being typed, and a way back to the data
+when Windows is reinstalled or the learner moves to a new computer.
+
+### What the original decision assumed
+
+That Cauce always runs as a server shared by several learners, so every
+learner proves who they are with an email or a Google account, and the data
+lives on that server, protected by whoever operates it.
+
+### Why it changed
+
+On the desktop there is one learner per installation, and the operating
+system account already decides who uses the computer. The risks that matter
+for the students this is for are, in order: losing their data when they
+reinstall Windows, change computers or a disk fails; being locked out by
+forgetting something; and a copied or stolen disk exposing their data.
+Someone else using the same open operating system session, or the app left
+open, matter less for this audience and this kind of data.
+
+A PIN was considered. It protects against someone using the same operating
+system account, which is not a priority here, and it adds the risk that
+matters most: forgetting it. It is left out of v1.0.0 and can be added later
+on top of this design without changing it.
+
+### New decision
+
+#### A desktop deployment mode
+
+The API has a named desktop mode, chosen by the shell when it starts it. In
+that mode:
+
+- the Magic Link and Google providers are not built and their routes are not
+  registered, so no process on the computer can request a sign-in code or
+  create a second user; tests check that those routes answer 404;
+- production defaults apply, with no `NODE_ENV` to set, and no `.env` file is
+  read; the working directory is fixed by the shell;
+- no `JWT_SECRET` is required, since the secrets come from the shell;
+- there is no `trust proxy`, no CORS and no form-encoded body parser.
+
+#### The desktop app has one local profile and no sign-in routes
+
+On first launch the learner creates a local profile with a first name and an
+optional last name, then goes through the onboarding intake. Creating the
+profile, restoring a backup, testing the recovery key and generating a new
+one go through the shell over the channel between the processes, never
+through an HTTP route that works without a session.
+
+The profile's identity uses a new provider, `local`, whose subject is the
+user's own id. `User.email`, and `email` on the shared `Person`, become
+optional, unique when present; account linking by email (decision 2) ignores
+users without one. `lastName` becomes optional too.
+
+#### The shell opens the session; no HTTP endpoint does
+
+The API listens on a port the operating system assigns and reports it to the
+shell over the channel between the processes, so the shell always talks to
+its own API and never to whatever answered on a port it picked. The shell
+also watches the API process and shows an error if it exits.
+
+At each launch the shell asks the API for a session over that channel. The API returns a refresh token for the local profile,
+and the shell places it as the refresh cookie (`httpOnly`, `SameSite=Strict`,
+path `/api/v1/auth`) in the window's own cookie store before loading the app.
+The app then calls `/auth/refresh` on load, as it does on a server, and gets
+its access token in the response body. The previous launch's session is
+revoked when the new one is issued, so sessions don't pile up in the device
+list. The cookie is not marked `Secure`, since the app is served over plain
+HTTP on `127.0.0.1`.
+
+Cookies are not tied to a port, so a cookie for `127.0.0.1` would also be
+sent to any other port on the computer. The window therefore blocks every
+request to a loopback address other than its own API's port, and its content
+security policy keeps images and other resources off loopback addresses, so
+an image URL in a note or an imported resource can't carry the refresh
+cookie to another program. The window's session lives only in memory: the
+cookie is never written to disk, and API responses are sent with
+`Cache-Control: no-store` so learner data doesn't land in the browser cache
+unencrypted.
+
+Requests whose `Host` header is not `127.0.0.1:<port>` are rejected, which
+closes DNS rebinding from a website in the learner's browser. A process or
+website that reaches the API without the cookie gets the same 401 as any
+unauthenticated request. Only the health check and the static web client are
+reachable without a session.
+
+#### Keys and who holds them
+
+The shell owns every secret. On first launch it generates the database key,
+256 random bits, and keeps it protected by the operating system keystore
+(DPAPI on Windows, Keychain on macOS, libsecret on Linux). The token signing
+secrets and the grace window secret are derived from the database key with
+HKDF and separate labels, so there is only one secret to keep and to recover.
+None of them is passed through the environment or written unprotected. Key
+files are written with a temporary file and a rename, readable only by the
+operating system user.
+
+The shell never generates a new database key when a database already exists,
+counting its `-wal` and `-shm` files and the wrapped key file. Any failure to
+get the key from the keystore (a lost or reset Windows profile, a corrupted
+keystore, a failed decryption) leads to asking for the recovery key, never to
+a crash or a new key.
+
+The SQLite3 Multiple Ciphers cipher and the raw key format are fixed
+explicitly rather than left to library defaults, so backups keep opening
+across library versions.
+
+On Linux, Electron's `basic_text` fallback is treated as no keystore. Without
+a keystore the app asks for the recovery key at each launch and keeps the
+database key only in memory.
+
+#### The recovery key
+
+During onboarding the app shows a recovery key: 12 words from a fixed English
+word list, which avoids accent and spelling issues, with a checksum that
+catches typing mistakes, carrying at least 128 random bits. Input is
+normalized (case, extra spaces). The learner is asked to type back three of
+the words before finishing onboarding. The app suggests keeping the key on
+paper, or in an account other than the one that holds the backup folder, and
+warns that a phone photo or an email to oneself often ends up in the same
+cloud account as the backups. It also warns when the key is saved inside the
+backup folder or another synced folder.
+
+A wrapping key is derived with HKDF from the 128 bits the words encode, with
+a random salt and its own label, and encrypts a copy of the database key with
+an authenticated cipher. The wrapped key file starts with a format version
+and the algorithm identifiers, and stores the salt and the nonce; its
+associated data binds the format version and the profile id. The recovery
+key's fingerprint is derived through HKDF with a separate label. Because the
+recovery key is random and long, a slow, memory-hard derivation such as
+Argon2id would add no real protection; it becomes necessary only for a
+future PIN, whose wrapped copy must never go into backups.
+
+While the app still opens, Settings can test the recovery key and generate a
+new one without asking for the old one. A new recovery key is written with a
+temporary file and a rename, and is followed at once by a new full backup.
+Older backups keep the recovery key they were made with, and each backup
+records the fingerprint of the recovery key it needs. Regenerating covers a
+lost recovery key, and the screen says so: it does not protect against a
+leaked one, which needs a new database key, a new backup, pruning the old
+copies, and a word about the cloud's version history. That rekey flow is
+planned after v1.0.0.
+
+#### Backups
+
+The learner chooses a backup folder during onboarding, and the app suggests
+one synced to the cloud when it finds it (OneDrive, Google Drive).
+
+- **Consistent copies:** the API writes each backup with SQLite's online
+  backup, with the database key set explicitly on the destination, to a
+  temporary file. Before renaming it into place it checks that the file
+  header isn't plaintext SQLite, that the copy opens with the key and fails
+  without it, and that `integrity_check` passes.
+- **What a backup contains:** the encrypted database, the wrapped key file,
+  and metadata: profile id, recovery key fingerprint, schema migration
+  version and date.
+- **When:** at most once a day while the app is open. A backup on close is a
+  bonus, not something the design relies on, since Windows may not let the
+  app finish when it shuts down.
+- **Retention:** the last 7 daily, 4 weekly and 3 monthly copies, so a silent
+  problem can't replace every good copy within a week.
+- **Never someone else's:** the app only prunes backups with its own profile
+  id.
+- **Status:** Settings shows the date of the last verified backup, and the
+  app warns when it is older than a few days.
+
+#### Restoring
+
+On first launch, if the app finds backups in the suggested folder, the first
+step is to restore, not to create a profile. A fresh installation can also
+restore from any folder the learner points to. A backup is treated as
+untrusted input: the app checks the wrapped key file's authentication, the
+profile id and the schema version before using it. The learner types the
+recovery key; the app recovers the database key, stores it in the new
+computer's keystore and opens the restored database.
+
+A backup from an older version is migrated after restoring, with a copy of
+the restored database kept first. A backup from a newer version than the app
+is refused with a message to update Cauce. Before migrating on an app update,
+the app also takes a backup; this closes that open question in ADR-0034.
+
+#### What isn't supported
+
+- Two computers using the same profile and the same backup folder: their
+  copies diverge and sync tools create conflicting files. The supported way
+  to move is to restore on the new computer and stop using the old one.
+- Separate operating system users on one computer each have their own
+  keystore, profile and backup folder; nothing is shared between them.
+
+#### What stays exposed
+
+- Anyone using the learner's open operating system session, and any program
+  running as that user, can open the app or ask the keystore for the key.
+- The keystore is only as strong as the operating system account: on a
+  Windows account with no password, or with automatic sign-in, a copied disk
+  can be decrypted. During onboarding the app warns when the account has no
+  password and recommends device encryption (BitLocker or Windows device
+  encryption).
+- The installers are unsigned and the app has no automatic updates in
+  v1.0.0, so a tampered installer can't be told apart and the bundled
+  Chromium ages between releases. Electron's run-as-Node and debugging fuses
+  are turned off, which narrows what another program can inject.
+- Losing the recovery key and the keystore at the same time, with no new
+  recovery key generated in between, loses the data. No one, Cauce included,
+  can recover it.
+
+### Consequences of the revision
+
+#### Positive
+
+- The app opens with nothing to type, every day.
+- A reinstalled or new computer gets the learner's data back with a backup
+  and the recovery key, and a backup in a synced folder survives a dead disk.
+- Backups are verified and retained in steps, so one bad day doesn't erase
+  the good copies.
+- A copied disk or a backup in the cloud exposes nothing without the
+  learner's operating system account or the recovery key.
+- Nothing in the desktop app depends on SMTP or Google; the web client's
+  fonts are bundled instead of loaded from a CDN.
+
+#### Negative
+
+- Learners must keep the recovery key, and many won't until they need it.
+- `email` becomes optional on `User` and `Person`, and `lastName` on `User`,
+  which touches the domain, both engines' migrations and every place that
+  assumes an email.
+- Backups, restore, recovery key testing and regeneration and the Linux
+  fallback are new flows to build and test before v1.0.0.
+- A shared operating system account gives full access to the app.
+
+### Alternatives rejected in this revision
+
+- **A mandatory PIN from first launch:** protects a shared operating system
+  account, at the cost of typing it every day and of losing the data when
+  both the PIN and the recovery key are forgotten.
+- **An optional PIN:** deferred, not discarded. It can wrap the database key
+  on top of the keystore later, for learners who ask for it.
+- **The keystore alone, with no recovery key or backups:** the simplest, but
+  reinstalling Windows or changing computers loses everything.
+- **Magic Link or Google sign-in on the desktop:** needs SMTP or an OAuth
+  client and a network round trip, for a single local learner, and leaves
+  routes a local process could use to create users.
+- **A local HTTP endpoint that signs in with a per-launch secret:** any
+  process able to read that secret, or to reach the endpoint before the
+  window does, gets a session; placing the cookie from the shell avoids the
+  endpoint altogether.
+- **A recovery key in Spanish words:** accents and spelling variants make
+  typing it back error-prone.
+
 ## References
 
 - ADR-0010: Auth integrated within user module
@@ -316,3 +576,9 @@ Revision 2026-10-23 — the decisions and guidance the grace window draws on:
   grace window still issues is what every guarded request is checked against
 - RFC 9700: Best Current Practice for OAuth 2.0 Security, §4.14 Refresh
   Token Protection — refresh token rotation for public clients
+
+Revision 2026-11-17 — local access mode for the desktop app:
+
+- ADR-0018: Desktop client strategy (revision 2026-11-16, the app bundles the
+  API and the database)
+- ADR-0034: Database engine per deployment (encrypted SQLite on the desktop)

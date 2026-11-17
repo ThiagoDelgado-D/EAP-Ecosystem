@@ -277,7 +277,8 @@ accordingly; the hosted deployment, drafted as ADR-0033, is out of v1.0.0.
 The shell generates the database key and the token signing secrets on first
 launch, keeps them protected by the operating system keystore, and hands them
 to the API over the channel between the two processes. If no keystore is
-available, the app refuses to start instead of storing them unprotected. If
+available, the app never stores them unprotected; it asks for the recovery key
+at each launch instead (ADR-0020, revision 2026-11-17). If
 the API does not receive its key, or does not answer, within a fixed time, it
 exits with a clear error and the shell shows it, instead of waiting forever.
 

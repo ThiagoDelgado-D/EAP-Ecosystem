@@ -128,8 +128,8 @@ on a learner's machine.
 On desktop the API never reads the database key from the environment. The app
 shell generates a random 256-bit key on first launch, keeps it protected by the
 operating system's keystore and hands it to the API over the channel between
-the two processes. How the learner's PIN and a recovery key protect that key
-belongs to the local access mode in ADR-0020 and is decided there.
+the two processes. How a recovery key and backups protect that key
+belongs to the local access mode in ADR-0020 (revision 2026-11-17).
 
 ## Consequences
 
@@ -157,8 +157,6 @@ belongs to the local access mode in ADR-0020 and is decided there.
 
 ## Open Questions
 
-- Whether the desktop app copies the database file before running migrations
-  on an update, and how many copies it keeps.
 - The export format a learner uses to back up their data or move it to another
   installation.
 
@@ -185,8 +183,8 @@ belongs to the local access mode in ADR-0020 and is decided there.
 
 ## References
 
-- ADR-0018: Desktop client strategy (revision pending: the desktop app becomes
+- ADR-0018: Desktop client strategy (revision 2026-11-16: the desktop app is
   the main v1.0.0 product and bundles the API)
 - ADR-0019: Self-hosting with Docker
-- ADR-0020: Authentication architecture (revision pending: local access mode,
-  PIN and recovery key)
+- ADR-0020: Authentication architecture (revision 2026-11-17: local access
+  mode, recovery key and backups)
