@@ -42,6 +42,7 @@ This eliminates enumeration risk, removes the registration form entirely, and
 aligns with the pattern used by Notion and Linear for low-friction onboarding.
 
 **Endpoints:**
+
 - `POST /auth/sign-in/request` — generates a `SignInChallenge`, hashes the
   code, invalidates any previous pending challenge for that email, and
   dispatches the code via `EmailService`.
@@ -80,6 +81,7 @@ would prevent O(1) equality lookup by hash. On every refresh:
    sessions).
 
 This allows:
+
 - Individual session revocation (logout from one device)
 - Logout everywhere (revoke all sessions)
 - Future device listing (`Session` stores `userAgent` and `createdAt`)
@@ -104,12 +106,12 @@ normalization for a personal tool where users are few.
 
 ## Implementation Plan
 
-| Version | Scope                                                         |
-|---------|---------------------------------------------------------------|
+| Version | Scope                                                               |
+| ------- | ------------------------------------------------------------------- |
 | v0.8.0  | `User` entity refactor + domain contracts for new entities + Docker |
-| v0.8.1  | Magic Link end-to-end (NestJS + Angular login page)          |
-| v0.8.2  | OAuth Google (+ extensible provider pattern)                 |
-| v0.8.3  | JWT guards, route protection, resources scoped to user        |
+| v0.8.1  | Magic Link end-to-end (NestJS + Angular login page)                 |
+| v0.8.2  | OAuth Google (+ extensible provider pattern)                        |
+| v0.8.3  | JWT guards, route protection, resources scoped to user              |
 
 ## Consequences
 
